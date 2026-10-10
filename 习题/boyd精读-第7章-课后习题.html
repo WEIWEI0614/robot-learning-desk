@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 7 章「Geometric problems」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 7 章「Geometric problems」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>定义复现。</strong> 本章中，集合 $C$ 上的投影定义为</p>
+<p>$$
+P_C(x_0)=\arg\min\{\|x-x_0\|_2\mid x\in C\},
+$$</p>
+<p>对应的距离为</p>
+<p>$$
+\mathrm{dist}(x_0,C)=\min\{\|x-x_0\|_2\mid x\in C\}.
+$$</p>
+<p>也就是说，投影是使 $\|x-x_0\|_2$ 最小的可行点，而距离是该最小目标值。</p>
+<p><strong>凸性说明。</strong> 目标函数 $f(x)=\|x-x_0\|_2$ 是凸函数，因为它是仿射函数 $x-x_0$ 的 Euclidean 范数；Euclidean 范数是凸函数。约束 $x\in C$ 当 $C$ 为凸集时是凸约束。因此</p>
+<p>$$
+\min\ \|x-x_0\|_2\quad \mathrm{s.t.}\quad x\in C
+$$</p>
+<p>是一个凸优化问题。若 $C$ 用 $Ax=b,\ f_i(x)\le0$ 表示，则它就是本章 (8.2) 的形式。</p>
+<p><strong>超平面投影闭式解。</strong> 对 $C=\{x\mid a^Tx=b\}$，$a\neq0$，Euclidean 投影为</p>
+<p>$$
+P_C(x_0)=x_0+\frac{(b-a^Tx_0)a}{\|a\|_2^2}.
+$$</p>
+<p>验证：令 $x=P_C(x_0)$，则 $x-x_0$ 与超平面平行于 $a$，即 $x-x_0=ta$。代入 $a^Tx=b$：</p>
+<p>$$
+a^T(x_0+ta)=b
+\quad\Longrightarrow\quad
+a^Tx_0+t\|a\|_2^2=b
+\quad\Longrightarrow\quad
+t=\frac{b-a^Tx_0}{\|a\|_2^2}.
+$$</p>
+<p>因此上式成立。该公式正是本章关键公式 1，也是投影问题 (8.2) 的一个闭式特例。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. Euclidean 中点构造。</strong> 设 $C$ 为凸集，$x_0\notin C$，$P_C(x_0)$ 为 $x_0$ 在 $C$ 上的 Euclidean 投影。令</p>
+<p>$$
+x_m=\frac{x_0+P_C(x_0)}2
+$$</p>
+<p>为 $x_0$ 与投影点的中点，取超平面法向</p>
+<p>$$
+z=P_C(x_0)-x_0.
+$$</p>
+<p>则超平面</p>
+<p>$$
+z^T(x-x_m)=0
+$$</p>
+<p>严格分离 $x_0$ 与 $C$：$x_0$ 在一侧，$C$ 在另一侧。直观上，$x_0$ 到 $C$ 的最近点连线方向给出了分离方向。</p>
+<p><strong>2. 一般范数下的对偶函数。</strong> 将投影问题写成含指示函数或显式约束的形式后，其对偶函数为</p>
+<p>$$
+g(\lambda,\mu,\nu)
+=
+\mu^Tx_0+
+\inf_x\Big\{
+\sum_{i=1}^m\lambda_if_i(x)
++\nu^T(Ax-b)
+-\mu^Tx
+\Big\},
+$$</p>
+<p>其中</p>
+<p>$$
+\lambda\succeq0,\qquad \|\mu\|_*\le1.
+$$</p>
+<p>这里 $\|\cdot\|_*$ 是与原范数对偶的范数。若对偶目标为正，则 $\mu$ 给出严格分离超平面的法向。</p>
+<p><strong>3. 为什么中点构造不能推广。</strong> Euclidean 中点构造依赖两个事实：</p>
+<ul>
+<li>投影点 $P_C(x_0)$ 与 $x_0$ 的连线方向 $P_C(x_0)-x_0$ 是法向；</li>
+<li>中点处超平面与 $C$ 的分离可由 Euclidean 距离的几何性质直接保证。</li>
+</ul>
+<p>对一般范数，最近点方向不再自动给出支撑超平面的法向，中点构造不再保证严格分离。因此必须通过 (8.2) 的对偶问题，利用对偶最优解 $\mu$（满足 $\|\mu\|_*\le1$）来构造分离超平面。对偶构造只依赖范数的对偶关系，因此对任意范数有效。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>推导。</strong> 由定义</p>
+<p>$$
+G_{ij}=a_i^Ta_j.
+$$</p>
+<p>又</p>
+<p>$$
+d_{ij}^2=\|a_i-a_j\|_2^2
+=(a_i-a_j)^T(a_i-a_j)
+=a_i^Ta_i+a_j^Ta_j-2a_i^Ta_j.
+$$</p>
+<p>因此</p>
+<p>$$
+a_i^Ta_j=\frac{\|a_i\|_2^2+\|a_j\|_2^2-\|a_i-a_j\|_2^2}{2}.
+$$</p>
+<p>代入 $l_i=\|a_i\|_2$、$l_j=\|a_j\|_2$、$d_{ij}=\|a_i-a_j\|_2$，得</p>
+<p>$$
+G_{ij}=\frac{l_i^2+l_j^2-d_{ij}^2}{2}.
+$$</p>
+<p><strong>充要条件。</strong> 若 $G=A^TA$，则对任意 $z\in\mathbb{R}^n$，</p>
+<p>$$
+z^TGz=z^TA^TAz=\|Az\|_2^2\ge0,
+$$</p>
+<p>所以 $G\succeq0$。反之，若 $G\succeq0$，则可取特征分解或 Cholesky 分解 $G=A^TA$，于是 $G$ 是矩阵 $A$ 的列向量的 Gram 矩阵。因此</p>
+<p>$$
+G\succeq0
+$$</p>
+<p>是 $G$ 为某组向量 Gram 矩阵的充要条件。</p>
+<p><strong>仅角度情形。</strong> 角度满足</p>
+<p>$$
+\rho_{ij}=\cos\theta_{ij}=\frac{a_i^Ta_j}{\|a_i\|_2\|a_j\|_2}
+=\frac{G_{ij}}{l_il_j}.
+$$</p>
+<p>若只关心角度，可令所有长度归一化：</p>
+<p>$$
+l_i=1,\qquad i=1,\dots,n.
+$$</p>
+<p>此时</p>
+<p>$$
+G_{ij}=\rho_{ij}=\cos\theta_{ij},
+$$</p>
+<p>且 $G$ 的对角元全为 $1$。可实现性条件变为</p>
+<p>$$
+G\succeq0,
+$$</p>
+<p>即相关矩阵 LMI。给定部分角度求另一角度时，就化为以 $G$ 为变量的 SDP。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>Euclidean distance matrix 刻画。</strong> 本章给出的刻画为</p>
+<p>$$
+D_{ii}=0,\qquad D_{ij}\ge0,
+$$</p>
+<p>以及</p>
+<p>$$
+\Big(I-\tfrac1n\mathbf{1}\mathbf{1}^T\Big)
+D
+\Big(I-\tfrac1n\mathbf{1}\mathbf{1}^T\Big)\preceq0.
+$$</p>
+<p>其中 $D_{ij}=d_{ij}^2$，$\mathbf 1$ 为全 $1$ 向量。</p>
+<p><strong>各条件含义。</strong></p>
+<ul>
+<li>$D_{ii}=0$：点到自身的距离为零。</li>
+<li>$D_{ij}\ge0$：距离平方非负。</li>
+<li>第三条：令</li>
+</ul>
+<p>$$
+P=I-\tfrac1n\mathbf{1}\mathbf{1}^T
+$$</p>
+<p>为去均值投影矩阵，则 $PDP\preceq0$。它等价于说，在 $\mathbf 1^\perp$ 上，$D$ 对应的二次型半负定。这是距离矩阵可实现为 Euclidean 距离的经典条件。</p>
+<p><strong>为什么可设 $A\mathbf 1=0$。</strong> 距离只依赖点之间的差：</p>
+<p>$$
+\|a_i-a_j\|_2.
+$$</p>
+<p>若将所有点同时平移 $a_i\mapsto a_i-c$，距离不变。因此可以选取平移使</p>
+<p>$$
+\sum_{i=1}^n a_i=0,
+$$</p>
+<p>即</p>
+<p>$$
+A\mathbf 1=0.
+$$</p>
+<p>这是无损的，因为平移不改变任何 $d_{ij}$。</p>
+<p><strong>从 $D$ 恢复点。</strong> 若 $D$ 满足上述刻画，则可构造 Gram 矩阵。常用做法是令</p>
+<p>$$
+G=-\frac12 PDP,
+$$</p>
+<p>其中 $P=I-\frac1n\mathbf{1}\mathbf{1}^T$。在满足刻画时 $G\succeq0$，于是可分解</p>
+<p>$$
+G=A^TA,
+$$</p>
+<p>矩阵 $A$ 的列向量 $a_1,\dots,a_n$ 就是恢复出的一组点。它们满足</p>
+<p>$$
+\|a_i-a_j\|_2^2=D_{ij}.
+$$</p>
+<p>若要求 $A\mathbf 1=0$，则这组点已经中心化。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>建模。</strong> 只关心相关系数，因此令所有长度 $l_i=1$，相关矩阵</p>
+<p>$$
+C\in\mathbb{R}^{4\times4},\qquad C_{ii}=1,\qquad C\succeq0.
+$$</p>
+<p>已知约束为</p>
+<p>$$
+0.6\le C_{12}\le0.9,\quad
+0.8\le C_{13}\le0.9,\quad
+0.5\le C_{24}\le0.7,\quad
+-0.8\le C_{34}\le-0.4.
+$$</p>
+<p>求 $\rho_{14}=C_{14}$ 的最小值和最大值，分别解两个 SDP：</p>
+<p>$$
+\min\ C_{14}\quad \mathrm{s.t.}\quad C_{ii}=1,\ C\succeq0,\ \text{已知区间约束},
+$$</p>
+<p>$$
+\max\ C_{14}\quad \mathrm{s.t.}\quad C_{ii}=1,\ C\succeq0,\ \text{已知区间约束}.
+$$</p>
+<p>由于目标 $C_{14}$ 关于 $C$ 线性，约束 $C\succeq0$ 是 LMI，因此是两个 SDP。</p>
+<p><strong>原书结果。</strong> 事实底座给出两位有效数字：</p>
+<p>$$
+\min \rho_{14}=-0.39,\qquad \max \rho_{14}=0.23.
+$$</p>
+<p>对应相关矩阵分别为</p>
+<p>$$
+\begin{pmatrix}
+1.00&0.60&0.87&-0.39\\
+0.60&1.00&0.33&0.50\\
+0.87&0.33&1.00&-0.55\\
+-0.39&0.50&-0.55&1.00
+\end{pmatrix},
+\quad
+\begin{pmatrix}
+1.00&0.71&0.80&0.23\\
+0.71&1.00&0.31&0.59\\
+0.80&0.31&1.00&-0.40\\
+0.23&0.59&-0.40&1.00
+\end{pmatrix}.
+$$</p>
+<p><strong>可运行代码验证。</strong> 下面用 Python 的 <code>cvxpy</code> 求解两个 SDP。预期输出最小值约为 $-0.39$，最大值约为 $0.23$。</p>
+<pre><code class="lang-python">import cvxpy as cp
+import numpy as np
+
+# 变量：4x4 对称相关矩阵 C
+C = cp.Variable((4, 4), symmetric=True)
+
+constraints = [
+    cp.diag(C) == 1,
+    C >> 0,
+    0.6 <= C[0, 1], C[0, 1] <= 0.9,
+    0.8 <= C[0, 2], C[0, 2] <= 0.9,
+    0.5 <= C[1, 3], C[1, 3] <= 0.7,
+    -0.8 <= C[2, 3], C[2, 3] <= -0.4,
+]
+
+# 最小化 rho_14
+prob_min = cp.Problem(cp.Minimize(C[0, 3]), constraints)
+prob_min.solve()
+print("min rho_14 =", round(prob_min.value, 2))
+
+# 最大化 rho_14
+prob_max = cp.Problem(cp.Maximize(C[0, 3]), constraints)
+prob_max.solve()
+print("max rho_14 =", round(prob_max.value, 2))</code></pre>
+<p><strong>预期观察。</strong> 运行后应得到</p>
+<pre><code>min rho_14 = -0.39
+max rho_14 = 0.23</code></pre>
+<p>与事实底座中 Example 8.3 的两位有效数字一致。该题也体现了本章核心思想：把角度/相关系数问题通过 Gram 矩阵或相关矩阵 $C\succeq0$ 凸化为 SDP。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

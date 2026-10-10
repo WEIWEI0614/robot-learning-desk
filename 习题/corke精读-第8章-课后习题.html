@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 8 章「Velocity Relationships」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 8 章「Velocity Relationships」课后习题</h1>
+<p>原书课后习题 5 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：回顾 Puma 560 的关节轴几何关系。</strong></p>
+<p>Puma 560 是经典的 6 自由度串联操作臂，其 DH 参数（原书第 7 章）决定了各关节轴 $z_0,\dots,z_5$ 的方向。关键事实是：Puma 560 的肩部（$q_1$）绕竖直轴 $z_0$ 旋转，而 $q_2$（肩）与 $q_3$（肘）的轴线在名义位形下是<strong>互相平行</strong>的——它们都垂直于 $z_0$ 且彼此平行（这是 Puma 类"肘型"操作臂的典型特征，$q_2$ 与 $q_3$ 的轴线都沿同一方向，即 $z_1 \parallel z_2$）。</p>
+<p><strong>第 2 步：分析 $q_1$ 旋转对轴方向的影响。</strong></p>
+<p>$q_1$ 绕 $z_0$ 旋转时，会把 $z_1$、$z_2$ 整体绕竖直轴转动，但<strong>不会改变 $z_1$ 与 $z_2$ 之间的平行关系</strong>。因此无论 $q_1$ 取何值，$z_1 \parallel z_2$ 始终成立。</p>
+<p><strong>第 3 步：寻找第三个与它们平行的轴。</strong></p>
+<p>腕部三个关节 $q_4,q_5,q_6$ 构成球腕：$z_3$（前臂轴）、$z_4$、$z_5$ 在腕心处交于一点。其中 $z_3$ 是前臂的旋转轴，方向由 $q_2+q_3$ 决定。</p>
+<ul>
+<li>当 $q_3 = 0$ 时，前臂与上臂共线，此时 $z_3$ 与 $z_1,z_2$ <strong>平行</strong>（三者同向）。</li>
+<li>更一般地，$z_3$ 的方向由 $q_2+q_3$ 的累积转角决定；只要让 $q_2+q_3$ 使前臂轴与上臂轴平行，即可实现 $z_1 \parallel z_2 \parallel z_3$。</li>
+</ul>
+<p><strong>第 4 步：给出一个具体位形。</strong></p>
+<p>取 $q_3 = 0$（肘完全伸直），则上臂轴 $z_1$、$z_2$ 与前臂轴 $z_3$ 三者互相平行。此时 $q_1$ 可取任意值（例如 $q_1=0$），$q_2$ 也可取任意值（例如 $q_2=0$），因为 $q_2$ 只改变这些平行轴在平面内的朝向，不破坏平行性。</p>
+<p>因此一个满足条件的位形是：</p>
+<p>$$\mathbf{q} = [0,\ 0,\ 0,\ q_4,\ q_5,\ q_6]^T$$</p>
+<p>其中 $q_4,q_5,q_6$ 任意（腕部姿态不影响 $z_1,z_2,z_3$ 的平行关系）。</p>
+<p><strong>第 5 步：与本章奇异性的联系。</strong></p>
+<p>当三个关节轴平行时，雅可比 $\mathbf{J}(\mathbf{q})$ 中对应这三列会线性相关（它们对末端速度的贡献方向退化），导致 $\det(\mathbf{J})=0$，即<strong>奇异</strong>。这正是原书 [PDF p.177–178] 中 Puma ready pose $\mathbf{q}_r$ 出现 $\mathrm{rank}(\mathbf{J})=5$、<code>jsingu</code> 报告 "q6 depends on q4" 的同类现象——轴平行/共面是产生奇异的重要几何来源。</p>
+<blockquote>注：原书未给出该具体位形的数值雅可比，此处按符号推导；若需数值验证，可用 <code>p560.jacob0([0 0 0 0 0 0])</code> 检查其秩。</blockquote>
+<h4>关键点</h4>
+<ul>
+<li>Puma 560 中 $q_2$ 与 $q_3$ 的轴线<strong>天然平行</strong>，$q_1$ 的旋转不破坏这一平行关系。</li>
+<li>令 $q_3=0$（肘伸直）即可使前臂轴 $z_3$ 也加入平行族，得到 $z_1 \parallel z_2 \parallel z_3$。</li>
+<li>三个关节轴平行 ⇒ 雅可比对应列线性相关 ⇒ $\det(\mathbf{J})=0$，机器人处于<strong>奇异位形</strong>。</li>
+<li>这类"轴平行/共面"奇异与腕部 gimbal lock 同属几何奇异，是本章奇异分析的核心例子。</li>
+<li>验证方法：用 <code>jacob0</code> 计算该位形的雅可比并检查其秩是否小于 6。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 8 章</li>
+<li>依据：</li>
+<li>关节轴几何与 DH 参数：第 7 章正运动学（本章事实底座 §0 前后章依赖）</li>
+<li>奇异定义 $\det(\mathbf{J})=0$、列线性相关：事实底座 §3 第 4 条</li>
+<li>Puma ready pose 的 rank 与 <code>jsingu</code> 输出：事实底座 §6 例题（[PDF p.177–178]）</li>
+<li>雅可比计算工具 <code>jacob0</code>：事实底座 §4 第 4 步、§6</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确目标与已知关系。</strong></p>
+<p>本章把几何雅可比 $\mathbf{J}(\mathbf{q})$ 的角速度部分 $\boldsymbol\omega$ 替换为姿态参数（RPY 或 Euler 角）的速率 $\dot{\boldsymbol\phi}$，得到解析雅可比。对 Euler 角情形，目标是求出矩阵 $\mathbf{B}$，使</p>
+<p>$$\boldsymbol\omega = \mathbf{B}\,\dot{\boldsymbol\phi},\qquad \boldsymbol\phi=(\phi_1,\phi_2,\phi_3)$$</p>
+<p>其中 $\boldsymbol\phi$ 为 Euler 角（ZYZ 约定），$\mathbf{B}$ 由 Toolbox 的 <code>eul2jac</code> 给出。做法与 RPY 情形完全平行：写出 $\dot{\mathbf{R}}$，代入第 3 章 Eq. 3.4，再解出 $\boldsymbol\omega$。</p>
+<p><strong>第 2 步：写出 Euler 角下的旋转矩阵及其导数。</strong></p>
+<p>ZYZ Euler 角约定为</p>
+<p>$$\mathbf{R}=\mathbf{R}_z(\phi_1)\,\mathbf{R}_y(\phi_2)\,\mathbf{R}_z(\phi_3)$$</p>
+<p>对时间求导，用乘积法则：</p>
+<p>$$\dot{\mathbf{R}}=\dot{\mathbf{R}}_z(\phi_1)\mathbf{R}_y(\phi_2)\mathbf{R}_z(\phi_3)+\mathbf{R}_z(\phi_1)\dot{\mathbf{R}}_y(\phi_2)\mathbf{R}_z(\phi_3)+\mathbf{R}_z(\phi_1)\mathbf{R}_y(\phi_2)\dot{\mathbf{R}}_z(\phi_3)$$</p>
+<p><strong>第 3 步：用第 3 章 Eq. 3.4 把 $\dot{\mathbf{R}}$ 转成角速度。</strong></p>
+<p>第 3 章给出 $\dot{\mathbf{R}}\mathbf{R}^T=\mathbf{S}(\boldsymbol\omega)$，即 $\boldsymbol\omega=\mathrm{vex}\!\left(\dot{\mathbf{R}}\mathbf{R}^T\right)$。逐项计算：</p>
+<ul>
+<li>第一项：$\dot{\mathbf{R}}_z(\phi_1)\mathbf{R}_y\mathbf{R}_z\cdot(\mathbf{R}_z\mathbf{R}_y\mathbf{R}_z)^T=\dot{\mathbf{R}}_z\mathbf{R}_z^T=\mathbf{S}([0,0,\dot\phi_1]^T)$。因为 $\dot{\mathbf{R}}_z\mathbf{R}_z^T$ 只含绕 $z$ 轴的角速度，且 $\mathbf{R}_y\mathbf{R}_z(\mathbf{R}_y\mathbf{R}_z)^T=\mathbf{I}$。</li>
+<li>第二项：$\mathbf{R}_z\dot{\mathbf{R}}_y\mathbf{R}_z\cdot(\mathbf{R}_z\mathbf{R}_y\mathbf{R}_z)^T=\mathbf{R}_z\dot{\mathbf{R}}_y\mathbf{R}_y^T\mathbf{R}_z^T=\mathbf{R}_z\,\mathbf{S}([0,\dot\phi_2,0]^T)\,\mathbf{R}_z^T=\mathbf{S}\!\left(\mathbf{R}_z[0,\dot\phi_2,0]^T\right)$。这里用了相似变换 $\mathbf{R}\mathbf{S}(\mathbf{x})\mathbf{R}^T=\mathbf{S}(\mathbf{R}\mathbf{x})$。</li>
+<li>第三项：$\mathbf{R}_z\mathbf{R}_y\dot{\mathbf{R}}_z\cdot(\mathbf{R}_z\mathbf{R}_y\mathbf{R}_z)^T=\mathbf{R}_z\mathbf{R}_y\dot{\mathbf{R}}_z\mathbf{R}_z^T\mathbf{R}_y^T\mathbf{R}_z^T=\mathbf{R}_z\mathbf{R}_y\,\mathbf{S}([0,0,\dot\phi_3]^T)\,\mathbf{R}_y^T\mathbf{R}_z^T=\mathbf{S}\!\left(\mathbf{R}_z\mathbf{R}_y[0,0,\dot\phi_3]^T\right)$。</li>
+</ul>
+<p><strong>第 4 步：合并三项，得到 $\boldsymbol\omega=\mathbf{B}\dot{\boldsymbol\phi}$。</strong></p>
+<p>由 $\mathbf{S}(\cdot)$ 的线性性，三项相加即</p>
+<p>$$\boldsymbol\omega=[0,0,\dot\phi_1]^T+\mathbf{R}_z[0,\dot\phi_2,0]^T+\mathbf{R}_z\mathbf{R}_y[0,0,\dot\phi_3]^T$$</p>
+<p>写成矩阵形式：</p>
+<p>$$\boldsymbol\omega=\underbrace{\begin{bmatrix}0&-s_1&c_1 s_2\\0&c_1&s_1 s_2\\1&0&c_2\end{bmatrix}}_{\mathbf{B}}\begin{bmatrix}\dot\phi_1\\\dot\phi_2\\\dot\phi_3\end{bmatrix}$$</p>
+<p>其中 $s_i=\sin\phi_i$，$c_i=\cos\phi_i$。这正是 <code>eul2jac</code> 返回的矩阵。</p>
+<p><strong>第 5 步：组装解析雅可比。</strong></p>
+<p>几何雅可比分块为 $\mathbf{J}=\begin{bmatrix}\mathbf{J}_v\\\mathbf{J}_\omega\end{bmatrix}$，其中 $\mathbf{J}_\omega$ 满足 $\boldsymbol\omega=\mathbf{J}_\omega\dot{\mathbf{q}}$。把 $\boldsymbol\omega=\mathbf{B}\dot{\boldsymbol\phi}$ 代入，得 $\dot{\boldsymbol\phi}=\mathbf{B}^{-1}\mathbf{J}_\omega\dot{\mathbf{q}}$，于是解析雅可比为</p>
+<p>$$\mathbf{J}_a=\begin{bmatrix}\mathbf{J}_v\\ \mathbf{B}^{-1}\mathbf{J}_\omega\end{bmatrix}$$</p>
+<p>当 $\mathbf{B}$ 非奇异时成立。$\mathbf{B}$ 的奇异条件为 $\det(\mathbf{B})=-s_2=0$，即 $\phi_2=0$ 或 $\pi$，对应 Euler 角的<strong>表示奇异</strong>（representational singularity），与机器人本身的几何奇异无关。</p>
+<p><strong>第 6 步（可选验证）。</strong></p>
+<p>用 Toolbox 验证：<code>eul2jac(0.1,0.2,0.3)</code> 应返回上述 $\mathbf{B}$ 在 $\phi=(0.1,0.2,0.3)$ 处的数值。原书未给出该具体数值，按符号推导即可；RPY 版 <code>rpy2jac(0.1,0.2,0.3)</code> 的数值为 $\begin{bmatrix}1&0&0.1987\\0&0.9950&-0.0978\\0&0.0998&0.9752\end{bmatrix}$，可作对照。</p>
+<h4>关键点</h4>
+<ul>
+<li>解析雅可比 = 几何雅可比把角速度行换成姿态参数速率行：$\mathbf{J}_a=\begin{bmatrix}\mathbf{J}_v\\ \mathbf{B}^{-1}\mathbf{J}_\omega\end{bmatrix}$，$\mathbf{B}$ 由 <code>eul2jac</code>（Euler）或 <code>rpy2jac</code>（RPY）给出。</li>
+<li>推导核心是第 3 章 Eq. 3.4：$\dot{\mathbf{R}}\mathbf{R}^T=\mathbf{S}(\boldsymbol\omega)$，以及相似变换 $\mathbf{R}\mathbf{S}(\mathbf{x})\mathbf{R}^T=\mathbf{S}(\mathbf{R}\mathbf{x})$。</li>
+<li>Euler 角 $\mathbf{B}$ 的奇异条件是 $\sin\phi_2=0$（$\phi_2=0,\pi$），这是<strong>表示奇异</strong>，不是机器人奇异；两者必须区分。</li>
+<li>解析雅可比只在 $\mathbf{B}$ 非奇异时可用；奇异处需改用几何雅可比或阻尼方法。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 8 章</li>
+<li>依据：</li>
+<li>解析雅可比定义与 $\mathbf{J}_a=\begin{bmatrix}\mathbf{J}_v\\ \mathbf{B}^{-1}\mathbf{J}_\omega\end{bmatrix}$：本章事实底座 §3 概念 2、§4 推导链条第 6 步。</li>
+<li>$\boldsymbol\omega=\mathbf{B}\dot{\boldsymbol\phi}$、<code>eul2jac</code>/<code>rpy2jac</code>：§1 记号约定、§3 概念 2。</li>
+<li>$\dot{\mathbf{R}}\mathbf{R}^T=\mathbf{S}(\boldsymbol\omega)$（Eq. 3.4）与 $\mathrm{vex}(\cdot)$：§0 前后章依赖、§1 记号约定。</li>
+<li>RPY 数值例 <code>rpy2jac(0.1,0.2,0.3)</code>：§6 例题与数值例子。</li>
+<li>表示奇异与几何奇异的区分：§3 概念 2。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3. 可操作度（Manipulability，第 177 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：速度椭圆的数学来源</h5>
+<p>由本章 Eq. 8.2，瞬时正运动学为</p>
+<p>$$\dot{\boldsymbol\xi}=\mathbf{J}(\mathbf{q})\,\dot{\mathbf{q}},\qquad \mathbf{J}\in\mathbb{R}^{6\times N}.$$</p>
+<p>只关心末端 x、y 平移速度时，取 $\mathbf{J}$ 的前两行构成 $\mathbf{J}_{xy}\in\mathbb{R}^{2\times N}$，则 $\dot{\mathbf{p}}_{xy}=\mathbf{J}_{xy}\dot{\mathbf{q}}$。</p>
+<p><strong>第 1 步：为什么是椭圆。</strong> 设关节速度满足单位范数约束 $\|\dot{\mathbf{q}}\|=1$。所有可能的末端速度 $\dot{\mathbf{p}}_{xy}=\mathbf{J}_{xy}\dot{\mathbf{q}}$ 构成一个集合。由于 $\mathbf{J}_{xy}$ 是线性映射，单位球在 $\mathbb{R}^N$ 中的像是一个椭球（$N=2$ 时为椭圆），其半轴由 $\mathbf{J}_{xy}$ 的奇异值给出。这就是<strong>速度椭圆</strong>。</p>
+<p><strong>第 2 步：如何画。</strong> 令 $\dot{\mathbf{q}}=\cos\theta\,\mathbf{u}_1+\sin\theta\,\mathbf{u}_2$，其中 $\mathbf{u}_1,\mathbf{u}_2$ 为 $\mathbf{J}_{xy}$ 的右奇异向量（对应最大、最小奇异值），$\theta\in[0,2\pi)$。则</p>
+<p>$$\dot{\mathbf{p}}_{xy}(\theta)=\sigma_1\cos\theta\,\mathbf{v}_1+\sigma_2\sin\theta\,\mathbf{v}_2,$$</p>
+<p>其中 $\sigma_1,\sigma_2$ 为奇异值，$\mathbf{v}_1,\mathbf{v}_2$ 为左奇异向量。以当前末端位置 $\mathbf{p}$ 为中心，把 $\dot{\mathbf{p}}_{xy}(\theta)$ 画成曲线即得椭圆。</p>
+<p><strong>第 3 步：两连杆工作空间网格（a 小问）。</strong> 对工作空间内每个网格点，先用逆运动学求出对应的 $\mathbf{q}$（两连杆有解析解），再算 $\mathbf{J}_{xy}(\mathbf{q})$，按第 2 步画椭圆。原书未给出具体网格数值，按符号推导即可。</p>
+<p><strong>第 4 步：Puma 560 找更大可操作度的构型（b 小问）。</strong> 本章灵巧度定义为 Yoshikawa 度量</p>
+<p>$$\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}.$$</p>
+<p>事实底座给出：<code>maniplty(qr,'yoshikawa')=0</code>（ready pose 奇异，$\mathrm{rank}(\mathbf{J})=5$），<code>maniplty(qn,'yoshikawa')=0.0786</code>（名义位姿）。因此只需找一个非奇异、且 $\det(\mathbf{J}\mathbf{J}^T)$ 更大的构型即可，例如把 Puma 560 的肘部与腕部稍微偏离奇异位形。原书未给出该构型的具体关节角数值，按符号推导：搜索使 $\omega$ 最大的 $\mathbf{q}$，即最大化 $\det(\mathbf{J}\mathbf{J}^T)$。</p>
+<p><strong>第 5 步：叠加椭球与动画（c 小问）。</strong> 用 <code>plot</code> 显示机械臂后，在末端位置叠加由 $\mathbf{J}$ 的平移部分（前 3 行）或旋转部分（后 3 行）算出的椭球；沿轨迹逐帧更新 $\mathbf{q}$，重算 $\mathbf{J}$ 并重画椭球，即得动画。椭球在奇异附近会退化成一条线（某一半轴趋于 0），这正是可操作度下降的几何表现。</p>
+<p><strong>可运行代码（MATLAB，Robotics Toolbox）</strong></p>
+<pre><code class="lang-matlab">% (a) 两连杆速度椭圆
+L1 = 1; L2 = 1;
+mdl = SerialLink([Revolute('d',0,'a',L1), Revolute('d',0,'a',L2)]);
+for x = -1.5:0.5:1.5
+  for y = -1.5:0.5:1.5
+    q = mdl.ikine(transl(x,y,0), 'q0', [0 0]);   % 解析/数值逆解
+    if isempty(q), continue; end
+    J = mdl.jacob0(q); Jxy = J(1:2,:);
+    [U,S,V] = svd(Jxy);
+    th = linspace(0,2*pi,100);
+    d = U*S*[cos(th); sin(th)];
+    plot(x+d(1,:), y+d(2,:), 'b'); hold on
+  end
+end
+
+% (b) Puma 560 搜索更大可操作度
+mdl = mdl_puma560;
+w_n = mdl.maniplty(qn, 'yoshikawa');   % = 0.0786
+best = -inf; qbest = qn;
+for k = 1:2000
+  q = (rand(1,6)-0.5)*pi;
+  w = mdl.maniplty(q, 'yoshikawa');
+  if w > best, best = w; qbest = q; end
+end
+fprintf('w_n=%.4f, best=%.4f\n', w_n, best);
+
+% (c) 沿轨迹动画叠加椭球
+mdl.plot(qn); hold on
+for t = 0:0.05:2
+  q = qn + 0.3*sin(t)*[1 0 0 0 0 0];
+  mdl.animate(q);
+  J = mdl.jacob0(q); Jv = J(1:3,:);
+  [U,S,~] = svd(Jv);
+  plot_ellipsoid(mdl.fkine(q).t, U*S);   % 自定义椭球绘制
+  drawnow
+end</code></pre>
+<p>预期观察：两连杆在工作空间中心附近椭圆接近圆形，靠近边界时退化成扁椭圆；Puma 560 在 $q_r$ 处 $\omega=0$（退化），在 $q_n$ 处 $\omega=0.0786$，随机搜索可找到更大的 $\omega$；动画中椭球在奇异附近明显变扁。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>速度椭圆 = 单位关节速度球经 $\mathbf{J}$ 的像</strong>，半轴长度等于 $\mathbf{J}$ 的奇异值，方向等于左奇异向量；椭圆退化即奇异。</li>
+<li><strong>Yoshikawa 灵巧度</strong> $\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}$ 正比于速度椭球体积；$\omega=0$ 当且仅当 $\mathbf{J}$ 降秩（奇异）。</li>
+<li>事实底座给出的锚点：<code>maniplty(qr,'yoshikawa')=0</code>、<code>maniplty(qn,'yoshikawa')=0.0786</code>，$q_r$ 处 $\mathrm{rank}(\mathbf{J})=5$。</li>
+<li>平移椭圆用 $\mathbf{J}$ 前 3 行，旋转椭圆用后 3 行；两者形状不同，不要混用。</li>
+<li>动画的本质是沿轨迹逐帧重算 $\mathbf{J}(\mathbf{q})$ 并重画椭球，用于直观展示可操作度随构型变化。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 8 章 Velocity Relationships</li>
+<li>依据：</li>
+<li>速度椭圆与可操作度定义：本章 facts 第 3 节第 5 条、第 5 节第 6 条（Yoshikawa $\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}$）</li>
+<li>瞬时正运动学 $\dot{\boldsymbol\xi}=\mathbf{J}\dot{\mathbf{q}}$：facts 第 5 节第 1 条（Eq. 8.2）</li>
+<li><code>maniplty(qr,'yoshikawa')=0</code>、<code>maniplty(qn,'yoshikawa')=0.0786</code>、$q_r$ 处 $\mathrm{rank}(\mathbf{J})=5$：facts 第 6 节例题数值</li>
+<li>奇异与条件数：facts 第 3 节第 4、5 条</li>
+<li>原书未给出两连杆网格与 Puma 560 更大可操作度构型的具体数值，按符号推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4. Resolved-rate motion control（第 180 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>题目</h4>
+<p><strong>4. Resolved-rate motion control（第 180 页）</strong></p>
+<p>a) 试验不同的笛卡尔平移与旋转速度指令，以及它们的组合。</p>
+<p>b) 扩展图 8.4 的 Simulink® 系统，使其同时把雅可比矩阵的行列式记录到工作区。</p>
+<p>c) 图 8.4 中机器人运动仿真时长为 5 s。把仿真时间延长到 10 s，并解释发生了什么。</p>
+<p>d) 设置初始位姿与运动方向，使其模仿第 7.4.3 节的情形。当机器人到达奇异位形时会发生什么？</p>
+<p>e) 把图 8.3 中的 Jacobian inverse 模块替换为 MATLAB® 函数 <code>pinv</code>。</p>
+<p>f) 把图 8.3 中的 Jacobian inverse 模块替换为阻尼最小二乘（damped least squares）函数，并考察不同阻尼因子取值的影响。</p>
+<p>g) 把图 8.3 中的 Jacobian inverse 模块替换为基于 MATLAB® 函数 <code>lscov</code> 的模块。</p>
+<p>h) 修改图 8.5 的仿真，改用第 7.3.4 节的 8 轴机器人。观察关节坐标轨迹，它是否像末端执行器轨迹那样具有重复性？</p>
+<p>i) 修改上述仿真，加入零空间运动（null-space motion），使机器人关节远离其限位。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>解答</h4>
+<p>本题是围绕本章 <strong>resolved-rate motion control</strong>（第 8.3 节，Eq. 8.6–8.8）的一组动手实验，核心是 $\dot{\mathbf{q}}=\mathbf{J}^{-1}(\mathbf{q})\boldsymbol\nu^*$ 及其各种"求逆"替代方案。下面逐小问分析。</p>
+<p><strong>a) 不同速度指令与组合。</strong></p>
+<p>由 Eq. 8.2，$\dot{\boldsymbol\xi}=\mathbf{J}(\mathbf{q})\dot{\mathbf{q}}$，其中 $\boldsymbol\nu=(v_x,v_y,v_z,\omega_x,\omega_y,\omega_z)$。给定 $\boldsymbol\nu^*$，用 Eq. 8.6 求 $\dot{\mathbf{q}}=\mathbf{J}^{-1}\boldsymbol\nu^*$。分别令 $\boldsymbol\nu^*$ 只含平移分量、只含旋转分量、以及两者组合，观察关节速度 $\dot{\mathbf{q}}$ 的分配。预期：纯平移主要激励前三个关节，纯旋转主要激励腕部关节；组合时各关节速度线性叠加（因为 $\mathbf{J}$ 是线性映射）。原书未给出具体数值，按符号推导。</p>
+<p><strong>b) 记录 $\det(\mathbf{J})$。</strong></p>
+<p>在 Simulink 中把 <code>jacob0(q)</code> 的输出接入 <code>det</code> 模块，再接到 <code>To Workspace</code>。预期：当机器人接近奇异位形时 $\det(\mathbf{J})\to 0$。本章事实底座给出近奇异例 $\det(\mathbf{J})=-1.5509\times10^{-5}$、$\mathrm{cond}(\mathbf{J})=235.2498$，可作为参照量级。</p>
+<p><strong>c) 仿真延长到 10 s。</strong></p>
+<p>图 8.4 是<strong>开环</strong> resolved-rate 积分（Eq. 8.7）：</p>
+<p>$$\mathbf{q}^*_{\langle k+1\rangle}=\mathbf{q}^*_{\langle k\rangle}+\mathbf{J}^{-1}(\mathbf{q}^*_{\langle k\rangle})\,\boldsymbol\nu^*\,\delta t.$$</p>
+<p>开环积分会累积数值漂移误差，末端位姿逐渐偏离期望轨迹。延长到 10 s 后，误差进一步累积，末端可能明显偏离目标路径。这正是本章强调要用<strong>闭环</strong> resolved-rate（Eq. 8.8）的原因：</p>
+<p>$$\dot{\mathbf{q}}^*=\mathbf{J}^{-1}(\mathbf{q})\,\mathbf{K}_p\,\Delta(\boldsymbol\xi^*_{\langle k\rangle},\boldsymbol\xi_{\langle k\rangle}),$$</p>
+<p>其中 $\Delta(\cdot)$ 是位姿差 6-vector（Eq. 3.10，<code>tr2delta</code>），$\mathbf{K}_p$ 为比例增益，可消除漂移。</p>
+<p><strong>d) 模仿第 7.4.3 节，到达奇异。</strong></p>
+<p>第 7.4.3 节讨论的是解析逆解在奇异附近的问题。当机器人到达奇异位形时 $\det(\mathbf{J})=0$，$\mathbf{J}$ 列线性相关，$\mathbf{J}^{-1}$ 不存在。此时 Eq. 8.6 无解或关节速度爆炸。本章事实底座给出 Puma ready pose $\mathbf{q}_r$ 的 $\mathrm{rank}(\mathbf{J})=5$，<code>jsingu(J)</code> 输出 "1 linearly dependent joints: q6 depends on: q4"，即丢失一个自由度。近奇异例中要求 $\boldsymbol\nu=[0,0,0.1,0,0,0]^T$ 得 $\dot{\mathbf{q}}=[-0.0000,\ -4.9261,\ 9.8522,\ 0,\ -4.9261,\ 0]$，关节速度已达数 rad/s，而同样位形下绕 $y$ 轴 0.2 rad/s 只需 $\dot{\mathbf{q}}=[0,0,0,0,-0.2,0]$。这说明奇异附近关节速度对笛卡尔速度极度敏感。</p>
+<p><strong>e) 用 <code>pinv</code> 替换 Jacobian inverse。</strong></p>
+<p><code>pinv</code> 计算 Moore–Penrose 伪逆。对 $N>6$ 的冗余机器人，左伪逆为 Eq. 8.9：</p>
+<p>$$\mathbf{J}^+=\mathbf{J}^T(\mathbf{J}\mathbf{J}^T)^{-1},$$</p>
+<p>给出最小范数解 $\dot{\mathbf{q}}=\mathbf{J}^+\boldsymbol\nu^*$。对 $N=6$ 方阵，<code>pinv</code> 在非奇异时等于 $\mathbf{J}^{-1}$，在奇异附近给出最小范数解而非无穷大。预期：奇异附近关节速度不再爆炸，但末端无法精确跟踪指令。</p>
+<p><strong>f) 阻尼最小二乘。</strong></p>
+<p>用阻尼逆</p>
+<p>$$\mathbf{J}^T(\mathbf{J}\mathbf{J}^T+\mu^2\mathbf{I})^{-1}$$</p>
+<p>替换。$\mu$ 为阻尼因子：$\mu\to 0$ 退化为伪逆，$\mu$ 增大则奇异附近关节速度被抑制，但末端跟踪精度下降。预期：存在 $\mu$ 的折中值，使奇异附近既不过冲又保持可接受的跟踪误差。原书未给出具体 $\mu$ 数值，按符号推导。</p>
+<p><strong>g) 用 <code>lscov</code>。</strong></p>
+<p><code>lscov</code> 求解加权最小二乘 $\min\|\mathbf{J}\dot{\mathbf{q}}-\boldsymbol\nu^*\|$。它等价于伪逆解，但可引入权重矩阵。预期：结果与 <code>pinv</code> 类似，但可通过权重调节各关节的"代价"。</p>
+<p><strong>h) 8 轴机器人（第 7.3.4 节）。</strong></p>
+<p>8 轴机器人 $N=8>6$，是冗余的。用 Eq. 8.9 的伪逆求最小范数解。预期：末端执行器轨迹重复（因为任务是 6 维的），但关节坐标轨迹<strong>不重复</strong>——因为零空间分量可以自由变化，每次积分可能落到不同的关节构型。这正是冗余自由度的特征。</p>
+<p><strong>i) 加入零空间运动。</strong></p>
+<p>用 Eq. 8.10：</p>
+<p>$$\dot{\mathbf{q}}=\mathbf{J}^+\boldsymbol\nu^*+\mathbf{N}\mathbf{N}^+\dot{\mathbf{q}}_{ns},$$</p>
+<p>其中 $\mathbf{N}=\mathrm{null}(\mathbf{J})$ 是零空间基，$\mathbf{N}\mathbf{N}^+$ 把额外任务 $\dot{\mathbf{q}}_{ns}$ 投影进零空间，不干扰末端运动。设计 $\dot{\mathbf{q}}_{ns}$ 使关节远离限位（例如朝关节范围中心方向）。预期：末端轨迹不变，但关节轨迹被"推"向安全区域。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>resolved-rate 的本质</strong>：用 $\dot{\mathbf{q}}=\mathbf{J}^{-1}\boldsymbol\nu^*$（Eq. 8.6）把笛卡尔速度指令翻译成关节速度，绕开逆运动学。</li>
+<li><strong>开环 vs 闭环</strong>：开环积分（Eq. 8.7）会漂移；闭环（Eq. 8.8）用 $\Delta(\cdot)$ 位姿差 + $\mathbf{K}_p$ 消除漂移。</li>
+<li><strong>奇异处理</strong>：$\det(\mathbf{J})=0$ 时 $\mathbf{J}^{-1}$ 失效，改用伪逆（Eq. 8.9）、阻尼逆或 <code>pinv</code>/<code>lscov</code>。</li>
+<li><strong>冗余与零空间</strong>：$N>6$ 时用 $\mathbf{J}^+$ 得最小范数解，用 $\mathbf{N}\mathbf{N}^+$（Eq. 8.10）把额外任务投影进零空间，实现关节限位回避而不影响末端。</li>
+<li><strong>灵巧度</strong>：$\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}$（Yoshikawa），<code>maniplty(qr,'yoshikawa')=0</code> 表示奇异，<code>maniplty(qn,'yoshikawa')=0.0786</code> 表示非奇异。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 8 章</li>
+<li>依据：</li>
+<li>Eq. 8.2、8.6、8.7、8.8：本章第 3 节核心概念 1、6，第 5 节关键公式 1、2、3</li>
+<li>Eq. 8.9、8.10：本章第 3 节核心概念 7，第 5 节关键公式 4</li>
+<li>奇异与 <code>jsingu</code>、$\det(\mathbf{J})$、$\mathrm{cond}(\mathbf{J})$：本章第 3 节核心概念 4、5，第 6 节例题数值</li>
+<li>灵巧度 $\omega$：本章第 3 节核心概念 5，第 5 节关键公式 6，第 6 节例题数值</li>
+<li>第 7.4.3 节、第 7.3.4 节：本章第 0 节前后章依赖</li>
+<li>阻尼逆、<code>pinv</code>、<code>lscov</code>：本章第 4 节推导链条第 7 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>背景与建模</h5>
+<p>P8 是一个过驱动系统：Puma 560（6 关节）安装在一个 2 自由度定位基座上，共 $N=8$ 个关节。记广义坐标 $\mathbf{q}\in\mathbb{R}^8$，其中 $\mathbf{q}_b=(q_1,q_2)$ 为基座关节，$\mathbf{q}_a=(q_3,\dots,q_8)$ 为 Puma 的 6 个关节。末端空间速度满足本章 Eq. 8.2：</p>
+<p>$$\dot{\boldsymbol\xi}=\mathbf{J}(\mathbf{q})\,\dot{\mathbf{q}},\qquad \mathbf{J}\in\mathbb{R}^{6\times 8}$$</p>
+<p>由于 $N=8>6$，$\mathbf{J}$ 是"宽"矩阵，存在冗余。按本章事实底座第 7 条，冗余时用左伪逆得最小范数解，并用零空间投影实现附加任务（Eq. 8.9/8.10）：</p>
+<p>$$\dot{\mathbf{q}}=\mathbf{J}^+\boldsymbol\nu^*+\mathbf{N}\mathbf{N}^+\dot{\mathbf{q}}_{ns},\qquad \mathbf{J}^+=\mathbf{J}^T(\mathbf{J}\mathbf{J}^T)^{-1}$$</p>
+<p>其中 $\mathbf{N}=\mathrm{null}(\mathbf{J})$，$\mathbf{N}\mathbf{N}^+$ 把附加任务投影到零空间，不干扰末端运动。</p>
+<h5>a) 零空间控制器</h5>
+<p><strong>目标 1：让后六个关节停在行程中点。</strong></p>
+<p>设 $\mathbf{q}_a$ 的期望中点为 $\mathbf{q}_{a,\text{mid}}$（由关节限位决定，原书未给出具体数值，按符号推导）。定义次级任务速度：</p>
+<p>$$\dot{\mathbf{q}}_{ns,1}=\mathbf{K}_a\,(\mathbf{q}_{a,\text{mid}}-\mathbf{q}_a)$$</p>
+<p>其中 $\mathbf{K}_a$ 为正定增益矩阵。代入 Eq. 8.10：</p>
+<p>$$\dot{\mathbf{q}}=\mathbf{J}^+\boldsymbol\nu^*+\mathbf{N}\mathbf{N}^+\,\dot{\mathbf{q}}_{ns,1}$$</p>
+<p><strong>为什么可行</strong>：$\mathbf{N}\mathbf{N}^+$ 把 $\dot{\mathbf{q}}_{ns,1}$ 投影到 $\mathbf{J}$ 的零空间，因此该分量不产生任何末端速度，末端仍精确跟踪 $\boldsymbol\nu^*$；同时基座两关节 $q_1,q_2$ 被"借用"来补偿，使 $\mathbf{q}_a$ 回归中点。</p>
+<p><strong>目标 2：最大化可操作度。</strong></p>
+<p>按本章事实底座第 5 条与第 6 条，Yoshikawa 灵巧度</p>
+<p>$$\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}$$</p>
+<p>最大化 $\omega$ 等价于沿 $\omega$ 的梯度方向运动。取次级任务</p>
+<p>$$\dot{\mathbf{q}}_{ns,2}=k_\omega\,\nabla_{\mathbf{q}}\,\omega(\mathbf{q})$$</p>
+<p>（梯度可用数值差分或解析式求得；原书未给出 P8 的具体梯度表达式，按符号推导）。同样投影进零空间：</p>
+<p>$$\dot{\mathbf{q}}=\mathbf{J}^+\boldsymbol\nu^*+\mathbf{N}\mathbf{N}^+\,\dot{\mathbf{q}}_{ns,2}$$</p>
+<p><strong>为什么可行</strong>：$\omega$ 只依赖构型 $\mathbf{q}$，沿其梯度在零空间内移动可改善灵巧度而不改变末端速度。注意当 $\omega\to 0$（接近奇异）时梯度可能病态，需加阻尼或限幅。</p>
+<p><strong>非完整移动基座扩展（挑战性）。</strong></p>
+<p>此时基座不再是 2 个转动关节，而是独轮车模型（属第 4–6 章，本章不展开其运动学）。思路：把移动基座的位姿 $(x,y,\theta)$ 视为额外广义坐标，其速度受非完整约束（不能侧滑）。控制器分两层：</p>
+<ol>
+<li>上层用本章 resolved-rate 思想（Eq. 8.6/8.8）计算期望的基座位姿速度，使 Puma 处于有利构型；</li>
+<li>下层用非完整控制律（如输入-输出线性化或 Lyapunov 方法）把该位姿速度转换为转向角速度与前进线速度。</li>
+</ol>
+<p>由于非完整约束使基座速度不能任意指定，零空间投影需替换为受约束的投影，这正是本题"挑战性"所在。</p>
+<h5>b) 锁定哪两个关节的算法</h5>
+<p>对任意位姿 $\mathbf{q}$ 和末端空间速度 $\boldsymbol\nu^*$，要从 8 个关节中锁定 2 个、驱动 6 个。锁定关节意味着对应列从 $\mathbf{J}$ 中删除，得到 $6\times 6$ 方阵 $\mathbf{J}_{\text{red}}$，要求其非奇异（可逆）。</p>
+<p><strong>算法（穷举 + 条件数判据）：</strong></p>
+<pre><code>输入: q, ν*
+输出: 应锁定的两个关节索引 (i*, j*)
+
+best = ∞
+for each 组合 (i, j), 1 ≤ i < j ≤ 8:
+    J_red = J(q) 删除第 i, j 列      # 6×6
+    if |det(J_red)| < ε:             # 奇异，跳过
+        continue
+    c = cond(J_red)                  # 条件数
+    if c < best:
+        best = c
+        (i*, j*) = (i, j)
+return (i*, j*)</code></pre>
+<p><strong>为什么这样选</strong>：删除列后 $\mathbf{J}_{\text{red}}$ 必须可逆才能解 $\dot{\mathbf{q}}_{\text{red}}=\mathbf{J}_{\text{red}}^{-1}\boldsymbol\nu^*$（Eq. 8.6）。条件数 $\mathrm{cond}(\mathbf{J}_{\text{red}})$ 越小，越远离奇异，关节速度越不易爆炸（对应本章事实底座第 4、5 条）。共 $\binom{8}{2}=28$ 种组合，计算量可接受。</p>
+<p><strong>可运行验证代码（Python，示意）：</strong></p>
+<pre><code class="lang-python">import numpy as np
+from itertools import combinations
+
+def choose_locked_joints(J, eps=1e-9):
+    n = J.shape[1]
+    best_cond, best_pair = np.inf, None
+    for i, j in combinations(range(n), 2):
+        cols = [c for c in range(n) if c not in (i, j)]
+        J_red = J[:, cols]
+        if abs(np.linalg.det(J_red)) < eps:
+            continue
+        c = np.linalg.cond(J_red)
+        if c < best_cond:
+            best_cond, best_pair = c, (i, j)
+    return best_pair, best_cond</code></pre>
+<p><strong>预期观察</strong>：在 Puma ready pose $\mathbf{q}_r$ 附近，$\mathrm{rank}(\mathbf{J})=5$（见事实底座第 6 节），说明此时 $\mathbf{J}$ 本身已降秩，任何 $6\times 6$ 子阵都可能奇异，算法会返回 <code>None</code> 或提示无可行锁定组合——这正说明该位姿不适合锁定两关节。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>零空间投影 $\mathbf{N}\mathbf{N}^+$</strong> 是冗余机器人做次级任务的核心工具：附加任务不干扰末端速度（Eq. 8.10）。</li>
+<li><strong>可操作度 $\omega=\sqrt{\det(\mathbf{J}\mathbf{J}^T)}$</strong> 是构型好坏的标量度量，其梯度可作为零空间次级任务。</li>
+<li><strong>锁定关节 = 删列</strong>：删列后必须保证 $6\times 6$ 子阵非奇异，用条件数选最优组合。</li>
+<li><strong>过驱动 vs 欠驱动</strong>：$N>6$ 用左伪逆 $\mathbf{J}^+=\mathbf{J}^T(\mathbf{J}\mathbf{J}^T)^{-1}$；$N<6$ 需删行（partition）。</li>
+<li><strong>非完整基座</strong>使零空间投影不再直接适用，需叠加非完整约束控制律。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 8 章</li>
+<li>依据：</li>
+<li>冗余最小范数解与零空间：事实底座第 3 节第 7 条、第 4 节第 8 步、第 5 节公式 4（Eq. 8.9/8.10）</li>
+<li>Yoshikawa 灵巧度：事实底座第 1 节记号约定、第 3 节第 5 条、第 5 节公式 6</li>
+<li>奇异与条件数：事实底座第 3 节第 4、5 条、第 6 节 Puma ready pose 例（$\mathrm{rank}=5$）</li>
+<li>resolved-rate 与 $\mathbf{J}^{-1}$：事实底座第 5 节公式 2（Eq. 8.6/8.7）</li>
+<li>非完整移动机器人属第 4–6 章，本章不展开（事实底座第 0 节"明确不属于本章"）</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

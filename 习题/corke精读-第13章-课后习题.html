@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 13 章「Image Feature Extraction」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 13 章「Image Feature Extraction」课后习题</h1>
+<p>原书课后习题 5 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1. 灰度分类</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是<strong>动手实验题</strong>，原书未给出唯一数值答案，以下给出可运行代码与预期观察，数值凡未在事实底座中出现的均标注「原书未给出具体数值」。</p>
+<p><strong>a) <code>ithresh</code> 试验</strong></p>
+<p><code>ithresh</code> 是交互式阈值工具，允许拖动滑块观察二值化结果。对 <code>castle_sign.png</code>：</p>
+<pre><code class="lang-matlab">castle = iread('castle_sign.jpg', 'grey', 'double');
+idisp(castle)
+t = ithresh(castle);   % 交互式拖动，观察 c = (I >= t)</code></pre>
+<p>预期观察：直方图呈双峰——小峰约 $0.9$（亮像素，即字符），宽高峰约 $0.3$（暗背景/砖）。事实底座给出 <code>idisp(castle >= 0.6)</code> 时 $t=0.6$ 可行，$t=0.7$ 也可行；<code>otsu(castle)</code> 返回 $0.6000$。对 <code>castle_sign2.png</code>，原书未给出具体数值，但加入对角梯度后 Otsu 阈值变为 $0.5412$，分类效果变差——说明全局阈值对光照/梯度敏感，这正是引入自适应阈值（Niblack、MSER）的动机。</p>
+<p><strong>b) Niblack 算法</strong></p>
+<p>Niblack 用局部均值 $\mu$ 与标准差 $\sigma$ 计算逐像素阈值：</p>
+<pre><code class="lang-matlab">t = niblack(castle, -0.2, 35);   % k = -0.2, 窗口半宽 = 35
+idisp(castle >= t)</code></pre>
+<p>事实底座：字符高约 50–70 像素，窗口半宽取 35（即窗口约 71 像素，覆盖字符高度量级），$k=-0.2$，结果出现大量 false positives。</p>
+<p>参数影响（按符号推导，原书未给出具体数值）：</p>
+<ul>
+<li>$k$ 越负 → 阈值越低 → 更多像素被判为前景 → false positives 增多；$k$ 越正 → 前景收缩。</li>
+<li>窗口太小 → 局部统计噪声大，区域内部出现空洞；窗口太大 → 退化为全局阈值，失去自适应能力。经验上窗口应略大于目标笔画宽度。</li>
+</ul>
+<p><strong>c) 对 MSER 输出应用 <code>iblobs</code>，按包围盒尺寸筛字母</strong></p>
+<pre><code class="lang-matlab">[mser, nsets] = imser(castle, 'light');   % nsets = 40
+% 对每个 MSER 集合做连通域标记与 blob 描述
+for i = 1:nsets
+    f = iblobs(mser(:,:,i));
+    % 字母筛选：包围盒宽高在合理范围内，且宽高比接近字符
+    for j = 1:length(f)
+        w = f(j).umax - f(j).umin;
+        h = f(j).vmax - f(j).vmin;
+        if w > 10 && w < 60 && h > 30 && h < 90
+            % 候选字母 blob
+        end
+    end
+end</code></pre>
+<p>事实底座给出字符高约 50–70 像素，故高度阈值取 $[30,90]$ 可覆盖；宽度按字符宽高比（约 $0.5$–$0.8$）取 $[10,60]$。<code>iblobs</code> 返回的 <code>RegionFeature</code> 含 <code>umin,umax,vmin,vmax</code>（包围盒）、<code>area</code>、<code>cent</code>、<code>theta</code>、<code>b/a</code> 等字段，可直接用于筛选。原书未给出该筛选的具体数值结果。</p>
+<p><strong>d) <code>imser</code> 参数探索</strong></p>
+<ul>
+<li><code>'Delta'</code>：阈值步长，控制 MSER 检测的阈值采样密度。越小 → 检测越细但越慢。</li>
+<li><code>'MinDiversity'</code>：区域多样性下限，抑制嵌套的重复区域。增大 → 保留更少、更独立的区域。</li>
+<li><code>'MaxVariation'</code>：允许的区域变化上限，控制稳定性判据。增大 → 接受更多不稳定区域。</li>
+<li><code>'MinArea'</code> / <code>'MaxArea'</code>：区域面积上下限，直接过滤过大/过小区域。</li>
+</ul>
+<p>预期：调大 <code>MinArea</code> 可去掉噪声小区域；调小 <code>MaxVariation</code> 只保留最稳定区域；<code>MinDiversity</code> 增大可减少同一字符的重复检测。原书未给出各参数的具体数值。</p>
+<p><strong>e) <code>igraphcut</code> 应用于 <code>castle_sign2.png</code></strong></p>
+<pre><code class="lang-matlab">im2 = iread('castle_sign2.png', 'grey', 'double');
+[cls, ...] = igraphcut(im2, 1500, 100, 0.5);</code></pre>
+<p>事实底座给出 <code>igraphseg(im, 1500, 100, 0.5)</code> 的参数含义：$k=1500$（相似度尺度）、最小分量 100 像素、Gaussian $\sigma=0.5$，得到 $m=28$ 个区域。<code>igraphcut</code> 同属图割分割族，参数调整方向：</p>
+<ul>
+<li>$k$ 增大 → 允许更大灰度差仍归为同区域 → 区域变大、数量减少。</li>
+<li>最小分量增大 → 小区域被合并 → 抑制碎片。</li>
+<li>$\sigma$ 增大 → 平滑增强 → 边界更平滑但细节丢失。</li>
+</ul>
+<p>预期：调参后 <code>castle_sign2.png</code> 中字符与背景应被分到不同类，从而改善二值化质量。原书未给出该图的具体分割数值。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>全局阈值脆弱</strong>：<code>otsu(castle)=0.6000</code> 在干净图上可行，但 <code>castle_sign2.png</code> 加梯度后降到 $0.5412$ 且效果差——光照/梯度变化是引入 Niblack、MSER、图割的根本原因。</li>
+<li><strong>Niblack 参数耦合</strong>：$k$ 控制阈值偏移方向，窗口大小需匹配目标笔画尺度（字符高 50–70 像素 → 半宽约 35）；$k=-0.2$ 时 false positives 多。</li>
+<li><strong>MSER 输出是区域集合</strong>：<code>imser</code> 返回 <code>nsets=40</code> 个集合，需逐集合 <code>iblobs</code> 后用包围盒 <code>umin/umax/vmin/vmax</code> 按字母尺寸筛选。</li>
+<li><strong><code>imser</code> 五参数各司其职</strong>：<code>Delta</code> 控采样密度，<code>MinDiversity</code> 去嵌套，<code>MaxVariation</code> 控稳定性，<code>MinArea</code>/<code>MaxArea</code> 控尺寸。</li>
+<li><strong>图割参数语义</strong>：$k$ 控相似度尺度、最小分量控碎片、$\sigma$ 控平滑，三者共同决定分割粒度。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 13 章</li>
+<li>依据：</li>
+<li>阈值化与 Otsu、Niblack、MSER：事实底座第 3 节核心概念 2，第 6 节例题（<code>otsu(castle)=0.6000</code>、加梯度后 $0.5412$、Niblack $k=-0.2$ 窗口 35、<code>nsets=40</code>）</li>
+<li><code>iblobs</code> 与 <code>RegionFeature</code> 字段（<code>umin/umax/vmin/vmax</code>、<code>area</code>、<code>cent</code>、<code>theta</code>、<code>b/a</code>）：事实底座第 1 节记号约定、第 4 节推导链条第 5 步、第 6 节例题</li>
+<li><code>igraphseg</code> 参数 $(k=1500, \text{最小分量}=100, \sigma=0.5)$ 与 $m=28$：事实底座第 6 节例题</li>
+<li>字符高度 50–70 像素：事实底座第 6 节 Niblack 例题</li>
+<li><code>imser</code> 参数列表：题干本身</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2. 颜色分类</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 改变簇数 $k$，是否存在最佳值？</strong></p>
+<p><code>colorkmeans(im, C)</code> 把像素映射到 xy-chromaticity 平面后聚成 $C$ 簇，训练阶段求簇心 <code>cxy</code>，分类阶段廉价分配。原书 targets 示例用 $C=4$：</p>
+<pre><code>cxy = [0.3331 0.2862 0.4049 0.2947;
+       0.3544 0.3088 0.4414 0.3215]
+resid = 6.2583</code></pre>
+<p>其中第 3 簇 <code>colorname(cxy(:,3),'xy') = 'banana'</code>（黄色目标）。garden 示例同样用 $C=4$，番茄对应 $c=2$。</p>
+<p><strong>做什么 + 为什么</strong>：$k$ 是 k-means 的先验簇数，没有解析最优解。判断标准是"分类后目标是否被单独分到一个簇、且该簇不被背景污染"。$k$ 太小 → 目标与背景颜色合并；$k$ 太大 → 目标被拆成多簇、且随机初始化方差增大。原书未给出 $k$ 的"最佳值"数值，按符号推导：应取使 <code>resid</code> 下降趋于平缓、且目标簇在 <code>colorname</code> 下语义明确的最小 $k$。对 targets 图，$k=4$ 已能把 banana 单独分出，故 $k=4$ 是可用值而非唯一最优。</p>
+<p><strong>b) 随机初始化的差异</strong></p>
+<p><code>kmeans(a,3)</code> 在 <code>a = rand(2,500)</code> 上给出 <code>r = 4.3166</code>（残差）。<code>'random'</code>/<code>'spread'</code> 选项随机选初始簇心，k-means 只保证收敛到局部极小。</p>
+<p><strong>做什么 + 为什么</strong>：多次运行并比较 <code>cxy</code> 与 <code>resid</code>。若各次 <code>resid</code> 接近、簇心排列相近，则解稳定；若差异大，说明目标簇可能在某次运行中与背景合并。原书未给出多次运行的数值，按符号推导：应报告 <code>resid</code> 的极差与簇心的最大偏移，并据此决定是否固定随机种子或改用 <code>'spread'</code> 初始化。</p>
+<p><strong>c) 判定哪个簇是目标</strong></p>
+<p>思路：目标颜色已知（黄或红），在 xy-chromaticity 平面上与簇心比较。</p>
+<pre><code class="lang-matlab">function k = findtarget(cxy, target)
+% cxy: 2xC 簇心（第1行 x，第2行 y）
+% target: 'yellow' 或 'red'
+  switch target
+    case 'yellow'
+      ref = [0.4049; 0.4414];   % 原书 banana 簇心
+    case 'red'
+      ref = [0.5388; 0.3335];   % 原书 garden 番茄簇心
+  end
+  d = sqrt(sum((cxy - ref).^2, 1));
+  [~, k] = min(d);
+end</code></pre>
+<p><strong>做什么 + 为什么</strong>：颜色是强分割线索，但簇的编号由 k-means 任意分配，不能硬编码 <code>cls==3</code>。用 <code>colorname(cxy(:,i),'xy')</code> 也可直接读出语义名（原书对第 3 簇返回 <code>'banana'</code>）。两种方式等价，前者更通用。</p>
+<p><strong>d) <code>igraphcut</code> 的表现与调参</strong></p>
+<p>原书 <code>igraphseg(im, 1500, 100, 0.5)</code> 给出 <code>m = 28</code>，其中 $k=1500$ 为分割参数、最小分量 100 像素、Gaussian $\sigma=0.5$。</p>
+<p><strong>做什么 + 为什么</strong>：<code>igraphcut</code> 基于图割，把像素相似性与空间邻近性联合优化，比纯阈值/颜色聚类更能保住目标边界。调参方向：增大最小分量阈值 → 去掉小碎块；调整 $k$ → 控制区域合并强度；$\sigma$ 控制平滑。原书未给出 <code>igraphcut</code> 在 targets/garden 上的具体数值，按符号推导：应以"目标区域是否完整、是否与背景分离"为判据，逐步增大最小分量直到碎块消失而目标不裂。</p>
+<p><strong>e) 形态学清理参数</strong></p>
+<p>原书两例：</p>
+<ul>
+<li>targets：<code>iopen(cls3, kcircle(2))</code> —— 开运算去小噪点；</li>
+<li>garden：<code>iclose(cls2, kcircle(15))</code> —— 闭运算填补番茄内部空洞。</li>
+</ul>
+<p><strong>做什么 + 为什么</strong>：开运算（先腐蚀后膨胀）删除小于结构元的亮区；闭运算（先膨胀后腐蚀）填补小于结构元的暗洞。结构元半径是关键：太小 → 清理不净；太大 → 目标被侵蚀或与邻目标粘连。原书未给出半径扫描的数值，按符号推导：应从 1 递增，观察 <code>iblobs</code> 返回的 <code>area</code> 与 <code>touch</code> 标志何时稳定。</p>
+<p><strong>f) 摄像头循环分类</strong></p>
+<pre><code class="lang-matlab">cam = webcam;                       % 或 VideoCamera
+% 预学习颜色簇（离线）
+% [cls, cxy, resid] = colorkmeans(im_train, 4);
+while true
+    im = snapshot(cam);
+    im = im2double(rgb2gray(im));   % 灰度阈值方案
+    t  = otsu(im);
+    c  = (im >= t);
+    idisp(c);
+    % 颜色方案：cls = colorkmeans(im, 4); idisp(cls == k);
+end</code></pre>
+<p><strong>做什么 + 为什么</strong>：把离线学到的 <code>cxy</code> 固定，在线只做"分配最近簇心"这一步，因此每帧开销极低。灰度阈值方案用 <code>otsu</code> 自适应光照；颜色方案对光照变化更鲁棒但需要预先采集训练图。原书未给出摄像头帧率等数值，按符号推导：应保证每帧分类 + 显示在实时预算内。</p>
+<h4>关键点</h4>
+<ul>
+<li>k-means 的簇数 $k$ 与随机初始化都是先验/随机因素，没有解析最优；判据是目标簇的语义可分性与 <code>resid</code> 的稳定性。</li>
+<li>簇编号是任意的，必须用颜色参考或 <code>colorname</code> 判定目标簇，不能硬编码索引。</li>
+<li>形态学清理的结构元半径直接决定 <code>area</code>/<code>touch</code>，是分割流水线中最敏感的参数之一。</li>
+<li>在线分类应复用离线学到的 <code>cxy</code>，只做最近簇心分配，保证实时性。</li>
+<li>本章所有分割/描述结果最终服务于第 14 章的 correspondence 与 3D 恢复。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 13 章 Image Feature Extraction</li>
+<li>依据：</li>
+<li>颜色聚类与 <code>colorkmeans</code>、<code>cxy</code>/<code>resid</code> 数值：事实底座第 3 节第 3 条、第 4 节第 2 步、第 6 节 targets/garden 示例</li>
+<li><code>kmeans(a,3)</code> → <code>r = 4.3166</code>：事实底座第 6 节</li>
+<li><code>colorname(cxy(:,3),'xy') = 'banana'</code>：事实底座第 6 节</li>
+<li><code>iopen(cls3, kcircle(2))</code>、<code>iclose(cls2, kcircle(15))</code>：事实底座第 4 节第 3 步、第 6 节</li>
+<li><code>igraphseg(im, 1500, 100, 0.5)</code> → <code>m = 28</code>：事实底座第 6 节</li>
+<li>阈值化 <code>otsu</code>/<code>niblack</code>/<code>mser</code>：事实底座第 3 节第 2 条、第 4 节第 2 步</li>
+<li>多视图动机：事实底座第 3 节第 8 条、第 4 节第 10 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3. Blobs（区域/blob 特征）。</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是动手实验题，下面按小题给出思路、公式与可运行代码（MATLAB + 工具箱风格，遵循本章记号）。</p>
+<p><strong>a) 外边界、内边界与总边界。</strong></p>
+<p>用 <code>ilabel</code> 得到连通域标签与拓扑（<code>parents</code>/<code>cls</code>），再用 <code>iblobs(...,'boundary')</code> 提取边界。外边界是 blob 与背景相接的轮廓；内边界是孔洞轮廓（孔洞在拓扑上是该 blob 的 <code>children</code>）；总边界 = 外边界 + 所有内边界。本章事实底座给出：<code>f(1).edge</code> 为 2×154 的边界点序列，前五点 <code>(142,116)(142,117)(141,118)(140,119)(139,120)</code>，说明边界以像素坐标序列存储。</p>
+<pre><code class="lang-matlab">im = iread('myholes.png','grey','double');
+binary = im >= 0.5;                 % 阈值化，c=1 当 I>=t
+[label, m, parents, cls] = ilabel(binary);
+f = iblobs(binary, 'boundary', 'class', 1);
+% 外边界：f(k).edge；内边界：f(k).children 对应的边界
+for k = 1:length(f)
+    fprintf('blob %d: area=%d, parent=%d, children=%s\n', ...
+        k, f(k).area, f(k).parent, mat2str(f(k).children));
+end</code></pre>
+<p><strong>b) 拓扑层次显示。</strong></p>
+<p><code>ilabel</code> 返回 <code>parents</code> 与 <code>cls</code>，<code>iblobs</code> 的 <code>parent</code>/<code>children</code> 字段给出层次。事实底座示例：<code>parents' = [0 0 2 3 2]</code>，<code>cls' = [1 0 1 0 1]</code>，说明 label 4 是背景（class 0），其 children 为 <code>[1 2 3 5]</code>。把孔洞中的小物体作为子 blob 显示即可。</p>
+<pre><code class="lang-matlab">f = iblobs(binary, 'class', 1);
+for k = 1:length(f)
+    fprintf('blob %d children: %s\n', k, mat2str(f(k).children));
+end</code></pre>
+<p><strong>c) circularity 随尺度的变化。</strong></p>
+<p>本章 circularity 由周长与面积定义（事实底座：<code>perim</code>、<code>circ</code>，如 <code>circ=0.417/0.421</code>、<code>circ=0.641/0.958</code>）。对同一形状缩放，理想连续情况下 circularity 不变；但离散像素化使小尺度下周长被高估（阶梯效应），circularity 下降。曲线形状：大尺度趋于常数，小尺度明显偏低。</p>
+<pre><code class="lang-matlab">scales = 10:10:200;
+circ = zeros(size(scales));
+for i = 1:length(scales)
+    im = makeshape(scales(i));       % 生成该尺度下的形状
+    f = iblobs(im >= 0.5, 'boundary', 'class', 1);
+    circ(i) = f(1).circ;
+end
+plot(scales, circ, '-o'); xlabel('scale'); ylabel('circularity');</code></pre>
+<p><strong>d) 正方形周长：估计 vs 真实。</strong></p>
+<p>真实周长 $P_{\text{true}} = 4s$。估计周长由链码给出（事实底座：4 方向链码 14、Freeman 8 方向 12.2、crack code 18 像素）。小正方形时，像素化使估计周长相对误差增大，曲线偏离直线。</p>
+<pre><code class="lang-matlab">s = 2:2:100;
+Ptrue = 4*s;
+Pest = zeros(size(s));
+for i = 1:length(s)
+    im = zeros(120,120); im(10:10+s(i)-1,10:10+s(i)-1) = 1;
+    f = iblobs(im, 'boundary', 'class', 1);
+    Pest(i) = f(1).perim;
+end
+plot(s, Ptrue, 'k-', s, Pest, 'r--'); legend('true','estimated');</code></pre>
+<p><strong>e) 形状分类器。</strong></p>
+<p>用 aspect ratio $b/a$ 与 circularity 作为二维特征，对若干形状（圆、方、椭圆）做最近邻或阈值分类。事实底座给出 <code>b/a=0.6746</code>、<code>shape=0.6746</code>、<code>circ=0.417/0.421</code> 等数值，可作为特征量级参考。再用 Hu 矩（事实底座：<code>humoments(L==2)</code> → <code>0.4181 0.0292 0.0230 0.0017 0.0000 0.0003 0.0000</code>）重复。Hu 矩对尺度/旋转更稳健，通常分类性能更好。</p>
+<pre><code class="lang-matlab">f = iblobs(binary, 'class', 1);
+X = [[f.shape]; [f.circ]]';        % b/a 与 circularity
+% 简单最近邻分类</code></pre>
+<p><strong>f) 边界匹配与角度图。</strong></p>
+<p>用 <code>boundary()</code> 得极坐标签名 $(r,\theta)$，<code>boundmatch(r1,r2)</code> 找相对旋转。事实底座：P2.png 中相对朝向 <code>45.1267</code> 度。修改代码绘制边缘段角度 $k$ 对 $\theta$ 的图。</p>
+<pre><code class="lang-matlab">[r1,theta1] = boundary(f(1).edge);
+[r2,theta2] = boundary(f(2).edge);
+[th, s] = boundmatch(r1, r2);
+plot(theta1, r1, theta2, r2);      % 签名对比</code></pre>
+<p><strong>g) 对齐矩形。</strong></p>
+<p>等效椭圆由惯性矩阵 $\mathbf{J}$ 的特征向量给出主轴方向（事实底座：特征向量 <code>x = [-0.9954 -0.0962; -0.0962 0.9954]</code>，主轴角 <code>95.5498</code> 度）。对齐矩形边平行于这两个主轴，且完全包含 blob。计算步骤：把 blob 像素旋转到主轴坐标系，取 $u,v$ 的 min/max 得矩形，再旋转回原坐标系。两个特征：矩形 aspect ratio、blob 面积 / 矩形面积。</p>
+<pre><code class="lang-matlab">f = iblobs(binary, 'class', 1);
+blob = f(1);
+% 主轴方向由 blob.moments 的特征向量给出
+% 旋转像素到主轴系，取包围盒，再旋转回
+% aspect = width/height; fill = blob.area / (width*height);</code></pre>
+<h4>关键点</h4>
+<ul>
+<li><strong>拓扑层次</strong>：<code>ilabel</code> 的 <code>parents</code>/<code>cls</code> 与 <code>iblobs</code> 的 <code>parent</code>/<code>children</code> 是描述孔洞结构的关键；背景 class 0 常是根节点。</li>
+<li><strong>离散化效应</strong>：circularity 与周长在小尺度下因像素阶梯而失真，这是曲线形状的根源。</li>
+<li><strong>不变特征</strong>：aspect ratio $b/a$、circularity、Hu 矩、对齐矩形的两个比值都是尺度/旋转不变特征，适合做形状分类。</li>
+<li><strong>等效椭圆与惯性矩阵</strong>：$\mathbf{J}$ 的特征值给 $a,b$，特征向量给主轴角，是对齐矩形与形状描述的基础。</li>
+<li><strong>边界匹配</strong>：极坐标签名 $(r,\theta)$ 加 <code>boundmatch</code> 可估计相对旋转，是第 14 章 correspondence 的雏形。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 13 章</li>
+<li>依据：</li>
+<li>连通域与拓扑：事实底座第 4 节（<code>ilabel</code>、<code>parents</code>/<code>cls</code>）、第 6 节例题（<code>parents' = [0 0 2 3 2]</code>、<code>cls' = [1 0 1 0 1]</code>、<code>f(4).children = [1 2 3 5]</code>）</li>
+<li>矩与惯性矩阵：事实底座第 5 节公式 2–4（$m_{00}$、$\mu_{pq}$、$\mathbf{J}$、$a,b$）</li>
+<li>circularity 与周长：事实底座第 6 节（<code>perim=214.8/162.5</code>、<code>circ=0.417/0.421</code>、链码 14/12.2/18）</li>
+<li>Hu 矩：事实底座第 6 节（<code>humoments(L==2)</code>、<code>humoments(L==4)</code>）</li>
+<li>边界匹配与主轴角：事实底座第 6 节（<code>45.1267</code> 度、特征向量 <code>x</code>、主轴角 <code>95.5498</code> 度）</li>
+<li>对齐矩形：题干 g) 定义，结合事实底座第 5 节惯性矩阵特征向量推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4. Hough 变换</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是动手实验题，围绕本章第 5 条核心概念「Hough 变换」展开。Hough 变换把边缘点映射到 $(\rho,\theta)$ 参数空间，用累加器 $\mathbf{A}\in\mathbb{Z}^{N_\theta\times N_\rho}$ 投票找峰，每个峰对应一条直线。下面逐小问给出做法与预期观察。</p>
+<p><strong>a) 改变累加器大小</strong></p>
+<p>累加器默认 $401\times400$ bins（$\theta$ 方向 401，$\rho$ 方向 400）。在 MATLAB 工具箱中可通过 <code>Hough(edges, 'houghThresh', ...)</code> 及内部 bin 数控制。做法：固定同一幅边缘图，分别用粗、细量化运行，比较 <code>h.lines()</code> 返回的直线条数与 <code>strength</code>。</p>
+<ul>
+<li>量化<strong>过粗</strong>（bin 少）：多条邻近直线落入同一 bin，峰被合并，检测到的直线数偏少，$\rho,\theta$ 分辨率低。</li>
+<li>量化<strong>过细</strong>（bin 多）：投票分散，单条直线可能分裂成多个相邻峰，出现重复直线；此时需要更大的 <code>'suppress'</code> 来合并。</li>
+</ul>
+<p>预期：直线条数随 bin 数先增后趋于稳定，$\theta$ 分辨率提高时角度估计更精细。原书未给出具体 bin 数与对应直线数的数值，按符号推导。</p>
+<p><strong>b) 用 Sobel 代替 Canny</strong></p>
+<p>Canny 给出细化的二值边缘；Sobel 给出梯度幅值图（本章依赖第 12 章结论：Sobel/Canny 梯度、derivative of Gaussian）。做法：<code>edges_sobel = ...</code>（对 Sobel 幅值取阈值二值化），再送入 <code>Hough</code>。</p>
+<p>预期：Sobel 边缘更粗、含更多弱响应点，投票更分散，累加器峰更宽、伪峰更多；需配合更高 <code>'EdgeThresh'</code> 或更大 <code>'suppress'</code>。Canny 因非极大值抑制与滞后阈值，边缘更干净，峰更尖锐。原书未给出两者直线数的具体数值。</p>
+<p><strong>c) 调参</strong></p>
+<ul>
+<li><code>'suppress'</code>：非局部极大值抑制的邻域半径。本章事实底座给出示例 <code>'suppress', 5</code> 用于抑制量化伪峰。增大它 → 合并邻近峰，直线数减少；减小 → 保留更多峰。</li>
+<li><code>'interpSize'</code>：峰值插值窗口，用于把离散 bin 峰细化到亚 bin 精度，改善 $\rho,\theta$ 估计。</li>
+<li><code>'EdgeThresh'</code>：边缘二值化阈值，控制进入投票的边缘点数量。</li>
+<li><code>'houghThresh'</code>：累加器峰值接受阈值，直接决定哪些峰被报告为直线。</li>
+</ul>
+<p>预期：<code>'houghThresh'</code> 与 <code>'suppress'</code> 对直线条数影响最直接；<code>'interpSize'</code> 主要影响参数精度而非条数。原书未给出各参数的具体取值-结果对照表。</p>
+<p><strong>d) 应用到自己的图像</strong></p>
+<pre><code class="lang-matlab">im = iread('myimage.jpg', 'grey', 'double');
+edges = icanny(im);              % 或 isobel
+h = Hough(edges);
+h.show();                        % 查看累加器
+lines = h.lines();               % 含 theta、rho、strength</code></pre>
+<p>预期：人造环境（建筑、标牌）中直线普遍，累加器出现明显亮峰；自然场景峰较弥散。可用 <code>seglength</code> 筛 <code>length > 100</code> 保留长直线。</p>
+<p><strong>e) 摄像头循环 + 两条主导直线叠加</strong></p>
+<pre><code class="lang-matlab">cam = VideoCamera();             % 或 webcam
+while true
+    im = cam.grab();
+    edges = icanny(im);
+    h = Hough(edges, 'suppress', 5, 'houghThresh', 0.3);
+    lines = h.lines();
+    [~, k] = sort([lines.strength], 'descend');
+    idisp(im);                   % 显示原图
+    for i = 1:min(2, numel(k))
+        lines(k(i)).plot();      % 叠加两条最强直线
+    end
+    drawnow;
+end</code></pre>
+<p>预期：窗口中实时显示图像，并在其上叠加两条 <code>strength</code> 最大的直线；场景转动时直线随之更新。若峰抖动，增大 <code>'suppress'</code> 或 <code>'houghThresh'</code>。</p>
+<h4>关键点</h4>
+<ul>
+<li>Hough 用 $(\rho,\theta)$ 参数化把「共线点检测」变成「累加器找峰」：$u\cos\theta+v\sin\theta=\rho$，投票索引 $j=\mathrm{round}\!\left(\frac{\rho+\rho_{\max}}{2\rho_{\max}}N_\rho\right)$。</li>
+<li>累加器量化是<strong>偏差-方差权衡</strong>：粗量化合并直线，细量化分裂直线，需用 <code>'suppress'</code> 做非局部极大值抑制。</li>
+<li>边缘算子决定投票质量：Canny 边缘细而干净，Sobel 边缘粗而含噪，直接影响峰的尖锐度与伪峰数量。</li>
+<li><code>'houghThresh'</code> 与 <code>'suppress'</code> 控制「报告几条线」，<code>'interpSize'</code> 控制「线参数多准」。</li>
+<li>本章 Hough 的输出（直线参数与强度）是第 14 章多视图几何的输入之一，服务于对应与 3D 恢复。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 13 章 Image Feature Extraction</li>
+<li>依据：</li>
+<li>Hough 参数化与投票公式：本章事实底座第 5 节公式 5（式 13.10、13.11）</li>
+<li>累加器默认 $401\times400$ bins、<code>'suppress', 5</code>、<code>seglength</code> 筛 <code>length > 100</code>：事实底座第 1 节记号约定与第 4 节推导链条第 7 步</li>
+<li>Sobel/Canny 梯度背景：事实底座第 0 节（依赖第 12 章 Sect. 12.4.1.3）</li>
+<li>Hough 作为核心概念：事实底座第 3 节第 5 条</li>
+<li>服务于第 14 章：事实底座第 0 节与第 3 节第 8 条</li>
+<li>各参数具体数值-结果对照：原书未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5. 角点检测器</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是第 13 章「图像特征提取」中关于兴趣点检测器的动手实验题，核心围绕结构张量 $\mathbf{A}$ 与三种角点强度函数的对比。以下按小题分步推导。</p>
+<h5>(a) 改变 $k$、$\sigma_D$、$\sigma_I$ 实验 Harris</h5>
+<p><strong>做什么</strong>：用 <code>icorner</code> 在测试图像（如 <code>castle</code> 或 <code>b1</code>）上运行 Harris 检测器，分别扫描三个参数。</p>
+<p><strong>为什么</strong>：Harris 强度为</p>
+<p>$$C_{\mathrm{Harris}} = \det(\mathbf{A}) - k\,[\mathrm{tr}(\mathbf{A})]^2 = \lambda_1\lambda_2 - k(\lambda_1+\lambda_2)^2$$</p>
+<p>其中结构张量为</p>
+<p>$$\mathbf{A} = G(\sigma_I) * \begin{bmatrix} I_u^2 & I_u I_v \\ I_u I_v & I_v^2 \end{bmatrix}$$</p>
+<ul>
+<li>$k$ 控制「山脊」与「尖峰」的判别倾向：$k$ 越小越倾向接受边缘上的点（$\lambda_1\gg\lambda_2$ 时 $C$ 仍可能为正），$k$ 越大越只保留两个方向梯度都大的真角点。原书常取 $k=0.04$。</li>
+<li>$\sigma_D$ 是求图像梯度 $I_u,I_v$ 时的微分尺度（derivative of Gaussian 的 $\sigma$），决定检测器对噪声与细节的敏感度：$\sigma_D$ 大则抑制噪声但定位变粗。</li>
+<li>$\sigma_I$ 是结构张量中高斯加权 $G(\sigma_I)$ 的积分尺度，决定「邻域」大小：$\sigma_I$ 大则把邻近梯度聚合，角点响应更平滑、数量更少。</li>
+</ul>
+<p><strong>可运行代码（MATLAB，遵循原书工具箱）</strong>：</p>
+<pre><code class="lang-matlab">im = iread('castle_sign.jpg', 'grey', 'double');
+for k = [0.02 0.04 0.06 0.10]
+    c = icorner(im, 'nfeat', 200, 'suppress', 10, 'k', k);
+    fprintf('k=%.2f -> %d features\n', k, length(c));
+end
+for sD = [1 2 3]
+    c = icorner(im, 'nfeat', 200, 'suppress', 10, 'sd', sD);
+    fprintf('sigmaD=%d -> %d features\n', sD, length(c));
+end
+for sI = [1 2 4]
+    c = icorner(im, 'nfeat', 200, 'suppress', 10, 'si', sI);
+    fprintf('sigmaI=%d -> %d features\n', sI, length(c));
+end</code></pre>
+<p><strong>预期观察</strong>：$k$ 增大 → 特征数减少（边缘点被剔除）；$\sigma_D$ 增大 → 噪声响应减少、特征数下降；$\sigma_I$ 增大 → 邻域聚合、特征数下降且分布更稀疏。原书未给出这些参数扫描的具体数值，按符号推导即可。</p>
+<h5>(b) 比较 Harris、Noble、Shi-Tomasi</h5>
+<p><strong>做什么</strong>：三者共用同一结构张量 $\mathbf{A}$，仅强度函数不同。</p>
+<p><strong>为什么</strong>：</p>
+<ul>
+<li><strong>Harris</strong>：$C_{\mathrm{Harris}} = \lambda_1\lambda_2 - k(\lambda_1+\lambda_2)^2$，需要调 $k$。</li>
+<li><strong>Shi-Tomasi</strong>：$C_{ST} = \min(\lambda_1,\lambda_2)$，无自由参数，对弱角点更敏感，通常检测更稳定。</li>
+<li><strong>Noble</strong>：$C_{\mathrm{Noble}} = \dfrac{\lambda_1\lambda_2}{\lambda_1+\lambda_2+\epsilon}$，是 Harris 的归一化变体，对强边缘的抑制更彻底。</li>
+</ul>
+<p><strong>代码</strong>：</p>
+<pre><code class="lang-matlab">cH = icorner(im, 'nfeat', 200, 'suppress', 10, 'method', 'harris');
+cS = icorner(im, 'nfeat', 200, 'suppress', 10, 'method', 'shitomasi');
+cN = icorner(im, 'nfeat', 200, 'suppress', 10, 'method', 'noble');
+idisp(im); cH.plot('r'); cS.plot('g'); cN.plot('b');</code></pre>
+<p><strong>预期观察</strong>：Shi-Tomasi 与 Noble 通常给出更均匀的角点集合；Harris 在 $k$ 偏小时会保留部分边缘点。原书未给出三者特征数的具体数值。</p>
+<h5>(c) 实现 Moravec 检测器并与 Harris 比较</h5>
+<p><strong>做什么</strong>：Moravec 是最早的角点检测器，用四个方向（水平、垂直、两对角）的 SSD（sum of squared differences）最小值作为角点强度。</p>
+<p><strong>为什么</strong>：Moravec 强度为</p>
+<p>$$C_{\mathrm{Moravec}}(u,v) = \min_{d\in\{0°,45°,90°,135°\}} \sum_{(i,j)\in W} \big[I(u+i,v+j) - I(u+i+\Delta u_d, v+j+\Delta v_d)\big]^2$$</p>
+<p>其中 $W$ 为窗口。它只考虑 4 个离散方向，因此对旋转不具不变性，且对噪声敏感——这正是 Harris 用结构张量 $\mathbf{A}$ 取代离散方向 SSD 的动机。</p>
+<p><strong>代码（示意）</strong>：</p>
+<pre><code class="lang-matlab">function C = moravec(im, win, shift)
+    [h,w] = size(im);
+    C = zeros(h,w);
+    dirs = [0 1; 1 0; 1 1; 1 -1];
+    for d = 1:4
+        du = dirs(d,1); dv = dirs(d,2);
+        S = zeros(h,w);
+        for i = -win:win
+            for j = -win:win
+                a = im(max(1,min(h, (1:h)'+i)), max(1,min(w,(1:w)+j)));
+                b = im(max(1,min(h, (1:h)'+i+du)), max(1,min(w,(1:w)+j+dv)));
+                S = S + (a-b).^2;
+            end
+        end
+        if d == 1, C = S; else, C = min(C, S); end
+    end
+end</code></pre>
+<p><strong>预期观察</strong>：Moravec 在旋转后的同一场景上检测到的角点位置会漂移，而 Harris 因结构张量的各向同性加权更稳定。原书未给出 Moravec 的具体数值。</p>
+<h5>(d) 创建平滑的二阶导数 $I_{uu}$、$I_{vv}$、$I_{uv}$</h5>
+<p><strong>做什么</strong>：用 derivative of Gaussian 对图像求二阶偏导，得到 Hessian 分量。</p>
+<p><strong>为什么</strong>：Hessian $\mathbf{H}=(I_{uu},I_{vv},I_{uv})$ 用于 blob 检测与尺度空间（LoG 的 DoG 近似）。平滑是为了抑制二阶导对噪声的放大。</p>
+<p><strong>代码</strong>：</p>
+<pre><code class="lang-matlab">sigma = 2;
+[Du, Dv] = idogauss(sigma);          % 一阶 DoG 核
+Iu = iconv(im, Du);  Iv = iconv(im, Dv);
+Iuu = iconv(Iu, Du); Ivv = iconv(Iv, Dv); Iuv = iconv(Iu, Dv);
+idisp(Iuu, 'plain'); idisp(Ivv, 'plain'); idisp(Iuv, 'plain');</code></pre>
+<p><strong>预期观察</strong>：$I_{uu}$、$I_{vv}$ 在边缘处呈正负交替的条带；$I_{uv}$ 在角点附近响应最强。原书未给出这些二阶导图的具体数值。</p>
+<h4>关键点</h4>
+<ul>
+<li>Harris 强度 $C_{\mathrm{Harris}}=\lambda_1\lambda_2-k(\lambda_1+\lambda_2)^2$ 中，$k$ 是唯一自由参数，常取 0.04；Shi-Tomasi 用 $\min(\lambda_1,\lambda_2)$ 免去调参，Noble 用归一化形式抑制边缘。</li>
+<li>三个尺度参数分工明确：$\sigma_D$ 控制梯度平滑（抗噪 vs 定位精度），$\sigma_I$ 控制结构张量的积分邻域（聚合程度）。</li>
+<li>Moravec 只用 4 个离散方向的 SSD 最小值，不具备旋转不变性；Harris 用结构张量 $\mathbf{A}$ 的各向同性高斯加权克服了这一缺陷。</li>
+<li>二阶导数 $I_{uu},I_{vv},I_{uv}$ 必须先用 derivative of Gaussian 平滑，否则噪声被二次放大；它们构成 Hessian $\mathbf{H}$，是尺度空间 blob 检测的基础。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 13 章</li>
+<li>依据：</li>
+<li>结构张量与 Harris 强度公式：本章 facts 第 5 节公式 6（式 13.14、13.16），$k$ 常取 0.04。</li>
+<li>Shi-Tomasi 强度 $C_{ST}=\min(\lambda_1,\lambda_2)$：本章 facts 第 5 节公式 6 注（式 13.15）。</li>
+<li>Noble 检测器：本章 facts 第 3 节核心概念 6（Moravec SSD → 结构张量 → Shi-Tomasi / Harris / Noble）。</li>
+<li>Moravec 检测器：本章 facts 第 3 节核心概念 6 与第 4 节推导链条第 8 步（<code>icorner</code> 计算结构张量 → Harris/Shi-Tomasi/Noble 强度 → 非局部极大值抑制）。</li>
+<li>二阶导数与 Hessian：本章 facts 第 1 节记号约定（Hessian $\mathbf{H}=(I_{uu},I_{vv},I_{uv})$）与第 3 节核心概念 7（LoG 的 DoG 近似）。</li>
+<li>参数扫描与 Moravec 实现的具体数值：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

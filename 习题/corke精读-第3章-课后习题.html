@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 3 章「Time and Motion」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 3 章「Time and Motion」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：写出五次多项式及其边界条件</h5>
+<p>五次多项式轨迹（quintic polynomial）的一般形式为</p>
+<p>$$s(t)=At^5+Bt^4+Ct^3+Dt^2+Et+F,\quad t\in[0,T]$$</p>
+<p>它有 6 个系数 $(A,B,C,D,E,F)$，因此可以同时匹配 6 个边界条件：初始/终止的<strong>位置、速度、加速度</strong>。这正是 <code>tpoly</code> 的默认行为——若只给 <code>tpoly(0,1,50)</code>，则默认首末速度、加速度均为 0。</p>
+<p><strong>为什么</strong>：cubic（3 次）只有 4 个系数，无法同时满足 6 个条件；quintic 多出的两个自由度恰好用来约束加速度，从而保证加速度连续（jerk 为抛物线），运动光滑。</p>
+<h5>第 2 步：把边界条件写成线性方程组</h5>
+<p>设 $s(0)=s_0,\ s(T)=s_T,\ \dot{s}(0)=v_0,\ \dot{s}(T)=v_T,\ \ddot{s}(0)=a_0,\ \ddot{s}(T)=a_T$。代入多项式及其一、二阶导数，得到 6 个线性方程，写成矩阵形式</p>
+<p>$$\mathbf{M}\,[A,B,C,D,E,F]^T=\mathbf{b}$$</p>
+<p>其中 $\mathbf{M}$ 是 $6\times6$ 方阵（由 $t=0$ 与 $t=T$ 处的 $1,t,t^2,t^3,t^4,t^5$ 及其导数构成）。用 MATLAB 的左除 <code>\</code> 求解即可，这就是 <code>tpoly</code> 的内部实现。</p>
+<p><strong>为什么</strong>：方阵可逆 → 解唯一 → 给定 6 个边界条件，五次多项式被唯一确定。这也意味着<strong>一旦边界条件选得不合理，解虽然存在，但轨迹形状可能很糟</strong>。</p>
+<h5>第 3 步：观察过冲现象</h5>
+<p>原书给出的关键数值例子：</p>
+<ul>
+<li><code>s = tpoly(0, 1, 50)</code>：默认首末速度、加速度为 0，轨迹从 0 平滑变到 1，无过冲。</li>
+<li><code>s = tpoly(0, 1, 50, 0.5, 0)</code>：初速 $v_0=0.5$、末速 $v_T=0$。结果<strong>轨迹从 0 到 1，峰值却达到 5</strong>——严重过冲。</li>
+<li><code>mean(sd)/max(sd)</code> → <code>ans = 0.5231</code>，即平均速度仅为峰值的 <strong>52%</strong>，速度峰值出现在 <strong>t = 25</strong>。</li>
+</ul>
+<p><strong>为什么过冲</strong>：五次多项式是全局多项式，6 个边界条件把它"钉死"在两端。当初始速度 $v_0$ 与总位移方向一致、但末速被强制为 0 时，多项式为了在有限时间 $T$ 内"先冲出去、再刹回来"，必须在中间段产生远大于平均速度的瞬时速度，位置随之冲过终点再折返。$v_0$ 越大（或 $T$ 越短），过冲越剧烈。</p>
+<h5>第 4 步：正、负初末速度的影响规律</h5>
+<p>按符号推导（原书未逐一给出所有组合的具体数值）：</p>
+<ul>
+<li><strong>$v_0>0$、$v_T=0$</strong>：如上，过冲，峰值可达 5（原书数值）。</li>
+<li><strong>$v_0<0$、$v_T=0$</strong>：起点先向负方向"倒退"，再折返到 1，出现<strong>下冲</strong>（undershoot），随后可能伴随过冲。</li>
+<li><strong>$v_0=0$、$v_T>0$</strong>：终点仍带正速度，轨迹在末端"冲过头"的趋势被末速抵消一部分，但若 $v_T$ 过大，末端附近会出现过冲。</li>
+<li><strong>$v_0>0$、$v_T>0$</strong>：两端都朝正方向，中间段速度需求相对平缓，过冲通常比"$v_0>0,v_T=0$"轻。</li>
+<li><strong>$v_0$ 与 $v_T$ 反号</strong>：多项式必须在中间"掉头"，速度曲线出现零点，位置曲线可能出现明显的 S 形甚至过冲。</li>
+</ul>
+<p><strong>统一判据</strong>：当过冲发生时，说明<strong>边界速度与"平均速度 $=(s_T-s_0)/T$"不匹配</strong>。若 $v_0$ 或 $v_T$ 的绝对值超过平均速度，多项式就必须在中间段用更大的速度去"补偿"，从而冲过目标值。</p>
+<h5>第 5 步：可运行的验证代码</h5>
+<pre><code class="lang-matlab">% 默认：无过冲
+s = tpoly(0, 1, 50);
+fprintf('default: max=%.4f, min=%.4f\n', max(s), min(s));
+
+% 正初速、零末速：过冲
+[s, sd, sdd] = tpoly(0, 1, 50, 0.5, 0);
+fprintf('v0=0.5, vT=0: max=%.4f\n', max(s));   % 预期峰值约 5
+
+% 负初速、零末速：下冲
+s = tpoly(0, 1, 50, -0.5, 0);
+fprintf('v0=-0.5, vT=0: min=%.4f\n', min(s));  % 预期出现负值
+
+% 速度峰值占比
+[s, sd] = tpoly(0, 1, 50);
+fprintf('mean/peak = %.4f\n', mean(sd)/max(sd)); % 预期 0.5231</code></pre>
+<p><strong>预期观察</strong>：默认参数下 <code>max(s)=1</code>、<code>min(s)=0</code>；<code>v0=0.5</code> 时 <code>max(s)</code> 远大于 1（原书为 5）；<code>v0=-0.5</code> 时 <code>min(s)<0</code>；默认轨迹的 <code>mean/peak</code> 约为 0.5231，说明五次多项式速度利用率低——这正是引入 LSPB（梯形速度剖面）的动机。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>五次多项式有 6 个系数，恰好匹配 6 个边界条件</strong>（首末位置、速度、加速度），因此解唯一；cubic 只有 4 个系数，无法同时约束加速度。</li>
+<li><strong>过冲的根源是边界速度与平均速度不匹配</strong>：当 $|v_0|$ 或 $|v_T|$ 超过 $(s_T-s_0)/T$ 时，多项式被迫在中间段产生更大速度来"补偿"，位置冲过目标再折返。</li>
+<li><strong>原书数值</strong>：<code>tpoly(0,1,50,0.5,0)</code> 峰值达 5；默认轨迹 <code>mean(sd)/max(sd)=0.5231</code>，速度峰值在 $t=25$，平均速度仅为峰值的 52%。</li>
+<li><strong>工程含义</strong>：五次多项式虽光滑（加速度连续），但速度利用率低、易过冲；工业上更常用 <strong>LSPB / 梯形速度剖面</strong>（<code>lspb</code>）来逼近电机最大速度、实现近似 time-optimal。</li>
+<li><strong>推广</strong>：多维情形用 <code>mtraj(@tpoly, x0, xT, N)</code> 逐维调用；多段情形用 <code>mstraj</code>，段时长由最慢轴决定。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章（Time and Motion），PDF 页 62–80。</li>
+<li>依据：</li>
+<li>五次多项式形式与边界条件矩阵求解：本章事实底座 §4 推导链条第 1–2 步、§5 关键公式第 1 条。</li>
+<li><code>tpoly(0,1,50)</code> 默认行为、<code>tpoly(0,1,50,0.5,0)</code> 峰值 5、<code>mean(sd)/max(sd)=0.5231</code>、峰值在 $t=25$：§6 例题与数值例子（PDF p.44–45）。</li>
+<li>LSPB 动机与 <code>lspb</code> 数值：§6（PDF p.45–46）、§3 核心概念第 2 条。</li>
+<li>多维与多段推广：§3 第 3–4 条、§6（PDF p.46–48）。</li>
+<li>正/负初末速度组合的符号推导：原书未给出具体数值，按 §5 公式与 §6 已有数值的符号规律推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：回顾 lspb 的结构与约束</h5>
+<p>lspb（linear segment with parabolic blend）轨迹由三段组成：抛物线加速段、恒速段、抛物线减速段。设总时长 $T$、恒速段速度为 $v$、加/减速段时长为 $t_b$，则速度曲线为梯形，位置曲线为「抛物线—直线—抛物线」。</p>
+<p>对于从 $s_0=0$ 到 $s_T=1$、首末速度均为 0 的轨迹，位置总位移等于速度曲线下的面积：</p>
+<p>$$
+1-0 = v\,(T - t_b)
+$$</p>
+<p>即恒速段持续时间 $T-t_b = 1/v$，而加/减速段各占 $t_b$，故</p>
+<p>$$
+T = \frac{1}{v} + t_b .
+$$</p>
+<h5>第 2 步：由加速度有限性得到下界</h5>
+<p>加/减速段的加速度大小为 $a = v/t_b$。若允许的加速度无上限，则 $t_b$ 可任意小，$v$ 可任意大——但恒速段时长 $1/v$ 必须非负，且必须容纳在 $T$ 内。</p>
+<p>关键约束是：<strong>加/减速段不能重叠</strong>，即 $2t_b \le T$。代入 $T = 1/v + t_b$：</p>
+<p>$$
+2t_b \le \frac{1}{v} + t_b \;\Longrightarrow\; t_b \le \frac{1}{v}.
+$$</p>
+<p>又 $t_b \ge 0$，所以 $1/v \ge 0$，即 $v>0$。当 $t_b = 1/v$ 时，恒速段时长为零，轨迹退化为纯抛物线（三角形速度剖面），此时</p>
+<p>$$
+T = \frac{1}{v} + \frac{1}{v} = \frac{2}{v}.
+$$</p>
+<p>这是<strong>给定 $T$ 时 $v$ 的下界</strong>：若 $v$ 太小，则 $1/v$ 太大，恒速段无法在 $T$ 内完成。由 $T = 2/v_{\min}$ 得</p>
+<p>$$
+v_{\min} = \frac{2}{T}.
+$$</p>
+<h5>第 3 步：由采样步数得到上界</h5>
+<p>题目给定 50 步。在 Toolbox 中 <code>lspb(0,1,50)</code> 的第三个参数是采样点数 $N=50$，对应时间向量 $t = 0,\dots,T$ 共 50 个采样点。恒速段必须至少能被采样到（否则梯形退化为三角形，恒速段名存实亡）。更严格地，恒速段时长 $1/v$ 必须不小于一个采样间隔 $\Delta t = T/(N-1)$：</p>
+<p>$$
+\frac{1}{v} \ge \frac{T}{N-1}.
+$$</p>
+<p>于是</p>
+<p>$$
+v_{\max} = \frac{N-1}{T}.
+$$</p>
+<p>当 $v = v_{\max}$ 时，恒速段恰好只有一个采样间隔，$t_b \to 0$，轨迹近似为速度阶跃（加速度趋于无穷），这是数值上可指定的最大恒速段速度。</p>
+<h5>第 4 步：代入数值</h5>
+<p>本题未给出 $T$ 的具体值，原书未给出具体数值，按符号推导。若沿用事实底座中 <code>lspb(0,1,50)</code> 的默认情形（$N=50$，默认恒速段速度使 $t_b$ 取默认值），则边界为</p>
+<p>$$
+v_{\min} = \frac{2}{T}, \qquad v_{\max} = \frac{49}{T}.
+$$</p>
+<p>即恒速段速度必须落在 $[2/T,\;49/T]$ 内；超出该区间，Toolbox 会因约束过定（5 个约束 vs 6 个自由系数）而报错。</p>
+<h5>第 5 步：MATLAB 验证</h5>
+<pre><code class="lang-matlab">N = 50;
+% 下界附近：v 略小于 2/T 应报错
+try
+    s = lspb(0, 1, N, 2/N*0.99);
+catch e
+    disp(['v 过小报错: ' e.message]);
+end
+% 上界附近：v 略大于 (N-1)/T 应报错
+try
+    s = lspb(0, 1, N, (N-1)/N*1.01);
+catch e
+    disp(['v 过大报错: ' e.message]);
+end
+% 合法区间内
+s = lspb(0, 1, N, 0.0306);   % 事实底座默认值
+[s, sd, sdd] = lspb(0, 1, N, 0.0306);
+plot(sd);   % 观察梯形速度剖面</code></pre>
+<p>预期观察：$v$ 取 $2/T$ 时速度剖面为三角形（无恒速段）；$v$ 取 $(N-1)/T$ 时恒速段仅一个采样间隔；超出两端均触发过约束错误。</p>
+<h4>关键点</h4>
+<ul>
+<li>lspb 的恒速段速度 $v$ 不是自由参数：它受总时长 $T$、采样点数 $N$ 与「加/减速段不重叠」三重约束。</li>
+<li>下界 $v_{\min}=2/T$ 来自恒速段时长必须非负（三角形速度剖面极限）；上界 $v_{\max}=(N-1)/T$ 来自恒速段至少占一个采样间隔。</li>
+<li>速度取值不当会使系统过约束（5 个约束 vs 6 个多项式系数），Toolbox 直接报错——这正是事实底座中「速度取值不当会因过约束报错」的定量解释。</li>
+<li>恒速段速度越大，恒速段越短、加/减速越剧烈，最终可降为 0（纯三角形剖面）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章</li>
+<li>依据：</li>
+<li>lspb 定义与「恒速段 + 抛物线 blend」：事实底座第 3 节第 2 条、第 4 节第 4 步。</li>
+<li>「速度取值不当会因过约束报错」：事实底座第 6 节 <code>lspb</code> 数值例子（PDF p.45–46）。</li>
+<li>默认恒速段速度 <code>max(sd) = 0.0306</code>：事实底座第 6 节（PDF p.45）。</li>
+<li>采样点数 $N=50$ 与时间向量约定：事实底座第 6 节 <code>tpoly(0,1,50)</code>、<code>lspb(0,1,50)</code> 例子。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确题意与已知量</h5>
+<p>轨迹从 $s=0$ 到 $s=1$，总位移 $\Delta s = 1$。给定"最大可能速度" $v_{\max}=0.025$（单位：1/步，即每步位移）。要求分别对 <code>tpoly</code>（五次多项式）与 <code>lspb</code>（梯形速度剖面）估算所需时间步数 $N$。</p>
+<p><strong>为什么这样理解</strong>：<code>tpoly</code> 与 <code>lspb</code> 都是把标量 $s$ 从 0 平滑送到 1 的函数，其第三个参数就是采样点数（时间步数）。题目问的是"在速度上限约束下，谁用的步数更少"。</p>
+<h5>第 2 步：<code>lspb</code> 的步数（可直接由约束确定）</h5>
+<p><code>lspb</code> 的速度剖面是梯形：加速段 → 恒速段（速度恰为 $v_{\max}$）→ 减速段。若忽略加/减速段的额外耗时（即近似为纯恒速），则</p>
+<p>$$N_{\text{lspb}} \approx \frac{\Delta s}{v_{\max}} = \frac{1}{0.025} = 40\ \text{步}.$$</p>
+<p><strong>为什么</strong>：<code>lspb</code> 的设计目标就是让峰值速度贴近给定上限，因此平均速度与峰值速度之比接近 1，位移除以峰值速度即得步数下界。加/减速段会略微增加步数，但量级仍是 40 左右。</p>
+<h5>第 3 步：<code>tpoly</code> 的步数（需借助速度峰值比）</h5>
+<p><code>tpoly</code> 默认首末速度、加速度均为 0。由事实底座给出的数值例子：</p>
+<ul>
+<li><code>s = tpoly(0,1,50)</code> 时，<code>mean(sd)/max(sd) = 0.5231</code>，即<strong>平均速度仅为峰值速度的 52%</strong>，峰值出现在 $t=25$（即中点）。</li>
+</ul>
+<p>因此若要求峰值速度不超过 $v_{\max}=0.025$，则平均速度约为</p>
+<p>$$\bar v \approx 0.5231 \times v_{\max} = 0.5231 \times 0.025 \approx 0.01308.$$</p>
+<p>所需步数</p>
+<p>$$N_{\text{tpoly}} \approx \frac{\Delta s}{\bar v} = \frac{1}{0.01308} \approx 76.5 \approx 77\ \text{步}.$$</p>
+<p><strong>为什么</strong>：<code>tpoly</code> 的速度曲线是"钟形"（两端为 0、中间隆起），峰值远高于平均值，所以同样的速度上限下它必须用更多步数才能走完 1 的位移。</p>
+<h5>第 4 步：结论对比</h5>
+<table>
+<tr><th>轨迹</th><th>峰值速度</th><th>平均/峰值</th><th>所需步数（约）</th></tr>
+<tr><td><code>lspb</code></td><td>$\approx 0.025$</td><td>$\approx 1$</td><td>$\approx 40$</td></tr>
+<tr><td><code>tpoly</code></td><td>$0.025$</td><td>$0.5231$</td><td>$\approx 77$</td></tr>
+</table>
+<p>即 <strong><code>tpoly</code> 所需时间步数约为 <code>lspb</code> 的 2 倍</strong>（$1/0.5231 \approx 1.91$）。</p>
+<h5>第 5 步：MATLAB 验证代码</h5>
+<pre><code class="lang-matlab">% lspb：给定峰值速度 0.025
+s_lspb = lspb(0, 1, 40, 0.025);
+max(diff(s_lspb))          % 应接近 0.025
+
+% tpoly：默认 50 步，观察峰值速度
+[s_tp, sd_tp] = tpoly(0, 1, 50);
+max(sd_tp)                 % 峰值速度
+mean(sd_tp)/max(sd_tp)     % 应约为 0.5231
+
+% 反推 tpoly 在峰值 0.025 下所需步数
+N = 50 * max(sd_tp) / 0.025;   % 约 77</code></pre>
+<p><strong>预期观察</strong>：<code>lspb</code> 在 40 步内即可满足峰值 0.025；<code>tpoly</code> 若限制峰值 0.025，则需约 77 步，验证了"梯形剖面比五次多项式更接近时间最优"这一结论。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong><code>lspb</code> 近似时间最优</strong>：速度剖面为梯形，峰值速度可贴近电机上限，平均/峰值比接近 1，因此步数最少（$\approx \Delta s / v_{\max}$）。</li>
+<li><strong><code>tpoly</code> 速度呈钟形</strong>：默认首末速度、加速度为 0，导致峰值远高于均值；事实底座给出 <code>mean(sd)/max(sd) = 0.5231</code>，即平均速度只有峰值的一半左右。</li>
+<li><strong>步数比 ≈ 1/0.5231 ≈ 1.91</strong>：同样速度上限下，<code>tpoly</code> 所需步数约为 <code>lspb</code> 的 2 倍。</li>
+<li><strong>本题的物理含义</strong>：若驱动器有最大速度限制，梯形剖面（<code>lspb</code>）比五次多项式（<code>tpoly</code>）更省时间，这正是工业驱动器普遍采用 trapezoidal profile 的原因。</li>
+<li><strong>注意</strong>：<code>lspb</code> 的 40 步是忽略加/减速段的下界；实际步数略多，但结论（<code>lspb</code> 明显少于 <code>tpoly</code>）不变。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章 "Time and Motion"，习题 3（PDF p.57）。</li>
+<li>依据：</li>
+<li><code>tpoly</code> 定义与速度峰值比 <code>mean(sd)/max(sd) = 0.5231</code>、峰值在 $t=25$ —— 事实底座 §6 例题（PDF p.45）。</li>
+<li><code>lspb</code> 定义、恒速段速度 <code>0.025</code> 与 <code>0.035</code> 的对比 —— 事实底座 §3 概念 2、§6 例题（PDF p.45–46）。</li>
+<li>"<code>lspb</code> 逼近电机最大速度以实现近似 time-optimal" —— 事实底座 §3 概念 2。</li>
+<li>步数与采样点数的对应关系 —— 事实底座 §1 记号表（轨迹标量 $s\in[0,1]$、Toolbox 输出命名）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 0 步：明确三种插值路径的数学本质</h5>
+<p>本章事实底座第 3 节第 5 条指出：姿态插值定义为 $\boldsymbol{\xi}(s)=\sigma(\boldsymbol{\xi}_0,\boldsymbol{\xi}_1,s)$，$s\in[0,1]$。三条路径分别是：</p>
+<ul>
+<li><strong>四元数</strong>：<code>interp(q0,q1,...)</code>，沿单位球大圆路径（slerp），对应<strong>空间固定轴</strong>旋转；</li>
+<li><strong>欧拉角</strong>：<code>tr2eul</code> 把 $\mathbf{R}$ 分解为 ZYZ 序列，再用 <code>mtraj(@tpoly, eul0, eul1, N)</code> 逐角插值，最后 <code>eul2tr</code> 还原；</li>
+<li><strong>RPY 角</strong>：<code>tr2rpy</code> 分解为 ZYX 序列，<code>mtraj</code> 插值后 <code>rpy2tr</code> 还原。</li>
+</ul>
+<p>关键区别：四元数在 $SO(3)$ 上直接插值；欧拉角/RPY 是在<strong>参数空间</strong>（3 个角）里插值，再映射回 $SO(3)$。参数空间插值会遇到<strong>奇异性</strong>（万向节锁）和<strong>绕角问题</strong>。</p>
+<h5>第 1 步：构造两个一般姿态并做三种插值</h5>
+<p>依据事实底座第 6 节姿态插值例题的数值：</p>
+<pre><code class="lang-matlab">% 起点与终点姿态（原书例题数值）
+R0 = rotz(-1)*roty(-1);
+R1 = rotz(1)*roty(1);
+
+% --- 路径 A：RPY 线性插值 ---
+rpy0 = tr2rpy(R0);  rpy1 = tr2rpy(R1);
+rpy  = mtraj(@tpoly, rpy0, rpy1, 50);   % 50x3
+tranimate(rpy2tr(rpy));
+
+% --- 路径 B：欧拉角线性插值 ---
+eul0 = tr2eul(R0);  eul1 = tr2eul(R1);
+eul  = mtraj(@tpoly, eul0, eul1, 50);   % 50x3
+tranimate(eul2tr(eul));
+
+% --- 路径 C：四元数 slerp ---
+q0 = Quaternion(R0);  q1 = Quaternion(R1);
+q  = interp(q0, q1, [0.49]'/49);        % 1x50 Quaternion
+tranimate(q);</code></pre>
+<p><strong>预期观察</strong>：三条路径的起点、终点相同，但中间姿态不同。四元数路径对应绕<strong>单一空间固定轴</strong>的匀速旋转（大圆路径），姿态变化最"自然"；RPY 与欧拉角路径在参数空间里是直线，映射到 $SO(3)$ 后不是测地线，中间姿态会偏离，且角速度不均匀。</p>
+<h5>第 2 步：分析为什么参数空间插值会出问题</h5>
+<p>设 $\mathbf{R}(s)=\mathbf{R}_z(\alpha(s))\mathbf{R}_y(\beta(s))\mathbf{R}_x(\gamma(s))$（RPY 情形）。对 $s$ 求导：</p>
+<p>$$\dot{\mathbf{R}}=\frac{\partial\mathbf{R}}{\partial\alpha}\dot\alpha+\frac{\partial\mathbf{R}}{\partial\beta}\dot\beta+\frac{\partial\mathbf{R}}{\partial\gamma}\dot\gamma$$</p>
+<p>当 $\beta=\pm\pi/2$ 时，$\partial\mathbf{R}/\partial\alpha$ 与 $\partial\mathbf{R}/\partial\gamma$ 线性相关（万向节锁），此时 $\dot\alpha,\dot\gamma$ 无法唯一确定 $\dot{\mathbf{R}}$——参数化退化。这正是事实底座第 3 节第 5 条所说的"3-角插值有奇异性"。</p>
+<h5>第 3 步：a) 让终点落在奇异点</h5>
+<p>取终点姿态使 RPY 的 $\beta=\pi/2$（即绕 $y$ 轴转 90°，ZYX 分解的奇异点）：</p>
+<pre><code class="lang-matlab">R0 = rotz(-1)*roty(-1);
+R1 = roty(pi/2);              % beta = pi/2，RPY 奇异点
+
+% RPY 路径
+rpy0 = tr2rpy(R0);  rpy1 = tr2rpy(R1);   % rpy1 的 alpha,gamma 不唯一
+rpy  = mtraj(@tpoly, rpy0, rpy1, 50);
+tranimate(rpy2tr(rpy));
+
+% 四元数路径（对照）
+q0 = Quaternion(R0);  q1 = Quaternion(R1);
+q  = interp(q0, q1, [0.49]'/49);
+tranimate(q);</code></pre>
+<p><strong>会发生什么</strong>：</p>
+<ol>
+<li><strong><code>tr2rpy(R1)</code> 的输出不唯一</strong>。在 $\beta=\pi/2$ 处，只有 $\alpha+\gamma$（或 $\alpha-\gamma$，取决于约定）有意义，$\alpha$ 与 $\gamma$ 可任意分配。MATLAB 会返回某一组解，但该解与相邻姿态的分解可能<strong>不连续</strong>。</li>
+<li><strong><code>mtraj</code> 插值出的中间角可能剧烈跳变</strong>。若 <code>rpy0</code> 与 <code>rpy1</code> 的对应角相差接近 $2\pi$ 或符号相反，线性插值会让机器人绕远路甚至反向旋转。</li>
+<li><strong><code>rpy2tr</code> 还原时姿态序列可能出现突变</strong>，<code>tranimate</code> 动画中表现为末端突然"翻折"。</li>
+<li><strong>四元数路径不受影响</strong>。<code>interp(q0,q1,...)</code> 在 $SO(3)$ 上沿大圆插值，奇异点只是 $SO(3)$ 上的一个普通点，slerp 平滑通过，无跳变。</li>
+</ol>
+<h5>第 4 步：结论</h5>
+<ul>
+<li>一般姿态下，三种方法都能从 $\mathbf{R}_0$ 到 $\mathbf{R}_1$，但四元数路径是测地线，角速度均匀、无奇异性；</li>
+<li>当终点（或路径经过）奇异点时，RPY/欧拉角插值会出现<strong>参数不唯一、角跳变、姿态突变</strong>；四元数插值依然平滑。</li>
+<li>因此本章推荐：姿态插值优先用四元数 slerp（<code>interp</code>），RPY/欧拉角仅用于<strong>小角度、远离奇异点</strong>的场合。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>四元数 slerp 在 $SO(3)$ 上插值</strong>，沿大圆路径 = 绕空间固定轴旋转；RPY/欧拉角在<strong>参数空间</strong>插值，再映射回 $SO(3)$，二者不等价。</li>
+<li><strong>奇异点</strong>（万向节锁，RPY 的 $\beta=\pm\pi/2$）使参数化退化：$\alpha$ 与 $\gamma$ 不可分辨，<code>tr2rpy</code> 输出不唯一，插值出现跳变。</li>
+<li><strong><code>tranimate</code> 是观察工具</strong>：它把姿态序列做成动画，跳变/翻折肉眼可见；四元数路径动画最平滑。</li>
+<li><strong>实践准则</strong>：姿态插值用 <code>Quaternion</code> + <code>interp</code>；若必须用角插值，先检查是否远离奇异点，并处理绕角（unwrap）。</li>
+<li>本题不涉及平移，纯姿态插值；若同时插值平移，应使用 <code>trinterp</code>/<code>ctraj</code>（事实底座第 3 节第 6 条）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 3 章</li>
+<li>依据：</li>
+<li>姿态插值定义与三种方法对比：事实底座第 3 节第 5 条；</li>
+<li>四元数 <code>interp</code>、<code>Quaternion</code>、<code>q.unit()</code>：事实底座第 1 节记号表、第 6 节四元数例题；</li>
+<li><code>tr2rpy</code>/<code>rpy2tr</code>/<code>tr2eul</code>/<code>eul2tr</code>/<code>mtraj</code>/<code>tranimate</code> 语义：事实底座第 3 节第 3、5、7 条与第 6 节姿态插值例题；</li>
+<li>奇异点导致参数化退化：事实底座第 3 节第 5 条"3-角插值有奇异性"；</li>
+<li>四元数 slerp 对应空间固定轴旋转：事实底座第 3 节第 5 条。</li>
+<li>原书未给出奇异点情形的具体数值，按符号推导与 Toolbox 语义说明。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确"奇异点"在本章语境下的含义。</strong></p>
+<p>本章姿态插值涉及三种表示：旋转矩阵 $\mathbf{R}\in SO(3)$、RPY/欧拉角、单位四元数 $\boldsymbol{q}$。所谓奇异点，指<strong>欧拉角/RPY 表示中的万向节死锁（gimbal lock）位形</strong>——此时三个 RPY 角不再独立，$\mathbf{R}\to\text{rpy}$ 的映射在该点不可逆（Jacobian 降秩）。本章事实底座第 3 节第 5 条明确指出：3-角插值"有奇异性"，这正是本题要考察的对象。</p>
+<p><strong>第 2 步：RPY 线性插值经过奇异点会发生什么。</strong></p>
+<p>设 $\text{rpy}_0=\text{tr2rpy}(\mathbf{R}_0)$，$\text{rpy}_1=\text{tr2rpy}(\mathbf{R}_1)$，用 <code>mtraj(@tpoly, rpy0, rpy1, 50)</code> 逐角插值。若 $\text{rpy}_0$ 与 $\text{rpy}_1$ 分居奇异位形两侧，则：</p>
+<ul>
+<li>在奇异点处，同一个物理姿态 $\mathbf{R}$ 对应<strong>无穷多组</strong> RPY 角（例如 pitch $=\pm\pi/2$ 时 yaw 与 roll 耦合）。因此 <code>tr2rpy</code> 返回的角值在奇异点邻域会发生<strong>跳变</strong>（不连续）。</li>
+<li>线性插值两个"跳变"的角端点，得到的中间角序列在物理上并不对应一条光滑的旋转路径：$\text{rpy2tr}(\text{rpy}(t))$ 在奇异点附近会出现<strong>角速度突变甚至绕远路</strong>（即插值路径在 $SO(3)$ 上不是测地线）。</li>
+<li>结论：<strong>RPY 线性插值在穿过奇异点时失效</strong>——表现为姿态轨迹不连续、角速度出现尖峰，无法用于实际控制。</li>
+</ul>
+<p><strong>第 3 步：四元数 slerp 经过同一物理位形会发生什么。</strong></p>
+<p>本章事实底座第 3 节第 5 条给出：四元数 slerp 沿<strong>大圆路径</strong>插值，对应<strong>空间固定轴</strong>旋转。四元数表示 $\boldsymbol{q}$ 对 $SO(3)$ 是<strong>双覆盖且无奇异</strong>的（除 $\boldsymbol{q}$ 与 $-\boldsymbol{q}$ 表示同一旋转外，无万向节死锁）。因此：</p>
+<ul>
+<li>即使物理路径穿过 RPY 意义下的奇异位形，slerp 仍给出光滑、连续的旋转轨迹，角速度有界。</li>
+<li>需要注意的<strong>唯一陷阱</strong>是四元数符号：若 $\boldsymbol{q}_0\cdot\boldsymbol{q}_1<0$，直接 slerp 会走"长弧"（绕远路）。本章 Toolbox 的 <code>interp(q0,q1,...)</code> 内部会处理符号，但手写实现时必须先做 $\boldsymbol{q}_1\leftarrow-\boldsymbol{q}_1$（当点积为负时）。</li>
+<li>结论：<strong>slerp 不受奇异点影响</strong>，这正是本章推荐四元数插值的原因。</li>
+</ul>
+<p><strong>第 4 步：笛卡尔运动（<code>trinterp</code>/<code>ctraj</code>）经过奇异点。</strong></p>
+<p><code>trinterp(T0,T1,s)</code> 对平移线性插值、对旋转用 slerp。由于旋转部分走 slerp，<strong>同样不受 RPY 奇异点影响</strong>。但若用户改用"RPY 线性插值再 <code>rpy2tr</code>"来构造 $SE(3)$ 路径，则第 2 步的问题会原样出现。故本章事实底座第 4 节第 8 步强调：$SE(3)$ 插值应使用 <code>trinterp</code>/<code>ctraj</code>，而非 RPY 线性插值。</p>
+<p><strong>第 5 步：可运行验证（MATLAB，Robotics Toolbox）。</strong></p>
+<pre><code class="lang-matlab">% 构造一条穿过 RPY 奇异位形（pitch = pi/2）的姿态路径
+R0 = rotz(-1)*roty(-1);
+R1 = rotz(1)*roty(1);
+rpy0 = tr2rpy(R0);  rpy1 = tr2rpy(R1);
+
+% 方式 A：RPY 线性插值
+rpy = mtraj(@tpoly, rpy0, rpy1, 50);
+RA  = rpy2tr(rpy);          % 观察是否出现角速度尖峰/跳变
+
+% 方式 B：四元数 slerp
+q0 = Quaternion(R0);  q1 = Quaternion(R1);
+q  = interp(q0, q1, [0:49]'/49);
+RB = q.T;                    % 50 个旋转矩阵
+
+% 比较相邻姿态的角增量（用 tr2delta 的旋转部分）
+for k = 2:50
+    dA(k) = norm( tr2delta(RA(:,:,k-1), RA(:,:,k)) );
+    dB(k) = norm( tr2delta(RB(:,:,k-1), RB(:,:,k)) );
+end
+plot(2:50, dA(2:50), 'r', 2:50, dB(2:50), 'b');
+legend('RPY linear', 'quaternion slerp');</code></pre>
+<p><strong>预期观察</strong>：红色曲线（RPY 线性）在奇异点附近出现明显尖峰/不连续；蓝色曲线（slerp）保持平滑。这直接印证第 2、3 步的结论。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>奇异点 = 欧拉角/RPY 的万向节死锁</strong>，此时 $\mathbf{R}\to\text{rpy}$ 不可逆，同一姿态对应无穷多组角值。</li>
+<li><strong>RPY 线性插值穿过奇异点会失效</strong>：角值跳变 → 姿态轨迹不连续、角速度尖峰。</li>
+<li><strong>四元数 slerp 无奇异</strong>：沿大圆路径（空间固定轴旋转）插值，穿过同一物理位形仍光滑；唯一注意点是符号（点积为负时取反）。</li>
+<li><strong><code>trinterp</code>/<code>ctraj</code> 因旋转部分用 slerp，故不受 RPY 奇异点影响</strong>；这是本章推荐它们而非 RPY 线性插值的根本原因。</li>
+<li>本章事实底座未给出该情形的具体数值，上述结论均为符号/定性推导。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章 "Time and Motion"。</li>
+<li>依据：</li>
+<li>奇异点定义与"3-角插值有奇异性"——事实底座第 3 节第 5 条（姿态插值）。</li>
+<li>slerp 沿大圆路径、对应空间固定轴旋转——事实底座第 3 节第 5 条、第 4 节第 7 步。</li>
+<li><code>trinterp</code>/<code>ctraj</code> 平移线性 + 旋转 slerp——事实底座第 3 节第 6 条、第 4 节第 8 步。</li>
+<li>四元数插值函数 <code>interp(q0,q1,...)</code> 与 <code>Quaternion</code> 用法——事实底座第 6 节例题（PDF p.49）。</li>
+<li>相邻姿态角增量用 <code>tr2delta</code> 度量——事实底座第 5 节公式 5（Eq. 3.9/3.10）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确"性能"要比较什么</h5>
+<p>本章给出了三种姿态插值路径（facts 第 3 节第 5 条）：</p>
+<ol>
+<li><strong>旋转矩阵线性插值</strong>：$\mathbf{R}(s)=(1-s)\mathbf{R}_0+s\mathbf{R}_1$，简单但<strong>不保正交</strong>，$\mathbf{R}(s)\notin SO(3)$；</li>
+<li><strong>RPY 角线性插值</strong>：对 <code>tr2rpy</code> 得到的三元组逐分量插值，再 <code>rpy2tr</code> 还原。存在<strong>奇异性</strong>（万向锁）与绕角问题；</li>
+<li><strong>四元数 slerp</strong>：<code>interp(q0,q1,...)</code>，沿单位四元数球面大圆路径，对应<strong>空间固定轴</strong>旋转，是 $SO(3)$ 上的测地线。</li>
+</ol>
+<p>要"定量比较"，需要一个<strong>与参数化无关的几何度量</strong>。提示给出的单位球面正是关键：把姿态映射到球面上的点，比较轨迹的几何性质。</p>
+<h5>第 2 步：选择球面映射</h5>
+<p>对每个插值时刻 $s\in[0,1]$，把姿态 $\mathbf{R}(s)$ 映射为单位四元数 $\boldsymbol{q}(s)$，再取其<strong>向量部分</strong> $\mathbf{v}(s)=(q_x,q_y,q_z)$。由于 $\|\boldsymbol{q}\|=1$，有</p>
+<p>$$\|\mathbf{v}\|^2+q_w^2=1,$$</p>
+<p>因此 $\mathbf{v}$ 落在 $\mathbb{R}^3$ 中的单位球面上（当 $q_w\ge 0$ 时取上半球）。这就是提示所说的"单位球面上的轨迹"。</p>
+<p>对三种方法分别得到三条曲线 $\mathbf{v}_A(s),\mathbf{v}_B(s),\mathbf{v}_C(s)$，$s\in[0,1]$。</p>
+<h5>第 3 步：定义定量指标</h5>
+<p>在球面上可定义以下可计算指标：</p>
+<p><strong>(a) 正交性偏差（仅对矩阵线性插值有意义）</strong></p>
+<p>$$\varepsilon_{\text{orth}}=\max_{s}\big\|\mathbf{R}(s)^T\mathbf{R}(s)-\mathbf{I}_{3\times3}\big\|_F .$$</p>
+<p>理想插值应恒为 0；矩阵线性插值一般 $\varepsilon_{\text{orth}}>0$。</p>
+<p><strong>(b) 球面路径长度（测地距离）</strong></p>
+<p>$$L=\int_0^1\Big\|\tfrac{d\mathbf{v}}{ds}\Big\|\,ds\ \approx\ \sum_{k}\|\mathbf{v}(s_{k+1})-\mathbf{v}(s_k)\| .$$</p>
+<p>slerp 沿大圆走，$L$ 应等于 $\mathbf{v}_0$ 与 $\mathbf{v}_1$ 之间的球面角距 $\arccos(\mathbf{v}_0\cdot\mathbf{v}_1)$；RPY 线性插值一般 $L$ 更大（绕路）。</p>
+<p><strong>(c) 角速度均匀性</strong></p>
+<p>用相邻样本的球面角增量 $\Delta\theta_k=\arccos(\mathbf{v}_k\cdot\mathbf{v}_{k+1})$，计算</p>
+<p>$$\text{CV}=\frac{\operatorname{std}(\Delta\theta_k)}{\operatorname{mean}(\Delta\theta_k)} .$$</p>
+<p>slerp 的 $\Delta\theta_k$ 近似常数，CV 接近 0；RPY 线性插值的 CV 明显偏大，说明角速度时快时慢。</p>
+<p><strong>(d) 端点误差</strong></p>
+<p>检查 $s=0,1$ 时是否精确命中 $\mathbf{R}_0,\mathbf{R}_1$（矩阵线性插值在端点精确，但中间不保正交；RPY 在奇异点附近可能跳变）。</p>
+<h5>第 4 步：可运行代码（MATLAB，沿用本章 Toolbox 记号）</h5>
+<pre><code class="lang-matlab">% 端点姿态（沿用 facts 中 PDF p.48 的例子）
+R0 = rotz(-1)*roty(-1);
+R1 = rotz(1)*roty(1);
+N  = 50;
+s  = lspb(0,1,N);          % 用 lspb 生成归一化时间，避免端点速度跳变
+
+% --- 方法 A: 旋转矩阵线性插值 ---
+RA = zeros(3,3,N);
+for k = 1:N
+    RA(:,:,k) = (1-s(k))*R0 + s(k)*R1;
+end
+eOrth = zeros(N,1);
+for k = 1:N
+    Rk = RA(:,:,k);
+    eOrth(k) = norm(Rk'*Rk - eye(3,3), 'fro');
+end
+fprintf('A: max orthogonality error = %.4f\n', max(eOrth));
+
+% --- 方法 B: RPY 线性插值 ---
+rpy0 = tr2rpy(R0); rpy1 = tr2rpy(R1);
+rpy  = mtraj(@tpoly, rpy0, rpy1, N);   % 本章 mtraj 用法
+RB   = zeros(3,3,N);
+for k = 1:N
+    RB(:,:,k) = rpy2tr(rpy(k,:));
+end
+
+% --- 方法 C: 四元数 slerp ---
+q0 = Quaternion(R0); q1 = Quaternion(R1);
+q  = interp(q0, q1, s);                % 本章 interp 用法
+
+% --- 统一映射到单位球面（取四元数向量部分）---
+V = zeros(N,3,3);
+for k = 1:N
+    V(k,:,1) = Quaternion(RA(:,:,k)).double(); V(k,:,1) = V(k,1:3,1);
+    V(k,:,2) = Quaternion(RB(:,:,k)).double(); V(k,:,2) = V(k,1:3,2);
+    V(k,:,3) = q(k).double();                  V(k,:,3) = V(k,1:3,3);
+end
+
+% --- 指标 (b) 路径长度 与 (c) 角速度均匀性 ---
+for m = 1:3
+    P = squeeze(V(:,:,m));
+    P = P ./ vecnorm(P,2,2);           % 归一化到单位球面
+    dth = acos(sum(P(1:end-1,:).*P(2:end,:),2));
+    L   = sum(dth);
+    CV  = std(dth)/mean(dth);
+    fprintf('method %d: L = %.4f, CV = %.4f\n', m, L, CV);
+end
+
+% --- 球面可视化 ---
+figure; hold on; axis equal; grid on;
+[xs,ys,zs] = sphere(40); surf(xs,ys,zs,'FaceAlpha',0.15,'EdgeColor','none');
+plot3(V(:,1,1),V(:,2,1),V(:,3,1),'r-','LineWidth',2);
+plot3(V(:,1,2),V(:,2,2),V(:,3,2),'g-','LineWidth',2);
+plot3(V(:,1,3),V(:,2,3),V(:,3,3),'b-','LineWidth',2);
+legend('unit sphere','matrix lerp','RPY lerp','quaternion slerp');</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>方法 A 的 <code>max orthogonality error</code> 明显大于 0（矩阵线性插值不保正交）；</li>
+<li>方法 C（slerp）的球面轨迹是<strong>大圆</strong>，$L$ 等于两端点的球面角距，CV 接近 0；</li>
+<li>方法 B（RPY 线性插值）的球面轨迹一般<strong>偏离大圆</strong>，$L$ 更大、CV 更大，且在奇异点附近可能出现跳变。</li>
+</ul>
+<h5>第 5 步：结论</h5>
+<p>以"单位球面上的轨迹"为统一几何载体，用<strong>正交性偏差、球面路径长度、角速度均匀性（CV）、端点误差</strong>四个指标即可定量比较三种姿态插值方法。slerp 在 $SO(3)$ 上走测地线，路径最短、角速度最均匀，是本章推荐的姿态插值方法。</p>
+<h4>关键点</h4>
+<ul>
+<li>姿态插值不能直接对 $\mathbf{R}$ 做线性插值（不保正交），也不能盲目对 RPY 线性插值（奇异性 + 绕角）；四元数 slerp 沿单位球面大圆，对应空间固定轴旋转。</li>
+<li>"单位球面"指单位四元数的向量部分 $(q_x,q_y,q_z)$ 所在球面，是把 $SO(3)$ 姿态几何化的标准手段。</li>
+<li>定量指标应至少覆盖：正交性偏差、球面路径长度、角速度均匀性（CV）、端点误差。</li>
+<li>用 <code>lspb(0,1,N)</code> 生成归一化时间 $s$，可避免端点速度/加速度跳变（本章 ctraj 的做法）。</li>
+<li>本章 Toolbox 函数：<code>Quaternion</code>、<code>interp</code>、<code>tr2rpy</code>、<code>rpy2tr</code>、<code>mtraj</code>、<code>lspb</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 3 章 Time and Motion</li>
+<li>依据：</li>
+<li>三种姿态插值方法及 slerp 沿大圆/空间固定轴旋转：facts 第 3 节第 5 条、第 4 节第 7 步；</li>
+<li>四元数记号 $\boldsymbol{q}$、<code>Quaternion</code>、<code>interp</code>、<code>q.unit()</code>：facts 第 1 节符号表、第 5 节公式 6；</li>
+<li><code>tr2rpy</code>/<code>rpy2tr</code>/<code>mtraj</code>/<code>lspb</code>/<code>ctraj</code> 用法：facts 第 4 节第 3–8 步、第 6 节例题；</li>
+<li>端点姿态例子 <code>R0 = rotz(-1)*roty(-1); R1 = rotz(1)*roty(1);</code>：facts 第 6 节 PDF p.48；</li>
+<li>原书未给出本题的具体数值，上述指标与代码为按本章符号体系推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>背景回顾</h5>
+<p>原书第 47 页的 mstraj 示例为：</p>
+<pre><code class="lang-matlab">via = [4,1; 4,4; 5,2; 2,5];
+q = mstraj(via, [2,1], [], [4,1], 0.05, 0);</code></pre>
+<p>其中 <code>via</code> 是 4 个 via 点（2 轴），<code>[2,1]</code> 是每轴最大速度，<code>[]</code> 表示不指定每段时间（由最大速度决定），<code>[4,1]</code> 是初始坐标，<code>0.05</code> 是采样间隔，<code>0</code> 是加速时间 $t_{acc}$。</p>
+<p>mstraj 的调用签名中，初始速度/终止速度是可选参数。根据本章事实底座，mstraj 的段时长由<strong>最慢轴</strong>决定以保证各轴同时到达。</p>
+<h5>a) 用不同的初始速度和终止速度重复</h5>
+<p>mstraj 允许指定初始速度 <code>qd0</code> 和终止速度 <code>qdf</code>。在 MATLAB 中调用形式为：</p>
+<pre><code class="lang-matlab">q = mstraj(via, qdmax, tseg, q0, dt, tacc, qd0, qdf);</code></pre>
+<p>其中 <code>qd0</code> 和 <code>qdf</code> 分别是初始和终止速度向量（长度等于轴数）。</p>
+<p><strong>做什么</strong>：分别取不同的 <code>qd0</code>、<code>qdf</code> 运行，观察轨迹形状和总时间的变化。</p>
+<p><strong>为什么</strong>：初始/终止速度非零时，mstraj 需要在第一段和最后一段用多项式 blend 来匹配这些边界速度，而不是从静止开始/结束。这会影响 blend 段的持续时间，进而影响总时间。</p>
+<pre><code class="lang-matlab">via = [4,1; 4,4; 5,2; 2,5];
+
+% 原始：静止起停
+q1 = mstraj(via, [2,1], [], [4,1], 0.05, 0);
+
+% 非零初速、零末速
+q2 = mstraj(via, [2,1], [], [4,1], 0.05, 0, [1 0.5], [0 0]);
+
+% 零初速、非零末速
+q3 = mstraj(via, [2,1], [], [4,1], 0.05, 0, [0 0], [1 0.5]);
+
+% 两端均非零
+q4 = mstraj(via, [2,1], [], [4,1], 0.05, 0, [1 0.5], [1 0.5]);</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>非零初速时，轨迹在起点处不会从零速度平滑加速，而是以给定速度"切入"，第一段 blend 时间会改变。</li>
+<li>若指定的初速/末速与最大速度约束冲突（例如初速超过 <code>qdmax</code>），mstraj 会报错或调整。</li>
+<li>总时间 $T$ 会随边界速度的不同而变化：非零边界速度通常缩短 blend 段，从而缩短总时间（但需满足速度约束）。</li>
+</ul>
+<h5>b) 增大加速时间的影响</h5>
+<p><strong>做什么</strong>：固定 via 点和最大速度，令 $t_{acc}$ 从 0 逐步增大，记录每次的总时间 $T$，绘制 $T$ vs $t_{acc}$。</p>
+<p><strong>为什么</strong>：$t_{acc}$ 是段间 quintic blend 的时间。$t_{acc}$ 越大，blend 段越长，轨迹越圆滑（加速度连续），但总时间越长。当 $t_{acc}$ 增大到接近段时长时，恒速段消失，轨迹退化为纯多项式过渡。</p>
+<pre><code class="lang-matlab">via = [4,1; 4,4; 5,2; 2,5];
+tacc_vec = 0:0.1:3;
+T = zeros(size(tacc_vec));
+for k = 1:length(tacc_vec)
+    [q, t] = mstraj(via, [2,1], [], [4,1], 0.05, tacc_vec(k));
+    T(k) = t(end);
+end
+plot(tacc_vec, T, 'o-');
+xlabel('t_{acc} (s)'); ylabel('total time T (s)');
+title('Total time vs acceleration time');</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>$t_{acc}=0$ 时，段间无 blend，速度在 via 点处不连续（或退化处理），总时间最短。</li>
+<li>随 $t_{acc}$ 增大，$T$ 单调增大，因为 blend 段占用了额外时间。</li>
+<li>当 $t_{acc}$ 超过某段的一半时长时，该段无法容纳恒速段，mstraj 会报错（过约束）或自动调整。</li>
+<li>曲线大致呈分段线性/凸形：小 $t_{acc}$ 时增长较快，因为每段都要插入 blend；大 $t_{acc}$ 时受段时长上限约束。</li>
+</ul>
+<p><strong>注意</strong>：原书未给出 $T$ vs $t_{acc}$ 的具体数值表，上述为按 mstraj 算法逻辑的符号推导与预期行为。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>mstraj 的边界速度</strong>：通过可选参数 <code>qd0</code>、<code>qdf</code> 指定，非零边界速度会改变首末段的 blend 时间，从而影响总时间。</li>
+<li><strong>加速时间 $t_{acc}$ 的作用</strong>：控制段间 quintic blend 的持续时间，$t_{acc}$ 越大轨迹越光滑但总时间越长。</li>
+<li><strong>最慢轴主导</strong>：mstraj 中每段时长由所有轴中最慢的那个决定，以保证各轴同时到达 via 点。</li>
+<li><strong>过约束风险</strong>：当 $t_{acc}$ 过大或边界速度与 <code>qdmax</code> 冲突时，mstraj 会因约束不可行而报错。</li>
+<li><strong>验证方法</strong>：用 <code>[q,t] = mstraj(...)</code> 获取时间向量，<code>t(end)</code> 即总时间；循环扫描 $t_{acc}$ 即可绘制 $T$ vs $t_{acc}$ 曲线。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章</li>
+<li>依据：</li>
+<li>mstraj 示例与参数含义：事实底座第 6 节「例题与数值例子」中 <code>via = [4,1; 4,4; 5,2; 2,5]; q = mstraj(via, [2,1], [], [4,1], 0.05, 0)</code> 及加速时间示例 <code>q = mstraj(via, [2 1], [], [4 1], 0.05, 1)</code>。</li>
+<li>段时长由最慢轴决定：事实底座第 4 节推导链条第 6 步。</li>
+<li>blend 时间 $t_{acc}$ 与 quintic 平滑：事实底座第 3 节核心概念第 4 条「多段轨迹与 blend（mstraj）」。</li>
+<li>过约束报错：事实底座第 4 节第 4 步（LSPB 过约束）及第 6 步（mstraj 段时长约束）。</li>
+<li>总时间 $T$ vs $t_{acc}$ 的具体数值：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：回顾原 <code>mstraj</code> 的段时长确定逻辑</h5>
+<p>原书 <code>mstraj</code> 的输入为：via 点矩阵（每行一个点）、每轴最大速度向量 <code>qdmax</code>、每段时间（与 <code>qdmax</code> 二者只能给一个）、初始坐标 <code>q0</code>、采样间隔 <code>dt</code>、加速时间 <code>t_acc</code>。当给定 <code>qdmax</code> 而段时长留空 <code>[]</code> 时，<code>mstraj</code> 按如下方式确定第 $k$ 段（从 $\mathbf{x}_k$ 到 $\mathbf{x}_{k+1}$）的时长：</p>
+<p>对每一轴 $j$，该段位移为 $\Delta x_{k,j} = x_{k+1,j}-x_{k,j}$，所需时间至少为</p>
+<p>$$t_{k,j} = \frac{|\Delta x_{k,j}|}{\dot{x}_{\max,j}}$$</p>
+<p>整段时长取<strong>最慢轴</strong>决定的值：</p>
+<p>$$t_k = \max_j t_{k,j}$$</p>
+<p>这样保证各轴同时到达下一 via 点。<strong>注意</strong>：这里只用了速度上限，没有用到加速度上限。</p>
+<h5>第 2 步：为什么必须引入加速度限制</h5>
+<p>梯形速度剖面（LSPB）在加速段和减速段各需要一段时间 $t_{acc}$ 把速度从 0 拉到峰值 $\dot{x}_{\max}$（或反过来）。若加速度上限为 $\ddot{x}_{\max}$，则达到峰值速度所需的最短加速时间为</p>
+<p>$$t_{acc,\min} = \frac{\dot{x}_{\max}}{\ddot{x}_{\max}}$$</p>
+<p>如果按第 1 步算出的段时长 $t_k$ 太短，以至于 $t_k < 2\,t_{acc,\min}$，那么梯形剖面根本<strong>无法在段内完成加速—匀速—减速</strong>：要么被迫降低峰值速度（不再是 time-optimal），要么违反加速度约束。因此段时长必须同时满足速度约束与加速度约束。</p>
+<h5>第 3 步：由加速度约束推出段时长的下界</h5>
+<p>设某段位移为 $d = |\Delta x|$，速度上限 $v_{\max}$，加速度上限 $a_{\max}$。梯形剖面下，最短可行时间 $t$ 满足以下两种情形之一：</p>
+<p><strong>情形 A（能达到 $v_{\max}$，即 $d \ge v_{\max}^2/a_{\max}$）</strong>：加速段 $t_a = v_{\max}/a_{\max}$，匀速段 $t_c = d/v_{\max} - v_{\max}/a_{\max}$，总时间</p>
+<p>$$t = \frac{d}{v_{\max}} + \frac{v_{\max}}{a_{\max}}$$</p>
+<p><strong>情形 B（达不到 $v_{\max}$，三角形速度剖面）</strong>：峰值速度 $v_p = \sqrt{a_{\max} d}$，总时间</p>
+<p>$$t = 2\sqrt{\frac{d}{a_{\max}}}$$</p>
+<p>统一写成：对每轴 $j$ 计算</p>
+<p>$$t_{k,j} = \begin{cases} \dfrac{|\Delta x_{k,j}|}{\dot{x}_{\max,j}} + \dfrac{\dot{x}_{\max,j}}{\ddot{x}_{\max,j}}, & |\Delta x_{k,j}| \ge \dfrac{\dot{x}_{\max,j}^2}{\ddot{x}_{\max,j}}\\[2mm] 2\sqrt{\dfrac{|\Delta x_{k,j}|}{\ddot{x}_{\max,j}}}, & \text{否则} \end{cases}$$</p>
+<p>再取 $t_k = \max_j t_{k,j}$。</p>
+<h5>第 4 步：修改 <code>mstraj</code> 的伪代码</h5>
+<pre><code>输入: via (N×M), qdmax (1×M), qddmax (1×M), q0 (1×M), dt, t_acc
+for k = 1 : N-1
+    for j = 1 : M
+        d = abs(via(k+1,j) - via(k,j))
+        v = qdmax(j);  a = qddmax(j)
+        if d >= v^2 / a
+            t_kj = d/v + v/a          % 梯形
+        else
+            t_kj = 2*sqrt(d/a)        % 三角形
+        end
+    end
+    t_k = max_j t_kj                  % 最慢轴主导
+    t_k = max(t_k, 2*t_acc)           % 保证 blend 时间可行
+end</code></pre>
+<p>随后按原逻辑，用 quintic polynomial 在每段内以 $t_{acc}$ 做 blend，把各段串起来。</p>
+<h5>第 5 步：MATLAB 验证</h5>
+<pre><code class="lang-matlab">via = [4,1; 4,4; 5,2; 2,5];
+% 原版：只给速度上限
+q1 = mstraj(via, [2 1], [], [4 1], 0.05, 0);
+% 修改版：同时给加速度上限（示意接口）
+q2 = mstraj(via, [2 1], [], [4 1], 0.05, 0, [4 2]);  % 末位为 qddmax</code></pre>
+<p><strong>预期观察</strong>：加入加速度上限后，各段时长 $t_k$ 不小于第 3 步给出的下界；当某段位移很小而速度上限很大时，段时长会由加速度项 $2\sqrt{d/a_{\max}}$ 主导，轨迹比原版更慢但加速度不越界。原书未给出该修改的具体数值结果，以上为按符号推导。</p>
+<h4>关键点</h4>
+<ul>
+<li>原 <code>mstraj</code> 只用速度上限定段时长：$t_k=\max_j |\Delta x_{k,j}|/\dot{x}_{\max,j}$，取最慢轴。</li>
+<li>加速度约束给出段时长的<strong>下界</strong>：能达峰速时 $t=d/v+v/a$，否则 $t=2\sqrt{d/a}$。</li>
+<li>修改的核心是把每轴时间从 $|\Delta x|/v_{\max}$ 换成上述分段公式，再取 $\max_j$。</li>
+<li>还需保证 $t_k \ge 2t_{acc}$，否则 blend 段无法在段内完成。</li>
+<li>这是"过约束权衡"的又一体现：加加速度限制会牺牲速度，换取物理可行性。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章</li>
+<li>依据：</li>
+<li>段时长由最慢轴决定、<code>mstraj</code> 输入含 <code>qdmax</code> 与 <code>t_acc</code>：事实底座 §3 概念 4、§4 步骤 6、§6 多段例子</li>
+<li>LSPB 梯形剖面与加速时间：事实底座 §3 概念 2、§6 <code>lspb</code> 例子</li>
+<li>加速度约束下最短时间公式：由 LSPB 梯形/三角形剖面几何关系按符号推导（原书未给出该修改的具体数值）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是本章"反向估计"路径（惯性导航）的直接练习：由角速度 $\boldsymbol{\omega}(t)$ 通过积分更新姿态。核心公式是 Eq. 3.4 与 Eq. 3.7。</p>
+<h5>第 0 步：理解输入信号</h5>
+<p><code>t</code> 是 $0$ 到 $10$ s、步长 $0.01$ s 的列向量（共 1001 个采样点），<code>w</code> 是 $1001\times 3$ 矩阵，第 $k$ 行是 $t_k$ 时刻世界系下的角速度 $\boldsymbol{\omega}=(\omega_x,\omega_y,\omega_z)$。三个分量都是正弦，幅值分别为 $0.1,0.2,0.3$ rad/s，频率各不相同，因此旋转轴随时间摆动——这正是检验积分算法的好例子。</p>
+<h5>第 1 步（a）：用旋转矩阵积分</h5>
+<p><strong>做什么</strong>：从 $\mathbf{R}(0)=\mathbf{I}_{3\times3}$ 出发，对每个采样间隔 $\delta t=0.01$ 用 Eq. 3.7 递推：</p>
+<p>$$\mathbf{R}(t+\delta t)=\big(\delta t\,\mathbf{S}(\boldsymbol{\omega})+\mathbf{I}_{3\times3}\big)\mathbf{R}(t)$$</p>
+<p>其中 $\mathbf{S}(\boldsymbol{\omega})$ 由 Eq. 3.5 给出。</p>
+<p><strong>为什么</strong>：Eq. 3.4 给出 $\dot{\mathbf{R}}=\mathbf{S}(\boldsymbol{\omega})\mathbf{R}$，一阶前向欧拉离散化即得上式。$\delta t$ 越小、$\boldsymbol{\omega}$ 越慢，误差越小。</p>
+<pre><code class="lang-matlab">t = [0:0.01:10]';
+w = [0.1*sin(t) 0.2*sin(0.6*t) 0.3*sin(0.4*t)];
+dt = 0.01;
+R = eye(3,3);
+for k = 1:length(t)
+    R = (dt*skew(w(k,:)) + eye(3,3)) * R;   % Eq. 3.7
+    R = trnorm(R);                          % 强制正交，见 facts 第 3 节
+    trplot(R); drawnow;                     % 动画
+end</code></pre>
+<p><strong>预期观察</strong>：坐标系随角速度摆动而缓慢旋转；由于 $\boldsymbol{\omega}$ 幅值小（≤0.3 rad/s），10 s 内姿态变化温和。<code>trnorm</code> 每步调用是必须的——否则数值积分会让 $\mathbf{R}$ 逐渐偏离 $SO(3)$（facts 第 3 节第 8 条）。</p>
+<h5>第 2 步（b）：用四元数积分</h5>
+<p><strong>做什么</strong>：改用 Eq. 3.14 的四元数导数 $\dot{\boldsymbol{q}}=\tfrac{1}{2}\boldsymbol{q}\otimes\boldsymbol{\omega}$，每步后归一化。</p>
+<p><strong>为什么</strong>：四元数只有 4 个分量、无正交约束冗余，数值上更稳定；归一化 <code>q.unit()</code> 比 <code>trnorm</code> 更廉价。</p>
+<pre><code class="lang-matlab">q = Quaternion();                 % 单位四元数
+for k = 1:length(t)
+    q = q.dot(w(k,:));            % Eq. 3.14，内部做一阶积分
+    q = q.unit();                 % 归一化
+    trplot(q.T); drawnow;
+end</code></pre>
+<p><strong>预期观察</strong>：动画结果与 (a) 在视觉上一致（同一物理旋转），但长时间积分下四元数漂移更小。</p>
+<h5>第 3 步（c）：加入小噪声</h5>
+<pre><code class="lang-matlab">w = w + randn(size(w)) * 0.001;</code></pre>
+<p><strong>为什么会有变化</strong>：噪声标准差 $0.001$ rad/s，与信号幅值 $0.1\sim0.3$ 相比约 $0.3\%\sim1\%$。但积分是<strong>累加</strong>过程——每步的随机误差都被累加进姿态，误差随步数 $N$ 近似按 $\sqrt{N}$ 增长（随机游走）。10 s 内 $N=1000$，累积角度误差量级约 $0.001\times\sqrt{1000}\approx 0.03$ rad，肉眼在动画中已可见姿态缓慢"抖动/漂移"。</p>
+<p><strong>预期观察</strong>：单步姿态看起来仍平滑，但终态与无噪声情形出现可察觉偏差；<code>trnorm</code>/<code>q.unit()</code> 仍能维持正交性，但<strong>无法消除累积的角度漂移</strong>——这正是 facts 第 3 节第 8 条强调"INS 必须高采样率 + 归一化"的原因。</p>
+<h5>第 4 步（d）：噪声量扫描</h5>
+<p>把噪声系数从 $0.001$ 依次改为 $0.01,0.1,1$，重复 (a)/(b)。</p>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>噪声 $\ll$ 信号幅值时，漂移缓慢、动画仍可辨；</li>
+<li>噪声接近或超过信号幅值时，积分结果迅速发散，姿态动画表现为剧烈乱转；</li>
+<li>四元数版本在同等噪声下比矩阵版本更晚发散（无正交约束被破坏的问题）。</li>
+</ul>
+<p>原书未给出具体数值，以上量级按符号推导。</p>
+<h4>关键点</h4>
+<ul>
+<li>惯性导航的姿态更新本质是<strong>积分</strong>：$\dot{\mathbf{R}}=\mathbf{S}(\boldsymbol{\omega})\mathbf{R}$（Eq. 3.4），离散形式为 Eq. 3.7。</li>
+<li>每步必须<strong>归一化</strong>：矩阵用 <code>trnorm</code>，四元数用 <code>q.unit()</code>，否则 $\mathbf{R}$ 会脱离 $SO(3)$、$\boldsymbol{q}$ 会脱离单位模。</li>
+<li>四元数积分（Eq. 3.14）比矩阵积分数值更稳定，是工程首选。</li>
+<li>噪声误差在积分中<strong>累积</strong>（近似随机游走），小噪声也会导致可察觉的长期漂移——这是 INS 需要高采样率与外部校正的根本原因。</li>
+<li>本题只涉及本章的 $\dot{\mathbf{R}}$、$\mathbf{S}(\boldsymbol{\omega})$、四元数导数与归一化，不涉及第 4 章移动机器人运动学。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 3 章 "Time and Motion"</li>
+<li>依据：</li>
+<li>Eq. 3.4 / 3.5（$\dot{\mathbf{R}}\mathbf{R}^T=\mathbf{S}(\boldsymbol{\omega})$，$\mathbf{S}$ 的 3 维形式）→ facts 第 5 节公式 2</li>
+<li>Eq. 3.7（旋转更新 $\mathbf{R}(t+\delta t)=(\delta t\,\mathbf{S}(\boldsymbol{\omega})+\mathbf{I})\mathbf{R}(t)$）→ facts 第 5 节公式 3</li>
+<li>Eq. 3.14（$\dot{\boldsymbol{q}}=\tfrac{1}{2}\boldsymbol{q}\otimes\boldsymbol{\omega}$）与 <code>q.unit()</code> 归一化 → facts 第 5 节公式 6</li>
+<li><code>trnorm</code> 强制正交、INS 需高采样率 + 归一化 → facts 第 3 节第 8 条</li>
+<li><code>skew</code>/<code>vex</code> 语义 → facts 第 6 节 <code>S = skew([1 2 3])</code> 例</li>
+<li>本题为原书练习 9，属本章"反向估计"路径，不涉及第 4 章内容</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

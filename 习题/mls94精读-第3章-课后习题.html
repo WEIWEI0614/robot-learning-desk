@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 3 章「Manipulator Kinematics」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 3 章「Manipulator Kinematics」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>POE 正运动学公式为</p>
+<p>$$g_{st}(\theta)=e^{\hat\xi_1\theta_1}e^{\hat\xi_2\theta_2}\cdots e^{\hat\xi_n\theta_n}g_{st}(0).$$</p>
+<p>其中 $\xi_i$ 是第 $i$ 个关节的旋量，顺序从最靠近基座的关节写到最左。</p>
+<p><strong>为什么 $\xi_i$ 在 $\theta=0$ 取常值</strong>：POE 的推导依赖单关节公式 $g_{ab}(\theta)=e^{\hat\xi\theta}g_{ab}(0)$。若 $\xi$ 随位形变化，则 $e^{\hat\xi\theta}$ 不再是常系数矩阵指数，链式乘法无法化简为纯指数积。在 $\theta=0$ 参考位形下，所有关节轴的位置和方向是固定的几何量，因此 $\xi_i$ 是常值旋量。当关节运动后，第 $i$ 个关节的实际空间轴变为</p>
+<p>$$\xi'_i=\mathrm{Ad}\!\left(e^{\hat\xi_1\theta_1}\cdots e^{\hat\xi_{i-1}\theta_{i-1}}\right)\xi_i,$$</p>
+<p>即被前面关节的指数映射共轭到当前位形。这正是 POE 能写成“常 twist 直积”的关键。</p>
+<p><strong>为什么用 $-\omega\times q$</strong>：本章脚注明确采用该约定，使空间与平面情形均可正确解释（Exercise 11, Ch.2）。若写成 $q\times\omega$，则与本章旋量定义 $\hat\xi=\begin{bmatrix}\hat\omega & v\\0&0\end{bmatrix}$ 及 $\exp(\hat\xi)$ 的几何解释不一致。具体地，revolute 关节的 $v=-\omega\times q$ 保证 $\xi$ 对应的螺旋运动是绕轴 $\{\omega,q\}$ 的纯旋转；而 $q\times\omega$ 会给出相反符号的平移分量，导致 $e^{\hat\xi\theta}$ 的旋转轴方向与预期相反。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 定义</strong>：</p>
+<p>空间速度（spatial twist）定义为</p>
+<p>$$\hat V_{st}^s=\dot g_{st}g_{st}^{-1},$$</p>
+<p>体速度（body twist）定义为</p>
+<p>$$\hat V_{st}^b=g_{st}^{-1}\dot g_{st}.$$</p>
+<p>二者都是 $SE(3)$ 上的 twist，但参考系不同：$V_{st}^s$ 在基座系 $\mathcal S$ 中表达，$V_{st}^b$ 在工具系 $\mathcal T$ 中表达。</p>
+<p><strong>2. 优先用 body Jacobian 的原因</strong>：</p>
+<p>体速度 $V_{st}^b$ 不依赖基坐标系的选择。若用空间雅可比 $J_{st}^s$ 计算可操作性度量，其奇异值会随基座系选取而变化；而 body Jacobian $J_{st}^b$ 给出的度量是内蕴的。因此本章可操作性一节统一写 $J$ 表示 $J_{st}$，并优先用 body Jacobian，避免把 spatial 度量值与 body 度量值混比。</p>
+<p><strong>3. 绕过逆运动学积分轨迹</strong>：</p>
+<p>若 $J_{st}^s$ 可逆，则</p>
+<p>$$\dot\theta=(J_{st}^s)^{-1}V_{st}^s.$$</p>
+<p>给定期望的空间速度轨迹 $V_{st}^s(t)$，可直接对上式积分得到 $\theta(t)$，无需每步求解逆运动学。这要求 $J_{st}^s$ 在轨迹上始终满秩，即不经过奇异位形。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 为什么 $\partial x/\partial\theta$ 不是操纵器雅可比</strong>：</p>
+<p>SCARA 的末端位形属于 $SE(3)$，其速度是 twist $V_{st}^s\in\mathbb{R}^6$，而不是 $\mathbb{R}^4$ 中的坐标速度 $\dot x$。若取 $x=(p,\varphi)$，则 $\partial x/\partial\theta$ 是一个 $\mathbb{R}^{4\times4}$ 矩阵，其列表示“末端坐标随关节角的变化率”，而不是“各关节在空间中产生的瞬时 twist 轴”。具体地，$\varphi=\theta_1+\theta_2+\theta_3$ 是人为选取的姿态参数，其对应的列向量混合了多个关节的旋转贡献，不能解释为单个关节的螺旋轴。本章明确指出：如 SCARA 取 $x=(p,\varphi)$，其 $\mathbb{R}^4$ 雅可比的列不能解释为各关节瞬时 twist 轴。</p>
+<p><strong>2. 六参数局部化的后果</strong>：</p>
+<p>对 $SE(3)$ 选六参数局部化（如欧拉角）会引入纯属参数化产物的奇异。例如欧拉角在万向节锁位置出现坐标奇异，但机械臂本身可能并不奇异。这种伪奇异会污染奇异位形分析，因此本章坚持用 twist 和 POE 形式定义雅可比，而不是对局部坐标求偏导。</p>
+<p><strong>3. $\xi'_i$ 的依赖关系</strong>：</p>
+<p>POE 形式空间雅可比为</p>
+<p>$$J_{st}^s(\theta)=[\xi'_1\ \xi'_2\ \cdots\ \xi'_n],\quad \xi'_i=\mathrm{Ad}\!\left(e^{\hat\xi_1\theta_1}\cdots e^{\hat\xi_{i-1}\theta_{i-1}}\right)\xi_i.$$</p>
+<p>因此第 $i$ 列 $\xi'_i$ 只依赖 $\theta_1,\dots,\theta_{i-1}$，不含 $\theta_i$ 及之后的角。这与数值微分所得矩阵不同，后者每一列通常依赖全部关节角。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 两共线转动轴奇异（例 3.11）</strong>：</p>
+<p>条件为</p>
+<p>$$\omega_1=\pm\omega_2\quad\text{且}\quad\omega_i\times(q_1-q_2)=0.$$</p>
+<p>即两转动轴方向相同或相反，且两轴共线。此时两个关节产生相同的瞬时旋转，Jacobian 降秩。</p>
+<p><strong>2. 三平行共面转动轴奇异（例 3.12）</strong>：</p>
+<p>条件为存在单位法向 $\mathbf n$，使得</p>
+<p>$$\mathbf n^T\omega_i=0,\qquad \mathbf n^T(q_i-q_j)=0,\quad i,j=1,2,3.$$</p>
+<p>即三个转动轴都垂直于 $\mathbf n$（轴方向与 $\mathbf n$ 正交），且轴上点之差也与 $\mathbf n$ 正交（三轴共面）。注意 $\mathbf n$ 是平面单位法向，不是“与平面平行”的方向。</p>
+<p><strong>3. 四轴交一点奇异（例 3.13）</strong>：</p>
+<p>条件为存在一点 $q$，使得</p>
+<p>$$\omega_i\times(q_i-q)=0,\quad i=1,2,3,4.$$</p>
+<p>即四个转动轴都通过同一点 $q$。此时互易力旋量空间维数为 $3$，大于 $6-4=2$。原因是：四个轴交于一点时，所有力旋量中“通过该点且方向任意”的纯力（3 维）都满足与每个旋转轴互易的条件 $\mathbf V^T\mathbf F=0$。因此零空间维数不是简单的 $6-4=2$，而是 $3$，说明四个关节的约束并非独立，Jacobian 的秩实际低于 $4$。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<pre><code class="lang-python">import numpy as np
+
+def hat_xi(v, w):
+    """构造 4x4 旋量矩阵"""
+    Xi = np.zeros((4,4))
+    Xi[:3,:3] = np.array([[0,-w[2],w[1]],
+                          [w[2],0,-w[0]],
+                          [-w[1],w[0],0]])
+    Xi[:3,3] = v
+    return Xi
+
+def exp_xi(Xi, theta):
+    """矩阵指数，用级数或闭式"""
+    from scipy.linalg import expm
+    return expm(Xi*theta)
+
+# 参数
+l1, l2 = 1.0, 1.0
+theta1, theta2 = np.pi/4, np.pi/4
+
+# 参考位形 g_st(0): 末端在 (2,0)，姿态 I
+g0 = np.eye(4)
+g0[:3,3] = [l1+l2, 0, 0]
+
+# 关节 1: 轴过原点，方向 z
+w1 = np.array([0,0,1.0])
+q1 = np.array([0,0,0.0])
+v1 = -np.cross(w1, q1)
+xi1 = hat_xi(v1, w1)
+
+# 关节 2: 轴过 (l1,0,0)，方向 z
+w2 = np.array([0,0,1.0])
+q2 = np.array([l1,0,0.0])
+v2 = -np.cross(w2, q2)
+xi2 = hat_xi(v2, w2)
+
+# POE
+g_poe = exp_xi(xi1, theta1) @ exp_xi(xi2, theta2) @ g0
+
+# 直接几何
+px = l1*np.cos(theta1) + l2*np.cos(theta1+theta2)
+py = l1*np.sin(theta1) + l2*np.sin(theta1+theta2)
+g_geo = np.eye(4)
+g_geo[:3,3] = [px, py, 0]
+
+print("POE 位置:", g_poe[:3,3])
+print("几何位置:", g_geo[:3,3])
+print("位置误差:", np.linalg.norm(g_poe[:3,3]-g_geo[:3,3]))
+print("姿态误差:", np.linalg.norm(g_poe[:3,:3]-g_geo[:3,:3]))</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>POE 计算的位置与几何计算的位置数值一致，误差在机器精度量级（约 $10^{-16}$）。</li>
+<li>姿态矩阵均为绕 $z$ 轴旋转 $\theta_1+\theta_2=\pi/2$ 的旋转矩阵。</li>
+<li>这验证了 POE 公式 $g_{st}(\theta)=e^{\hat\xi_1\theta_1}e^{\hat\xi_2\theta_2}g_{st}(0)$ 对平面两连杆的正确性，也验证了 twist 构造 $\xi_i=\begin{bmatrix}-\omega_i\times q_i\\ \omega_i\end{bmatrix}$ 的符号约定与本章一致。</li>
+<li>若把 $v_i$ 改成 $q_i\times\omega_i$，则位置会偏离，说明符号约定不可随意更改。</li>
+</ul>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>论文地图 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">论文地图<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<header>
+  <div class="wrap">
+    <h1>论文地图：李飞飞脉络 · 具身智能 · 大模型 · 脑机接口</h1>
+    <div class="sub">
+      从 GitHub 实测检索 + arXiv 逐条核验生成。仓库星数为 <b>2026-10-09</b> 当天快照；
+      论文链接的 arXiv 编号全部通过 arXiv 官方 API 校验过，不是凭记忆写的。
+    </div>
+    <div class="meta">
+      <span class="tag hl">GitHub 检索：gh API 实时</span>
+      <span class="tag ok">arXiv 编号：已核验</span>
+      <span class="tag">数据日期：2026-10-09</span>
+      <span class="tag">27 个仓库 / 60+ 篇论文</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ===================== 0 结论先说 ===================== -->
+<h2>先说结论<span class="en">TL;DR</span></h2>
+<div class="lead">你问的两件事，答案不一样，我把话说清楚。</div>
+
+<div class="box note">
+  <b>关于「李飞飞整个脉络的论文仓库」——GitHub 上不存在这样的仓库。</b><br>
+  我用 <code>gh api search</code> 跑了 <code>Fei-Fei Li</code>、<code>academic family tree / lineage / genealogy</code> 等多组关键词，
+  返回的全是 CS231n 作业仓库和 VGG 风格迁移这类无关结果，没有一个是「李飞飞学术谱系 / 论文脉络」清单。
+  <b>这条路没有现成的轮子，但有两个更好的替代品：</b>
+</div>
+
+<div class="grid2">
+  <div class="box good">
+    <b>① 替代品 A：StanfordVL 组织（她的实验室本身）</b><br>
+    <span style="color:var(--tx2);font-size:13.5px">
+      <code>github.com/StanfordVL</code> = Stanford Vision &amp; Learning Lab，官网 <code>svl.stanford.edu</code>，
+      创建于 2016-12-14。这里面 30+ 个仓库<b>按 star 排序就是一条完整的研究时间线</b>——从 Taskonomy、GibsonEnv 到 BEHAVIOR-1K，
+      比任何人整理的二手清单都准。这是最接近你要的「脉络」的东西。
+    </span>
+  </div>
+  <div class="box good">
+    <b>② 替代品 B：我自己给你拼的脉络（见第 1 节）</b><br>
+    <span style="color:var(--tx2);font-size:13.5px">
+      下面那条 2009→2026 的时间线是我按她的真实发表顺序串的，每个节点都配了可点的仓库 / 论文链接。
+      关键转折是 <b>2017 年前后从「视觉理解」切到「具身智能」</b>，2024 年创 World Labs 后切到「空间智能」。
+    </span>
+  </div>
+</div>
+
+<!-- ===================== 1 李飞飞脉络 ===================== -->
+<h2>1. 李飞飞的脉络<span class="en">StanfordVL + 完整时间线</span></h2>
+<div class="lead">
+  她的官方实验室组织就是 <code>StanfordVL</code>（Stanford Vision and Learning Lab）。下面按真实 star 数排序，
+  这本身就是她研究重心的迁移轨迹。
+</div>
+
+<h3><span class="n">1.1</span>StanfordVL 仓库（GitHub 实测，2026-10-09）</h3>
+<table>
+  <tr><th style="width:64px">★</th><th style="width:210px">仓库</th><th>说明 / 对应论文</th></tr>
+  <tbody>
+    <tr><td class="star">1740</td><td class="name"><a href="https://github.com/StanfordVL/BEHAVIOR-1K" target="_blank">StanfordVL/BEHAVIOR-1K</a></td><td class="desc">1000 个日常家务任务的具身 AI 基准 + 仿真平台，<b>她现在的旗舰项目</b></td></tr>
+    <tr><td class="star">987</td><td class="name"><a href="https://github.com/huangwl18/ReKep" target="_blank">huangwl18/ReKep</a></td><td class="desc">关系关键点约束的时空推理做机械臂操作（2024，她学生 Huang 一作）</td></tr>
+    <tr><td class="star">948</td><td class="name"><a href="https://github.com/StanfordVL/GibsonEnv" target="_blank">StanfordVL/GibsonEnv</a></td><td class="desc">Gibson 环境：用真实世界扫描建具身智能体训练场（CVPR 2018）</td></tr>
+    <tr><td class="star">877</td><td class="name"><a href="https://github.com/StanfordVL/taskonomy" target="_blank">StanfordVL/taskonomy</a></td><td class="desc">Taskonomy：任务迁移学习解耦，<b>CVPR 2018 最佳论文</b></td></tr>
+    <tr><td class="star">838</td><td class="name"><a href="https://github.com/huangwl18/VoxPoser" target="_blank">huangwl18/VoxPoser</a></td><td class="desc">用大模型合成 3D 价值地图驱动机器人（CoRL 2023 <b>最佳论文</b>）</td></tr>
+    <tr><td class="star">818</td><td class="name"><a href="https://github.com/StanfordVL/iGibson" target="_blank">StanfordVL/iGibson</a></td><td class="desc">iGibson：大规模真实交互场景仿真，Gibson 的交互升级版</td></tr>
+    <tr><td class="star">502</td><td class="name"><a href="https://github.com/StanfordVL/CS131_release" target="_blank">CS131_release</a> / <a href="https://github.com/StanfordVL/cs131_notes" target="_blank">cs131_notes</a></td><td class="desc">Stanford CS131 计算机视觉课程作业与笔记（835★ 笔记 + 502★ 作业）</td></tr>
+    <tr><td class="star">328</td><td class="name"><a href="https://github.com/StanfordVL/3DSceneGraph" target="_blank">StanfordVL/3DSceneGraph</a></td><td class="desc">3D 场景图：统一语义 / 3D 空间 / 相机的结构</td></tr>
+    <tr><td class="star">160</td><td class="name"><a href="https://github.com/StanfordVL/JRMOT_ROS" target="_blank">JRMOT_ROS</a></td><td class="desc">实时 3D 多目标跟踪 + 大规模数据集</td></tr>
+    <tr><td class="star">124</td><td class="name"><a href="https://github.com/StanfordVL/bddl-100" target="_blank">bddl-100</a></td><td class="desc">BEHAVIOR 领域定义语言（BDDL），BEHAVIOR-1K 的任务描述底层</td></tr>
+    <tr><td class="star">99</td><td class="name"><a href="https://github.com/StanfordVL/RubiksNet" target="_blank">RubiksNet</a></td><td class="desc">ECCV 2020：可学习 3D-Shift 做高效视频动作识别</td></tr>
+    <tr><td class="star">92</td><td class="name"><a href="https://github.com/StanfordVL/feedback-networks" target="_blank">feedback-networks</a></td><td class="desc">CVPR 2017 Feedback Networks</td></tr>
+    <tr><td class="star">82</td><td class="name"><a href="https://github.com/StanfordVL/ntp" target="_blank">ntp</a></td><td class="desc">Neural Task Programming：用程序结构做机器人任务泛化</td></tr>
+    <tr><td class="star">67</td><td class="name"><a href="https://github.com/StanfordVL/robovat" target="_blank">robovat</a></td><td class="desc">RoboVat：仿真 + 真实机器人任务统一工具箱</td></tr>
+    <tr><td class="star">51</td><td class="name"><a href="https://github.com/StanfordVL/atp-video-language" target="_blank">atp-video-language</a></td><td class="desc">CVPR 2022 Oral：Atemporal Probe 重新审视视频-语言理解</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="n">1.2</span>论文脉络：17 年，三次转向</h3>
+<div class="legend">
+  <b>读法：</b>蓝点 = 视觉理解期（2009–2016）｜紫点 = 具身智能期（2017–2024）｜青点 = 空间智能期（2024–）
+</div>
+<div class="tl">
+  <div class="tli"><span class="yr">2009</span><span class="ti">ImageNet: A Large-Scale Hierarchical Image Database</span>
+    <div class="de">CVPR 2009。整个深度学习时代的燃料库。<em>不在 arXiv，IEEE 收录</em></div></div>
+  <div class="tli"><span class="yr">2012</span><span class="ti">ImageNet Classification with Deep CNNs（AlexNet）</span>
+    <div class="de">NeurIPS 2012。引爆点。她不是作者，但数据集是她建的——这是她影响力的真正来源。<em>NeurIPS 收录</em></div></div>
+  <div class="tli"><span class="yr">2016</span><span class="ti">Visual Genome</span>
+    <div class="de">把语言、场景图、关系标注塞进图像。从「识别物体」走向「理解关系」。<a href="https://arxiv.org/abs/1602.07332" target="_blank">arXiv:1602.07332</a></div></div>
+  <div class="tli p"><span class="yr">2017</span><span class="ti">Neural Task Programming</span>
+    <div class="de"><b>转向点①</b>：开始让机器人复用任务程序结构，正式从视觉跨进机器人。<a href="https://arxiv.org/abs/1710.01813" target="_blank">arXiv:1710.01813</a></div></div>
+  <div class="tli p"><span class="yr">2018</span><span class="ti">Gibson Env</span>
+    <div class="de">真实建筑扫描 → 具身智能体训练环境。<a href="https://arxiv.org/abs/1808.10654" target="_blank">arXiv:1808.10654</a></div></div>
+  <div class="tli p"><span class="yr">2018</span><span class="ti">Taskonomy</span>
+    <div class="de">CVPR 2018 <b>最佳论文</b>。用 26 个视觉任务算迁移图。<a href="https://arxiv.org/abs/1804.08328" target="_blank">arXiv:1804.08328</a> · <a href="https://github.com/StanfordVL/taskonomy" target="_blank">代码</a></div></div>
+  <div class="tli p"><span class="yr">2019</span><span class="ti">3D Scene Graph</span>
+    <div class="de">场景图结构统一语义与空间。<a href="https://arxiv.org/abs/1910.02527" target="_blank">arXiv:1910.02527</a></div></div>
+  <div class="tli p"><span class="yr">2023</span><span class="ti">VoxPoser</span>
+    <div class="de">CoRL 2023 <b>最佳论文</b>。LLM+视觉模型直接合成 3D 价值地图，零训练操控。<a href="https://arxiv.org/abs/2307.05973" target="_blank">arXiv:2307.05973</a> · <a href="https://github.com/huangwl18/VoxPoser" target="_blank">代码</a></div></div>
+  <div class="tli p"><span class="yr">2024</span><span class="ti">BEHAVIOR-1K</span>
+    <div class="de">1000 个真实家务活动基准。她的「具身 AI 应该做什么」的正式回答。<a href="https://arxiv.org/abs/2403.09227" target="_blank">arXiv:2403.09227</a></div></div>
+  <div class="tli p"><span class="yr">2024</span><span class="ti">ReKep</span>
+    <div class="de">关系关键点约束时空推理，复杂操作零样本泛化。<a href="https://arxiv.org/abs/2409.01652" target="_blank">arXiv:2409.01652</a></div></div>
+  <div class="tli c"><span class="yr">2025.11</span><span class="ti">Marble（World Labs 首个商用产品）</span>
+    <div class="de"><b>转向点②</b>：从文字/图像/视频生成可导航、可编辑的持久 3D 世界。空间智能落地产品。</div></div>
+  <div class="tli c"><span class="yr">2026.01</span><span class="ti">World API 发布</span>
+    <div class="de">把 Marble 能力开放给开发者和机器人公司。</div></div>
+  <div class="tli c"><span class="yr">2026.02</span><span class="ti">World Labs 完成 10 亿美元融资</span>
+    <div class="de">累计 12.3 亿美元，投资方含 AMD / Autodesk / NVIDIA / Fidelity。</div></div>
+  <div class="tli c"><span class="yr">2026.06</span><span class="ti">A Functional Taxonomy of World Models</span>
+    <div class="de"><b>她最新的理论主张</b>：世界模型分三类——<b>Renderer</b>（出像素）、<b>Simulator</b>（出状态）、<b>Planner</b>（出动作），三者构成闭环。
+    明确点名「只会渲染的不算世界模型」，Sora/Runway/Kling 都被归为 Renderer。<em>发在她的 Substack，非 arXiv</em></div></div>
+</div>
+
+<div class="box info">
+  <b>这条脉络对你有用的地方：</b>她的路线是
+  <b>ImageNet（数据）→ 视觉理解 → 具身智能（仿真+基准）→ 空间智能（3D 世界生成）</b>。
+  你现在在补的「产业链中上游底层」缺口，跟她这条线的后半段（仿真平台 / 世界模型 / 空间智能）是同一块地——
+  所以 BEHAVIOR-1K、Cosmos、Marble 这三个不只是论文，是<b>产业位置</b>，值得当成抓手来讲。
+</div>
+
+<!-- ===================== 2 仓库清单 ===================== -->
+<h2>2. GitHub 高星论文清单仓库<span class="en">按领域分类，星数为实测</span></h2>
+<div class="lead">
+  这些是「论文索引」，不是论文本身。<b>星数 = 社区认可度 + 维护活跃度</b>，选的时候优先看「最近 push 时间」——
+  具身智能领域三个月不更新就过时了。
+</div>
+
+<h3><span class="n">2.1</span>具身智能 / VLA（最核心）</h3>
+<table>
+  <tr><th style="width:64px">★</th><th style="width:250px">仓库</th><th>覆盖范围</th><th style="width:96px">最近更新</th></tr>
+  <tbody>
+    <tr><td class="star">4481</td><td class="name"><a href="https://github.com/GT-RIPL/Awesome-LLM-Robotics" target="_blank">GT-RIPL/Awesome-LLM-Robotics</a></td><td class="desc">大模型做机器人/RL 的论文总表，含代码与项目页。这个领域的<b>第一入口</b></td><td>2026-07</td></tr>
+    <tr><td class="star">3574</td><td class="name"><a href="https://github.com/jonyzhang2023/awesome-embodied-vla-va-vln" target="_blank">jonyzhang2023/awesome-embodied-vla-va-vln</a></td><td class="desc">VLA + 视觉语言导航 VLN 专项，869 行，按年份倒序，更新频繁</td><td>2026-09</td></tr>
+    <tr><td class="star">2806</td><td class="name"><a href="https://github.com/YanjieZe/awesome-humanoid-robot-learning" target="_blank">YanjieZe/awesome-humanoid-robot-learning</a></td><td class="desc">人形机器人学习论文清单，1167 行。<b>人形方向最全</b></td><td>2026-10-09</td></tr>
+    <tr><td class="star">2032</td><td class="name"><a href="https://github.com/leofan90/Awesome-World-Models" target="_blank">leofan90/Awesome-World-Models</a></td><td class="desc">世界模型全景：定义 + 视频生成 + 具身 + 自动驾驶</td><td>2026-10-08</td></tr>
+    <tr><td class="star">1468</td><td class="name"><a href="https://github.com/OpenMOSS/Awesome-WAM" target="_blank">OpenMOSS/Awesome-WAM</a></td><td class="desc">World Action Models 专集，2026 最热的新概念</td><td>2026-09</td></tr>
+    <tr><td class="star">1421</td><td class="name"><a href="https://github.com/robotics-survey/Awesome-Robotics-Foundation-Models" target="_blank">Awesome-Robotics-Foundation-Models</a></td><td class="desc">机器人基础模型论文。<b>注意：2024-10 后停更</b></td><td>2024-10</td></tr>
+    <tr><td class="star">1042</td><td class="name"><a href="https://github.com/DravenALG/awesome-vla-wam" target="_blank">DravenALG/awesome-vla-wam</a></td><td class="desc">VLA + WAM 合集，更新很勤</td><td>2026-10-09</td></tr>
+    <tr><td class="star">871</td><td class="name"><a href="https://github.com/Denghaoyuan123/Awesome-RL-VLA" target="_blank">Denghaoyuan123/Awesome-RL-VLA</a></td><td class="desc">RL + VLA 交叉（RLVR / 后训练），<b>2026 增长最快的方向之一</b></td><td>2026-10-08</td></tr>
+    <tr><td class="star">533</td><td class="name"><a href="https://github.com/haoranD/Awesome-Embodied-AI" target="_blank">haoranD/Awesome-Embodied-AI</a></td><td class="desc">具身 AI 综述 / 感知 / VLA / 模拟器 / 数据集。<b>2025-06 后停更</b></td><td>2025-06</td></tr>
+    <tr><td class="star">438</td><td class="name"><a href="https://github.com/keon/awesome-physical-ai" target="_blank">keon/awesome-physical-ai</a></td><td class="desc">Physical AI。<b>分类结构做得最好</b>（骨干/VLA架构/动作表征/世界模型/推理/学习范式/部署/安全），适合系统梳理</td><td>2026-06</td></tr>
+    <tr><td class="star">358</td><td class="name"><a href="https://github.com/showlab/Awesome-Robotics-Diffusion" target="_blank">showlab/Awesome-Robotics-Diffusion</a></td><td class="desc">扩散策略做机器人操控</td><td>2026-10</td></tr>
+    <tr><td class="star">489</td><td class="name"><a href="https://github.com/gaiyi7788/awesome-legged-locomotion-learning" target="_blank">gaiyi7788/awesome-legged-locomotion-learning</a></td><td class="desc">腿式运动学习（四足/双足）</td><td>2026-10-02</td></tr>
+    <tr><td class="star">378</td><td class="name"><a href="https://github.com/Phylliade/awesome-machine-learning-robotics" target="_blank">Phylliade/awesome-machine-learning-robotics</a></td><td class="desc">机器学习 + 机器人综合</td><td>2026-10-03</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="n">2.2</span>直接可跑的开源模型（比论文清单更实用）</h3>
+<table>
+  <tr><th style="width:64px">★</th><th style="width:250px">仓库</th><th>是什么</th></tr>
+  <tbody>
+    <tr><td class="star">8179</td><td class="name"><a href="https://github.com/NVIDIA/Isaac-GR00T" target="_blank">NVIDIA/Isaac-GR00T</a></td><td class="desc">NVIDIA 人形机器人基础模型，<b>产业界事实标准</b></td></tr>
+    <tr><td class="star">3785</td><td class="name"><a href="https://github.com/starVLA/starVLA" target="_blank">starVLA/starVLA</a></td><td class="desc">VLA 开源训练框架</td></tr>
+    <tr><td class="star">2989</td><td class="name"><a href="https://github.com/dexmal/dexbotic" target="_blank">dexmal/dexbotic</a></td><td class="desc">具身智能一站式开源框架</td></tr>
+    <tr><td class="star">2667</td><td class="name"><a href="https://github.com/open-gigaai/giga-brain-0" target="_blank">open-gigaai/giga-brain-0</a></td><td class="desc">国地中心 giga-brain-0 世界动作模型</td></tr>
+    <tr><td class="star">2324</td><td class="name"><a href="https://github.com/OpenHelix-Team/VLA-Adapter" target="_blank">OpenHelix-Team/VLA-Adapter</a></td><td class="desc">OpenHelix 社区（3600+ star），VLA 适配桥接，<b>ReconVLA 就出自这个团队</b></td></tr>
+    <tr><td class="star">1809</td><td class="name"><a href="https://github.com/thu-ml/RoboticsDiffusionTransformer" target="_blank">thu-ml/RoboticsDiffusionTransformer</a></td><td class="desc">清华 RDT-1B，双臂扩散大模型</td></tr>
+    <tr><td class="star">1533</td><td class="name"><a href="https://github.com/allenzren/open-pi-zero" target="_blank">allenzren/open-pi-zero</a></td><td class="desc">π0 的开源复现，读 π0 论文必配</td></tr>
+    <tr><td class="star">1289</td><td class="name"><a href="https://github.com/X-Square-Robot/wall-x" target="_blank">X-Square-Robot/wall-x</a></td><td class="desc">它山石 WALL-X</td></tr>
+    <tr><td class="star">1132</td><td class="name"><a href="https://github.com/InternRobotics/InternNav" target="_blank">InternRobotics/InternNav</a></td><td class="desc">InternRobotics 导航（InternVLA 系列）</td></tr>
+    <tr><td class="star">723</td><td class="name"><a href="https://github.com/HorizonRobotics/HoloMotion" target="_blank">HorizonRobotics/HoloMotion</a></td><td class="desc">地平线人形全身运动控制</td></tr>
+    <tr><td class="star">12000</td><td class="name"><a href="https://github.com/NVIDIA/cosmos" target="_blank">NVIDIA/cosmos</a></td><td class="desc">NVIDIA 世界基础模型平台（Physical AI）</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="n">2.3</span>脑机接口</h3>
+<table>
+  <tr><th style="width:64px">★</th><th style="width:250px">仓库</th><th>说明</th><th style="width:96px">最近更新</th></tr>
+  <tbody>
+    <tr><td class="star">1548</td><td class="name"><a href="https://github.com/NeuroTechX/awesome-bci" target="_blank">NeuroTechX/awesome-bci</a></td><td class="desc">BCI 领域最大的 awesome 清单（工具 / 数据集 / 硬件 / 论文 / 社区）</td><td>—</td></tr>
+    <tr><td class="star">1084</td><td class="name"><a href="https://github.com/facebookresearch/brain2qwerty" target="_blank">facebookresearch/brain2qwerty</a></td><td class="desc"><b>Meta 非侵入式脑→文本解码</b>，代码全开源，Nature Neuroscience 两连发</td><td>—</td></tr>
+    <tr><td class="star">633</td><td class="name"><a href="https://github.com/pieeg-club/ironbci" target="_blank">pieeg-club/ironbci</a></td><td class="desc">EEG/BCI 工具集合</td><td>2026-10-03</td></tr>
+    <tr><td class="star">573</td><td class="name"><a href="https://github.com/TBC-TJU/MetaBCI" target="_blank">TBC-TJU/MetaBCI</a></td><td class="desc"><b>天津大学</b>主导的国产 BCI 开源平台，中文社区最实用</td><td>2026-10-08</td></tr>
+    <tr><td class="star">385</td><td class="name"><a href="https://github.com/aliasvishnu/EEGNet" target="_blank">aliasvishnu/EEGNet</a></td><td class="desc">EEGNet 实现合集</td><td>2026-08</td></tr>
+    <tr><td class="star">354</td><td class="name"><a href="https://github.com/wjq-learning/CBraMod" target="_blank">wjq-learning/CBraMod</a></td><td class="desc">EEG 基础模型（criss-cross transformer），<b>2026 脑电大模型代表</b></td><td>—</td></tr>
+    <tr><td class="star">300</td><td class="name"><a href="https://github.com/xiangzhang1015/Deep-Learning-for-BCI" target="_blank">xiangzhang1015/Deep-Learning-for-BCI</a></td><td class="desc">深度学习做 BCI 的论文清单</td><td>2026-09-28</td></tr>
+    <tr><td class="star">240</td><td class="name"><a href="https://github.com/sccn/BCILAB" target="_blank">sccn/BCILAB</a></td><td class="desc">SCCN（Swartz 中心）BCI 实验室工具箱，EEGLAB 生态</td><td>2026-10-01</td></tr>
+    <tr><td class="star">222</td><td class="name"><a href="https://github.com/PatternRecognition/OpenBMI" target="_blank">PatternRecognition/OpenBMI</a></td><td class="desc">OpenBMI 开放数据集 + 基准</td><td>2026-09-04</td></tr>
+    <tr><td class="star">175</td><td class="name"><a href="https://github.com/apachecn/awesome-bci-zh" target="_blank">apachecn/awesome-bci-zh</a></td><td class="desc">awesome-bci 中文翻译版</td><td>—</td></tr>
+    <tr><td class="star">113</td><td class="name"><a href="https://github.com/atonkamanda/awesome-ai-brain-computer-interface" target="_blank">atonkamanda/awesome-ai-brain-computer-interface</a></td><td class="desc">AI × BCI 交叉清单</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================== 3 论文精选 ===================== -->
+<h2>3. 高分论文精选<span class="en">四大板块 · 影响力评分</span></h2>
+<div class="legend">
+  <b>评分口径：</b>10 分制，综合发表venue、引用量级、是否开创方向、是否仍在被当作基线。
+  <b>这是我给的判断，不是官方评分</b>——分越高越该先读。满分留给"定义了整个子领域"的那几篇。
+</div>
+
+<h3><span class="n">3.1</span>AI 大模型 × 世界模型</h3>
+<div class="papers">
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">ImageNet Classification with Deep Convolutional Neural Networks（AlexNet）</div>
+    <div class="v">NeurIPS 2012 · Krizhevsky, Sutskever, Hinton</div>
+    <div class="w">深度学习的奇点。整个后续所有大模型（含机器人大模型）都建在它证明的"规模+算力+数据"范式上。</div>
+    <div class="ln"><span>NeurIPS 官方收录页</span></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">Mastering Diverse Domains through World Models（Dreamer V3）</div>
+    <div class="v">Nature 2025 · Hafner et al.</div>
+    <div class="w">第一个在 Minecraft 上<b>零样本打通全部成就</b>的算法，且不调超参。世界模型路线的里程碑证明。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2301.04104" target="_blank">arXiv:2301.04104</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">9</div><div class="lb">影响</div></div><div>
+    <div class="t">Cosmos World Foundation Model Platform for Physical AI</div>
+    <div class="v">NVIDIA · 2025</div>
+    <div class="w">NVIDIA 的世界基础模型平台，李飞飞 2026 分类里被归为 <b>Simulator</b> 代表。做产业投资必须读。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2501.03575" target="_blank">arXiv:2501.03575</a> · <a href="https://github.com/NVIDIA/cosmos" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">9</div><div class="lb">影响</div></div><div>
+    <div class="t">A Functional Taxonomy of World Models</div>
+    <div class="v">Fei-Fei Li · 2026-06-03 · World Labs</div>
+    <div class="w">把"世界模型"这个被用烂的词切成 Renderer / Simulator / Planner 三类。
+    <b>能把这套分类框架讲清楚，说明理解的是结构而不是名词。</b></div>
+    <div class="ln"><span>她的 Substack / World Labs 官网（非 arXiv）</span></div></div></div>
+</div>
+
+<h3><span class="n">3.2</span>具身智能 / VLA（你最该补的）</h3>
+<div class="papers">
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">RT-1: Robotics Transformer for Real-World Control at Scale</div>
+    <div class="v">Google · 2022</div>
+    <div class="w">第一个证明"机器人策略也能规模化"的工作。VLA 这条线的起点，后面的 RT-2 / OpenVLA / π0 全是它的延伸。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2212.06817" target="_blank">arXiv:2212.06817</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control</div>
+    <div class="v">Google DeepMind · 2023</div>
+    <div class="w"><b>"VLA"这个名字的由来。</b>证明把 VLM 的互联网知识直接搬进机器人控制可行。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2307.15818" target="_blank">arXiv:2307.15818</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">Diffusion Policy: Visuomotor Policy Learning via Action Diffusion</div>
+    <div class="v">RSS 2023 <b>最佳论文</b> · Chi et al.（Columbia / Toyota Research）</div>
+    <div class="w">把扩散模型引入动作生成。今天绝大多数操控策略（含 RDT、π0）都带它的影子。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2303.04137" target="_blank">arXiv:2303.04137</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">π₀: A Vision-Language-Action Flow Model for General Robot Control</div>
+    <div class="v">Physical Intelligence · 2024 / π₀.₅ 2025</div>
+    <div class="w">流匹配做动作生成 + 跨本体预训练。<b>当前工业界最强通用操控模型之一</b>，必读。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2410.24164" target="_blank">π₀ arXiv:2410.24164</a> · <a href="https://arxiv.org/abs/2504.16054" target="_blank">π₀.₅ arXiv:2504.16054</a> · <a href="https://github.com/allenzren/open-pi-zero" target="_blank">开源复现</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">OpenVLA: An Open-Source Vision-Language-Action Model</div>
+    <div class="v">CoRL 2024 · Stanford 等</div>
+    <div class="w">第一个真正可用的<b>开源</b> 7B VLA。想动手就从这个开始，不要从 RT-2（闭源）。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2406.09246" target="_blank">arXiv:2406.09246</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">Open X-Embodiment: Robotic Learning Datasets and RT-X Models</div>
+    <div class="v">RSS 2024 · 21 家机构联合</div>
+    <div class="w">把 22 种机器人的数据统一成一个数据集。<b>机器人界的 ImageNet 时刻</b>——跨本体泛化的地基。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2310.08864" target="_blank">arXiv:2310.08864</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">PaLM-E: An Embodied Multimodal Language Model</div>
+    <div class="v">ICML 2023 · Google</div>
+    <div class="w">把连续机器人观测直接塞进 LLM token 流。 embodied reasoning 的开山之作之一。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2303.03378" target="_blank">arXiv:2303.03378</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models</div>
+    <div class="v">CoRL 2023 <b>最佳论文</b> · 李飞飞组</div>
+    <div class="w">不改模型权重，用 LLM 现写代码合成 3D 价值地图驱动机器人。<b>零样本操控最优雅的解法</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2307.05973" target="_blank">arXiv:2307.05973</a> · <a href="https://github.com/huangwl18/VoxPoser" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">GR00T N1: An Open Foundation Model for Generalist Humanoid Robots</div>
+    <div class="v">NVIDIA · 2025</div>
+    <div class="w">人形机器人基础模型，开源权重。<b>国内人形公司大量在对标这个</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2503.14734" target="_blank">arXiv:2503.14734</a> · <a href="https://github.com/NVIDIA/Isaac-GR00T" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">Gemini Robotics: Bringing AI into the Physical World</div>
+    <div class="v">Google DeepMind · 2025</div>
+    <div class="w">前沿多模态模型下放到物理动作的代表，闭源阵营的天花板。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2503.20020" target="_blank">arXiv:2503.20020</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware（ALOHA / ACT）</div>
+    <div class="v">RSS 2023 · Zhao et al.</div>
+    <div class="w">低成本双臂硬件 + ACT 算法，<b>让机器人操控研究第一次平民化</b>。国内一堆硬件方案抄的就是它。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2304.13705" target="_blank">arXiv:2304.13705</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">ReKep: Spatio-Temporal Reasoning of Relational Keypoint Constraints</div>
+    <div class="v">2024 · 李飞飞组</div>
+    <div class="w">用约束优化把大模型输出转成可执行轨迹。<b>LLM 规划 + 优化求解这条路的代表作</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2409.01652" target="_blank">arXiv:2409.01652</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">影响</div></div><div>
+    <div class="t">Do As I Can, Not As I Say（SayCan）</div>
+    <div class="v">Google · 2022</div>
+    <div class="w">LLM 负责"想"，价值函数负责"能不能做"。<b>大模型与底层控制解耦的经典范式</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2204.01691" target="_blank">arXiv:2204.01691</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">影响</div></div><div>
+    <div class="t">Code as Policies: Language Model Programs for Embodied Control</div>
+    <div class="v">ICRA 2023 · Liang et al.（李飞飞组）</div>
+    <div class="w">让 LLM 直接写 Python 当机器人策略。可解释、可验证，工程上很实用。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2209.07753" target="_blank">arXiv:2209.07753</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">影响</div></div><div>
+    <div class="t">BEHAVIOR-1K: 1000 个日常家务活动的具身 AI 基准</div>
+    <div class="v">2024 · 李飞飞组</div>
+    <div class="w">定义了"具身智能到底该解决什么问题"。<b>看基准 = 看一个团队的世界观</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2403.09227" target="_blank">arXiv:2403.09227</a> · <a href="https://github.com/StanfordVL/BEHAVIOR-1K" target="_blank">代码</a></div></div></div>
+</div>
+
+<h3><span class="n">3.3</span>2026 新出的高热度工作（追前沿用）</h3>
+<div class="box info">
+  这几篇都是 2026 年新出的，还没有长期引用验证，<b>评分只代表当前热度与 benchmark 表现</b>，不代表历史地位。
+</div>
+<div class="papers">
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">热度</div></div><div>
+    <div class="t">ReconVLA：重建式视觉-语言-动作模型</div>
+    <div class="v">AAAI 2026 <b>杰出论文奖（Outstanding Paper）</b> · 港科大（广州）+ 西湖大学 · OpenHelix 社区</div>
+    <div class="w">用"隐式定位"解决 VLA 视觉注意力弥散问题：训练时重建凝视区域逼模型聚焦，推理时模块完全移除、零额外延迟。
+    CALVIN ABC→D 从第 5 子任务 49.0% 提到 <b>64.1%</b>；积木堆叠 59.3%→<b>79.5%</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2508.10333" target="_blank">arXiv:2508.10333</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">热度</div></div><div>
+    <div class="t">ACoT-VLA：在动作空间做思维链</div>
+    <div class="v">CVPR 2026 · 智元机器人 + 北航</div>
+    <div class="w">显式动作推理（粗轨迹草图）+ 隐式动作推理（从 VLM 的 KV Cache 挖动作先验）。
+    LIBERO 平均 <b>98.5%</b>，LIBERO-Plus（含扰动）<b>84.1%</b>，超过 π0/π0.5/GR00T。已开源为 AGIBOT WORLD CHALLENGE 基线。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2601.11404" target="_blank">arXiv:2601.11404</a> · <a href="https://github.com/AgibotTech/ACoT-VLA" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">热度</div></div><div>
+    <div class="t">ERVLA：重新审视具身思维链</div>
+    <div class="v">2026-06 · 中科院自动化所等</div>
+    <div class="w">建了迄今最大具身 CoT 语料（97.8 万条轨迹 / 2.263 亿样本 / 2592.5 小时）。
+    核心结论：<b>高阶语义推理单独用收效甚微，必须落到末端执行器运动描述上</b>；显式 CoT 当自回归前缀会有误差累积。
+    LIBERO-Plus <b>86.9%</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2606.03784" target="_blank">arXiv:2606.03784</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">6</div><div class="lb">热度</div></div><div>
+    <div class="t">GTA-VLA：可交互的具身推理（Guide-Think-Act）</div>
+    <div class="v">2026-05 · SimplerEnv WidowX 81.2% SOTA</div>
+    <div class="w">允许用户用手势/框/轨迹等空间先验<b>随时插手纠正</b> VLA。对"失败后怎么恢复"这个工程痛点给了解法。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2605.13632" target="_blank">arXiv:2605.13632</a></div></div></div>
+</div>
+
+<h3><span class="n">3.4</span>人形机器人 / 运动控制</h3>
+<div class="papers">
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning</div>
+    <div class="v">CoRL 2022 <b>最佳论文</b> · Rudin et al.（NVIDIA / ETH）</div>
+    <div class="w">把四足行走训练压到分钟级。<b>今天所有人形 RL 训练管线的底座</b>（Isaac Gym 大规模并行）。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2109.11978" target="_blank">arXiv:2109.11978</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control</div>
+    <div class="v">SIGGRAPH Asia 2021 · Peng et al.</div>
+    <div class="w">用对抗式运动先验把"参考动作"注入物理仿真。<b>人形动作自然度的关键技术</b>，ASAP / BeyondMimic 都基于它。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2104.02180" target="_blank">arXiv:2104.02180</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">Real-World Humanoid Locomotion with Reinforcement Learning</div>
+    <div class="v">Science Robotics 2023 · 波士顿动力 / Unitree 相关团队</div>
+    <div class="w">人形 RL 走出现实世界的标志性工作。盒马/宇树/众擎的演示基本都在这个技术谱系上。</div>
+    <div class="ln"><span>Science Robotics（期刊，非 arXiv）</span></div></div></div>
+</div>
+
+<h3><span class="n">3.5</span>脑机接口</h3>
+<div class="box note">
+  <b>提醒：</b>BCI 的高分论文绝大多数发在 Nature / NEJM / Science 系列，<b>不在 arXiv 上</b>。
+  下面给的是期刊 DOI 或官方页，部分需要订阅。开源代码集中在 <code>brain2qwerty</code> 和 <code>MetaBCI</code>。
+</div>
+<div class="papers">
+  <div class="pc"><div class="rate"><div class="num a">10</div><div class="lb">影响</div></div><div>
+    <div class="t">A high-performance speech neuroprosthesis</div>
+    <div class="v">Nature 2023 · Willett et al.（Stanford 神经假体转化实验室）</div>
+    <div class="w">从运动皮层直接解码语音，把"说不出话的人恢复说话"第一次做到可用速度。<b>现代语言 BCI 的奠基工作</b>。</div>
+    <div class="ln"><a href="https://doi.org/10.1038/s41586-023-06377-x" target="_blank">DOI:10.1038/s41586-023-06377-x</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">Real-Time Decoding of Question-and-Answer Speech Dialogue Using a Cortical Implant</div>
+    <div class="v">NEJM 2021 · Moses et al.（UCSF, Edward Chang）</div>
+    <div class="w">首次实现植入式 BCI 的实时<b>问答对话</b>解码。临床转化路径的起点。</div>
+    <div class="ln"><a href="https://doi.org/10.1056/NEJMoa2027540" target="_blank">DOI:10.1056/NEJMoa2027540</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">An Accurate and Rapidly Calibrated Speech Neuroprosthesis</div>
+    <div class="v">NEJM 2024 · Card et al.（UC Davis / BrainGate）</div>
+    <div class="w">把校准时间从数小时压到几十分钟，词汇量 12.5 万。<b>从"能演示"到"能日常用"的跨越</b>。</div>
+    <div class="ln"><a href="https://doi.org/10.1056/NEJMoa2314138" target="_blank">DOI:10.1056/NEJMoa2314138</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">9</div><div class="lb">影响</div></div><div>
+    <div class="t">Long-term independent use of an intracortical BCI for speech and cursor control</div>
+    <div class="v">Nature Medicine 2026 · Card, Singer-Clark et al.（UC Davis）</div>
+    <div class="w"><b>目前 BCI 领域最强的临床证据。</b>一名重度瘫痪 ALS 患者在家独立使用近 2 年，累计 3800+ 小时，
+    说出 183,060 句（近 200 万词），平均 <b>56 词/分钟</b>，92% 句子基本正确，结构化测试 12.5 万词表准确率 &gt;99%。</div>
+    <div class="ln"><a href="https://doi.org/10.1038/s41591-026-04414-6" target="_blank">DOI:10.1038/s41591-026-04414-6</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">Accurate Decoding of Natural Sentences from Non-Invasive Brain Recordings（Brain2Qwerty v2）</div>
+    <div class="v">Nature Neuroscience 2026-06-29 · Meta AI（Lévy et al.）</div>
+    <div class="w"><b>非侵入式路线的重大突破。</b>MEG → Conformer → Aligner → Qwen3-4B(LoRA)，端到端实时解出整句。
+    9 名被试平均词准确率 <b>61%</b>（此前非侵入式约 8%），最优被试 <b>78%</b>。代码全开源。
+    关键发现：准确率随数据规模<b>对数线性增长</b>——剩下的差距可能靠堆数据而非改架构补上。</div>
+    <div class="ln"><a href="https://doi.org/10.1038/s41593-026-02303-2" target="_blank">DOI:10.1038/s41593-026-02303-2</a> · <a href="https://arxiv.org/abs/2608.18114" target="_blank">arXiv:2608.18114</a> · <a href="https://github.com/facebookresearch/brain2qwerty" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num b">8</div><div class="lb">影响</div></div><div>
+    <div class="t">Brain-to-Text Decoding: A Non-invasive Approach via Typing（Brain2Qwerty v1）</div>
+    <div class="v">Nature Neuroscience 2025 · Meta AI</div>
+    <div class="w">v2 的前身，逐字符解码，最优字符错误率约 32%。<b>从 v1 到 v2 的演进本身就是很好的学习材料</b>。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/2502.17480" target="_blank">arXiv:2502.17480</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">影响</div></div><div>
+    <div class="t">单个植入装置同时解码言语与手势</div>
+    <div class="v">Nature Neuroscience 2026-09 · Edward Chang（UCSF）团队</div>
+    <div class="w">3 名声道与肢体瘫痪受试者，一个感觉运动皮层植入体同时解上肢动作 + 言语相关面部动作，
+    驱动全身虚拟化身。对话任务中一名受试者言语+手势解码中位准确度达 <b>100%</b>。<b>与具身智能的 avatar 控制直接相关</b>。</div>
+    <div class="ln"><span>Nature Neuroscience 2026-09 刊发</span></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">7</div><div class="lb">影响</div></div><div>
+    <div class="t">EEGNet: A Compact Convolutional Network for EEG-based Brain-Computer Interfaces</div>
+    <div class="v">JNN 2018 · Lawhern et al.</div>
+    <div class="w">EEG 深度学习的<b>标准基线</b>，跑了 800+ 次引用级别的影响力。做 EEG 必读必复现。</div>
+    <div class="ln"><a href="https://arxiv.org/abs/1611.08024" target="_blank">arXiv:1611.08024</a> · <a href="https://github.com/aliasvishnu/EEGNet" target="_blank">代码</a></div></div></div>
+
+  <div class="pc"><div class="rate"><div class="num">6</div><div class="lb">影响</div></div><div>
+    <div class="t">EEG 基础模型：CBraMod / NeuroLM / EEG-FM-Benchmark</div>
+    <div class="v">2024–2026 · GitHub 354★ / 170★ / 151★</div>
+    <div class="w">把"预训练大模型"范式搬进脑电。<b>这是 BCI 与大模型结合最直接的入口</b>，也是国内团队密集发力的方向。</div>
+    <div class="ln"><a href="https://github.com/wjq-learning/CBraMod" target="_blank">CBraMod</a> · <a href="https://github.com/935963004/NeuroLM" target="_blank">NeuroLM</a> · <a href="https://github.com/Dingkun0817/EEG-FM-Benchmark" target="_blank">EEG-FM-Benchmark</a></div></div></div>
+</div>
+
+<!-- ===================== 4 路线 ===================== -->
+<h2>4. 建议的读法<span class="en">给你的顺序</span></h2>
+<div class="box good">
+<b>若目标是补产业链中上游 + 建立完整技术判断，建议这个顺序：</b>
+<ol style="margin:8px 0 0 18px;color:var(--tx2);font-size:14px;line-height:1.9">
+  <li><b>先搭骨架</b>：把 <code>keon/awesome-physical-ai</code> 的目录结构读一遍。它的分类（骨干 / VLA 架构 / 动作表征 / 世界模型 / 推理 / 学习范式 / 部署 / 安全）就<b>是一份领域地图</b>，比读十篇论文更省时间。</li>
+  <li><b>读四篇定海神针</b>：RT-1 → RT-2 → Diffusion Policy → π₀。这四篇串起来，VLA 的主干你就有了。</li>
+  <li><b>补李飞飞这条线</b>：VoxPoser → ReKep → BEHAVIOR-1K → 2026 世界模型分类。她的价值不在单点技术，在<b>问题定义的演进</b>。</li>
+  <li><b>补产业侧</b>：NVIDIA Cosmos + Isaac-GR00T 两个仓库的 README 和文档。这两个是<b>投资岗真正的语言</b>——别人跟你聊的是这些，不是 arXiv。</li>
+  <li><b>BCI 单独走</b>：先读 Willett 2023 Nature 打底，再读 2026 Nature Medicine 那篇看临床落地，最后看 brain2qwerty 的代码。</li>
+</ol>
+</div>
+
+<div class="box note">
+<b>两个提醒：</b><br>
+① <b>不要平均用力</b>。60 篇里真正决定你能不能跟人聊的，是最上面那 10 篇 8 分以上的。剩下的当作字典，用到再查。<br>
+② <b>清单仓库会过时</b>。<code>Awesome-Robotics-Foundation-Models</code>（2024-10 停更）和 <code>haoranD/Awesome-Embodied-AI</code>（2025-06 停更）这两个别当主入口——
+它们内容还行，但已经缺了 2025-2026 一整年的进展，包括 WAM 和具身 CoT 这两个现在最热的方向。
+</div>
+
+<footer>
+  数据来源：GitHub REST API（<code>gh api search/repositories</code>）实时检索，星数与 push 时间为 2026-10-09 快照；
+  论文 arXiv 编号经 arXiv 官方 API 逐条核验；BCI 临床论文 DOI 与 Nature / NEJM 官方发布页核对；
+  2026 年新工作基准数据取自论文摘要与官方发布稿。<br>
+  影响力评分为主观判断（综合 venue、引用量级、开创性、是否仍被当基线），非任何官方指标。
+</footer>
+
+</div>
+<nav class="pager" data-for="papermap"></nav>
+
+</div>
+</main>
+</body>
+</html>

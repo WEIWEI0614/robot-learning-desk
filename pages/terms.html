@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>术语手册 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">术语手册<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>双足机器人 · 从看懂到动手</h1>
+<div class="sub">
+  Microduck / Open Duck Mini 架构术语全解 ＋ 三条动手路径 ｜ 起点 2026-09-21 ｜
+  基线：应用数学 + 计算机双硕士，会 Python，RL 已过多臂老虎机与 CartPole
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <ol>
+    <li><a href="#p-terms-s0">怎么读这份东西</a></li>
+    <li><a href="#p-terms-s1">降维：那张架构图其实只有 5 件事</a></li>
+    <li><a href="#p-terms-s2">术语全解 ①　机械与硬件层（14 条）</a></li>
+    <li><a href="#p-terms-s3">术语全解 ②　嵌入式与系统软件层（9 条）</a></li>
+    <li><a href="#p-terms-s4">术语全解 ③　强化学习与训练层（8 条）</a></li>
+    <li><a href="#p-terms-s5">术语全解 ④　部署与 Sim2Real 层（6 条）</a></li>
+    <li><a href="#p-terms-s6">三条动手路径（逐阶段 / 工时 / 预算 / 验收）</a></li>
+    <li><a href="#p-terms-s7">简化版采购清单（三档）</a></li>
+    <li><a href="#p-terms-s8">与你已有学习路线的关系（重要）</a></li>
+    <li><a href="#p-terms-s9">避坑清单（真金白银换来的）</a></li>
+    <li><a href="#p-terms-s10">术语自测 20 问</a></li>
+    <li><a href="#p-terms-s11">资源索引</a></li>
+  </ol>
+</div>
+
+<h2 id="p-terms-s0">〇　怎么读这份东西</h2>
+
+<p>三点说明，免得你读得别扭：</p>
+
+<div class="card">
+<p><strong>1. 这份手册跳过「什么是神经网络」。</strong>你有应用数学 + 计算机双硕士，RL 也已经过了多臂老虎机和 CartPole。所以下面只讲<strong>机器人特有的东西</strong>——那些"软件工程师第一次碰硬件时一定不知道"的部分。凡是你能从自己已有知识推出来的，我不重复。</p>
+<p><strong>2. 每条术语按四段写：</strong>一句话定义 → 为什么非这样不可（设计意图）→ 关键数字 → 代码/文件里在哪能看到它。第三段最值钱，第四段最实用。</p>
+<p><strong>3. 凡是我推断而非官方声明的，会明确标注「推断」。</strong>这个项目的公开资料里本身就有几处对不上（下面会标出来），我不会替你圆场。</p>
+</div>
+
+<div class="key">
+<strong>一句话总纲：</strong>这只鸭子里，「AI」只占不到 20% 的工作量。剩下 80% 是<strong>电气、机械、标定、系统集成</strong>。所以「小白能不能自己攒一台」的答案是——能，但拦住你的不是数学，是你愿意为打印公差和舵机零点校准花掉多少个周末。
+</div>
+
+<h2 id="p-terms-s1">一　降维：那张架构图其实只有 5 件事</h2>
+
+<p>你看到的那张三层图，术语密度很高，但它回答的其实只有五个问题。把这张表背下来，那张图就再也不会吓到你：</p>
+
+<table>
+<thead><tr><th style="width:22%">层</th><th style="width:34%">它在回答什么问题</th><th style="width:26%">人类类比</th><th>图上的具体东西</th></tr></thead>
+<tbody>
+<tr><td><strong>① 硬件层</strong></td><td>身体在哪、能怎么动</td><td>肌肉、骨骼、内耳、眼睛</td><td>15 个电机、IMU、ToF、相机、RK3566、电池</td></tr>
+<tr><td><strong>② 板载运行时</strong></td><td>每 20 毫秒把"决定"变成"动作"，且从不迟到</td><td>脊髓反射</td><td>robotd 等 7 个 Rust 守护进程</td></tr>
+<tr><td><strong>③ 训练侧</strong></td><td>怎么在不摔坏真机的前提下学会走路</td><td>学骑车前的想象练习</td><td>MuJoCo + PPO + 域随机化</td></tr>
+<tr><td><strong>④ Sim2Real</strong></td><td>虚拟里学会的，换到真实世界还管用</td><td>换了真车仍然会骑</td><td>BAM 执行器模型、齿隙仿真</td></tr>
+<tr><td><strong>⑤ 分发机制</strong></td><td>脑子怎么像文件一样被替换和分享</td><td>下载一个技能包</td><td>ONNX + 61 维契约 + 策略热插拔</td></tr>
+</tbody>
+</table>
+
+<div class="key">
+<strong>最关键的一个判断：</strong>五层里只有 <strong>④ Sim2Real</strong> 是真正的研究难题。①②③⑤ 全都是成熟工程——任何人照文档做都能做出来。<br>
+所以整个行业现在卡在哪、为什么 Pollen 把自己的 Sim2Real 配方开源会引起这么大反响，答案都在第 ④ 层。这也是你学习时应该投入最多时间的地方。
+</div>
+
+<h2 id="p-terms-s2">二　术语全解</h2>
+
+<h3 class="grp">① 机械与硬件层</h3>
+
+<div class="term">
+<div class="tn">舵机<span class="en">Servo / Actuator</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：一个把「电机 + 减速齿轮 + 位置传感器 + 控制电路」封在一起的模块。你告诉它「转到 30 度」，它自己闭环转过去并保持住。</p>
+<p><strong>为什么不能用普通电机：</strong>普通直流电机你给它电压它就转，但你不知道它转到哪了，也不知道它有没有转到位。而机器人走路需要精确控制每个关节的角度——如果每个关节都要你从零搭一套「读编码器 → 算 PID → 输出 PWM」的闭环，15 个关节就是 15 套，工程上不可行。舵机把这件事变成了一个简单的 API。</p>
+<div class="kv">
+<b>关键数字：</b>Microduck 用的是 <code>Dynamixel XL330</code>，18 g，20×34×26 mm，内部 12 位绝对式非接触编码器，4096 步/圈 = 0.088°/步。<br>
+<b>注意：</b>XL330 有两个变体，官方公开资料里<strong>没有明确说是哪一个</strong>（只说"XL330 系列"）。两者差别极大，见下面这张表。
+</div>
+<table class="t3">
+<thead><tr><th>参数（@5V）</th><th>XL330-M077（速度型）</th><th>XL330-M288（扭矩型）</th></tr></thead>
+<tbody>
+<tr><td>减速比</td><td>77.5 : 1</td><td>288.4 : 1</td></tr>
+<tr><td>堵转转矩</td><td>0.215 N·m</td><td>0.52 N·m</td></tr>
+<tr><td>空载转速</td><td>383 rpm</td><td>103 rpm</td></tr>
+<tr><td>齿轮材料</td><td>工程塑料</td><td>工程塑料</td></tr>
+<tr><td>参考单价</td><td>$35–40</td><td>$35–40</td></tr>
+</tbody>
+</table>
+<p class="where">哪能看到：<code>microduck_rl/src/mjlab_microduck/actuator/friction_dr_bam.py</code>（执行器建模）；型号规格在 ROBOTIS e-Manual。</p>
+</div>
+
+<div class="term">
+<div class="tn">总线舵机 · 菊花链 · 唯一 ID<span class="badge bhw">硬件</span></div>
+<p class="one">一句话：15 个舵机只用 2 根信号线串成一条链，每个舵机有唯一 ID，指令里带 ID 来寻址。</p>
+<p><strong>为什么非这样不可：</strong>如果每个舵机都要「信号线 + 独立 PWM 通道」，15 个舵机就是 15 根线，塞不进 25 cm 的身体，而且主控引脚也不够。总线（Dynamixel 用的是 TTL 半双工串口，Protocol 2.0）让所有舵机共享一根总线，主控轮流点名——"ID 3 号，转到 45 度"。<strong>这是这个机器人能做小的物理前提。</strong></p>
+<div class="kv">
+<b>关键数字：</b>波特率 9,600 bps – 4 Mbps；供电 <b>3.7–6.0 V</b>（推荐 5 V）；待机电流 17 mA、堵转电流可达 1.1–1.7 A / 个。<br>
+<b>半双工的意思：</b>同一对线既要发指令也要收反馈，所以不能同时收发。这意味着总线带宽是稀缺资源——15 个舵机 × 50 Hz = 每秒 750 次指令，加上读回位置/电流，这是 50Hz 控制环的实际瓶颈之一。
+</div>
+<p class="where">哪能看到：<code>robotd</code> 里的 motor bus 层；官方文档 <code>docs/</code> 下有一页专门讲总线。</p>
+</div>
+
+<div class="term">
+<div class="tn">自由度<span class="en">DoF / Joint</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：一个「能独立转动的关节」＝ 一个自由度 ＝ 一个电机。所以「15 个电机」和「15 个自由度」是同一件事。</p>
+<p><strong>Microduck 的 14 个机身关节怎么分配</strong>（这是官方 <code>microduck_rl</code> 仓库里明确定义的顺序，很重要，因为策略的输入输出都按这个顺序对齐）：</p>
+<table class="t3">
+<thead><tr><th>关节索引</th><th>部位</th><th>5 个自由度是什么</th></tr></thead>
+<tbody>
+<tr><td>0 – 4</td><td><strong>左腿</strong></td><td>hip_yaw（腿左右摆开）、hip_roll（髋部内翻外翻）、hip_pitch（腿前后抬）、knee（膝）、ankle（踝）</td></tr>
+<tr><td>5 – 8</td><td><strong>颈 + 头</strong></td><td>neck_pitch、head_pitch、head_yaw、head_roll</td></tr>
+<tr><td>9 – 13</td><td><strong>右腿</strong></td><td>同左腿 5 个</td></tr>
+</tbody>
+</table>
+<p>第 15 个电机是<strong>鸭喙夹爪</strong>（受独立舵机控制，可以叼起接近自重的物体）。所以准确说法是：<strong>15 个电机 = 14 个机身关节 + 1 个喙</strong>。这个拆分是我根据「官方说 15 个电机、但 RL 里只列了 14 个舵机关节」推断的，标注为推断。</p>
+<div class="kv">
+<b>髋为什么要有 3 个自由度：</b>yaw 决定腿往哪个方向摆开（左右），roll 决定腿的侧向倾角，pitch 决定腿向前后。三个轴合起来，脚才能指向空间里任意方向。这是仿人设计。<br>
+<b>踝为什么只有 1 个：</b>只有 pitch（前后）。人的踝关节有 2 个（pitch + roll）。少一个 roll，机器人在侧向就是"半失控"的——它没法靠踝关节调整左右平衡，只能靠<strong>不停地迈步</strong>来把重心拉回来。这就是它走路一摇一摆的真实工程原因（不只是为了卖萌）。省一个电机 × 2 条腿 = 省 2 个自由度，代价是步态必须摇摆。<span class="badge bi">推断</span>
+</div>
+<p class="where">哪能看到：<code>microduck_rl</code> 仓库 README 里明确写了 joint layout；<code>src/mjlab_microduck/robot/microduck/</code> 下是 MJCF 模型文件。</p>
+</div>
+
+<div class="term">
+<div class="tn">编码器<span class="en">Encoder</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：装在舵机内部、用来测量「轴现在转到哪个角度」的传感器。舵机之所以能闭环，全靠它。</p>
+<p><strong>为什么它是 RL 的关键：</strong>强化学习策略的输入（观测）里，最大的一块（48 维）就是<strong>所有关节的当前角度和速度</strong>——这些数字全部来自编码器。编码器的精度直接决定策略能看到多细的世界。</p>
+<div class="kv">
+<b>关键数字：</b>XL330 用的是 12 位绝对式非接触磁性编码器（AS5601），4096 步/圈 ≈ 0.088°/步。绝对式 = 断电后仍然知道自己的绝对角度，不用每次开机回零。<br>
+<b>和齿隙的关系：</b>编码器装在减速齿轮的<strong>输出侧</strong>（真实的那一侧）。这个细节在仿真里很重要——见后面「齿隙」那一条。
+</div>
+<p class="where">哪能看到：<code>microduck_rl/.../backlash.py</code>（齿隙观测如何"透过"间隙读取）。</p>
+</div>
+
+<div class="term">
+<div class="tn">IMU · 惯性测量单元<span class="en">IMU / IMU 双份</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：一颗芯片里装了加速度计（测线性加速度）＋ 陀螺仪（测角速度），有时还有磁力计。它是机器人的内耳前庭。</p>
+<p><strong>为什么双足机器人没它就不能活：</strong>你闭上眼睛站着也知道自己有没有歪——靠内耳。机器人没有 IMU 就完全不知道自己是站直了、后仰了还是侧倾了。"保持平衡"这个任务的本质就是"让躯干倾角维持在 0 附近"，而倾角就是 IMU 直接给的。<strong>双足最难的问题、也是 IMU 唯一的用武之地。</strong></p>
+<p><strong>为什么装两个（身体 1 个 + 头部 1 个）：</strong></p>
+<ul>
+<li>颈和头是<strong>可动</strong>的。头部的 IMU 能区分「是身体歪了」还是「只是脖子转了」——只有一个的话会混淆这两件事。</li>
+<li>两个可以互相校验，抑制传感器漂移。</li>
+<li>头部 IMU 让策略可以主动用头部动作辅助平衡（甩头调整角动量），这也是 head_pose 作为一个可指令量的原因。</li>
+</ul>
+<div class="kv">
+<b>致命坑（必考）：</b>IMU 的角速度积分会<strong>累积漂移</strong>。你不可能只用 IMU 算出机器人走了多远、转了多少度，误差会指数增长。<br>
+所以真机上必须做 <strong>状态估计（state estimation）</strong>：把 IMU、腿的正运动学（由关节角度反推脚在哪）、脚底接触检测三路信息融合（卡尔曼滤波或互补滤波）。这是双足里最难、也最容易被低估的一块。
+</div>
+<p class="where">哪能看到：仓库里 <code>robotd</code> 有 IMU 服务；RL 侧观测里的 <code>base_ang_vel</code>、<code>projected_gravity</code> 就是 IMU 数据的加工结果。</p>
+</div>
+
+<div class="term">
+<div class="tn">ToF LiDAR<span class="en">Time-of-Flight</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：发射一束红外激光，数它反射回来的时间，用「光速 × 时间 ÷ 2」算出距离。8×8 意味着它是排成 8 行 8 列的 64 个测距点。</p>
+<p><strong>为什么只有 8×8 就够用：</strong>因为它的任务不是建地图导航，只是两件事——「别撞到椅子腿」和「找到地上的球 / 激光点」。分辨率低 → 便宜 + 算力需求极低。如果换成能建 3D 地图的真激光雷达（几万点/秒），就需要 GPU 级别的算力，整个产品的成本结构会崩。</p>
+<div class="kv">
+<b>关键数字：</b>64 个深度点。对比：能建图的深相机（RealSense）是几十万点。<br>
+<b>它能做什么：</b>官方在 RK3566 上跑轻量 YOLO 类模型做<strong>预定义目标检测</strong>——球、脚、激光点。不做开放世界理解，不做自主避障和路径规划。<br>
+<b>NFC 是它的补充：</b>算力不够做室内定位，官方就贴 NFC 标签当"穷人版触发器/定位"——鸭子扫到不同位置的标签，触发对应行为。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">单目广角相机<span class="badge bhw">硬件</span></div>
+<p class="one">一句话：只有一个镜头。单目相机<strong>没有深度信息</strong>——它只能告诉你"画面里哪个位置有东西"，不能直接告诉你"东西有多远"。</p>
+<p><strong>为什么这很重要：</strong>这就是为什么必须加一个 ToF 来补深度。也是为什么它的视觉能力止步于"识别预定义目标"——它没有能推理三维结构的算力。官方的定位很诚实：它不是家用机器人，看不到"房间"，只看到"球"和"激光点"。</p>
+</div>
+
+<div class="term">
+<div class="tn">SoC · NPU · TOPS<span class="en">System on Chip</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：SoC 是把 CPU、GPU、内存控制器、外设接口全集成在一块芯片上。NPU 是芯片里专门加速神经网络矩阵运算的硬件。TOPS 是它的算力度量（每秒万亿次整数运算）。</p>
+<p><strong>Microduck 的取舍——这是全机最重要的一个设计决定：</strong></p>
+<div class="kv">
+<b>瑞芯微 RK3566：</b>4 核 Cortex-A55 @1.8 GHz + Mali-G52 GPU + <b>0.8 TOPS NPU</b> + 1 GB RAM + 32 GB eMMC。<br>
+<b>这块芯片是什么档位：</b>"预算级 Android 电视盒"档。手机 NPU 都是几十 TOPS 起。<br>
+<b>它的定位只有一个：</b>跑推理，<b>不跑训练</b>。这才是一切设计的起点——因为训练必须在你的电脑上做，所以整机可以便宜；如果要能在机器上训练，就得装 Jetson Orin（几千元）甚至更大，$399 这个价格就不存在了。<br>
+<b>0.8 TOPS 够吗：</b>绰绰有余。这个策略网络很小（几十到几百 KB 量级），一次推理只占 20 毫秒预算里的一小段。
+</div>
+<p class="where">哪能看到：官方 press kit 的完整规格表；板载 Runtime 仓库的部署说明。</p>
+</div>
+
+<div class="term">
+<div class="tn">电池 · 电压跌落为什么是大问题<span class="badge bhw">硬件</span></div>
+<p class="one">一句话：用的是可拆卸 NP-F550 摄像机电池（2600 mAh，约 1 小时）。选通用摄像机电池而不是定制电池，是硬件创业的经典降本手法——现成、便宜、随处可买。</p>
+<p><strong>但真正值得你注意的是另一件事：</strong>14–15 个舵机，每个堵转电流可达 1.1–1.7 A。如果同时用力（走路时经常发生），峰值电流可能到<strong>十几到二十几安培</strong>。而舵机供电只有 3.7–6 V。这意味着：</p>
+<ul>
+<li>电池内阻 + 线阻会造成的<strong>瞬时电压跌落（voltage sag）</strong>——同一时刻，有的舵机拿到 6 V，有的只拿到 4.5 V。</li>
+<li>同一个舵机在不同时刻，可用力矩是<strong>不一样</strong>的。你发同样的指令，得到的动作不同。</li>
+<li>这就是为什么官方的域随机化里有一项专门叫 <code>voltage sag under load</code>（带载电压跌落）。</li>
+</ul>
+<p class="where">哪能看到：<code>microduck_rl</code> 的 <code>FrictionDRBamActuator</code>，域随机的项就列在那里。</p>
+</div>
+
+<div class="term">
+<div class="tn">3D 打印 · PLA vs TPU · 公差<span class="badge bhw">硬件</span></div>
+<p class="one">一句话：结构件用 FDM 3D 打印。PLA 硬、便宜、尺寸稳，做骨架；TPU 软、有弹性，做脚垫（增加摩擦、吸震）。</p>
+<p><strong>为什么 DIY 最容易死在这里：</strong></p>
+<ul>
+<li><strong>公差</strong>：打印件尺寸误差通常 ±0.2–0.4 mm。舵机的安装孔位差 0.3 mm，要么装不进去（要拿锉刀磨），要么旷动（关节就会晃，策略立刻失效）。</li>
+<li><strong>收缩</strong>：不同材料收缩率不同，同一份图纸在不同机器上打出来尺寸不一样。</li>
+<li><strong>换料的代价</strong>：一体件返工要整件重新打，一个件 2–6 小时。所以 DIY 双足的时间黑洞往往不在装配，在<strong>"打废了重打"</strong>。</li>
+</ul>
+<div class="kv">
+<b>建议：</b>第一次做，把打印件外包给代打店（淘宝/嘉立创，一套 ¥150–400）。他们有更稳的机器和材料，公差一致性远比家用机好，而且省掉你 2–4 周调机器的日历时间。自己有机器的优势在<strong>迭代</strong>（改一版打一版），不在第一版。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">BOM<span class="en">Bill of Materials</span><span class="badge bhw">硬件</span></div>
+<p class="one">一句话：物料清单。把一台机器需要的每个零件、型号、数量、单价列成表。</p>
+<p><strong>一个必须理解的陷阱：</strong>Microduck 官方 $399 是<strong>装配好整机</strong>的预售价；Open Duck Mini 的「BOM 低于 $400」是<strong>物料成本</strong>目标。这两个数字<strong>不可比</strong>——后者不含你的工时、打印、焊接、标定、返工。</p>
+<div class="kv">
+<b>实情：</b>有复刻者报物料成本已超 ¥8,000；有网友整理淘宝清单约 ¥2,119（其中 14 颗舵机就占 ¥1,316）；也有"$150 极简方案"。差别全在<strong>舵机选什么</strong>——这是成本的绝对大头，占 50–70%。<br>
+<b>还有个反直觉的事实：</b>个人手搓的成本常常比买成品贵，因为官方是几万台批量的价格，你是一件一件零售买。
+</div>
+</div>
+
+<h3 class="grp" id="p-terms-s3">② 嵌入式与系统软件层</h3>
+
+<div class="term">
+<div class="tn">守护进程<span class="en">daemon</span><span class="badge bsw">系统</span></div>
+<p class="one">一句话：在后台常驻运行、没有界面的程序。Linux 术语。</p>
+<p><strong>为什么拆成 7 个而不是写一个大程序——这是本题最值得学的设计思想：</strong></p>
+<table class="t3">
+<thead><tr><th>进程</th><th>职责</th><th>崩了会怎样</th></tr></thead>
+<tbody>
+<tr><td><code>robotd</code></td><td><strong>50 Hz 实时控制环，唯一有电机控制权的进程</strong></td><td>死亡 → 机器人立刻失力倒下（这是唯一不能崩的）</td></tr>
+<tr><td><code>updaterd</code></td><td>签名 OTA 升级、健康检查、失败自动回滚</td><td>只是不能升级，机器人照常走</td></tr>
+<tr><td><code>configd</code></td><td>Wi-Fi 与设备身份</td><td>断网，不影响走路</td></tr>
+<tr><td><code>btd</code></td><td>蓝牙通道（手机 App 用）</td><td>手机连不上，不影响走路</td></tr>
+<tr><td><code>padd</code></td><td>读游戏手柄</td><td>遥控失效，但已下发的策略继续跑</td></tr>
+<tr><td><code>mediad</code></td><td>相机取流 + WebRTC 推流</td><td>看不到画面，不影响走路</td></tr>
+<tr><td><code>tofd</code></td><td>深度传感器服务</td><td>看不见障碍，不影响走路</td></tr>
+</tbody>
+</table>
+<div class="key">
+<strong>核心思想叫「故障隔离」。</strong>相机驱动崩溃不该让电机停转——因为电机停转意味着机器人摔倒、硬件损坏。所以把低关键度的功能拆出去，让它们崩了也不影响那一条 50 Hz 的命脉。<br>
+这是实时系统与普通软件的分界线：普通软件追求"都能用"，实时系统追求"绝对不能停"。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">50 Hz 控制环 · 实时<span class="badge bsw">系统</span></div>
+<p class="one">一句话：每 20 毫秒执行一次完整循环——读所有传感器 → 神经网络推理 → 算出 15 个舵机的目标 → 发到总线上。</p>
+<p><strong>为什么必须是固定频率、而且绝对不能卡：</strong>控制理论里，控制周期越长，系统能容忍的延迟越小、稳定性越差。双足平衡在本质上是一个"倒立摆"问题，它天然不稳定——你稍有延迟，倾角已经发散到无法挽回。50 Hz（20 ms）对双足是底线。</p>
+<div class="kv">
+<b>关键推论：</b>如果某一次循环跑了 100 ms，机器人已经倒了。<br>
+<b>所以 robotd 里绝对不能做的事：</b>网络请求（会阻塞）、文件 IO、动态内存分配（可能触发 GC 或页错误）、任何"可能等很久"的系统调用。<br>
+<b>余量必须留着：</b>20 ms 里推理只占很小一段，剩下的必须留作安全余量——因为总会有偶发的抖动（缓存未命中、总线重传）。一个"平均 19 ms"的循环是危险的，因为尾延迟会超。
+</div>
+<p class="where">哪能看到：官方文档 <code>docs/design/</code> 下专门讲了控制环的设计决定。</p>
+</div>
+
+<div class="term">
+<div class="tn">为什么用 Rust<span class="badge bsw">系统</span></div>
+<p class="one">一句话：Rust 没有垃圾回收（GC），所以不会突然卡顿几十毫秒。</p>
+<p><strong>三条理由，都直接来自上面那条「不能卡」：</strong></p>
+<ol>
+<li><strong>无 GC</strong>：C++/Python/Java 都可能在任何时刻被运行时打断。Python 的 GIL 和 GC 抖动在 20 ms 预算里是灾难。Rust 的确定性释放让它成为唯一"既有高级语言表达力、又没有运行时"的选择。</li>
+<li><strong>内存安全</strong>：机器人控制代码的 bug 不只是崩溃，是<strong>摔坏硬件</strong>。Rust 在编译期挡掉一整类内存错误。</li>
+<li><strong>无框架、启动快、体积小</strong>：官方明确说 "Rust, no framework, one workspace"。7 个进程共用一套工作区，依赖极少——依赖越少，OTA 越简单、攻击面越小。</li>
+</ol>
+<div class="note">
+<strong>对你的意义：</strong>你不需要会写 Rust 才能玩。官方设计的路径是——你只改 <code>.onnx</code> 策略文件（配置文件里换一行路径），完全不用碰 Rust。只有想做新硬件功能或改控制环时才需要。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">Unix socket</div>
+<p class="one">一句话：同一台机器上两个进程之间通信的方式（不用走网卡）。比 TCP 快、不出网络栈。</p>
+<p><strong>为什么用它：</strong>7 个进程都在同一块 RK3566 上，通信走本机内存就够了，没必要走网卡。Unix socket 的延迟比 TCP 低一个量级，而且可以靠文件权限做访问控制——这是纯内部通信的正确选择。</p>
+</div>
+
+<div class="term">
+<div class="tn">JSON-RPC 2.0 · 统一契约<span class="badge bsw">系统</span></div>
+<p class="one">一句话：一种极简的远程调用协议，格式就是一个 JSON——<code>{"jsonrpc":"2.0","method":"robot.do","params":{...},"id":1}</code>。</p>
+<p><strong>为什么这个设计很聪明：</strong>官方文档里这句话是关键——<em>"每一个客户端（App、控制台、手柄、你的脚本）发的都是完全相同的调用"</em>。</p>
+<ul>
+<li><strong>加新客户端不用改服务端。</strong>你写个 Python 脚本控制鸭子，和官方手机 App 用的是同一套接口，不需要官方为你做什么。</li>
+<li><strong>调试极其简单。</strong>因为协议是人类可读的 JSON，你可以直接 <code>echo</code> 一条 JSON 到 socket 上看反应。</li>
+<li><strong>语义统一。</strong>没有"App 有 A 功能但命令行没有"这种问题。</li>
+</ul>
+<p class="where">哪能看到：官方 <code>robotctl</code> 命令就是这套接口的命令行封装（<code>robotctl monitor</code> / <code>configure</code> / <code>update</code>）。</p>
+</div>
+
+<div class="term">
+<div class="tn">单一写者原则：只有 robotd 能动电机<span class="badge bsw">系统</span></div>
+<p class="one">一句话：所有指令都是"意图"，最终必须由 robotd 做安全检查后才真正执行。手机、手柄、你的脚本，都只能提请求，不能直接碰电机。</p>
+<p><strong>为什么这个设计比"好用"更重要：</strong>如果允许多个客户端直接写电机总线，会出现：手机 App 正让它往前走，你的脚本同时让它蹲下——电机收到矛盾指令，结果是不可预测的物理行为（可能自撞、可能烧电机）。</p>
+<div class="key">
+把安全校验<strong>集中在架构层</strong>而不是散落在每个客户端的业务代码里——这是"正确性只写一遍"的经典手法。你要学的是这个思路：<strong>把不变量（安全约束）放在唯一能违反它的地方</strong>。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">OTA · A/B 分区 · 自动回滚<span class="en">Over-The-Air</span><span class="badge bsw">系统</span></div>
+<p class="one">一句话：通过网络远程给设备升级软件。Microduck 的流程是——下载 Release → 验证签名 → 切换版本 → 重启服务 → 健康检查 → 失败自动回滚。</p>
+<p><strong>为什么这是「软件思维」和「硬件思维」的分界线：</strong>软件可以每天发版，出 bug 下次修。但硬件不行——机器人刷坏了要寄回来，或者用户根本不会刷。所以硬件产品的发版必须<strong>可逆</strong>。</p>
+<div class="kv">
+<b>关键机制：</b>签名验证（防止恶意固件）、健康检查（新版本启动后要能通过自检才算成功）、自动回滚（不通过就切回上一版）。这套东西合起来的效果是「<strong>无法变砖</strong>」。<br>
+<b>这是机器人产品能不能卖给普通消费者的分水岭</b>——没有 OTA 和回滚，任何一次升级失误都意味着售后灾难。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">61 维观测契约 · 策略热插拔<span class="badge bdep">重点</span><span class="badge bsw">系统</span></div>
+<p class="one">一句话：所有策略（走路 / 爬起 / 踢球 / 翻滚）共享同一个 61 维输入空间和同样的输出空间。用不上的指令槽位<strong>补零</strong>，而不是删掉。</p>
+<div class="kv">
+<b>61 维怎么来的：</b>48 维本体感知（14 个关节的角度、速度、上一帧力矩等）+ 3 维 twist（期望前进速度、侧移速度、转向角速度）+ 4 维 head_pose（头部姿态指令）+ 6 维 body_pose（身体姿态指令）= 61。<br>
+<b>每个策略看到的都是这 61 个数</b>，哪怕它根本用不到 head_pose——那块就填 0。
+</div>
+<p><strong>这个设计换来了什么（这是全项目最漂亮的一招）：</strong></p>
+<ul>
+<li><strong>策略变成可互换的文件。</strong>走路策略和爬起策略的输入输出格式完全一致，所以可以<strong>在运行时热插拔</strong>——走路时摔倒了，运行时就切到爬起策略，爬起来了再切回走路。不用改代码、不用重刷固件、不用重启。</li>
+<li><strong>你的新策略是一条命令就能装的。</strong><code>robotctl policy add &lt;名字&gt; &lt;仓库&gt;</code>，因为格式是契约的一部分。</li>
+<li><strong>接口稳定 = 生态可分。</strong>别人训的策略能装到你的鸭子上，这是策略能在 Hugging Face Hub 上流通的技术前提。</li>
+</ul>
+<div class="key">
+<strong>这是整份手册里最值得带走的一条设计原则：</strong>用<strong>一个固定的、略微浪费的接口</strong>，换取<strong>无限的模块可替换性</strong>。多花的那点维度（补零）成本几乎为零，换来的是整个生态能生长。你在做投资判断时也可以用这条尺子——一家公司的机器人软件架构有没有这种"契约层"，直接决定它的技能生态能不能滚起来。
+</div>
+<p class="where">哪能看到：<code>microduck_rl</code> README 的 conventions 段落明确写了这条；运行时侧在 <code>robotd</code>。</p>
+</div>
+
+<h3 class="grp" id="p-terms-s4">③ 强化学习与训练层</h3>
+
+<div class="note">
+这一段假设你已知 MDP、贝尔曼方程、TD、策略梯度、Actor-Critic 的基本概念（你已过《动手学强化学习》前几章 + 自己写过 DQN / REINFORCE）。如果你在某个术语上卡住，回看你自己那 19 份讲义，比在这里重讲更有效——我把篇幅留给<strong>机器人特有的部分</strong>。
+</div>
+
+<div class="term">
+<div class="tn">机器人 RL 的状态、动作、奖励分别是什么<span class="badge brl">RL</span></div>
+<p class="one">一句话：状态 = 61 维观测；动作 = 14 个关节的目标角度（或目标位置增量）；奖励 = 人写的一个打分函数。</p>
+<table class="t3">
+<thead><tr><th>要素</th><th>在这个项目里具体是什么</th></tr></thead>
+<tbody>
+<tr><td>状态 s</td><td>关节角度 / 速度 / 上一步力矩（48 维，来自编码器）+ 躯干角速度与重力投影（来自 IMU）+ 指令（13 维）+ 上一帧动作</td></tr>
+<tr><td>动作 a</td><td>14 个关节的目标关节角（策略输出后被 PD 控制器转成力矩）——<strong>不是直接出力矩</strong></td></tr>
+<tr><td>奖励 r</td><td>手工设计。行走任务里通常包含：前进速度匹配指令（正）、躯干高度维持在某值附近（正）、躯干倾斜（负）、动作幅度过大（负）、脚打滑（负）、摔倒（大负 + 回合终止）</td></tr>
+<tr><td>策略 π</td><td>就是那个神经网络（几十到几百 KB），输入 61 维、输出 14 维</td></tr>
+<tr><td>回合（episode）</td><td>从初始姿态到摔倒或超时</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="term">
+<div class="tn">奖励函数设计 —— 这门手艺的真正核心<span class="badge bdep">重点</span><span class="badge brl">RL</span></div>
+<p class="one">一句话：同一个算法、同一份代码，奖励函数写错，鸭子要么学不会走路，要么学会作弊。</p>
+<p><strong>为什么这比算法选择重要得多：</strong>PPO 这类算法是"通用求解器"，它们会忠实地最大化你写的奖励——<strong>包括你没想清楚的漏洞</strong>。真实发生过的典型作弊：</p>
+<ul>
+<li>奖励里有"前进速度"，但没约束"脚要着地"→ 策略学会<strong>原地高频抖腿</strong>骗速度信号。</li>
+<li>奖励里有"躯干高度"，但没惩罚"膝盖反向弯"→ 策略学会用一种物理上可行、但看起来像蟾蜍的姿态稳住身体。</li>
+<li>奖励里没惩罚"动作变化率"→ 策略输出剧烈振荡，真机上电机瞬间过热。</li>
+</ul>
+<div class="key">
+<strong>官方把这件事的"教训"写成了一份可读的 playbook（<code>microduck_rl/AGENTS.md</code>）。</strong>这是整个开源仓库里对你最有价值的一个文件之一——因为它记录的是"我们试错了哪些奖励设计、哪一版为什么失败"。<br>
+论文只发表成功的版本，这里留下了失败的过程。这就是它比论文值钱的地方。
+</div>
+<p class="where">哪能看到：<code>microduck_rl/src/mjlab_microduck/tasks/mdp.py</code>（奖励、事件、观测的实现）+ <code>AGENTS.md</code>（设计教训）。</p>
+</div>
+
+<div class="term">
+<div class="tn">PPO · 近端策略优化<span class="en">Proximal Policy Optimization</span><span class="badge brl">RL</span></div>
+<p class="one">一句话：你已经在 CartPole 里用过（或至少见过）的策略梯度家族算法。"近端"指的是它限制每次更新时新策略离旧策略不能太远。</p>
+<p><strong>为什么是它成了机器人控制的事实标准：</strong>不是因为它最强，而是因为它<strong>最不容易训崩</strong>。具体做法：构造新旧策略概率比，然后把目标函数在 <code>[1-ε, 1+ε]</code> 区间外做裁剪（clip），使得策略一次更新幅度受限。属于 on-policy 的 actor-critic 家族。</p>
+<div class="kv">
+<b>你要真懂它，需要打通这四层（按你的数学底子，2–3 天）：</b><br>
+① 策略梯度定理（为什么 ∇J = E[∇log π(a|s) · A]）<br>
+② 优势函数 A = 回报 − 基线，为什么要减基线<br>
+③ GAE（广义优势估计）：用 TD 残差加权和估计优势，是"偏差-方差"权衡的旋钮<br>
+④ clip 目标函数：为什么它能抑制过度更新
+</div>
+<p class="where">哪能看到：<code>microduck_rl</code> 用的是 <code>rsl_rl</code> 库里的 PPO 实现（训练框架 <code>mjlab</code> 的内置算法）。</p>
+</div>
+
+<div class="term">
+<div class="tn">并行环境 · 4096 envs<span class="badge brl">RL</span></div>
+<p class="one">一句话：同时跑 4096 个虚拟鸭子，各自独立地在仿真里摔。把所有环境的状态堆成一个大 batch，在 GPU 上一次性前向和反向。</p>
+<p><strong>为什么必须是几千个：</strong>RL 的样本效率极低——学会走路需要几亿步的交互。单环境串行跑要几个月。用 GPU 并行 4096 个环境，就把这个压到 1–2 小时。这不是"优化"，这是<strong>从不可行到可行</strong>的区别。</p>
+<div class="kv">
+<b>关键数字：</b>4096 个并行环境，CUDA 显卡，约 1–2 小时能训出一个可用步态。<br>
+<b>没显卡怎么办：</b>官方仓库支持给任何训练命令加 <code>--hf-jobs</code>，把任务提交到 Hugging Face 的托管算力上跑。或者租 AutoDL（按你之前的记录，3090 约 ¥1.32/时）。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">MuJoCo<span class="en">Multi-Joint dynamics with Contact</span><span class="badge brl">RL</span></div>
+<p class="one">一句话：DeepMind 开源的物理引擎，专门为"接触动力学"优化——脚踩地、手抓东西这类"物体和物体碰上"的问题它算得最准。Apache 2.0 免费。</p>
+<p><strong>为什么是它而不是别的：</strong>机器人控制里真正难算的从来不是刚体自由运动，是<strong>接触</strong>——脚什么时候落地、落地的法向力和摩擦力是多少、会不会打滑。MuJoCo 在这一点上精度最高、速度最快，所以成了学术界的默认选择。</p>
+<div class="kv">
+<b>它的作用：</b>把 MJCF（一种 XML 格式）描述的机器人模型，变成可以一步一算的物理世界。<br>
+<b>和你的经历的关系：</b>你自己写的 CartPole 是自己实现的简单物理；MuJoCo 是工业级版本，能测 15 个关节的摩擦、接触、碰撞。
+</div>
+<p class="where">哪能看到：<code>microduck_rl/src/mjlab_microduck/robot/microduck/</code> 下的 <code>robot_*.xml</code> 就是 MJCF 模型文件。</p>
+</div>
+
+<div class="term">
+<div class="tn">MuJoCo Warp · mjlab · rsl_rl<span class="badge brl">RL</span></div>
+<p class="one">一句话：这三个是"框架套框架"的三层——mjlab（训练框架）→ MuJoCo Warp（GPU 版物理引擎）→ rsl_rl（PPO 实现库）。</p>
+<table class="t3">
+<thead><tr><th>层</th><th>是什么</th><th>干什么</th></tr></thead>
+<tbody>
+<tr><td><code>mjlab</code></td><td>基于 MuJoCo Warp 的 RL 训练框架</td><td>定义任务、环境、训练循环（<code>uv run train &lt;任务名&gt;</code>）</td></tr>
+<tr><td><code>MuJoCo Warp</code></td><td>用 NVIDIA Warp（GPU 内核 DSL）重写的 MuJoCo</td><td>让物理仿真跑在 GPU 上，才能并行 4096 个</td></tr>
+<tr><td><code>rsl_rl</code></td><td>PPO 实现库（ETH 出品，四足/人形圈的标配）</td><td>真正的算法实现</td></tr>
+</tbody>
+</table>
+<p><strong>术语解释：NVIDIA Warp</strong> 是一个让你用 Python 写 GPU 内核的框架。原来 MuJoCo 只能 CPU 逐环境跑，有了它才能几千个环境同时算。</p>
+</div>
+
+<div class="term">
+<div class="tn">域随机化<span class="en">Domain Randomization</span><span class="badge bdep">重点</span><span class="badge brl">RL</span></div>
+<p class="one">一句话：训练时，让每个虚拟环境随机化一部分物理参数——电池电压、带载压降、指令延迟、摩擦系数、地面起伏。官方对每个环境独立随机这些量。</p>
+<p><strong>直觉（这一步想通了，Sim2Real 就懂了一半）：</strong></p>
+<div class="key">
+与其费尽力气去精确建模现实（永远做不到），不如让策略在<strong>一万种不同的虚拟现实</strong>里都学会走路。这样一来，真实世界无非是这一万零一种——策略自然能适应。<br>
+这是一种<strong>「以不确定性对抗不确定性」</strong>的思路：不追求消除误差，只追求让策略对该误差<strong>鲁棒</strong>。
+</div>
+<p><strong>但有个致命的调参问题：</strong></p>
+<ul>
+<li>随机化范围<strong>太窄</strong> → 策略只在很窄的参数区间有效，真机上一偏就摔。</li>
+<li>随机化范围<strong>太宽</strong> → 策略学到的是"保守到不敢动"的折中解，甚至学不会走路（因为环境太混乱，无法收敛）。</li>
+<li>所以官方在 <code>microduck_rl</code> 里提供了 <code>--vin</code> / <code>--vin-drop-gain</code> / <code>--kp-fw</code> 这类参数，作用是把训练时的随机化区间<strong>钉死成单值</strong>，用来做消融实验——先确定"如果物理完全理想，能训出什么"，再逐步加随机化。</li>
+</ul>
+<p class="where">哪能看到：每个 env cfg 文件顶部的 <code>ENABLE_*</code> 布尔开关就是各项随机化的总闸。</p>
+</div>
+
+<h3 class="grp" id="p-terms-s5">④ 部署与 Sim2Real 层</h3>
+
+<div class="term">
+<div class="tn">Sim2Real gap 的三类来源<span class="badge bdep">重点</span><span class="badge bdep">Sim2Real</span></div>
+<p class="one">一句话：仿真永远不完美。差一点点，策略就会在真机上发散、摔倒。差距分三类，对策各不相同。</p>
+<table>
+<thead><tr><th style="width:20%">差距类型</th><th style="width:38%">具体是什么</th><th>官方对策</th></tr></thead>
+<tbody>
+<tr><td><strong>物理建模误差</strong></td><td>舵机的力矩特性、摩擦、齿轮间隙、接触与打滑、质量分布</td><td>BAM 执行器模型（准）+ 域随机化（鲁棒）</td></tr>
+<tr><td><strong>观测误差</strong></td><td>传感器噪声、采样延迟、零点标定不准、IMU 漂移</td><td>仿真里注入噪声、真机做滤波与标定</td></tr>
+<tr><td><strong>数值误差</strong></td><td>仿真时间步长离散化、控制频率不匹配</td><td>训练时就按 50 Hz 对齐（官方强调"按真实控制节奏训练"）</td></tr>
+</tbody>
+</table>
+<div class="warn">
+<strong>为什么这是"研究"而不是"工程"：</strong>没有通用解法。同一个代码换一个机器人，全部要重调。所以一家公司在这件事上积累的"配方"，就是它的护城河——也是 Pollen 把它开源会引起这么大反响的原因（见下一条）。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">BAM · 执行器模型<span class="badge bdep">最重要</span><span class="badge bdep">Sim2Real</span></div>
+<p class="one">一句话：Rhoban 实验室开源的一套"更准的执行器模型库"。Microduck 用的是它针对 XL330 的 M6 模型。</p>
+<p><strong>先理解它替代了什么。仿真里默认的执行器模型是「理想 PD」：</strong></p>
+<p style="text-align:center;color:var(--tx);font-family:ui-monospace,monospace;">力矩 = kp × (目标角度 − 当前角度) + kd × (0 − 当前角速度)</p>
+<p>这个公式假设电机"想要多少力矩就能给出多少力矩"。<strong>真实舵机完全不是这样。</strong>BAM 把下面这些真实物理都建模了进去：</p>
+<ul>
+<li><strong>电压控制律</strong>：舵机内部其实是在控制电压/PWM 占空比，力矩上限被供电电压硬性限制。</li>
+<li><strong>反电动势</strong>：电机转得越快，反向电压越大，可用力矩越小（这就是"堵转力矩"和"空载转速"不可兼得的物理根源）。</li>
+<li><strong>库仑摩擦</strong>：静摩擦（要动之前得先克服一个门槛）和动摩擦不同。</li>
+<li><strong>斯特里贝克效应</strong>：极低速时，摩擦系数随速度非线性变化——这正是"精细慢动作"最难做准的区域。</li>
+<li><strong>负载相关摩擦</strong>：承载越大，减速箱内耗越大。</li>
+</ul>
+<div class="key">
+<strong>为什么在这个项目里它是决定性的：</strong><br>
+看数字——XL330 堵转力矩只有 0.18–0.52 N·m，而整机 780 g。这些舵机是<strong>工作在能力极限附近</strong>的：它没有多余力矩可以浪费，它的响应慢、力矩不足、电压还随时在跌。<br>
+在大机器人上（比如 XM430 那种 4 N·m 的舵机），你可以近似当它"要多少给多少"；在这个尺度上不行。<strong>所以执行器建模的误差 ≈ Sim2Real gap 的主体。</strong>用理想 PD 训出来的策略，上真机大概率站不起来。
+</div>
+<div class="key">
+<strong>这才是真正慷慨的地方：</strong>Pollen 把校准过的执行器模型、域随机化参数<strong>当作可运行代码</strong>发布出来，而不是写成论文。在硬件创业公司里这极其罕见——因为这套配方通常就是它的技术护城河。
+</div>
+<p class="where">哪能看到：<code>microduck_rl/src/mjlab_microduck/actuator/friction_dr_bam.py</code>；模型来源 <code>github.com/Rhoban/bam</code>。</p>
+</div>
+
+<div class="term">
+<div class="tn">齿隙<span class="en">Backlash / 回程差</span><span class="badge bdep">Sim2Real</span></div>
+<p class="one">一句话：两个齿轮之间必然有间隙。你反转电机方向时，要先空转过这段间隙，输出轴才开始真正动。</p>
+<p><strong>后果：</strong>指令角度和实际角度之间有一个 1–2 度的偏差，而且<strong>方向反转时偏差的符号会翻</strong>。对 0.088°/步 的高分辨率舵机来说，1–2 度是十几步的误差——足以让精细步态失稳。</p>
+<p><strong>官方怎么仿的（这段设计非常漂亮，值得细看）：</strong></p>
+<ol>
+<li>给每个舵机加一个<strong>被动铰链</strong>（passive hinge），±1° 行程（总 2°），串在舵机和关节之间。</li>
+<li>关键细节：<strong>真实舵机的编码器装在减速齿轮的输出侧</strong>，也就是摩擦力之后。所以在仿真里，策略"看到"的关节角度也必须<strong>透过</strong>这个间隙去读——用 <code>qpos[舵机] + qpos[间隙]</code>，而不是只读舵机那一侧。</li>
+<li>同时，固件里的 PD 仿真（<code>BacklashEncoderBamActuator</code>）也走同样的路径。</li>
+</ol>
+<div class="key">
+<strong>精妙之处在于：</strong>观测维度和动作维度<strong>都没有变</strong>。所以在仿真里加了这段真实物理之后，ONNX 导出和板载运行时<strong>一行都不用改</strong>。<br>
+这是一个范式：<strong>在仿真里增加真实物理细节，只要不改变接口，就是对真机的净收益、零成本。</strong>你以后自己训策略时应该主动找这种机会。
+</div>
+<p class="where">哪能看到：<code>microduck_rl/src/mjlab_microduck/tasks/backlash.py</code>（<code>make_backlash_variant()</code>）。</p>
+</div>
+
+<div class="term">
+<div class="tn">ONNX<span class="en">Open Neural Network Exchange</span><span class="badge bdep">部署</span></div>
+<p class="one">一句话：一种跨框架的神经网络文件格式。PyTorch 训完 → 导出成 <code>.onnx</code> → 任何支持 ONNX Runtime 的地方都能加载推理。</p>
+<p><strong>为什么需要它：</strong></p>
+<ul>
+<li>训练侧：Python + PyTorch，几百 MB 的依赖，跑在你电脑上。</li>
+<li>板载侧：Rust，RK3566，1 GB 内存，绝对装不下 PyTorch，也没必要。</li>
+<li>ONNX 是两者之间的"中立文件格式"——相当于编译好的 <code>.exe</code>。你换了训练框架（PyTorch → JAX），导出环节不变。</li>
+</ul>
+<div class="kv">
+<b>流程：</b>训练（PyTorch）→ <code>uv run scripts/export.py</code> → <code>policy.onnx</code> → 推到鸭子 → <code>robotd</code> 用 ONNX Runtime 以 50 Hz 加载推理。
+</div>
+</div>
+
+<div class="term">
+<div class="tn">观测归一化器 · 烘焙进计算图<span class="badge bdep">部署</span></div>
+<p class="one">一句话：训练时统计出每个观测维度的均值和标准差，推理时先把原始观测减均值除标准差，再送进网络。官方把这个归一化器<strong>直接嵌进 ONNX 计算图</strong>里。</p>
+<p><strong>为什么这值得单列一条——它是最常见的低级事故：</strong>如果导出时忘了带归一化器，真机上的策略看到的就是<strong>未归一化</strong>的数字（比如"关节角度 1.57 弧度"直接送进去）。这个数字可能比训练时大 10 倍，网络输出完全失控，机器人会做出莫名其妙的动作。</p>
+<div class="warn">
+<strong>官方明确警告：</strong>一定要用 <code>scripts/export.py</code> 导出的 ONNX，<strong>不要手工转换 checkpoint</strong>。手工转换会让真机拿到未归一化的观测。<br>
+这个错误极难排查——因为你会发现"仿真里明明跑得好好的"，然后在真机上怀疑是硬件问题，白烧几天。<strong>记住这条，能省你一个周末。</strong>
+</div>
+</div>
+
+<div class="term">
+<div class="tn">Hugging Face Hub 分发策略<span class="badge bdep">部署</span></div>
+<p class="one">一句话：<code>uv run publish</code> 把你的策略传到 Hugging Face Hub（一个 <code>policy.onnx</code> + <code>manifest.json</code> + README），别人一条命令就能装到自己鸭子上。</p>
+<p><strong>为什么这是整个项目最有想象力的一点：</strong></p>
+<div class="key">
+开源大模型之所以发展飞快，是因为模型能力变成了<strong>可自由流动的数字资产</strong>——你训练、我下载、他微调，飞轮越转越快。<br>
+但物理世界一直很难复制这套飞轮，因为机器人能力背后还牵扯硬件、电机、传感器、控制频率、最麻烦的 Sim2Real。<br>
+<strong>Microduck 做的事，是把"模型权重式的开源分发"第一次完整搬到了机器人动作上。</strong>当机器人从仿真、训练到真机部署都能被复现、修改和共享，Physical AI 才有可能形成自己的开源飞轮。
+</div>
+<p class="where">哪能看到：<code>microduck_rl</code> 的 <code>publish</code> 命令与 policy manifest schema 2；可选的 <code>--kind episodic/perpetual</code> 区分"一次性动作"和"持续步态"。</p>
+</div>
+
+<hr>
+
+<h2 id="p-terms-s6">三　三条动手路径</h2>
+
+<div class="note">
+<strong>工时怎么算的：</strong>按你现有计划的节奏——平日 1.5–2 h、周末其中一天 3–6 h，约 12–20 h/周。所有小时数是<strong>纯投入时间</strong>，不含等打印、等快递、等训练排队的日历时间（那部分我会单独标出来，因为它往往是真正让你烦躁的东西）。<br>
+<strong>重要前提：</strong>下面三条路径<strong>不是三选一，是有顺序的</strong>。最后一节会讲为什么。
+</div>
+
+<h3 id="p-terms-pA">路径 A · 零硬件纯仿真</h3>
+<div class="path pA">
+<div class="ph">立即可以开始 ｜ 3–4 周 ｜ 45–50 小时 ｜ ¥0（租卡另计 ¥0–500）</div>
+<h3>目标：在仿真里跑通官方鸭子，并且改出属于你自己的一个策略</h3>
+<div class="meta">产出：一份"我改了奖励函数并对比了前后成功率"的实验记录 —— 这是最快能验证自己是否真懂的产出</div>
+
+<div class="step"><span class="st">A1　MuJoCo 入门</span><span class="sd">6 h · 3 天</span>
+<p>装 MuJoCo，跑官方 tutorial。重点不是学会用 API，是<strong>看懂 MJCF 这个 XML 格式怎么描述一个机器人</strong>——body 树、joint 定义、geom 碰撞体、actuator 定义。看懂之后你就能读 <code>microduck_rl</code> 里的 <code>robot_*.xml</code> 了。</p>
+<p>自测标准：能口头说清"为什么 <code>robot_walk.xml</code> 里要去掉躯干和头的碰撞体"（答案在下面避坑清单里）。</p>
+</div>
+
+<div class="step"><span class="st">A2　补齐 RL 的 PPO 那一环</span><span class="sd">12 h · 1 周</span>
+<p>你已过多臂老虎机和 CartPole，但 PPO 需要 A2C / GAE / clip 这一条链。用你已有的《动手学强化学习》第 8–10 章 + 王树森的 actor-critic 章节。按四层打通：策略梯度定理 → 优势函数 → GAE → clip 目标函数。</p>
+<p>自测标准：能解释"为什么 PPO 要裁剪，而不用原始的 REINFORCE"——用你自己写 REINFORCE 时加梯度裁剪的经历来对照（你已经踩过这个坑了）。</p>
+</div>
+
+<div class="step"><span class="st">A3　clone 官方训练仓库，先跑 CPU 推理</span><span class="sd">8 h · 3–4 天</span>
+<p>这条路刻意设计成不需要显卡就能走：<code>uv run scripts/infer_policy.py --walking walk.onnx</code> 可以在 CPU 版 MuJoCo 里用键盘驱动一个虚拟鸭子。先不训练，先<strong>看懂</strong>：读 <code>AGENTS.md</code>（奖励设计教训）、读一个 env cfg 文件、读 <code>mdp.py</code> 里奖励函数的实现。</p>
+<p>这一步的产出是"我知道每个奖励项在奖励什么"。</p>
+</div>
+
+<div class="step"><span class="st">A4　租卡，训一个自己的</span><span class="sd">15–20 h · 1.5 周</span>
+<p>AutoDL 租 3090/4090，4096 环境，第一次跑通大约 1–2 小时。然后做<strong>真正的实验</strong>——这是全路径的核心，也是唯一有价值的部分：</p>
+<ul>
+<li>改一个奖励项（比如把"动作变化率惩罚"去掉），重训，看步态怎么坏掉。</li>
+<li>把踢球任务的球加重一倍（官方是 70 mm / 15 g），看策略在什么重量下失效，然后调奖励看能不能救回来。</li>
+<li>开 / 关某一项域随机化，观察"仿真里表现"和"扰动下的鲁棒性"如何背离。</li>
+</ul>
+<p>用官方提供的 <code>--vin</code> / <code>-Backlash</code> 变体做对照，你会亲眼看到"理想物理 vs 真实物理"的差距。</p>
+</div>
+
+<div class="step"><span class="st">A5　写实验记录</span><span class="sd">4 h</span>
+<p>一页纸：改了哪个奖励项、预期是什么、实际结果、你怎么解释。这份东西的价值远大于"我跑通了官方 demo"。</p>
+</div>
+
+<div class="key">
+<strong>路径 A 的真正价值：</strong>它花 3–4 周，用一个很低的风险，替你回答一个很贵的问题——<strong>「我对运动控制是真有兴趣，还是只是觉得机器鸭可爱」</strong>。如果你跑完 A5 觉得无聊，那三条真机路径一条都不要走，你省下的是一年时间和几千块钱。
+</div>
+</div>
+
+<h3 id="p-terms-pB">路径 B · 简化版真机</h3>
+<div class="path pB">
+<div class="ph">建议 A 之后 ｜ 8–12 周 ｜ 105–145 小时 ｜ ¥600–1,200</div>
+<h3>目标：一台自己从零攒的、跑着自己训的策略的真机 —— 但<b>故意不做双足</b></h3>
+<div class="meta">为什么不做双足：双足的难点是"侧向稳定性 + 左右腿协同"，自由度和失败模式同时翻倍。先用一个自由度更少、但包含 sim2real 全部要素的机器，性价比高得多。</div>
+
+<div class="step"><span class="st">B1　最小真机闭环：一个舵机 + 一个 IMU</span><span class="sd">10 h · 1 个周末</span>
+<p>不涉及 AI，纯粹打通"电气 + 通信 + 标定"这一条路。目标：单片机读 IMU 角度 → 通过总线给舵机发目标角度 → 形成闭环。</p>
+<p><strong>这一步的意义被严重低估：</strong>软件工程师第一次碰硬件，100% 会卡在这里——线接反、地线没共、波特率不对、供电不足导致舵机复位、舵机 ID 冲突。这些坑用最便宜的硬件踩最划算。</p>
+<p>预算：总线舵机 ¥60–150 + IMU 模块 ¥30–100 + 单片机（ESP32-S3 或 Pico 2）¥30–80 + USB-TTL 转接板 ¥20–40 + 电源 ¥30 = <strong>约 ¥150–400</strong>。</p>
+</div>
+
+<div class="step"><span class="st">B2　选一个欠驱动问题，二选一</span><span class="sd">95–135 h · 8–11 周</span>
+<p><strong>方案 (a)「两轮自平衡」—— 推荐首选</strong>（成功率最高，约 60–80 h）</p>
+<ul>
+<li>这就是经典的倒立摆，你在 CartPole 里做的是它的仿真版。真机上多出来的东西：IMU 状态估计、电机驱动、摩擦与死区、电池电压影响。</li>
+<li>它几乎包含了 sim2real 的所有要素，但机械简单到"不可能装错"。第一次做真机，这个成功率高得多。</li>
+<li>预算：¥400–800（两个带编码器的直流电机 + 驱动板 + IMU + 车架 + 电池）；或用无刷 + 驱动会贵一些。</li>
+</ul>
+<p><strong>方案 (b)「单腿弹跳」—— 更接近双足，但更难</strong>（约 100–140 h）</p>
+<ul>
+<li>平面内的 1–2 自由度弹跳腿，是学术界经典的最小运动控制问题（MIT Cheetah 系列的起点）。它包含了双足的核心难点：欠驱动、接触冲击、状态估计。</li>
+<li>难点在于接触动力学——每一次落地都是冲击，仿真里的接触模型和真实差异很大。这是最接近研究前沿的部分，也是最容易卡住的部分。</li>
+<li>预算：¥600–1,200（结构件打印 + 2 个扭矩稍大的舵机或小型 BLDC + 驱动 + IMU + 电池）。</li>
+</ul>
+<p>两者的六个阶段工作量分布大致相同：仿真建模 15 h → 训练 10 h → 结构设计打印 25 h → 装配电气 15 h → 标定 15 h → <strong>sim2real 调参 30 h</strong>。注意最后一项占了近 1/3。</p>
+</div>
+
+<div class="warn">
+<strong>路径 B 唯一的硬门槛：</strong>你必须会（或愿意学）焊接、基本电路常识、Linux 命令行。这三样里一样都不会，就找个人搭伙——你出钱出算法，他出手，成功率会高很多。
+</div>
+</div>
+
+<h3 id="p-terms-pC">路径 C · 真正的平替：复刻 Open Duck Mini</h3>
+<div class="path pC">
+<div class="ph">建议 B 之后 ｜ 4–6 个月 ｜ 210–300 小时 ｜ ¥2,000–3,000</div>
+<h3>目标：一只和 Microduck 同源的真·双足机器人（Open Duck Mini 是 Microduck 的开源前身）</h3>
+<div class="meta">这是"平替版"的真正答案：<b>不是仿制 Microduck（它硬件不开源），而是复刻它完全开源的前身</b></div>
+
+<div class="step"><span class="st">C1　资料研读</span><span class="sd">8 h · 1 周</span>
+<p>先不提钱，先把资料读全：GitHub 仓库（<code>apirrone/Open_Duck_Mini</code>）、官方构建指南（Tnkr 英文版）、中文版飞书文档、Onshape CAD（可以在线打开、看到每个零件怎么装）、<code>print_guide</code>、<code>assembly_guide</code>。</p>
+<p>注意：官方自己说仓库"还有大量未文档化的脚本"，装配指南标注为"未完成"。所以这一步的产出不只知识，还有<strong>你自己整理的一份装配清单</strong>——那是你的护身符。</p>
+</div>
+
+<div class="step"><span class="st">C2　采购</span><span class="sd">10 h 实操 · 日历 1–2 周</span>
+<p>严格按 BOM 逐项买。三条铁律：</p>
+<ul>
+<li><strong>舵机型号不能乱换。</strong>XL330 的 M077 和 M288 扭矩差 2.4 倍、转速差 3.7 倍。换了型号，官方预训练策略直接作废，你必须从头训，而且很可能训不出来（因为策略是在特定执行器动力学下学的）。要省钱就评估"国产替代 + 自己重训"的全成本，不要只比单价。</li>
+<li><strong>IMU 不要图便宜。</strong>MPU6050（¥10）噪声和漂移对 RL 策略是灾难。至少 BMI270（¥30–50）或 ICM-42688（¥60–100）。</li>
+<li><strong>留 15% 冗余预算</strong>。舵机烧一个、线断一根是常态。</li>
+</ul>
+</div>
+
+<div class="step"><span class="st">C3　3D 打印</span><span class="sd">15 h 机时 · 日历 1–2 周</span>
+<p>PLA 骨架 + TPU 脚垫。第一版建议<strong>外包给代打店</strong>（¥150–400），拿到公差一致的件，先把机器人装出来跑通。等你确定要改设计了，再上自己的机器做迭代。</p>
+<p>这一步是最大的隐性时间黑洞：一个件打 2–6 小时，公差不对就整件重打。</p>
+</div>
+
+<div class="step"><span class="st">C4　机械装配</span><span class="sd">40 h · 日历 1–2 周</span>
+<p>拧螺丝、装舵机、理线。听起来简单，实际是所有阶段里最耗心力的一段——因为你会在这一步发现图纸上的孔位和实物对不上、某个零件装进去后下一个零件就没法装。</p>
+</div>
+
+<div class="step"><span class="st">C5　电气</span><span class="sd">20 h</span>
+<p>总线菊花链接线、供电与稳压、走线。要点：舵机总线是<strong>3.7–6 V</strong>，不是常见的 12 V——电压给错会直接烧。<strong>一定要用电表实测每个节点电压再上电</strong>。理线时要给每个关节留足够余量，否则舵机一转就扯断。</p>
+</div>
+
+<div class="step"><span class="st">C6　标定与调试</span><span class="sd">40 h</span>
+<p>这是"没有 AI，但决定成败"的一段：</p>
+<ul>
+<li>每个舵机的零点标定（否则策略的动作空间整体偏移，鸭子一开机就东倒西歪）</li>
+<li>IMU 安装方向与标定（装歪 5 度，机器人会以为自己是歪的，然后一直试图"纠正"）</li>
+<li>joint offset 校准、<code>duck_config.json</code> 等机器人专属参数</li>
+<li>电机与 IMU 逐项自检</li>
+</ul>
+<p>官方提供了预构建的运行镜像，能省掉系统层搭建——但<strong>镜像不会替你打印、接线和标定</strong>。</p>
+</div>
+
+<div class="step"><span class="st">C7　跑策略 · 训自己的</span><span class="sd">40 h</span>
+<p>先跑官方预训练的两个行走策略，确认 sim2real 能通。然后重复路径 A4 的实验流程——但这次是往真机灌。</p>
+</div>
+
+<div class="step"><span class="st">C8　预留返工</span><span class="sd">40 h</span>
+<p><strong>这一段必须单独列出来，不是悲观。</strong>双足 DIY 的真实分布是：前 80% 的时间完成 60% 的进度，最后 20% 的进度要再花 40% 的时间。不预留就是给自己挖坑。</p>
+</div>
+
+<div class="key">
+<strong>最该提前知道的一个比例：</strong>300 小时里，真正"AI"的部分（仿真建模 + 训练 + 部署）约 60 小时，<strong>其余 240 小时全是硬件</strong>。这就是为什么我把这条排在 B 之后——你先用路径 B 验证自己能不能忍受那 240 小时。
+</div>
+</div>
+
+<h3 id="p-terms-pD">路径 D · 买成品</h3>
+<div class="path pD">
+<div class="ph">可随时开始（但等货 4–6 个月）｜ 上手约 15 小时 ｜ $399 起</div>
+<h3>目标：跳过全部硬件坑，直接进入"训练 + 部署 + 改策略"的正题</h3>
+<p>官方商店 <a href="https://store.pollen-robotics.com/products/microduck">store.pollen-robotics.com/products/microduck</a>，$399 / €340，首发地区不含中国大陆。</p>
+<p><strong>它的真实价值不是那台机器，是你省掉的 240 小时硬件时间。</strong>而且它自带 7 个已训练策略 + 完整 SDK + 手柄，开箱就能跑——这些是 DIY 路径给不了的起点。</p>
+<p>配件：Charger pack $39、Dev pack $119（3 个备用电机 + 电机线 + 2 块电池 + 双充 + 10 个 NFC 标签 + HF 额度 + 工具）、Accessory pack $39。</p>
+<div class="note">
+<strong>零成本先试：</strong>官方挂了浏览器模拟器（WebAssembly 物理引擎 + 真实的 50 Hz 策略），打开网页就能遥控它走、踢、滑：<br>
+<code>huggingface.co/spaces/pollen-robotics/microduck-simulator</code><br>
+<strong>建议：在决定任何一条路径之前，先玩这个 20 分钟。</strong>
+</div>
+</div>
+
+<h2 id="p-terms-s7">四　简化版采购清单（三档）</h2>
+
+<p>三档对应上面的路径 B1 / B2 / C。价格是国内电商的参考量级，会波动。</p>
+
+<table>
+<thead><tr><th style="width:22%">档位</th><th>清单</th><th style="width:14%">预算</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>第 1 档</strong><br>最小闭环<br><span style="color:var(--tx3);font-size:12px">路径 B1</span></td>
+<td>总线舵机 ×1（国产 STS 系列 ¥60–150）· IMU 模块 ×1（BMI270 ¥30–50）· 单片机（ESP32-S3 / Pico 2 ¥30–80）· USB-TTL 转接板 ¥20–40 · 独立 5V 电源 ¥30 · 杜邦线螺丝若干 ¥20</td>
+<td><strong>¥150–400</strong></td>
+</tr>
+<tr>
+<td><strong>第 2 档</strong><br>真机欠驱动<br><span style="color:var(--tx3);font-size:12px">路径 B2</span></td>
+<td>在上面基础上加：带编码器直流电机 ×2（或 BLDC + 驱动）¥200–500 · 电机驱动板 ¥50–150 · 2S/3S 锂电 + 充电器 ¥80–150 · 3D 打印结构件 / 铝型材 ¥100–300 · 轴承联轴器等 ¥50</td>
+<td><strong>¥600–1,200</strong></td>
+</tr>
+<tr>
+<td><strong>第 3 档</strong><br>复刻双足<br><span style="color:var(--tx3);font-size:12px">路径 C</span></td>
+<td>按官方 BOM 严格执行。大头是 <strong>14 颗舵机（占 50–70%）</strong>，其次控制器板、IMU、电池、打印件。参考：有网友整理淘宝清单约 ¥2,119，其中舵机 ¥1,316、打印件 ¥170。注意 DIY 单件零售价远高于官方批量价，<strong>手搓常常比买成品贵</strong>。</td>
+<td><strong>¥2,000–3,000</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="warn">
+<strong>关于"用国产舵机省钱"的实情：</strong>可以省，但有隐藏成本。国产替代舵机的力矩曲线、摩擦特性、齿轮间隙都和 XL330 不同，所以：<br>
+① 官方预训练策略不能直接用；② 你要自己做执行器辨识（建 BAM 那样的模型）+ 从头训；③ 真机成功率会明显下降。<br>
+把这三项时间成本（约 40–60 h）折算成钱，再判断"省下的舵机差价"是否值得。<strong>如果目标是"学会 sim2real"，用原型号；如果目标是"省钱"，那结论往往是买成品更省。</strong>
+</div>
+
+<h2 id="p-terms-s8">五　与你已有学习路线的关系（这一段比前面所有内容都重要）</h2>
+
+<p>本面板的主线是 <strong>操作 / 模仿学习 / VLA / SO-101 机械臂</strong>——因为那是行业主流叙事，也是工程量最大、方法最密集的方向。</p>
+
+<p>而这只鸭子代表的是<strong>另一条腿：运动控制 + Sim2Real</strong>。两者在技术上是同一个大领域的两个分支：</p>
+
+<table>
+<thead><tr><th style="width:18%"></th><th style="width:41%">主线（你已有）<br>操作 · Manipulation</th><th>支线（鸭子这条）<br>运动 · Locomotion</th></tr></thead>
+<tbody>
+<tr><td><strong>核心问题</strong></td><td>怎么用视觉+语言指令控制手臂完成任务</td><td>怎么让身体在不稳定的物理里站住、走起来</td></tr>
+<tr><td><strong>主流方法</strong></td><td>模仿学习（BC / ACT / Diffusion Policy / VLA）</td><td>强化学习（PPO 类）+ Sim2Real</td></tr>
+<tr><td><strong>数据来源</strong></td><td>人类遥操作示范</td><td>仿真里自己生成（无人工标注需求）</td></tr>
+<tr><td><strong>硬件代表</strong></td><td>SO-101 机械臂 · Franka · 双臂 ALOHA</td><td>Microduck · 宇树 · 各类人形/四足</td></tr>
+<tr><td><strong>主要难点</strong></td><td>泛化、长程任务、数据成本</td><td>Sim2Real gap、稳定性、状态估计</td></tr>
+<tr><td><strong>谁在这条线上</strong></td><td>做操作/人形上半身的团队</td><td>做四足/人形运动控制的团队（宇树、星动纪元等）</td></tr>
+</tbody>
+</table>
+
+<h3>我的建议：主线不动，支线限时</h3>
+
+<div class="key">
+<strong>① 路径 A（纯仿真，3–4 周）可以现在就并入你的 Phase 0。</strong><br>
+理由：它练的正是 RL + MuJoCo，和你 Phase 0 里"搭仿真环境"那 5 小时的环节完全重叠。你不是在加负担，是在给 Phase 0 换一个有成就感的产出——从"我跑通了 robosuite 的 Lift 任务"变成"我改了一个奖励函数并解释了步态为什么退化"。后者对理解 RL 的成败边界帮助大得多。
+</div>
+
+<div class="key">
+<strong>② 路径 B / C 推到 Phase 1 之后（约 2027 Q1–Q2），作为"运动控制支线"。</strong><br>
+理由：你的主线 Phase 1 是模仿学习和 VLA——那才是通往投资岗的主干道。双足 DIY 是个 200–300 小时的硬件黑洞，现在跳进去会直接打断主线。
+</div>
+
+<div class="key">
+<strong>③ 时间占比不超过总学习时间的 20%。</strong><br>
+理由：你的履历优势在"技术 + 资本"的交叉点，不是算法深度。花在支线上的每一小时，机会成本都是主线的一小时。支线的目标<strong>不是成为运动控制专家，而是建立对 locomotion / Sim2Real 的基本判断力</strong>——达到这个目标，路径 A + 路径 B1 就够了（60 小时）。
+</div>
+
+<div class="card">
+<p><strong>为什么值得留这条支线，而不是完全不碰：</strong></p>
+<p>人形机器人公司的技术栈天然是两条腿——<strong>上半身做操作（VLA），下半身做运动（locomotion RL）</strong>。如果你只有 VLA 一条腿，遇到以运动控制为核心卖点的标的（四足、人形本体、运动控制算法公司），你在尽调会上接不住技术追问，只能听对方说什么信什么。</p>
+<p>反过来，如果你能说出"这个公司的 Sim2Real 配方有没有把执行器建模做到电压控制律级别、域随机化区间是怎么标的"，这个追问的分量，远超过任何财务模型的细节。</p>
+</div>
+
+<div class="note">
+<strong>一个 1 个周末的插队选项：</strong>如果你就是想尽快摸到真硬件，路径 B1（一个总线舵机 + 一个 IMU 的最小闭环，¥150–400）可以在一个周末做完。它的意义不是学会什么，而是<strong>把"我碰过真机器人硬件"这件事从 0 变成 1</strong>——而且它踩的坑（供电、共地、波特率、ID 冲突）是后面所有路径都要再踩一遍的。
+</div>
+
+<h2 id="p-terms-s9">六　避坑清单</h2>
+
+<div class="card">
+<p><strong>1. 仿真里"表现好"不等于真机上能用。</strong>官方在 <code>robot_walk.xml</code> 里<strong>故意去掉了躯干和头的碰撞体</strong>——注释写的是"falling is cheap"（摔倒很便宜）。意思是：训练时不模拟躯干撞地，因为那会拖慢训练；策略学的是"走好"，不是"避免自撞"。所以你在仿真里看到它优雅地走，真机上倒下的方式可能完全不一样。<strong>看 MJCF 文件时，永远先确认它模拟了什么、故意省略了什么。</strong></p>
+<p><strong>2. 别用理想 PD 训双足策略。</strong>这是本文档里最重要的一条。小舵机 + 800 g 的尺度下，执行器建模误差就是 Sim2Real gap 的主体。用理想 PD 训出来的策略，真机上大概率站不起来，而你会误以为是标定问题，白烧几天。</p>
+<p><strong>3. 部署时一定要用官方导出脚本。</strong>归一化器必须烘焙进 ONNX 图。手工转 checkpoint = 真机拿到未归一化观测 = 行为失控。<strong>这个错误的表现是"仿真完美、真机乱动"，极其容易被误判为硬件故障。</strong></p>
+<p><strong>4. 多训几次取最优，不是迷信。</strong>RL 有随机性。官方在自己的笔记里明确提过：同一个策略用不同随机种子多训几次取最好的，能显著提高实机成功率。多训几次的成本很低（每次 1–2 小时租卡钱），收益却很直接。</p>
+<p><strong>5. 奖励函数改之前，先打印中间量。</strong>这条你在 CartPole 里已经用血换过了（"算法不收敛时先打印中间量，不要先调参"）。在机器人上更极端——因为仿真一次训练 1–2 小时，而真机调试一次要一个周末。<strong>先在仿真里把奖励曲线、各奖励分项的占比画出来，再去动真机。</strong></p>
+<p><strong>6. 顺序纪律：先把环境跑通，再买硬件。</strong>如果训练都没跑通，实机基本不可能成功。而且仿真验证了核心技能之后，你买硬件时会更有底气、更知道要买什么。</p>
+<p><strong>7. 上真机前先做开环验证。</strong>把你采集的数据回放给策略，看它预测的动作是否贴合预期。确认收敛了再上机。<strong>直接上真机的结果是：机械臂/腿乱动一下午，你完全不知道问题出在策略、标定、还是硬件——纯浪费周末。</strong></p>
+<p><strong>8. 舵机供电是最容易翻车的地方。</strong>XL330 是 3.7–6 V，不是 12 V。给错电压直接烧。而且它堵转电流能到 1.7 A，15 个同时用力峰值十几到二十几安——别用电脑 USB 供电（这是 DIY 圈最常见的第一个坑）。</p>
+<p><strong>9. 保留 <code>--win</code> / 快照，"我上次明明能跑"这句话一定会出现。</strong>RL 的不确定性意味着你需要能精确复现某一次训练，否则你无法判断"这次变好"是因为你的改动还是随机性。这是实验纪律。</p>
+</div>
+
+<h2 id="p-terms-s10">七　术语自测 20 问</h2>
+
+<p>读完之后自测。能答出 15 题以上，那张架构图对你就已经没有黑箱了。</p>
+
+<ol class="chk">
+<li>为什么双足机器人不能用普通直流电机，必须用舵机？</li>
+<li>15 个舵机怎么只用 2 根线连起来？"总线"解决了什么问题？</li>
+<li>Microduck 的 14 个关节是怎么分配的？哪条腿有几个、颈头有几个？</li>
+<li>为什么脚踝只有 1 个自由度？这带来什么后果？</li>
+<li>为什么装两个 IMU 而不是一个？</li>
+<li>为什么不能只用 IMU 来估计机器人的位置和姿态？需要融合什么别的信息？</li>
+<li>ToF LiDAR 的 8×8 是什么意思？为什么分辨率这么低还够用？</li>
+<li>RK3566 的 0.8 TOPS 在手机 NPU 面前是什么档位？为什么选这么弱的芯片反而是正确的决定？</li>
+<li>为什么 15 个舵机同时用力会让每个舵机的可用力矩不一样？</li>
+<li>为什么要把系统拆成 7 个守护进程，而不是写一个大程序？崩了哪个会让机器人摔倒？</li>
+<li>50 Hz 控制环意味着每个循环多少毫秒？为什么 robotd 里不能做网络请求或内存分配？</li>
+<li>为什么这个项目选 Rust 而不是 C++ 或 Python？</li>
+<li>"只有 robotd 能动电机"这条设计规则解决的是哪一类问题？</li>
+<li>OTA 的"自动回滚"为什么对硬件产品是必须的，而软件产品可以不那么严格？</li>
+<li>61 维观测契约里那 61 个数分别是什么？为什么用不到的指令要补零而不是删掉？</li>
+<li>"策略热插拔"能成立的技术前提是什么？</li>
+<li>奖励函数写错会怎样？举一个"策略作弊"的例子。</li>
+<li>域随机化的直觉是什么？为什么范围太宽比太窄同样糟？</li>
+<li>为什么在 0.18–0.52 N·m 的小舵机上，执行器建模的精度会比在大舵机上重要得多？</li>
+<li>齿隙仿真里，为什么观测必须"透过"间隙读取？为什么这个设计不需要改 ONNX 和运行时？</li>
+</ol>
+
+<h2 id="p-terms-s11">八　资源索引</h2>
+
+<table>
+<thead><tr><th style="width:30%">资源</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/pollen-robotics/microduck">pollen-robotics/microduck</a></td><td>板载运行时 + SDK（Rust，7 个守护进程）。官方文档在 <code>docs/design/</code> 和 <code>docs/project/</code>——后者记录的是"什么出过错、怎么修"，比前者值钱。</td></tr>
+<tr><td><a href="https://github.com/pollen-robotics/microduck_rl">pollen-robotics/microduck_rl</a></td><td>完整 RL 训练栈。最值得读的是 <code>AGENTS.md</code>（奖励设计教训）和 <code>actuator/friction_dr_bam.py</code>（执行器建模）。</td></tr>
+<tr><td><a href="https://huggingface.co/spaces/pollen-robotics/microduck-simulator">官方浏览器模拟器</a></td><td>免费，WebAssembly 物理引擎 + 真实 50 Hz 策略。决定走哪条路之前先玩这个。</td></tr>
+<tr><td><a href="https://github.com/apirrone/Open_Duck_Mini">apirrone/Open_Duck_Mini</a></td><td>完全开源的前身（硬件也开源）。学习硬件结构看这里，不是看 Microduck。<code>bom</code> / <code>print</code> / <code>docs</code> 目录是重点。</td></tr>
+<tr><td><a href="https://github.com/Rhoban/bam">Rhoban/bam</a></td><td>BAM 执行器模型库。想深挖 Sim2Real 的执行器建模，这是源头。</td></tr>
+<tr><td><a href="https://github.com/mujocolab/mjlab">mujocolab/mjlab</a></td><td>训练框架（MuJoCo Warp + rsl_rl）。四足/人形运动控制训练的主流选择之一。</td></tr>
+<tr><td><a href="https://github.com/google-deepmind/mujoco">google-deepmind/mujoco</a></td><td>MuJoCo 物理引擎本体。官方 tutorial 是 MuJoCo 入门的最佳材料。</td></tr>
+<tr><td><a href="https://emanual.robotis.com/docs/en/dxl/x/xl330-m077/">ROBOTIS XL330 e-Manual</a></td><td>舵机完整规格。M077 和 M288 的差异看这张表。</td></tr>
+<tr><td><a href="https://github.com/TheRobotStudio/SO-ARM100">TheRobotStudio/SO-ARM100</a></td><td>你主线路径里的 SO-101 机械臂（BOM + 打印文件 + 装配手册）。与鸭子是两条腿，别混。</td></tr>
+<tr><td><a href="https://huggingface.co/docs/lerobot">LeRobot 文档</a></td><td>Hugging Face 的机器人学习框架。主线用；鸭子这条线用的是它另一个产品线。</td></tr>
+<tr><td><strong>你手上已有的</strong></td><td>Sutton &amp; Barto 中文版、王树森《强化学习》、RL proofs、RLChina 教程等公开讲义 —— 路径 A2 直接用这些，不用买任何书。<br>ode> —— 你的主线路线图。本手册是它的支线补充。</td></tr>
+</tbody>
+</table>
+
+<div class="key">
+<strong>最后一句实话：</strong>这个领域最贵的从来不是钱，是时间。所以资源选择只有一条标准——<strong>有没有配套的可运行代码</strong>。只有讲义没有代码的课，看视频的时间基本是浪费。上面每一条我都挑了有代码的。
+</div>
+
+<p style="margin-top:46px;color:var(--tx3);font-size:12px;">
+资料核实至 2026-09-21。XL330 具体变体、Microduck 第 15 个电机是否为喙、脚踝自由度的设计意图，这三点官方未明确公开，文中已标注为推断。
+</p>
+
+</div>
+<nav class="pager" data-for="terms"></nav>
+
+</div>
+</main>
+</body>
+</html>

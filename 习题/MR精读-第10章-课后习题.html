@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 10 章「Motion Planning」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 10 章「Motion Planning」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章把规划问题放在 configuration space / state space 中讨论。按事实底座：</p>
+<ul>
+<li>path planning 是纯几何问题，目标是找一条几何路径</li>
+</ul>
+<p>  \[</p>
+<p>  q(s),\quad s\in[0,1],</p>
+<p>  \]</p>
+<p>  满足</p>
+<p>  \[</p>
+<p>  q(0)=q_{\text{start}},\qquad q(1)=q_{\text{goal}},</p>
+<p>  \]</p>
+<p>  并且避开 \(C_{\text{obs}}\)，即</p>
+<p>  \[</p>
+<p>  q(s)\in C_{\text{free}},\quad \forall s\in[0,1].</p>
+<p>  \]</p>
+<p>  它不考虑 dynamics、duration、control constraints。</p>
+<ul>
+<li>motion planning 则更一般。给定</li>
+</ul>
+<p>  \[</p>
+<p>  x(0)=x_{\text{start}},\qquad x_{\text{goal}},</p>
+<p>  \]</p>
+<p>  要找时间 \(T\) 和控制输入</p>
+<p>  \[</p>
+<p>  u:[0,T]\to U,</p>
+<p>  \]</p>
+<p>  使得</p>
+<p>  \[</p>
+<p>  \dot x=f(x,u),</p>
+<p>  \]</p>
+<p>  且</p>
+<p>  \[</p>
+<p>  x(T)=x_{\text{goal}},\qquad q(x(t))\in C_{\text{free}},\quad \forall t\in[0,T].</p>
+<p>  \]</p>
+<p>  因此 motion planning 不仅要回答“走哪条几何路径”，还要回答“用多长时间、施加什么控制、是否满足动力学”。</p>
+<p>为什么 path planning 是 motion planning 的子问题？因为本章明确假设：path planner 返回的几何路径 \(q(s), s\in[0,1]\) 应能被 time scaled 成满足动力学/约束的 feasible trajectory。也就是说，若先忽略 dynamics、duration 和 control constraints，只求一条无碰撞几何路径，那么在第 9 章的时间缩放结论可用时，这条路径可以进一步被赋予时间参数，成为轨迹 \(x(t)\) 或 \(q(t)\)。所以 path planning 是 motion planning 中剥离了时间、动力学和控制后的几何子问题。</p>
+<p>需要注意一个常见误区：不能把 path planning 等同于 motion planning。原书强调，若 \(m<n\)，机器人不能跟随许多 collision-free paths。例如 car 有 \(n=3\)（平面位置与朝向）但 \(m=2\)（前后运动与转向），不能直接侧向滑入车位。这说明几何无碰撞路径不一定能被实际系统跟随。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>A* 中，每个节点的估计总成本定义为</p>
+<p>\[</p>
+<p>\text{est\_total\_cost}[node]</p>
+<p>=</p>
+<p>\text{past\_cost}[node]</p>
+<p>+</p>
+<p>\text{heuristic\_cost\_to\_go}(node).</p>
+<p>\]</p>
+<p>其中：</p>
+<ul>
+<li><code>past_cost[node]</code> 是从 start 到该节点已经付出的实际成本；</li>
+<li><code>heuristic_cost_to_go(node)</code> 是从该节点到 goal 的估计剩余成本。</li>
+</ul>
+<p>A* 每次从 <code>OPEN</code> 中取出 <code>est_total_cost</code> 最小的节点 <code>current</code>，加入 <code>CLOSED</code>。若 <code>current</code> 在 goal set，则返回路径；否则扩展未在 <code>CLOSED</code> 中的邻居 <code>nbr</code>。对邻居更新时计算</p>
+<p>\[</p>
+<p>\text{tentative\_past\_cost}</p>
+<p>=</p>
+<p>\text{past\_cost}[current]</p>
+<p>+</p>
+<p>\text{cost}[current,nbr].</p>
+<p>\]</p>
+<p>只有当</p>
+<p>\[</p>
+<p>\text{tentative\_past\_cost}</p>
+<p><</p>
+<p>\text{past\_cost}[nbr]</p>
+<p>\]</p>
+<p>时，才更新</p>
+<p>\[</p>
+<p>\text{past\_cost}[nbr]=\text{tentative\_past\_cost},</p>
+<p>\]</p>
+<p>并设置</p>
+<p>\[</p>
+<p>\text{parent}[nbr]=current,</p>
+<p>\]</p>
+<p>然后按</p>
+<p>\[</p>
+<p>\text{est\_total\_cost}[nbr]</p>
+<p>=</p>
+<p>\text{past\_cost}[nbr]</p>
+<p>+</p>
+<p>\text{heuristic\_cost\_to\_go}(nbr)</p>
+<p>\]</p>
+<p>把 <code>nbr</code> 插入或移动到 <code>OPEN</code>。若 <code>OPEN</code> 为空则 FAILURE。</p>
+<p><code>heuristic_cost_to_go</code> 必须 optimistic，也就是必须低估从当前节点到 goal 的真实剩余成本。原因是：A* 只有在启发式从不高估真实剩余成本时，才能保证返回 minimum-cost path。若启发式高估，例如乘以 \(\eta>1\)，搜索会更快偏向 goal，但不再保证最优。</p>
+<p>Dijkstra 与 breadth-first search 的关系如下：</p>
+<ul>
+<li>Dijkstra 是 heuristic 恒为零的 A*：</li>
+</ul>
+<p>  \[</p>
+<p>  \text{heuristic\_cost\_to\_go}(node)=0.</p>
+<p>  \]</p>
+<p>  此时</p>
+<p>  \[</p>
+<p>  \text{est\_total\_cost}[node]=\text{past\_cost}[node],</p>
+<p>  \]</p>
+<p>  所以 A* 退化为按已走成本扩展。</p>
+<ul>
+<li>若所有边 cost 相同，Dijkstra 进一步退化为 breadth-first search。因为此时“已走成本最小”等价于“层数最少”，搜索按层扩展。</li>
+</ul>
+<p>因此，A<em> 的最优性依赖 optimistic heuristic；Dijkstra 和 BFS 都是 A</em> 在特定启发式和边权条件下的特例。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>2R planar arm 的配置为</li>
+</ol>
+<p>   \[</p>
+<p>   q=(\theta_1,\theta_2),</p>
+<p>   \]</p>
+<p>   其中</p>
+<p>   \[</p>
+<p>   0\le\theta_1<2\pi,\qquad 0\le\theta_2<2\pi.</p>
+<p>   \]</p>
+<p>   两个角度都取自圆周 \(S^1\)，所以 C-space 为</p>
+<p>   \[</p>
+<p>   S^1\times S^1,</p>
+<p>   \]</p>
+<p>   即 torus。</p>
+<ol>
+<li>图 10.2 中障碍 A、B、C 将 \(C_{\text{free}}\) 分成 <strong>three connected components</strong>。这意味着自由空间中存在三个互不连通的分量，起点和终点若位于不同分量，则不存在连续无碰撞路径。</li>
+</ol>
+<ol>
+<li>路径上标注的三个中间点是 <strong>4, 7, 10</strong>。</li>
+</ol>
+<ol>
+<li>Grid 方法把 C-space 离散成 \(k^n\) 个网格点。这里 \(n=2\)，取 \(k=32\)。每关节分辨率为</li>
+</ol>
+<p>   \[</p>
+<p>   \frac{360^\circ}{32}=11.25^\circ.</p>
+<p>   \]</p>
+<p>   总网格点数为</p>
+<p>   \[</p>
+<p>   32^2=1024.</p>
+<p>   \]</p>
+<p>   因此该 2R arm 的 grid 表示共有 1024 个网格节点，每个关节相邻网格间隔为 \(11.25^\circ\)。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>球近似距离公式为</p>
+<p>\[</p>
+<p>d(q,B)=\min_{i,j}\|r_i(q)-b_j\|-R_i-B_j.</p>
+<p>\]</p>
+<p>其中：</p>
+<ul>
+<li>\(q\) 是机器人配置；</li>
+<li>\(B\) 表示障碍；</li>
+<li>\(r_i(q)\) 是机器人第 \(i\) 个近似球的球心位置，它依赖配置 \(q\)；</li>
+<li>\(b_j\) 是障碍第 \(j\) 个近似球的球心位置；</li>
+<li>\(R_i\) 是机器人第 \(i\) 个近似球的半径；</li>
+<li>\(B_j\) 是障碍第 \(j\) 个近似球的半径；</li>
+<li>\(\|r_i(q)-b_j\|\) 是两个球心之间的欧氏距离；</li>
+<li>减去 \(R_i+B_j\) 后，得到两个球面之间的净距离；</li>
+<li>对所有 \(i,j\) 取最小值，得到机器人球近似与障碍球近似之间的最小净距离。</li>
+</ul>
+<p>若 \(d(q,B)>0\)，表示球近似下无碰撞；若 \(d(q,B)\le 0\)，表示球近似下接触或穿透。</p>
+<p>球近似是保守的，因为球必须覆盖物体所有点。只有 grown bodies 无碰撞时，才能保证实际几何 collision-free。也就是说，球近似可能把实际物体包得更大，因此它可能报告“碰撞”而实际并未碰撞，但不会在实际碰撞时报告“无碰撞”。所以它是保守的碰撞检测近似。</p>
+<p>Workspace potential 中，机器人控制点为</p>
+<p>\[</p>
+<p>f_i(q)\in\mathbb R^3,</p>
+<p>\]</p>
+<p>障碍边界点为</p>
+<p>\[</p>
+<p>c_j\in\mathbb R^3.</p>
+<p>\]</p>
+<p>Jacobian 满足</p>
+<p>\[</p>
+<p>\dot f_i=J_i(q)\dot q,</p>
+<p>\]</p>
+<p>其中</p>
+<p>\[</p>
+<p>J_i(q)\in\mathbb R^{3\times n}.</p>
+<p>\]</p>
+<p>若任务空间中的虚拟力为 \(F'_{ij}(q)\)，则对应的广义力为</p>
+<p>\[</p>
+<p>F_{ij}(q)=J_i^T(q)F'_{ij}(q).</p>
+<p>\]</p>
+<p>这是因为虚功原理要求任务空间力与广义力在广义位移上做功一致：</p>
+<p>\[</p>
+<p>\delta f_i=J_i(q)\delta q,</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>(F'_{ij})^T\delta f_i</p>
+<p>=</p>
+<p>(F'_{ij})^T J_i(q)\delta q</p>
+<p>=</p>
+<p>\bigl(J_i^T(q)F'_{ij}\bigr)^T\delta q.</p>
+<p>\]</p>
+<p>所以广义力为</p>
+<p>\[</p>
+<p>F_{ij}(q)=J_i^T(q)F'_{ij}(q).</p>
+<p>\]</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>下面给出一个可运行 Python 代码，用于计算 \(k=100\) 时不同维数 \(n\) 的网格节点数：</p>
+<pre><code class="lang-python">k = 100
+for n in [3, 5, 7]:
+    nodes = k ** n
+    print(f"n={n}, k={k}, nodes={nodes:,}")</code></pre>
+<p>预期输出为：</p>
+<pre><code class="lang-text">n=3, k=100, nodes=1,000,000
+n=5, k=100, nodes=10,000,000,000
+n=7, k=100, nodes=100,000,000,000,000</code></pre>
+<p>也就是：</p>
+<ul>
+<li>\(n=3\)：1 million；</li>
+<li>\(n=5\)：10 billion；</li>
+<li>\(n=7\)：100 trillion。</li>
+</ul>
+<p>这与本章给出的数值一致：\(k=100\) 时，\(n=3\) 为 <strong>1 million</strong> 网格节点，\(n=5\) 为 <strong>10 billion</strong>，\(n=7\) 为 <strong>100 trillion</strong>。</p>
+<p>Grid 方法把 C-space 离散成</p>
+<p>\[</p>
+<p>k^n</p>
+<p>\]</p>
+<p>个网格点。固定分辨率下，存储与搜索时间随维度指数增长。即使每个维度只取 100 个格子，三维时是 100 万，五维时是 100 亿，七维时是 100 万亿。对于高自由度机械臂，C-space 维数 \(n\) 往往远大于 3，因此直接 grid 化会迅速变得不可接受。这就是 grid 方法的维数灾难。</p>
+<p>Sampling methods，例如 RRT、bidirectional RRT、RRT* 和 PRM，通过采样、最近邻和 local planner 构建树或图，而不是显式枚举整个 \(C_{\text{free}}\)。它们通常具有 probabilistically complete 性质：随着采样增加，找到解的概率趋于 1。因此它们能缓解维数灾难，尤其适合高自由度系统。</p>
+<p>但 sampling methods 通常给出的是 satisficing 解，而不是 optimal 解。也就是说，它们通常先找到一条可行路径，而不保证最短或最优。RRT* 是例外之一，它随规划时间增加使解趋于最优，但这需要额外计算。PRM 则构建 multiple-query roadmap，适合多次查询，但同样通常不以保证最优为首要目标。</p>
+<p>因此，grid 方法在低维、需要 resolution-complete 最短路径时仍有价值；高维时则更常用 sampling methods，并接受 satisficing 解或使用 RRT* 逐步改进。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

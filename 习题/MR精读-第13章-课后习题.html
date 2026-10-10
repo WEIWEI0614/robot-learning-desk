@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 13 章「Wheeled Mobile Robots」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 13 章「Wheeled Mobile Robots」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) rank 3 的意义</strong></p>
+<p>全向机器人的运动学关系为</p>
+<p>\[</p>
+<p>u=H(0)V_b,\qquad H(0)\in\mathbb R^{m\times 3}.</p>
+<p>\]</p>
+<p>给定期望的 body twist \(V_b=(\omega_{bz},v_{bx},v_{by})^T\)，要能由轮速 \(u\) 实现它，必须存在 \(u\) 使得</p>
+<p>\[</p>
+<p>H(0)V_b=u.</p>
+<p>\]</p>
+<p>若希望<strong>任意</strong> \(V_b\in\mathbb R^3\) 都能被产生，则映射</p>
+<p>\[</p>
+<p>V_b\mapsto H(0)V_b</p>
+<p>\]</p>
+<p>的像空间必须覆盖 \(\mathbb R^3\)。这等价于</p>
+<p>\[</p>
+<p>\operatorname{rank} H(0)=3.</p>
+<p>\]</p>
+<p>因为 \(H(0)\) 只有 3 列，rank 3 意味着列满秩，三个自由度 \(\omega_{bz},v_{bx},v_{by}\) 都独立可控。若 rank 不足 3，则存在某些 body twist 方向无法由轮速组合产生，机器人不能实现任意平面刚体速度。</p>
+<p><strong>(2) \(m>3\) 且 \(u\notin \operatorname{Im}H(0)\)</strong></p>
+<p>若 \(m>3\)，轮子数量多于底盘平面 twist 的自由度数。此时并非任意 \(u\in\mathbb R^m\) 都对应一个可行的 \(V_b\)。只有落在 \(H(0)\) 像空间中的 \(u\) 才能由某个 \(V_b\) 精确实现。</p>
+<p>若给定的 \(u\) 不在 \(H(0)\) 的像空间中，则不存在 \(V_b\) 使</p>
+<p>\[</p>
+<p>u=H(0)V_b</p>
+<p>\]</p>
+<p>精确成立。原书指出，这种情况下轮必须在驱动方向打滑，才能产生该轮速指令；也就是说，理想无滑动模型无法解释该 \(u\)。</p>
+<p><strong>(3) 说法判断</strong></p>
+<p>该说法<strong>不准确</strong>。</p>
+<p>正确说法是：全向机器人对底盘速度 \(\dot q\) <strong>没有等式约束</strong>，即不存在非完整 Pfaffian 约束 \(A(q)\dot q=0\)。但是：</p>
+<ul>
+<li>每个轮子仍有轮速上下界</li>
+</ul>
+<p>  \[</p>
+<p>  -u_{i,\max}\le u_i\le u_{i,\max},</p>
+<p>  \]</p>
+<p>  这些是<strong>不等式约束</strong>；</p>
+<ul>
+<li>它们在 twist 空间中形成 feasible body twists polyhedron \(\mathcal V\)；</li>
+<li>若 \(m>3\)，还要求 \(u\in\operatorname{Im}H(0)\)，否则轮子需要打滑。</li>
+</ul>
+<p>因此“没有等式约束”不等于“轮速可以任意取”。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) 符号含义</strong></p>
+<p>canonical simplified model 中：</p>
+<p>\[</p>
+<p>q=(\phi,x,y)</p>
+<p>\]</p>
+<p>是底盘在平面中的配置：</p>
+<ul>
+<li>\(\phi\)：底盘 heading angle；</li>
+<li>\((x,y)\)：底盘参考点在固定空间系 \(\{s\}\) 中的位置。</li>
+</ul>
+<p>控制输入为：</p>
+<ul>
+<li>\(v\)：沿底盘 heading 方向的线速度；</li>
+<li>\(\omega\)：底盘角速度，即 \(\dot\phi=\omega\)。</li>
+</ul>
+<p>因此</p>
+<p>\[</p>
+<p>\dot q=</p>
+<p>\begin{bmatrix}\dot\phi\\\dot x\\\dot y\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}0\\\cos\phi\\\sin\phi\end{bmatrix}v+</p>
+<p>\begin{bmatrix}1\\0\\0\end{bmatrix}\omega.</p>
+<p>\]</p>
+<p>第一项表示沿 heading 方向前进/后退，第二项表示原地改变朝向。</p>
+<p><strong>(2) 不同机器人的差别</strong></p>
+<p>unicycle、diff-drive、car 的运动学形式相同，差别在允许的控制集</p>
+<p>\[</p>
+<p>U\subset\mathbb R^2,\qquad (v,\omega)\in U.</p>
+<p>\]</p>
+<p>具体地：</p>
+<ul>
+<li>unicycle：通常允许 \(v\) 任意实数，\(\omega\) 任意实数，可原地转；</li>
+<li>differential-drive：同样可原地转，控制集与 unicycle 类似；</li>
+<li>car：不能原地转，因为 \(\omega\) 与 \(v\) 通过转向几何耦合，且受最小转弯半径限制；</li>
+<li>forward-only car：还要求 \(v\ge 0\)，不能倒车。</li>
+</ul>
+<p>所以原书强调：化为 canonical model 后，运动学形式相同，区别在控制集 \(U\) 的限制。</p>
+<p><strong>(3) forward-only car 与 reverse car</strong></p>
+<p>不相同。</p>
+<ul>
+<li><strong>forward-only car</strong>：只能前进，不能倒车。它是 <strong>STLA</strong>，但不是 <strong>STLC</strong>。直观上，它可以通过前进和转向到达某些方向，但可达集不是原点的一个完整邻域，因为不能直接向后运动。</li>
+<li><strong>reverse car</strong>：允许倒车。它是 <strong>STLC</strong>，即可达集包含原点的一个邻域。</li>
+</ul>
+<p>STLA 要求可达集是 full-dimensional；STLC 要求可达集是邻域。forward-only car 满足前者但不满足后者；reverse car 两者都满足。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) 反解 \(\dot q\)</strong></p>
+<p>已知</p>
+<p>\[</p>
+<p>V_b=</p>
+<p>\begin{bmatrix}\omega_{bz}\\v_{bx}\\v_{by}\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>1&0&0\\</p>
+<p>0&\cos\phi&\sin\phi\\</p>
+<p>0&-\sin\phi&\cos\phi</p>
+<p>\end{bmatrix}</p>
+<p>\begin{bmatrix}\dot\phi\\\dot x\\\dot y\end{bmatrix}.</p>
+<p>\]</p>
+<p>记</p>
+<p>\[</p>
+<p>R(\phi)=</p>
+<p>\begin{bmatrix}</p>
+<p>1&0&0\\</p>
+<p>0&\cos\phi&\sin\phi\\</p>
+<p>0&-\sin\phi&\cos\phi</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>该矩阵是分块形式：第一行独立，右下角为 \(2\times2\) 旋转矩阵</p>
+<p>\[</p>
+<p>\begin{bmatrix}\cos\phi&\sin\phi\\-\sin\phi&\cos\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p>其逆为</p>
+<p>\[</p>
+<p>\begin{bmatrix}\cos\phi&-\sin\phi\\\sin\phi&\cos\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\begin{bmatrix}\dot\phi\\\dot x\\\dot y\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>1&0&0\\</p>
+<p>0&\cos\phi&-\sin\phi\\</p>
+<p>0&\sin\phi&\cos\phi</p>
+<p>\end{bmatrix}</p>
+<p>\begin{bmatrix}\omega_{bz}\\v_{bx}\\v_{by}\end{bmatrix}.</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\dot\phi=\omega_{bz},</p>
+<p>\]</p>
+<p>\[</p>
+<p>\dot x=v_{bx}\cos\phi-v_{by}\sin\phi,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\dot y=v_{bx}\sin\phi+v_{by}\cos\phi.</p>
+<p>\]</p>
+<p><strong>(2) 非完整约束用 \(V_b\) 表示</strong></p>
+<p>约束为</p>
+<p>\[</p>
+<p>A(q)\dot q=[0\ \sin\phi\ -\cos\phi]</p>
+<p>\begin{bmatrix}\dot\phi\\\dot x\\\dot y\end{bmatrix}=0.</p>
+<p>\]</p>
+<p>代入</p>
+<p>\[</p>
+<p>\dot x=v_{bx}\cos\phi-v_{by}\sin\phi,\qquad</p>
+<p>\dot y=v_{bx}\sin\phi+v_{by}\cos\phi,</p>
+<p>\]</p>
+<p>得</p>
+<p>\[</p>
+<p>\sin\phi\,\dot x-\cos\phi\,\dot y</p>
+<p>=</p>
+<p>\sin\phi(v_{bx}\cos\phi-v_{by}\sin\phi)</p>
+<p>-\cos\phi(v_{bx}\sin\phi+v_{by}\cos\phi).</p>
+<p>\]</p>
+<p>展开：</p>
+<p>\[</p>
+<p>= v_{bx}\sin\phi\cos\phi-v_{by}\sin^2\phi</p>
+<p>-v_{bx}\cos\phi\sin\phi-v_{by}\cos^2\phi.</p>
+<p>\]</p>
+<p>前两项 \(v_{bx}\sin\phi\cos\phi\) 抵消，得到</p>
+<p>\[</p>
+<p>= -v_{by}(\sin^2\phi+\cos^2\phi)=-v_{by}.</p>
+<p>\]</p>
+<p>因此约束等价于</p>
+<p>\[</p>
+<p>-v_{by}=0,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>v_{by}=0.</p>
+<p>\]</p>
+<p>这说明常规轮非完整机器人不允许底盘在 body \(y\) 方向侧向滑动。</p>
+<p><strong>(3) canonical model 满足约束</strong></p>
+<p>canonical simplified model：</p>
+<p>\[</p>
+<p>\dot q=</p>
+<p>\begin{bmatrix}0\\\cos\phi\\\sin\phi\end{bmatrix}v+</p>
+<p>\begin{bmatrix}1\\0\\0\end{bmatrix}\omega</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>\omega\\</p>
+<p>v\cos\phi\\</p>
+<p>v\sin\phi</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>计算约束：</p>
+<p>\[</p>
+<p>A(q)\dot q</p>
+<p>=</p>
+<p>[0\ \sin\phi\ -\cos\phi]</p>
+<p>\begin{bmatrix}</p>
+<p>\omega\\</p>
+<p>v\cos\phi\\</p>
+<p>v\sin\phi</p>
+<p>\end{bmatrix}</p>
+<p>=</p>
+<p>\sin\phi\cdot v\cos\phi-\cos\phi\cdot v\sin\phi</p>
+<p>=</p>
+<p>v\sin\phi\cos\phi-v\cos\phi\sin\phi</p>
+<p>=</p>
+<p>0.</p>
+<p>\]</p>
+<p>所以 canonical model 自动满足非完整约束。其 body twist 为</p>
+<p>\[</p>
+<p>V_b=</p>
+<p>\begin{bmatrix}\omega_{bz}\\v_{bx}\\v_{by}\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}\omega\\v\\0\end{bmatrix},</p>
+<p>\]</p>
+<p>即 \(v_{by}=0\)，与 (2) 一致。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) 计算 Lie bracket</strong></p>
+<p>Lie bracket 定义为</p>
+<p>\[</p>
+<p>[g_1,g_2]=\frac{\partial g_2}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_2.</p>
+<p>\]</p>
+<p>这里</p>
+<p>\[</p>
+<p>g_2(q)=</p>
+<p>\begin{bmatrix}1\\0\\0\end{bmatrix}</p>
+<p>\]</p>
+<p>是常向量，所以</p>
+<p>\[</p>
+<p>\frac{\partial g_2}{\partial q}=0.</p>
+<p>\]</p>
+<p>而</p>
+<p>\[</p>
+<p>g_1(q)=</p>
+<p>\begin{bmatrix}0\\\cos\phi\\\sin\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p>对 \(q=(\phi,x,y)\) 求偏导：</p>
+<p>\[</p>
+<p>\frac{\partial g_1}{\partial q}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>0&0&0\\</p>
+<p>-\sin\phi&0&0\\</p>
+<p>\cos\phi&0&0</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>[g_1,g_2]</p>
+<p>=</p>
+<p>0-\frac{\partial g_1}{\partial q}g_2.</p>
+<p>\]</p>
+<p>计算</p>
+<p>\[</p>
+<p>\frac{\partial g_1}{\partial q}g_2</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>0&0&0\\</p>
+<p>-\sin\phi&0&0\\</p>
+<p>\cos\phi&0&0</p>
+<p>\end{bmatrix}</p>
+<p>\begin{bmatrix}1\\0\\0\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}0\\-\sin\phi\\\cos\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>[g_1,g_2]</p>
+<p>=</p>
+<p>\begin{bmatrix}0\\\sin\phi\\-\cos\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p><strong>(2) 线性无关性</strong></p>
+<p>在任意 \(q=(\phi,x,y)\) 处：</p>
+<p>\[</p>
+<p>g_1=</p>
+<p>\begin{bmatrix}0\\\cos\phi\\\sin\phi\end{bmatrix},</p>
+<p>\qquad</p>
+<p>g_2=</p>
+<p>\begin{bmatrix}1\\0\\0\end{bmatrix},</p>
+<p>\qquad</p>
+<p>[g_1,g_2]=</p>
+<p>\begin{bmatrix}0\\\sin\phi\\-\cos\phi\end{bmatrix}.</p>
+<p>\]</p>
+<p>考察矩阵</p>
+<p>\[</p>
+<p>\begin{bmatrix}</p>
+<p>g_1 & g_2 & [g_1,g_2]</p>
+<p>\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>0&1&0\\</p>
+<p>\cos\phi&0&\sin\phi\\</p>
+<p>\sin\phi&0&-\cos\phi</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>其行列式为</p>
+<p>\[</p>
+<p>\det</p>
+<p>=</p>
+<p>1\cdot</p>
+<p>\det</p>
+<p>\begin{bmatrix}</p>
+<p>\cos\phi&\sin\phi\\</p>
+<p>\sin\phi&-\cos\phi</p>
+<p>\end{bmatrix}</p>
+<p>=</p>
+<p>1\cdot(-\cos^2\phi-\sin^2\phi)</p>
+<p>=</p>
+<p>-1\neq 0.</p>
+<p>\]</p>
+<p>因此三个向量在每一点都线性无关，张成 \(\mathbb R^3\)。</p>
+<p><strong>(3) Chow 条件与可控性</strong></p>
+<p>Chow 条件说：若控制向量场及其所有 Lie bracket 在每一点张成整个切空间，则系统是 STLC 的。这里</p>
+<p>\[</p>
+<p>\operatorname{span}\{g_1(q),g_2(q),[g_1,g_2](q)\}=\mathbb R^3</p>
+<p>\]</p>
+<p>对任意 \(q\) 成立，因此 canonical nonholonomic model 是 STLC 的。</p>
+<p>直观上，虽然机器人不能直接侧向移动，但可以通过“前进—转向—后退—反向转向”这样的往复运动产生侧向净位移。因此非完整约束不可积，并不妨碍到达任意 \((\phi,x,y)\)。</p>
+<p><strong>(4) Python 数值验证</strong></p>
+<p>下面代码模拟四个小段运动：</p>
+<ol>
+<li>沿 \(g_1\) 运动 \(\epsilon\)；</li>
+<li>沿 \(g_2\) 运动 \(\epsilon\)；</li>
+<li>沿 \(g_1\) 反向运动 \(\epsilon\)；</li>
+<li>沿 \(g_2\) 反向运动 \(\epsilon\)。</li>
+</ol>
+<p>预期净位移近似沿 \([g_1,g_2]\) 方向。</p>
+<pre><code class="lang-python">import numpy as np
+
+def g1(q):
+    phi, x, y = q
+    return np.array([0.0, np.cos(phi), np.sin(phi)])
+
+def g2(q):
+    return np.array([1.0, 0.0, 0.0])
+
+def step(q, g, eps):
+    return q + eps * g(q)
+
+q0 = np.array([0.3, 0.0, 0.0])  # phi, x, y
+eps = 1e-3
+
+q = q0.copy()
+q = step(q, g1, eps)
+q = step(q, g2, eps)
+q = step(q, g1, -eps)
+q = step(q, g2, -eps)
+
+dq = q - q0
+lie = np.array([0.0, np.sin(q0[0]), -np.cos(q0[0])]) * eps**2
+
+print("net displacement dq =", dq)
+print("eps^2 * [g1,g2]    =", lie)
+print("ratio dq / lie     =", dq / lie)</code></pre>
+<p>预期观察：</p>
+<ul>
+<li><code>dq</code> 的三个分量都很小，量级约为 \(\epsilon^2\)；</li>
+<li><code>dq</code> 的方向近似为</li>
+</ul>
+<p>  \[</p>
+<p>  [g_1,g_2](q_0)=</p>
+<p>  \begin{bmatrix}0\\\sin\phi_0\\-\cos\phi_0\end{bmatrix};</p>
+<p>  \]</p>
+<ul>
+<li>比值 <code>dq / lie</code> 接近 \((1,1,1)\)，说明往复运动产生了沿 Lie bracket 方向的净位移。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) 符号含义</strong></p>
+<ul>
+<li>\(u\)：移动底盘的控制输入，通常是轮速或底盘速度变量。对全向底盘，\(u\) 与 body twist \(V_b\) 通过 \(u=H(0)V_b\) 联系；对非完整底盘，\(u\) 是 \(\dot q=G(q)u\) 中的控制。</li>
+<li>\(\dot\theta\)：机械臂关节速度向量。</li>
+<li>\(V_e\)：末端执行器 \(\{e\}\) 的 twist，通常为 6 维：</li>
+</ul>
+<p>  \[</p>
+<p>  V_e\in\mathbb R^6.</p>
+<p>  \]</p>
+<p>  它描述末端在 task space 中的线速度与角速度。</p>
+<p>组合向量</p>
+<p>\[</p>
+<p>\begin{bmatrix}u\\\dot\theta\end{bmatrix}</p>
+<p>\]</p>
+<p>表示移动底盘与机械臂的联合速度输入。</p>
+<p><strong>(2) \(J_{\text{base}}\) 与 \(J_{\text{arm}}\) 的作用</strong></p>
+<p>\[</p>
+<p>J_e(\theta)=[J_{\text{base}}(\theta)\ J_{\text{arm}}(\theta)]</p>
+<p>\]</p>
+<p>把联合速度映射到末端 twist：</p>
+<p>\[</p>
+<p>V_e=J_{\text{base}}(\theta)u+J_{\text{arm}}(\theta)\dot\theta.</p>
+<p>\]</p>
+<ul>
+<li>\(J_{\text{arm}}(\theta)\)：机械臂关节速度 \(\dot\theta\) 对末端 twist 的贡献，类似固定基座机械臂的 Jacobian。</li>
+<li>\(J_{\text{base}}(\theta)\)：移动底盘运动 \(u\) 对末端 twist 的贡献。由于底盘运动先通过 \(T_{b0}\) 传到机械臂基座 \(\{0\}\)，再通过 \(T_{0e}(\theta)\) 传到末端 \(\{e\}\)，所以需要 Adjoint 变换：</li>
+</ul>
+<p>  \[</p>
+<p>  J_{\text{base}}(\theta)</p>
+<p>  =</p>
+<p>  [\operatorname{Ad}_{T_{0e}^{-1}(\theta)T_{b0}^{-1}}]F_6.</p>
+<p>  \]</p>
+<p>  其中 \(F_6\) 把底盘控制 \(u\) 映射为底盘 twist，再经 Adjoint 变换到末端坐标系。</p>
+<p><strong>(3) 说法判断</strong></p>
+<p>该说法<strong>不正确</strong>。</p>
+<p>移动底盘加上机械臂后，末端速度仍然受</p>
+<p>\[</p>
+<p>V_e=J_e(\theta)</p>
+<p>\begin{bmatrix}u\\\dot\theta\end{bmatrix}</p>
+<p>\]</p>
+<p>约束。要产生任意 \(V_e\in\mathbb R^6\)，必须要求</p>
+<p>\[</p>
+<p>\operatorname{rank} J_e(\theta)=6.</p>
+<p>\]</p>
+<p>但：</p>
+<ul>
+<li>若机械臂在某个构型下本身 Jacobian 不满秩，例如 5R 臂静止时不能产生任意 \(V_e\in\mathbb R^6\)；</li>
+<li>加上移动底盘后，虽然增加了控制输入 \(u\)，但 \(J_e(\theta)\) 仍可能不满秩；</li>
+<li>原书明确指出，任意 \(X_d(t)\) 可行要求 \(J_e(\theta)\) 处处满秩。</li>
+</ul>
+<p>因此“加上底盘就一定能产生任意末端 twist”是错误结论。</p>
+<p><strong>(4) 跟踪任意 \(X_d(t)\) 的条件</strong></p>
+<p>若要求末端跟踪任意给定轨迹 \(X_d(t)\)，则需要</p>
+<p>\[</p>
+<p>\operatorname{rank} J_e(\theta)=6</p>
+<p>\]</p>
+<p>在轨迹上的所有构型处成立。这样才可能对期望末端 twist</p>
+<p>\[</p>
+<p>V_{e,d}(t)</p>
+<p>\]</p>
+<p>求解联合速度</p>
+<p>\[</p>
+<p>\begin{bmatrix}u\\\dot\theta\end{bmatrix}</p>
+<p>\]</p>
+<p>使得</p>
+<p>\[</p>
+<p>J_e(\theta)</p>
+<p>\begin{bmatrix}u\\\dot\theta\end{bmatrix}</p>
+<p>=</p>
+<p>V_{e,d}(t).</p>
+<p>\]</p>
+<p>若 \(J_e(\theta)\) 不满秩，则某些末端 twist 方向不可实现，轨迹跟踪无法精确完成。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

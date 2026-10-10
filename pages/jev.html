@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Jev 决策模型 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">Jev 决策模型<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>Jev：一个不写字、只做判断的模型</h1>
+<div class="sub">
+  TypeSafe AI · 2026-09-15 发布 · 创始人 Diogo Almeida（RLHF 共同发明人）｜
+  <span class="tag tCore">前沿</span>发布仅一周，所有数字务必看清来源
+</div>
+
+<div class="note">
+  <strong>先说清我研究的是什么。</strong>你说的「JEV」我按 <strong>Jev</strong> 来理解——TypeSafe AI 在 2026 年 9 月 15 日发布的「System One」决策模型，发布一周内就在机器人圈被大量试用。如果你其实想问的是 LeCun 的 <strong>JEPA</strong>／<strong>V-JEPA 2</strong>（联合嵌入预测架构），那是完全不同的东西，说一声我再补一页。
+</div>
+
+<h2>0 · 一分钟版本</h2>
+
+<div class="card">
+  <p><strong>一句话：</strong>Jev 是一个<strong>「聪明的 if 语句」</strong>——你给它一段数据（state）和几个带类型的问题，它返回带概率的答案。它<strong>不写一个字的自然语言</strong>，不解释理由，不生成代码。它只做判断。</p>
+
+  <p><strong>为什么它值得关注：</strong>它的创始人 Diogo Almeida 是 <strong>RLHF 的共同发明人</strong>——也就是亲手做出 ChatGPT 那套让 AI「会聊天」的方法的人。他花了四年得出的结论是：<strong>会聊天解决了人机交互，但没有解决自动化</strong>。Jev 是他对这个缺口的答案。</p>
+
+  <p><strong>三个可验证的特征：</strong></p>
+  <ul>
+    <li>延迟 <strong>70–500 毫秒</strong>（前沿大模型同任务要 3–329 <strong>秒</strong>）</li>
+    <li>输入 <strong>$0.042 / 百万 token</strong>（大模型是 $0.20–$10），<strong>输出不计费</strong></li>
+    <li>结构化输出错误率 <strong>0%</strong>——但这一点要仔细读，后面会讲清楚它到底保证了什么</li>
+  </ul>
+</div>
+
+<div class="toc">
+  <div class="small" style="margin-bottom:6px;">目录</div>
+  <ol>
+    <li>它要解决什么问题（先讲动机，再讲技术）</li>
+    <li>最核心的区别：它不写字</li>
+    <li>三种问题原语：Noul / Choice / Score</li>
+    <li>一次真实调用长什么样</li>
+    <li>置信度才是真正的产品</li>
+    <li>实测数字与它们的水分</li>
+    <li>它在机器人里怎么用（含第三方实测）</li>
+    <li>边界：十件千万别让它做的事</li>
+    <li>什么规模该自建，什么规模该用它</li>
+    <li>我的判断 + 怎么上手</li>
+  </ol>
+</div>
+
+<h2>1 · 它要解决什么问题</h2>
+
+<p>先讲动机。不讲动机，你会觉得 Jev 只是「一个精简版模型」，理解不到它的野心。</p>
+
+<h3>1.1 一个被忽略的事实</h3>
+<p>Diogo Almeida 在发布文里问了一个问题：</p>
+<div class="key" style="font-size:14px;">
+  「模型在聊天上超人类已经好几年了，<strong>那自动化在哪里？</strong>」
+</div>
+<p>这是个很好的问题。大模型能写论文、能通过考试、能写代码，但你的生活里有多少环节真的被自动了？很少。原因是：</p>
+<ul>
+  <li><strong>聊天模型的目标是「让人满意」</strong>——RLHF 优化的是人类评分员更喜欢哪个回答。它没被优化成「能被软件可靠调用」。</li>
+  <li><strong>它输出的是字符串</strong>——字符串极其灵活，可以是答案、代码、也能是幻觉和拒答。<strong>软件要拿它做判断，必须先解析、再校验，而且永远有「模型跑偏了」的风险。</strong></li>
+  <li><strong>它慢</strong>——3 到 329 秒。跟人对话够用，嵌进代码的实时循环就是死结。</li>
+  <li><strong>它过度自信</strong>——你问它有多大把握，它说 95%，但真实准确率可能是 70%。<strong>如果模型不知道自己什么时候会错，那它错的那部分就必须永远有人盯着。</strong></li>
+</ul>
+
+<h3>1.2 于是有了「System One」这个名字</h3>
+<p>取自卡尼曼《思考，快与慢》：<strong>System 1 是快速、直觉、不费力的判断；System 2 是缓慢、需要推理的思考。</strong></p>
+<table>
+  <tr><th></th><th>System 2 型（现有大模型 / 推理模型）</th><th>System 1 型（Jev）</th></tr>
+  <tr><td>干什么</td><td>写文章、写代码、解数学题、推理</td><td>分类、路由、打分、判断真假</td></tr>
+  <tr><td>速度</td><td>秒级</td><td><strong>毫秒级</strong></td></tr>
+  <tr><td>什么时候用</td><td>难问题、低频、要人看结果</td><td><strong>简单问题、高频、要自动化</strong></td></tr>
+</table>
+<div class="note">
+  <strong>为什么叫「一」而不是「二」是褒义：</strong>System 1 在心理学里常被描述成「容易出错」。TypeSafe 的判断是——<strong>对于「在有限选项里挑一个」这类任务，快速直觉型反而可以做得比推理型更可靠</strong>，因为它根本不给模型自由发挥的空间。这是整个产品的立论基础。
+</div>
+
+<h3>1.3 名字「Jev」的来历</h3>
+<p>取自经济学家 <strong>William Stanley Jevons</strong>，对应「杰文斯悖论」：蒸汽机效率提高，反而让煤炭消耗增加。</p>
+<p><strong>它的隐喻：</strong>智能的成本每下降一个数量级，就会解锁多一个数量级的用途。<strong>降价不是省钱的工具，是创造新需求的工具。</strong>——这也解释了为什么他们敢把输出定价为「免费」。</p>
+
+<h2>2 · 最核心的区别：它不写字</h2>
+
+<p>这一节如果你只记一件事，记这个。<strong>Jev 的所有优势，都是「放弃生成文字」换来的。</strong></p>
+
+<table>
+  <tr><th></th><th>现有大模型</th><th>Jev（System One）</th></tr>
+  <tr><td><strong>训练优化目标</strong></td><td>人类偏好（RLHF）／可验证奖励（RLVR）</td><td><strong>校准的决策（RLCD）</strong>——答案要对，而且「说我有多大把握」也得真的准</td></tr>
+  <tr><td><strong>输入形态</strong></td><td>非结构化文本，重点是<strong>对话消息</strong></td><td>非结构化文本，重点是<strong>结构化程序状态</strong></td></tr>
+  <tr><td><strong>输出形态</strong></td><td><strong>字符串</strong>——可能是答案、代码、也可能是幻觉或拒答；软件要用必须先解析校验</td><td><strong>带类型的结构化数值</strong>——可能的输出和结构<strong>事先定义好</strong>，模型不可能产生类型错误</td></tr>
+  <tr><td><strong>采样方式</strong></td><td><strong>串行</strong>：一个 token 一个 token 地生成，每个都依赖前一个</td><td><strong>并行</strong>：一次查询里把所有答案同时算出来</td></tr>
+  <tr><td><strong>成本</strong></td><td>输入 $0.20–$10 / 百万 token；<strong>输出比输入贵约 5 倍</strong></td><td>输入 $0.042 / 百万；<strong>输出免费</strong></td></tr>
+  <tr><td><strong>速度</strong></td><td>端到端 3–329 秒</td><td><strong>70–500 毫秒</strong></td></tr>
+  <tr><td><strong>置信度</strong></td><td>就算你追问，它给的置信度也常常过度自信、前后不一致</td><td><strong>每个输出都附校准过的置信度</strong>——把握说 95%，准确率就真的接近 95%</td></tr>
+</table>
+
+<div class="key">
+  <strong>「并行采样」为什么这么重要？</strong>大模型一次只能吐一个 token，所以「回答问题 A、B、C」要串行做三次，越往后越贵越慢。<br>
+  Jev 是<strong>把所有问题同时对着同一份 state 求值</strong>。TypeSafe 实测：<strong>一次调用问 13 个问题，比分成 13 次调用便宜 12.2 倍、快 10 倍</strong>（用 53,777 字符的文档测试）。省下来的钱主要来自「state 只发一次」。<br>
+  <strong>这个特性直接改变了你怎么设计系统</strong>——习惯了大模型的人总是「问一个、看结果、再决定问什么」，用 Jev 时应该<strong>把可能有用的独立问题一次性全问了</strong>，哪怕有些当前输入用不上。
+</div>
+
+<h2>3 · 三种问题原语</h2>
+
+<p>Jev 的所有能力，都由三种问题类型拼出来。理解这三种，你就理解了这个模型。</p>
+
+<table>
+  <tr><th>原语</th><th>问的是</th><th>返回什么</th><th>生活化理解</th></tr>
+  <tr>
+    <td><strong>Noul</strong></td>
+    <td>这句话是真的吗？</td>
+    <td><code>noul</code>（0–1 的概率）</td>
+    <td>「这是不是退款请求？」→ 0.93</td>
+  </tr>
+  <tr>
+    <td><strong>Choice</strong></td>
+    <td>这些选项里是哪个？</td>
+    <td><code>choice</code> + 完整概率分布 + <code>confidence</code></td>
+    <td>「这工单归哪个部门？」→ billing</td>
+  </tr>
+  <tr>
+    <td><strong>Score</strong></td>
+    <td>在这个量表上的哪里？</td>
+    <td><code>score</code> + 分层 + 完整概率分布 + <code>confidence</code></td>
+    <td>「这个 bug 多严重？」→ 1.3 / 2</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>三种原语就够了？</strong>够了。因为所有「判断」在数学上都能拆成这三类：<strong>是不是（布尔）、哪个（分类）、多少（序数）</strong>。任何更复杂的判断，都是这三类的组合——这就是为什么它敢说「答案空间有界」是它的适用前提。
+</div>
+
+<h3>3.1 三个必须记住的实操细节</h3>
+
+<div class="qa">
+  <div class="q">① Noul 的 0.5 不是「中等」，是「我分不清」</div>
+  <div class="a">这是最常见的误读。<strong>想测量程度，请用 Score，不要用 Noul。</strong>另外：让「值大」对应「是」，别写成 <code>true</code> 表示否——反向表述会显著降低答案质量。</div>
+</div>
+
+<div class="qa">
+  <div class="q">② Choice 必须给出口</div>
+  <div class="a">模型<strong>必须选一个</strong>，所以当你的选项列表可能覆盖不全时，<strong>一定要加 <code>other</code> 或 <code>none_of_the_above</code></strong>。否则它会把一个不属于任何类的东西硬塞进某类里，而你还以为分类是准的。Choice 最多支持 255 个选项。</div>
+</div>
+
+<div class="qa">
+  <div class="q">③ Score 要描述「情境」，不要描述「程度」</div>
+  <div class="a">这是文档里强调最多的一条。<code>"Broken feature, but a workaround exists"</code> 有用；<code>"Moderately severe"</code> 和裸数字没用。<br>
+  <strong>为什么：每个层级是独立判断的，模型看不到层级编号、也看不到相邻层级。</strong>所以「比上一级更严重」这种表述对它是无意义的。<br>
+  另外：<strong>一个 Score 只测一个维度</strong>，混两个维度会让 confidence 崩掉。Score 支持 2–10 个层级。</div>
+</div>
+
+<h2>4 · 一次真实调用长什么样</h2>
+
+<p>看一个完整例子。假设你要处理一个赞助咨询表单：</p>
+
+<pre><code>{
+  <span class="st">"model"</span>: <span class="st">"jev-latest"</span>,
+  <span class="st">"state"</span>: {
+    <span class="st">"name"</span>: <span class="st">"Managed Postgres"</span>,
+    <span class="st">"description"</span>: <span class="st">"We make a managed PostgreSQL hosting product
+                    and would like to sponsor the newsletter in October."</span>
+  },
+  <span class="st">"questions"</span>: {
+    <span class="st">"is_sponsor_inquiry"</span>: {
+      <span class="st">"type"</span>: <span class="st">"noul"</span>,
+      <span class="st">"instructions"</span>: <span class="st">"Does `description` ask to sponsor the site?"</span>
+    },
+    <span class="st">"product_category"</span>: {
+      <span class="st">"type"</span>: <span class="st">"choice"</span>,
+      <span class="st">"instructions"</span>: <span class="st">"What kind of product is described by `name`?"</span>,
+      <span class="st">"criteria"</span>: {
+        <span class="st">"dev_tool"</span>: <span class="st">"Developer tools, hosting, APIs, SaaS for developers"</span>,
+        <span class="st">"course"</span>: <span class="st">"Courses, books, or training"</span>,
+        <span class="st">"unrelated"</span>: <span class="st">"Anything not aimed at developers"</span>
+      }
+    }
+  }
+}</code></pre>
+
+<p>返回：</p>
+
+<pre><code>{
+  <span class="st">"answers"</span>: {
+    <span class="st">"is_sponsor_inquiry"</span>: { <span class="st">"noul"</span>: <span class="nm">0.99</span> },
+    <span class="st">"product_category"</span>: {
+      <span class="st">"choice"</span>: <span class="st">"dev_tool"</span>,
+      <span class="st">"probabilities"</span>: { <span class="st">"dev_tool"</span>: <span class="nm">0.97</span>, <span class="st">"course"</span>: <span class="nm">0.01</span>, <span class="st">"unrelated"</span>: <span class="nm">0.02</span> },
+      <span class="st">"confidence"</span>: <span class="nm">0.95</span>
+    }
+  },
+  <span class="st">"usage"</span>: { <span class="st">"input_tokens"</span>: <span class="nm">210</span>, <span class="st">"output_tokens"</span>: <span class="nm">31</span> }
+}</code></pre>
+
+<h3>4.1 代码怎么用它</h3>
+
+<p>关键在于——<strong>模型给判断，代码决定动作</strong>。这才是「智能 if 语句」的意思：</p>
+
+<pre><code><span class="kw">const</span> { answers } = response
+
+<span class="kw">if</span> (answers.is_sponsor_inquiry.noul &gt; <span class="nm">0.9</span>
+    &amp;&amp; answers.product_category.choice === <span class="st">'dev_tool'</span>) {
+  sendRateCard(email)          <span class="cm">// 高置信度：自动执行</span>
+} <span class="kw">else</span> {
+  queueForManualReply(email)   <span class="cm">// 其余：进人工队列</span>
+}</code></pre>
+
+<div class="ok">
+  <strong>对比一下传统写法：</strong>如果你用正则或关键词匹配来做这个判断，你要写一堆 <code>if (text.includes('sponsor') || text.includes('advertise') ...)</code>——<strong>看起来能用，但用户换一种说法就崩</strong>。Jev 替换的正是这段脆弱的手写逻辑。<br>
+  <strong>它不是「AI 变得更聪明」，它是「把一段容易坏的解析代码换成一次模型调用」。</strong>
+</div>
+
+<h3>4.2 一个容易忽略的规则</h3>
+<div class="warn">
+  <strong>问题的 ID 不会发送给模型。</strong><code>is_sponsor_inquiry</code> 这个键只给你的代码用。<strong>所以完整的问题必须写在 <code>instructions</code> 里</strong>——写 <code>refund_requested</code> 这种键名，模型是看不懂的。<br>
+  这和用大模型时的直觉不同：大模型会「猜」你的意图，Jev 只读你写的字。
+</div>
+
+<h2>5 · 置信度才是真正的产品</h2>
+
+<p>TypeSafe 自己反复强调，也在第三方分析里被反复指出：<strong>Jev 真正值钱的不是速度也不是便宜，是校准（calibration）。</strong></p>
+
+<h3>5.1 什么是校准</h3>
+<div class="key">
+  <strong>校准 = 它说有多大把握，就真的有多准。</strong><br>
+  说 95% 把握的事情，在真实任务里就该有约 95% 的正确率。说 60% 就该约 60%。<strong>这在工业场景不是加分项，是能不能自动化的生死线。</strong>
+</div>
+
+<h3>5.2 为什么这决定了「能不能自动」</h3>
+<p>设想一个模型能把某任务做对 95%。听起来很好，但：</p>
+<ul>
+  <li><strong>如果它不知道自己哪 5% 会错</strong> → 你必须对 100% 的结果做人审 → <strong>自动化收益归零</strong></li>
+  <li><strong>如果它知道自己哪 5% 不确定</strong> → 95% 自动执行、5% 转人工 → <strong>真的省下了 95% 的人力</strong></li>
+</ul>
+<p>所以这套工作流才成立：</p>
+
+<div class="flow">
+  <span>置信度 &gt; 0.9<br>自动执行</span><b>·</b>
+  <span>0.5 – 0.9<br>标记待审 / 让用户确认</span><b>·</b>
+  <span>&lt; 0.5<br>转人工 / 请求澄清</span>
+</div>
+
+<div class="note">
+  <strong>阈值是你要自己定的，而且取决于「答错的代价」。</strong>TypeSafe 文档给的示例是：<strong>0.5 作为「必须复核」的下限，0.9 用于不可逆的破坏性操作</strong>。这两个是示例不是默认值——<strong>删数据库和换个标签，显然不该用同一个阈值。</strong>
+</div>
+
+<h3>5.3 置信度是怎么算出来的</h3>
+<p>它来自<strong>概率分布的形状</strong>。举个例子：某个 Choice 问题上，<code>billing</code> 赢了，概率 0.84，但 <code>technical</code> 还占 0.159——分布比较散，所以 <code>confidence</code> 只有 0.596。</p>
+<p><strong>换句话说：赢得多不算什么，「赢得干净」才代表模型真的确定。</strong>这个设计很聪明——它把「模型的不确定性」直接暴露成你可以拿来写 if 的数字。</p>
+
+<h2>6 · 实测数字与它们的水分</h2>
+
+<p>这一节我尽量把「谁测的」标清楚。<strong>来源不同，可信度完全不同。</strong></p>
+
+<h3>6.1 TypeSafe 自报的工作流评测 <span class="tag tOpt">厂商数据</span></h3>
+<table>
+  <tr><th>模型</th><th>准确率</th><th>每案例成本</th><th>延迟</th></tr>
+  <tr><td><strong>Jev</strong></td><td class="num"><strong>67.8%</strong></td><td class="num"><strong>$0.0004</strong></td><td class="num"><strong>0.4 s</strong></td></tr>
+  <tr><td>GPT-5.6 Terra</td><td class="num">67.9%</td><td class="num">$0.0304</td><td class="num">10.1 s</td></tr>
+  <tr><td>GPT-5.6 Sol</td><td class="num">74.1%</td><td class="num">$0.0836</td><td class="num">23.3 s</td></tr>
+  <tr><td>Claude Opus 5</td><td class="num">73.1%</td><td class="num">$0.1761</td><td class="num">37.8 s</td></tr>
+</table>
+<p><strong>这张表最该注意的不是 Jev 有多好，而是它有多诚实：</strong></p>
+<ul>
+  <li>Jev 的准确率<strong>只是和 Terra 打平</strong>，并不是碾压</li>
+  <li><strong>比最强模型低 5–6 个百分点</strong>（Sol 74.1%、Opus 5 73.1% vs Jev 67.8%）</li>
+  <li>真正的优势是<strong>成本约 1/76、速度快约 25 倍</strong></li>
+</ul>
+
+<div class="warn">
+  <strong>TypeSafe 自己列出的偏差声明（很罕见，值得尊重）：</strong>
+  <ul>
+    <li>评测工作流是<strong>他们自己团队写的</strong>，可能存在偏差</li>
+    <li>参考答案取的是 GPT-6 Astra 和 Fable 5.1 的平均——<strong>这反而可能低估了 Jev 和 DeepSeek 模型</strong></li>
+    <li><strong>「193.6 倍更快、444.6 倍更省」这个头条数字，他们自己说属于真实收益的「高端上限」</strong></li>
+    <li><strong>无法证明定价没有被补贴</strong>，需要长期验证</li>
+  </ul>
+</div>
+
+<h3>6.2 结构化输出错误率 <span class="tag tOpt">厂商自报</span></h3>
+<table>
+  <tr><th>模型</th><th>结构化输出错误率</th></tr>
+  <tr><td><strong>Jev</strong></td><td class="num"><strong>0%</strong></td></tr>
+  <tr><td>OpenAI luna / terra</td><td class="num">0.58%</td></tr>
+  <tr><td>Claude Opus 5</td><td class="num">5.73%</td></tr>
+  <tr><td>Claude Haiku 4.5</td><td class="num">45.5%</td></tr>
+</table>
+<p>工具调用错误率：Jev <strong>0%</strong>，GPT-5.6 Sol <strong>17.0%</strong>。</p>
+
+<div class="warn">
+  <strong>关于「永不幻觉」，有一处必须讲清楚，否则你会被误导。</strong><br>
+  「0% 类型错误」<strong>不是实测出来的数字，是数学保证</strong>。因为所有可能的输出结构<strong>事先就定义好了</strong>——模型在数学上不可能吐出一个不符合 schema 的值。TypeSafe 自己也说：这个数字「不是经验性的」。
+  <br><br>
+  <strong>所以正确的理解是：</strong>Jev 保证<strong>「输出的格式和取值范围一定合法」</strong>，但<strong>不保证「它选的那一项是对的」</strong>。它可能在你给的 4 个部门里准确地选了一个错误的部门。<br>
+  <strong>「不会幻觉」≠「不会错」。</strong>这是两件完全不同的事，营销话术容易把它们混起来。
+</div>
+
+<h3>6.3 第三方实测：机器人车队场景 <span class="tag tCon">独立复现</span></h3>
+
+<p>这是我认为最有价值的一组数据——不是因为数字漂亮，而是因为<strong>它由第三方（RoboKrunch）执行、真实花钱、并把局限写在最前面</strong>。</p>
+
+<p><strong>场景：</strong>仓库 AMR 机器人车队的事件分诊。41 个中英双语事件模板（激光雷达退化、定位漂移、电池故障、托盘识别失败、网络分区、人员闯入），采样 300 起事件。<strong>每次调用同时问三个判断</strong>：是否升级给人工（是/否）、归属团队（选择）、紧急度（0–2 打分）。</p>
+
+<table>
+  <tr><th>指标</th><th>实测结果</th></tr>
+  <tr><td>成功决策</td><td class="num">300 / 300</td></tr>
+  <tr><td>p50 延迟</td><td class="num">0.527 s</td></tr>
+  <tr><td>p95 延迟</td><td class="num">0.813 s</td></tr>
+  <tr><td>平均输入 token</td><td class="num">584.9</td></tr>
+  <tr><td><strong>单次决策成本</strong></td><td class="num"><strong>$0.0000246</strong></td></tr>
+  <tr><td>每百万次决策</td><td class="num">$24.57</td></tr>
+  <tr><td>与模板标签一致率</td><td class="num">274 / 300（<strong>91.3%</strong>）</td></tr>
+</table>
+
+<p><strong>车队规模成本模型</strong>（10,000 台机器人 × 48 次决策/天 × 30 天 = 每月 1440 万次决策）：</p>
+<table>
+  <tr><th></th><th>Jev</th><th>GPT-4o-mini（估算）</th></tr>
+  <tr><td>每月成本</td><td class="num"><strong>$353.81</strong></td><td class="num">$1,814.40</td></tr>
+  <tr><td>倍数</td><td class="num">1×</td><td class="num">约 5.1×</td></tr>
+</table>
+
+<div class="warn">
+  <strong>这份实测自己声明的局限（照抄，不修饰）：</strong>
+  <ul>
+    <li>事件是<strong>模拟的模板</strong>，所以「91.3%」是<strong>与模板标签的一致率，不是真实故障上的准确率</strong></li>
+    <li>走的是 OpenRouter 而不是 TypeSafe 原生接口</li>
+    <li>没有真机硬件、没有边缘 NPU、没有长时间压测、<strong>没有做概率校准研究</strong></li>
+    <li>GPT-4o-mini 那一列是<strong>成本估算，不是实测</strong>，其分诊质量未知</li>
+  </ul>
+  <strong>这份局限声明本身，就是它可信的原因。</strong>
+</div>
+
+<h3>6.4 社区在几天内做出来的东西 <span class="tag tOpt">逸闻，非评测</span></h3>
+<ul>
+  <li><strong>命令安全分类</strong>：Vercel CEO 报告在命令安全检查上 p95 延迟比 GPT Luna 快最多 18 倍，且更准</li>
+  <li><strong>邮件分诊</strong>：Bryo AI 的 CTO 说 Gemini 略准，但<strong>贵 10–20 倍</strong></li>
+  <li><strong>浏览器自动化</strong>：<code>jev-ultrafast</code> 用 7.1 秒完成苏黎世→伦敦的航班搜索</li>
+  <li><strong>手机 Agent</strong>：<code>mobile-jev</code> 在真实安卓手机上操作 Uber，9 个动作约 21 秒（<strong>未完成下单</strong>）</li>
+  <li><strong>Agent 护栏</strong>：<code>jev-guard</code> 给每个工具调用评级：拒绝 / 询问 / 放行</li>
+  <li><strong>游戏</strong>：通关星际争霸第一个战斗任务；给《毁灭战士》写 bot（约 10 查询/秒，成本约 $7/小时）</li>
+</ul>
+
+<h2>7 · 它在机器人里怎么用</h2>
+
+<p>这是你最关心的部分。<strong>先给一个可能不太好听但必须说的判断：</strong></p>
+
+<div class="warn">
+  <strong>Jev 不是策略模型，它不能替代 VLA，也不能做运动控制。</strong><br>
+  它<strong>没有图像、音频、视频输入</strong>（官方明确说明 Doom demo 用的是结构化状态、不是画面）。它的延迟是 <strong>70–500 毫秒，也就是 2–14 Hz</strong>——<strong>而控制回路通常需要 100–1000 Hz（1–10 毫秒）</strong>。<br>
+  把它塞进电机控制回路是彻底用错了地方。
+</div>
+
+<p><strong>它真正的位置在「上一层」</strong>——那些「需要判断、但不需要高频」的地方：</p>
+
+<div class="flow">
+  <span>传感器/事件/日志</span><b>→</b>
+  <span><strong>Jev 判断</strong><br>要不要升级？归谁？多急？</span><b>→</b>
+  <span>代码分支</span><b>→</b>
+  <span>人 / 慢速 LLM / 执行器</span>
+</div>
+
+<h3>7.1 已经验证过的几个位置</h3>
+
+<table>
+  <tr><th>位置</th><th>Jev 判断什么</th><th>为什么合适</th></tr>
+  <tr>
+    <td><strong>车队事件分诊</strong></td>
+    <td>是否升级人工 / 归属团队 / 紧急度</td>
+    <td>有第三方实测（上面 6.3 节）。<strong>高频、答案空间有界、答错代价可控</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Agent 工具调用护栏</strong></td>
+    <td>这个 shell 命令是只读 / 可逆 / 不可逆？</td>
+    <td>不安全操作必须被拦住。<strong>作者在自己的计划里就列了这条</strong>。有个细节值得注意：影子测试里 <code>rm -rf</code> 被判为「不可逆」的概率只有 <strong>0.56、置信度 0.33</strong>——<strong>这类高风险判断千万别只看结论，必须结合置信度设阈值</strong></td>
+  </tr>
+  <tr>
+    <td><strong>意图路由</strong></td>
+    <td>这个请求该走数据库查询、还是带某类上下文的 LLM、还是人工？</td>
+    <td>早期落地最多的场景。<strong>让便宜的路径先分流，昂贵的模型只处理真正需要的</strong></td>
+  </tr>
+  <tr>
+    <td><strong>验证 VLA / LLM 的输出</strong></td>
+    <td>这段摘要的说法有原文支持吗？这个动作符合任务意图吗？</td>
+    <td>用 Noul 做「有据可查」检查。<strong>把 Jev 当第二双眼睛，而不是当手</strong></td>
+  </tr>
+  <tr>
+    <td><strong>UI 元素选择</strong></td>
+    <td>该点哪个按钮？</td>
+    <td>浏览器/手机自动化里，让规划模型定目标、Jev 从候选元素里选。<strong>「从牌堆里挑一张牌」，这正是它擅长的形状</strong></td>
+  </tr>
+</table>
+
+<h3>7.2 那个机械臂 demo 的真相</h3>
+<p>有一条流传的 demo 是「Jev 操作机械臂抓红色方块放进正确的盒子」。<strong>关键细节在手边那个 harness（外层框架）里：</strong>是 harness 向 Jev 提供了<strong>实时几何信息、接触数据、以及控制效果的预测</strong>，Jev 只是在「这些动作里挑一个」。</p>
+<div class="key">
+  <strong>这个分工值得你抄。</strong>机器人系统正确的分层是：<br>
+  <strong>感知与几何 → 由确定性代码做（准、快、可验证）<br>
+  候选动作生成 → 由规划/RL/几何求解器做<br>
+  在高层语义判断上选一个 → 这才是 Jev 的位置</strong><br>
+  反过来，如果你让 Jev 去算「末端距目标 12.3 厘米」这种数，它会错——<strong>它是决策层，不是计算层。</strong>
+</div>
+
+<h3>7.3 与你的学习路线的对照</h3>
+<table>
+  <tr><th>你在学的</th><th>Jev 的位置</th></tr>
+  <tr><td>MuJoCo / MJX 仿真训练 PPO</td><td><strong>无关</strong>。那是策略学习，Jev 不做策略</td></tr>
+  <tr><td>VLA（视觉-语言-动作模型）</td><td><strong>互补而非竞争</strong>。VLA 是「手和眼」，Jev 是「判断这条指令该不该执行、该交给谁」</td></tr>
+  <tr><td>LeRobot 采数据 / ACT 策略</td><td><strong>无关</strong></td></tr>
+  <tr><td>机器人系统的工程化与运维</td><td><strong>这正是它的战场</strong>：事件分诊、异常分类、护栏、路由</td></tr>
+</table>
+<div class="note">
+  <strong>对你的投资视角，它有意思的地方在于：</strong>它代表一类<strong>不跟大模型卷参数、而是卷「可靠性和单位成本」</strong>的产品策略。<strong>「智能的成本每降一个数量级，就解锁一个数量级的用途」这个杰文斯式判断，是它整个商业论证的支点。</strong>值得观察的是：它能不能在「大模型厂商顺便把这个能力做进自家 API」之前建立起护城河。
+</div>
+
+<h2>8 · 边界：别让它做的事</h2>
+
+<p>TypeSafe 为每个模型版本发布一份「jaggedness（锯齿面）」页面，主动列出它做不好的地方。这种坦诚在 AI 公司里很少见，也说明这些坑是真踩过的。</p>
+
+<table>
+  <tr><th>别让它做</th><th>为什么</th><th>正确做法</th></tr>
+  <tr>
+    <td><strong>算数</strong></td>
+    <td>它<strong>不是计算器，不能可靠计数</strong>——数不清字符、出现次数、列表项数</td>
+    <td>算术在代码里做，把结果或分档传给它</td>
+  </tr>
+  <tr>
+    <td><strong>数数</strong></td>
+    <td>同上。「有几个水果名？」它会答错</td>
+    <td><strong>每个项问一个 Noul，然后在代码里求和</strong>（文档给了完整代码示例）</td>
+  </tr>
+  <tr>
+    <td><strong>比较日期</strong></td>
+    <td>它把日期<strong>当文本读</strong>，先后、间隔、是否落在窗口内都不可靠</td>
+    <td>用 Choice 分别抽月/日/年（带「未说明」选项），在代码里构建真实日期再比较</td>
+  </tr>
+  <tr>
+    <td><strong>判断颜色接近</strong></td>
+    <td>命名颜色（"红色"）可以，<code>#FF4B0A</code> 这种不行</td>
+    <td>颜色距离在代码里算</td>
+  </tr>
+  <tr>
+    <td><strong>多跳推理</strong></td>
+    <td>双重否定、「属性的属性」、任何需要绕一步的，准确率都下降</td>
+    <td>拆成多个直指 state 的简单问题</td>
+  </tr>
+  <tr>
+    <td><strong>写东西</strong></td>
+    <td>官方直言：可以靠字符级 Choice 硬凑出文本，<strong>又慢又差</strong></td>
+    <td>要生成就交给 LLM。<strong>Jev 判断，LLM 写作</strong></td>
+  </tr>
+  <tr>
+    <td><strong>解释理由</strong></td>
+    <td>只给概率数字，<strong>不给原因</strong>。这对调试和受监管行业的审计是实质限制</td>
+    <td>把它当无解释组件用，靠日志和阈值复核</td>
+  </tr>
+</table>
+
+<div class="key">
+  <strong>一句话总结它的适用形状：</strong><br>
+  <strong>「从牌堆里挑一张牌」——可以。「让它报出牌名」——不行。</strong><br>
+  当你本能地想说「提取 X」的时候，把它改写成「这些是 X 的候选，哪个是它？」
+</div>
+
+<h3>8.1 还有一条最容易被忽略、但影响最大</h3>
+<div class="warn">
+  <strong>给它的 state 越大、越杂，准确率越低。</strong>官方原话：<em>"A large state full of irrelevant detail costs accuracy too. Filter first."</em><br>
+  它和别的模型一样会受<strong>上下文腐化（context rot）</strong>影响。所以：<strong>先在代码里过滤，只发问题真正需要的那部分。</strong><br>
+  举个具体例子：给单个工单打分时，不要发这个客户的完整历史；给一个段落分类时，不要发整份文档。<br>
+  <strong>如果没法用确定性代码过滤，就每一块问一个 Noul：「这段和问题相关吗？」然后丢掉不相关的。</strong>
+</div>
+
+<h2>9 · 什么规模该自建</h2>
+
+<p>这是 RoboKrunch 做的第二个实测，我觉得是整份研究里最实用的一块——<strong>它给出了「什么时候不该用 Jev」的量化答案</strong>。</p>
+
+<p><strong>对比对象：</strong>自己部署 <code>ModernBERT-base</code>（1.49 亿参数）在 2 核 AMD EPYC 上，纯 CPU，单条推理。</p>
+
+<table>
+  <tr><th>指标</th><th>ModernBERT（自建）</th><th>Jev（API）</th></tr>
+  <tr><td>p50 延迟</td><td class="num"><strong>169.3 ms</strong></td><td class="num">527 ms</td></tr>
+  <tr><td>吞吐</td><td class="num">5.06 条/秒</td><td class="num">约 1.8 次决策/秒</td></tr>
+  <tr><td>单次判断数</td><td class="num">1 个标签</td><td class="num"><strong>3 个判断</strong></td></tr>
+  <tr><td>需要训练数据</td><td class="num">18 个样本 + 调参</td><td class="num"><strong>0</strong></td></tr>
+  <tr><td>运维负担</td><td class="num">服务器你自己维护</td><td class="num"><strong>0</strong></td></tr>
+</table>
+
+<div class="ok">
+  <strong>这组数据揭示了一个反直觉的事实：</strong><br>
+  <strong>Jev 的优势不是「推理快」——一个本地小模型比它快约 3 倍。</strong><br>
+  <strong>它的优势是「起步成本为零」：不用训练、不用标数据、不用养服务器。</strong><br>
+  一旦你跨过某个规模、标签又稳定，就该自建。
+</div>
+
+<p><strong>交叉点：</strong>假设 4 核 VM 每月 $24，<strong>自建在约 97.7 万次决策/月时打平</strong>——大约相当于 678 台机器人（每台每天 48 次决策）。低于这个规模，用 Jev 更便宜，而且省掉了训练、标注和运维。</p>
+
+<div class="note">
+  <strong>但成本账有一句最重要的提醒，来自深度分析文章：</strong><br>
+  <em>「有用的指标是每解决一个任务的成本，不是每个 token 的成本。如果便宜路径增加了重试或人工审查，节省会缩水。」</em><br>
+  算账要算<strong>整条管道</strong>：预处理、重试、失败请求、人工复核，以及 Jev 前后那些还在跑的生成步骤。<br>
+  一个真实例子：分类 1,018 篇论文摘要花 <strong>$0.08</strong>，但如果还要 LLM 去写摘要，那部分要 <strong>$3.99</strong>。<strong>分类便宜 50 倍，但摘要才是花钱的地方。</strong>
+</div>
+
+<h2>10 · 我的判断</h2>
+
+<div class="card">
+  <h3 style="margin-top:0;">它是什么</h3>
+  <p>它<strong>不是一个更小的大模型</strong>，也不该被当成「便宜的替代品」。它是一类<strong>新的组件</strong>：把「需要理解语义的条件分支」从手写代码里拿出来，交给一个<strong>快、便宜、结构受约束</strong>的模型。</p>
+
+  <h3>它最有价值的三个点</h3>
+  <ol>
+    <li><strong>它把「不确定性」变成了一个可以写进 if 的数字。</strong>这是我见过的、让 AI 真正可自动化的最务实的一步。校准不是技术细节，它是「你敢不敢让它不看结果就执行」的门票。</li>
+    <li><strong>并行采样改变了系统设计方式。</strong>一次问 13 个问题比问 13 次便宜 12 倍——这个特性要求你<strong>在设计阶段就想清楚「我可能需要的所有判断」</strong>，而不是像用大模型那样一步步问。这是个真正的范式差异。</li>
+    <li><strong>它的输出结构是数学保证的。</strong>不是「实测错误率很低」，是「不可能不合法」。对埋在依赖链深处的组件，这是质变。</li>
+  </ol>
+
+  <h3>必须打的三个问号</h3>
+  <ol>
+    <li><strong>所有漂亮数字都是厂商自报的。</strong>「193.6 倍更快 444.6 倍更省」是 TypeSafe 自己的工作流评测，他们自己也说是高端上限。<strong>目前唯一的第三方实测只跑了 300 条模拟事件，而且是分诊场景。</strong>你如果要认真评估，只能自己跑。</li>
+    <li><strong>「不幻觉」这个说法容易被误读成「不会错」。</strong>它只保证格式合法，不保证选对。<strong>而「选错了但格式正确」恰恰是最难被发现的那类错误。</strong></li>
+    <li><strong>护城河问题没答案。</strong>如果 OpenAI/Anthropic 明天在自己的 API 里加一个「结构化决策」端点，并且顺带把校准做进去——Jev 的核心差异还剩多少？<strong>这个问题的答案决定它是一个公司还是一个功能。</strong></li>
+  </ol>
+</div>
+
+<div class="key">
+  <strong>给你的实操建议：</strong>如果你想用它，<strong>从你自己每天都做的、已经能答对的判断开始</strong>——<br>
+  ① 先写下来你现在的判断规则是什么；<br>
+  ② 用<strong>影子模式</strong>并行跑——保持现有行为不变，把 Jev 的答案全记下来；<br>
+  ③ 人工标对错，看置信度和准确率在哪里出现分歧；<br>
+  ④ 用这些数据调问题和阈值；<br>
+  ⑤ <strong>先自动化低风险的那条分支</strong>，一条一条来。<br><br>
+  还有一条反直觉但重要的：<strong>当确定性代码已经能正确判断时，不要引入模型。</strong>官方原话是——<em>「一个不花钱的 <code>if</code>，胜过一次可能出错的模型调用。」</em>
+</div>
+
+<h2>11 · 想上手</h2>
+
+<h3>11.1 接入方式</h3>
+<table>
+  <tr><th>方式</th><th>细节</th></tr>
+  <tr><td>原生 API</td><td><code>POST https://api.typesafe.ai/v1/systemone</code>，Bearer 认证</td></tr>
+  <tr><td>Python SDK</td><td><code>pip install typesafe-sdk</code>（需要 Python 3.10+）</td></tr>
+  <tr><td>Node SDK</td><td><code>npm install @typesafe-ai/sdk</code>（需要 Node 20+）</td></tr>
+  <tr><td>Vercel AI SDK</td><td>AI SDK 7.0.105+ 的 <code>experimental_evaluate</code> 原生支持</td></tr>
+  <tr><td>第三方聚合</td><td>OpenRouter（<code>typesafe/jev</code>）、Vercel</td></tr>
+  <tr><td>模型版本</td><td>当前 <code>jev-1.13.0</code>；<code>jev-latest</code> 指向稳定版，<code>jev-preview</code> 是预览版</td></tr>
+</table>
+
+<div class="warn">
+  <strong>两个工程纪律：</strong><br>
+  ① <strong>响应里会带上作答的版本 ID，记下来。</strong>阈值调好后就把版本固定住，否则某天模型静默升级，你的判断逻辑会跟着漂移。<br>
+  ② <strong>把模型 ID、问题定义、criteria 和阈值当成一个整体做版本管理。</strong>任何一项改动都要重放一组已知输入来回归测试。<br>
+  ③ SDK <strong>必须跑在服务端</strong>，别把 API key 放进浏览器端的 JS。
+</div>
+
+<h3>11.2 限额（写作时）</h3>
+<ul>
+  <li>state + 全部问题共享约 <strong>64,000 tokens</strong>；state + 单个最长问题需塞进约 <strong>32,000 tokens</strong></li>
+  <li>Choice <strong>最多 255 个选项</strong>；Score <strong>2–10 个层级</strong></li>
+  <li>速率：约 <strong>250,000 tokens/秒</strong>、<strong>1,200 请求/分钟</strong>（早期访问期间动态调整）</li>
+  <li>早期访问目前<strong>需要排队</strong>；<strong>未开源权重、未公布参数量、不支持自部署</strong></li>
+</ul>
+
+<h3>11.3 一句话记住它</h3>
+<div class="ok">
+  <strong>Jev 不写作，只判断。</strong><br>
+  它把「从一堆选项里挑一个」这件事，做成了<strong>一个 100 毫秒、两分钱一千万次、而且知道自己有多确定</strong>的组件。<br>
+  <strong>它不打算变得更聪明，它打算变得更便宜、更可靠、更可嵌入——而这可能才是自动化真正缺的东西。</strong>
+</div>
+
+<div class="note">
+  <strong>信息来源说明（重要）：</strong>本页发布时（2026-09-22）距离 Jev 公开仅 7 天。<strong>除 6.3 节 RoboKrunch 的第三方实测外，所有性能数字均来自 TypeSafe 自报评测。</strong>厂商数据在快速迭代期变化快，且缺少独立复现——<strong>请把它当作「值得关注的信号」，而不是「已验证的结论」。</strong>
+</div>
+
+</div>
+<nav class="pager" data-for="jev"></nav>
+
+</div>
+</main>
+</body>
+</html>

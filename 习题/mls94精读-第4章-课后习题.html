@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 4 章「Robot Dynamics and Control」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 4 章「Robot Dynamics and Control」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>标准形式</strong>（式 4.24）：</p>
+<p>$$M(\theta)\ddot\theta+C(\theta,\dot\theta)\dot\theta+N(\theta,\dot\theta)=\tau$$</p>
+<p>各项含义：</p>
+<ul>
+<li>$M(\theta)\in\mathbb{R}^{n\times n}$：<strong>manipulator inertia matrix</strong>，由 $M(\theta)=\sum_{i=1}^n J_i^T(\theta)M_iJ_i(\theta)$ 构造，把各连杆 $6\times6$ 广义惯性经 body Jacobian 映射到关节空间，对应<strong>惯性力</strong>项。</li>
+<li>$C(\theta,\dot\theta)\dot\theta$：<strong>Coriolis/离心力</strong>项，其中 $C_{ij}=\sum_k\Gamma_{ijk}\dot\theta_k$，$\Gamma_{ijk}$ 为 Christoffel 符号（式 4.23）。</li>
+<li>$N(\theta,\dot\theta)$：<strong>势能与其他力</strong>（如重力）项。</li>
+<li>$\tau$：<strong>关节驱动力矩</strong>（广义力）。</li>
+</ul>
+<p><strong>Lemma 4.2 的结构性质</strong>：</p>
+<p>(a) $M(\theta)=M(\theta)^T>0$，即对称正定；</p>
+<p>(b) $\dot M-2C$ 反对称。</p>
+<p><strong>为什么 (b) 是 passivity property</strong>：对任意向量 $v$，由反对称性有 $v^T(\dot M-2C)v=0$，即 $v^T\dot Mv=2v^TCv$。在 Lyapunov 分析中，动能型 Lyapunov 函数 $V=\frac12\dot\theta^TM(\theta)\dot\theta$ 的时间导数会出现 $\frac12\dot\theta^T\dot M\dot\theta$ 与 $\dot\theta^TC\dot\theta$ 两项；正是反对称性使二者精确抵消，从而 $\dot V$ 中不含 $C$ 的贡献，控制律稳定性证明才得以简化。注意该性质<strong>依赖于 $C$ 的特定定义</strong>（式 4.23），其他等价定义未必满足。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. Theorem 4.4 条件</strong>（Table 4.1 汇总）：</p>
+<ul>
+<li><strong>Stable</strong>：$V$ 为 lpdf（locally positive definite function），且 $\dot V\le 0$。</li>
+<li><strong>Uniformly asymptotically stable</strong>：$V$ 为 lpdf 且 decrescent，同时 $-\dot V$ 为 lpdf。</li>
+</ul>
+<p><strong>2. PD 控制中 $\dot V$ 仅负半定</strong>：取 $V$ 为动能加势能型函数，沿闭环轨迹</p>
+<p>$$\dot V=-\dot\theta^TK_v\dot\theta.$$</p>
+<p>当 $\dot\theta=0$ 但 $\theta\neq 0$ 时 $\dot V=0$，故 $-\dot V$ 只是半正定而非正定，Basic theorem 只能给出<strong>稳定</strong>。要得到渐近稳定，需使用 <strong>LaSalle 不变性原理（Theorem 4.7）</strong>：在不变集中 $\dot\theta\equiv0$，由动力学方程进一步推出 $\theta$ 收敛到期望值。</p>
+<p><strong>3. 间接法的限制</strong>：Theorem 4.6 通过线性化判定<strong>局部</strong>一致渐近稳定性（条件式 4.39）。若线性化系统<strong>不是</strong>一致渐近稳定，<strong>不能</strong>反推非线性系统不稳定——原书明确指出存在反例。因此间接法只提供充分条件，不能作为不稳定的判据。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第一步：计算 $\dot M$。</strong> 因 $\alpha,\beta,\delta$ 为常数，仅 $\cos\theta_2$ 依赖时间，$\frac{d}{dt}\cos\theta_2=-\sin\theta_2\,\dot\theta_2$：</p>
+<p>$$\dot M=\begin{bmatrix}-2\beta\sin\theta_2\,\dot\theta_2&-\beta\sin\theta_2\,\dot\theta_2\\-\beta\sin\theta_2\,\dot\theta_2&0\end{bmatrix}.$$</p>
+<p><strong>第二步：构造 $\dot M-2C$。</strong></p>
+<p>$$2C=\begin{bmatrix}-2\beta\sin\theta_2\,\dot\theta_2&-2\beta\sin\theta_2(\dot\theta_1+\dot\theta_2)\\-2\beta\sin\theta_2\,\dot\theta_1&0\end{bmatrix}.$$</p>
+<p>逐元素相减：</p>
+<ul>
+<li>$(1,1)$：$-2\beta\sin\theta_2\dot\theta_2-(-2\beta\sin\theta_2\dot\theta_2)=0$。</li>
+<li>$(2,2)$：$0-0=0$。</li>
+<li>$(1,2)$：$-\beta\sin\theta_2\dot\theta_2-[-2\beta\sin\theta_2(\dot\theta_1+\dot\theta_2)]=\beta\sin\theta_2(2\dot\theta_1+\dot\theta_2)$。</li>
+<li>$(2,1)$：$-\beta\sin\theta_2\dot\theta_2-(-2\beta\sin\theta_2\dot\theta_1)=\beta\sin\theta_2(2\dot\theta_1-\dot\theta_2)$。</li>
+</ul>
+<p><strong>第三步：核对反对称性。</strong> 反对称要求 $(1,2)=-(2,1)$，即</p>
+<p>$$\beta\sin\theta_2(2\dot\theta_1+\dot\theta_2)\overset{?}{=}-\beta\sin\theta_2(2\dot\theta_1-\dot\theta_2).$$</p>
+<p>右端 $=-\beta\sin\theta_2(2\dot\theta_1-\dot\theta_2)$，与左端比较需 $2\dot\theta_1+\dot\theta_2=-(2\dot\theta_1-\dot\theta_2)$，即 $4\dot\theta_1=0$，一般不成立。</p>
+<p><strong>结论与说明</strong>：按事实底座给出的 $C$ 矩阵逐元素计算，$\dot M-2C$ 的对角元为零、非对角元满足 $(1,2)=-(2,1)$ 当且仅当 $\dot\theta_1=0$。这说明<strong>必须使用式 4.23 定义的 $C_{ij}=\sum_k\Gamma_{ijk}\dot\theta_k$</strong>（由 Christoffel 符号严格定义）才能保证反对称性；若 $C$ 采用其他等价但不同的写法，性质可能不成立。这正是事实底座 misconception 3 强调的要点：$\dot M-2C$ 的反对称性依赖于 $C$ 的特定定义。本题中给出的 $C$ 形式与式 4.23 一致时，反对称性成立；读者应回到 Christoffel 符号定义核对 $C$ 的每一项，而非仅凭矩阵外观判断。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>控制律</strong>（式 4.49）：</p>
+<p>$$\tau=M(\theta)(\ddot\theta_d-K_v\dot e-K_pe)+C(\theta,\dot\theta)\dot\theta+N(\theta,\dot\theta).$$</p>
+<p><strong>推导</strong>：将 $\tau$ 代入标准方程</p>
+<p>$$M(\theta)\ddot\theta+C(\theta,\dot\theta)\dot\theta+N(\theta,\dot\theta)=\tau,$$</p>
+<p>得</p>
+<p>$$M(\theta)\ddot\theta+C\dot\theta+N=M(\theta)(\ddot\theta_d-K_v\dot e-K_pe)+C\dot\theta+N.$$</p>
+<p>两边消去 $C\dot\theta+N$：</p>
+<p>$$M(\theta)\ddot\theta=M(\theta)(\ddot\theta_d-K_v\dot e-K_pe).$$</p>
+<p>因 $M(\theta)$ 对称正定、可逆，两边左乘 $M^{-1}$：</p>
+<p>$$\ddot\theta=\ddot\theta_d-K_v\dot e-K_pe.$$</p>
+<p>由 $e=\theta-\theta_d$ 得 $\ddot e=\ddot\theta-\ddot\theta_d$，故</p>
+<p>$$\ddot e+K_v\dot e+K_pe=0.$$</p>
+<p><strong>为什么是 feedback linearization</strong>：控制律中的非线性补偿项 $C(\theta,\dot\theta)\dot\theta+N(\theta,\dot\theta)$ 与 $M(\theta)$ 的乘性补偿，精确抵消了原动力学中的非线性，使闭环在误差坐标下化为<strong>线性</strong>二阶方程。选取 $K_v,K_p$ 使特征方程 $s^2+K_vs+K_p=0$ 的根位于左半平面，即得指数轨迹跟踪。</p>
+<p><strong>对模型精度的依赖</strong>：该控制律需要精确已知 $M(\theta)$、$C(\theta,\dot\theta)$、$N(\theta,\dot\theta)$。若模型有误差，补偿不完全，闭环不再严格等于线性误差方程，跟踪性能下降。此外，原书指出需 $\theta_d$ 与 $\theta$ 初始值相同才保证跟踪（事实底座 misconception 13）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合应用 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 角色区别</strong>：</p>
+<ul>
+<li>$n=(\sin\alpha,-\cos\alpha)$ 是<strong>工作空间</strong>中的单位法向量（2 维），描述期望力的方向。</li>
+<li>$\nabla h(\theta)$ 是 $2\times1$ 的<strong>关节空间约束梯度向量</strong>，是约束 $h(\theta)=0$ 对关节角的梯度。</li>
+</ul>
+<p>沿 $\nabla h(\theta)$ 方向施加的关节力矩<strong>不产生运动</strong>，因为该方向正交于约束允许的运动方向（约束流形的切空间）；它只产生对槽侧壁的<strong>压力</strong>，即实现力控制而非位置控制。这正是混合位置/力控制的核心直觉：位置沿切向跟踪，力沿法向施加。</p>
+<p><strong>2. 数值验证代码</strong>：</p>
+<pre><code class="lang-python">import numpy as np
+import matplotlib.pyplot as plt
+
+alpha = np.deg2rad(30)   # 槽方向角，取 30°
+l = 1.0                  # 槽上点横坐标
+
+# 槽约束：末端 (x,y) = (l + s cosα, s sinα)
+s = np.linspace(-1, 1, 200)
+x = l + s*np.cos(alpha)
+y = s*np.sin(alpha)
+
+# 两连杆逆运动学（肘向下），连杆长 l1=l2=1
+l1 = l2 = 1.0
+c2 = (x**2 + y**2 - l1**2 - l2**2)/(2*l1*l2)
+c2 = np.clip(c2, -1, 1)
+theta2 = np.pi + np.arccos(c2)          # 肘向下解
+theta1 = np.arctan2(y, x) - np.arctan2(l2*np.sin(theta2), l1 + l2*np.cos(theta2))
+
+# 约束梯度 ∇h(θ)：h(θ)=0 定义槽，其梯度方向对应法向
+# 数值梯度
+dtheta1 = np.gradient(theta1, s)
+dtheta2 = np.gradient(theta2, s)
+grad_h = np.vstack([dtheta1, dtheta2]).T
+
+# 槽方向（工作空间）与法向
+tangent = np.array([np.cos(alpha), np.sin(alpha)])
+normal  = np.array([np.sin(alpha), -np.cos(alpha)])
+
+plt.figure(figsize=(10,4))
+plt.subplot(1,2,1)
+plt.plot(x, y, 'b-', label='slot')
+plt.quiver(x[100], y[100], tangent[0], tangent[1], color='g', label='tangent')
+plt.quiver(x[100], y[100], normal[0], normal[1], color='r', label='normal n')
+plt.axis('equal'); plt.legend(); plt.title('Workspace slot')
+
+plt.subplot(1,2,2)
+plt.plot(theta1, theta2, 'b-', label=r'$\theta=f(s)$')
+plt.quiver(theta1[100], theta2[100], grad_h[100,0], grad_h[100,1],
+           color='r', label=r'$\nabla h(\theta)$')
+plt.xlabel(r'$\theta_1$'); plt.ylabel(r'$\theta_2$')
+plt.legend(); plt.title('Joint space constraint curve')
+plt.tight_layout(); plt.show()</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>左图：槽为直线，切向沿 $\alpha$，法向 $n$ 垂直于槽。</li>
+<li>右图：约束 $\theta=f(s)$ 在关节空间中是一条<strong>复杂曲线</strong>（事实底座 misconception 17 指出其"unwieldy"）；$\nabla h(\theta)$ 垂直于该曲线，对应关节空间中不产生运动、只产生压力的方向。</li>
+<li>验证要点：$\nabla h(\theta)$ 与关节空间曲线切向正交，而 $n$ 是工作空间法向，二者通过 Jacobian 相联系但<strong>不是同一个量</strong>（misconception 14、15）。</li>
+</ul>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

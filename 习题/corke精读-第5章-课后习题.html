@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 5 章「Navigation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 5 章「Navigation」课后习题</h1>
+<p>原书课后习题 7 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题围绕本章第 3 节核心概念 1（Braitenberg vehicle）与第 5 节公式 1–3 展开。Braitenberg 车辆是"传感器—电机直接互连、无显式内部表示、无显式规划"的反应式车辆，其控制律由标量场 $s(x,y)$ 直接驱动。</p>
+<p><strong>a) 不同起始构型与控制增益</strong></p>
+<p>车辆位姿为 $\boldsymbol{\xi} \sim (x,y,\theta) \in SE(2)$，两个传感器横向偏置 $\pm 2$ units（沿车体 y 方向），分别读取 $s_R, s_L$。控制律为</p>
+<p>$$v = v_{\max}\,(1 - s_R - s_L), \qquad \alpha = k\,(s_R - s_L).$$</p>
+<ul>
+<li>改变起始位姿 $\boldsymbol{\xi}_0$：由于标量场 $s(x,y) = \dfrac{200}{(x-x_c)^2+(y-y_c)^2+200}$（峰值在 $(x_c,y_c)=(60,90)$）是单峰的，从任意起点出发，$s_R - s_L$ 的符号都会把车头转向峰值方向，因此车辆最终都会收敛到峰值附近。</li>
+<li>改变增益 $k$：$k$ 越大转向越激进，可能出现过冲或绕峰值打转；$k$ 太小则收敛慢。$v_{\max}$ 影响前进速度，但不改变收敛的吸引子位置。</li>
+<li>预期观察：所有起始构型都收敛到 $(60,90)$ 附近，且因 $v = v_{\max}(1-s_R-s_L)$ 在峰值处 $s_R=s_L=1$ 使 $v=0$，车辆渐近停下（这正是 d) 要显式加停止规则的原因）。</li>
+</ul>
+<p><strong>b) 改为避光（light-phobic）</strong></p>
+<p>只需翻转转向信号符号：</p>
+<p>$$\alpha = -k\,(s_R - s_L).$$</p>
+<p>原来"哪边亮就往哪边转"变成"哪边亮就往反方向转"，车辆远离峰值。速度项可保留 $v = v_{\max}(1-s_R-s_L)$（越远离峰值越快），也可改为 $v = v_{\max}(s_R+s_L)$ 使远离时加速。预期观察：车辆从峰值附近出发会向外逃逸，直到离开标量场有效范围。</p>
+<p><strong>c) 峰值随时间移动</strong></p>
+<p>把 <code>sensorfield</code> 中的常数峰值改为时间函数，例如</p>
+<p>$$s(x,y,t) = \frac{200}{(x-x_c(t))^2 + (y-y_c(t))^2 + 200},\quad x_c(t)=60+20\sin(\omega t),\ y_c(t)=90+20\cos(\omega t).$$</p>
+<p>由于控制律每步只依赖当前 $s_R,s_L$，车辆会持续追踪移动的峰值。预期观察：车辆轨迹滞后于峰值轨迹（一阶跟随），$\omega$ 越大滞后越明显。</p>
+<p><strong>d) 加入停止规则</strong></p>
+<p>在控制循环中加判断：若 $\max(s_R, s_L) > 0.95$ 则令 $v=0,\ \alpha=0$ 并退出。由公式 3，$s=0.95$ 对应</p>
+<p>$$(x-x_c)^2+(y-y_c)^2 = \frac{200}{0.95} - 200 \approx 10.5,$$</p>
+<p>即距峰值约 $\sqrt{10.5}\approx 3.2$ units 时停止。预期观察：车辆不再渐近爬向峰值，而是在半径约 3.2 units 的圆内某点停住。</p>
+<p><strong>e) 双峰标量场与"困惑"位姿</strong></p>
+<p>构造两个峰，例如</p>
+<p>$$s(x,y) = \max\!\Big(s_1(x,y),\ s_2(x,y)\Big),$$</p>
+<p>其中 $s_1$ 峰值在 $(60,90)$、$s_2$ 峰值在 $(60,30)$。当起始位姿恰好位于两峰的中垂线附近、且车头朝向使 $s_R \approx s_L$ 时，$\alpha = k(s_R-s_L)\approx 0$，车辆几乎直行，可能长时间在两峰之间徘徊而不收敛到任一峰——这就是"困惑"位姿。预期观察：从对称起始位姿出发，轨迹对初值极其敏感，微小扰动即决定最终奔向哪个峰。</p>
+<p><strong>可运行代码（MATLAB，基于本章 Toolbox 约定）</strong></p>
+<pre><code class="lang-matlab">% a) 不同起始位姿
+for th = [0, pi/2, pi]
+    bv = Braitenberg(sensorfield);   % 峰值 (60,90)
+    bv.run([20; 10; th]);
+end
+
+% b) 避光：翻转转向符号
+bv = Braitenberg(sensorfield, 'steer', -1);
+
+% c) 移动峰值：改写 sensorfield 使 xc,yc 依赖 t
+% d) 停止规则
+while max([sR sL]) <= 0.95
+    % 正常控制律
+end
+v = 0; alpha = 0;
+
+% e) 双峰
+sf = @(x,y) max(200./((x-60).^2+(y-90).^2+200), ...
+                200./((x-60).^2+(y-30).^2+200));</code></pre>
+<h4>关键点</h4>
+<ul>
+<li>Braitenberg 控制律：$v = v_{\max}(1-s_R-s_L)$，$\alpha = k(s_R-s_L)$；峰值处 $s_R=s_L=1$ 使 $v=0$，故天然渐近停止。</li>
+<li>避光只需翻转转向符号 $\alpha = -k(s_R-s_L)$，无需改变传感器或场。</li>
+<li>停止阈值 $s>0.95$ 对应距峰值约 3.2 units（由公式 3 反解），把"渐近"变成"有限步停止"。</li>
+<li>双峰场中，位于两峰中垂线且 $s_R\approx s_L$ 的起始位姿会让 $\alpha\approx 0$，车辆在两峰间徘徊——这是反应式方法无全局表示的典型失败模式。</li>
+<li>本题所有数值（$\pm 2$ units、峰值 $(60,90)$、分母常数 200）均来自本章事实底座第 6 节；双峰场与停止阈值半径为本解答按公式 3 推导，原书未给出具体数值。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 5 章</li>
+<li>依据：</li>
+<li>传感器位置 $\pm 2$ units、峰值 $(60,90)$、分母 200：事实底座第 6 节（PDF p.89）</li>
+<li>控制律 $v = v_{\max}(1-s_R-s_L)$、$\alpha = k(s_R-s_L)$：事实底座第 5 节公式 1–2</li>
+<li>标量场公式：事实底座第 5 节公式 3</li>
+<li>Braitenberg 概念定位：事实底座第 3 节核心概念 1</li>
+<li>停止阈值半径：由公式 3 反解，原书未给出具体数值</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2. Bug 算法（第 90 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：bug2 的算法逻辑（来自本章事实底座）</h5>
+<p>bug2 是一个带状态机的最简避障自动机，其规则为：</p>
+<ul>
+<li><strong>状态 1（朝目标直行）</strong>：沿 M-line（连接 start 与 goal 的直线）朝 goal 前进。</li>
+<li><strong>状态 2（绕障）</strong>：一旦撞上障碍，<strong>始终逆时针（counter-clockwise）</strong> 沿障碍边界绕行，直到重新命中 M-line 上<strong>比首次遇障点更靠近 goal</strong> 的点，然后回到状态 1。</li>
+</ul>
+<p>关键性质：bug2 <strong>不使用地图</strong>，只能看到局部障碍边界，因此它只保证局部最优，看不到全局。这正是本题所有子问题的根源。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 用 <code>makemap</code> 构造挑战地图，尝试不同起点，能否 trap bug2？</h5>
+<p><strong>做什么</strong>：调用 <code>makemap(100)</code> 生成 100×100 的占用栅格（0 = 自由，1 = 障碍），手工放置障碍，使 M-line 与障碍的相交方式对 bug2 不利。</p>
+<p><strong>为什么</strong>：bug2 的绕行方向被<strong>硬编码为逆时针</strong>。若障碍形状使得"逆时针绕行"会反复把机器人带回 M-line 上<strong>更远</strong>的点，或使机器人沿障碍周长走很长的路，bug2 就会浪费大量行程——这就是"被 trap"的直观含义。</p>
+<p><strong>构造思路（原书未给出具体地图数值，按符号推导）</strong>：</p>
+<ol>
+<li>让 M-line 穿过一个<strong>凹形（C 形 / U 形）障碍</strong>的开口方向与逆时针绕行方向相反。机器人进入凹口后，逆时针绕行会先深入凹底再折返，行程被显著拉长。</li>
+<li>让 M-line 与障碍边界<strong>多次相交</strong>：每次命中 M-line 的点若都不比首次遇障点更靠近 goal，bug2 就会持续绕行，可能绕行多圈。</li>
+<li>尝试不同起点 <code>start</code>（例如把起点放在障碍另一侧），观察路径长度 <code>numrows(p)</code> 的变化。</li>
+</ol>
+<p><strong>预期观察</strong>：在普通地图（如 <code>map1</code>，<code>start=[20;10]</code>、<code>goal=[50;30]</code>）上 bug2 路径为 332 点，比 distance transform 的 205 点差很多；在精心构造的凹形/多交点地图上，bug2 的路径会进一步膨胀，甚至出现长时间绕行。</p>
+<p><strong>结论</strong>：<strong>可以 trap bug2</strong>。因为 bug2 没有全局地图、绕行方向固定、且只以"M-line 上更近点"为退出条件，凹形障碍与 M-line 的特定几何关系会让它反复绕行或走极长路径。原书明确指出 bug2 只保证局部最优，本例中顺时针绕行会更快。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>b) 迷宫地图：bug2 能解出迷宫吗？</h5>
+<p><strong>做什么</strong>：用 <code>makemap</code> 构造一个迷宫（多条走廊、死胡同、需要多次转向）。</p>
+<p><strong>为什么</strong>：迷宫要求规划器具备<strong>全局搜索</strong>能力——必须"知道"某条走廊是死胡同才能放弃它。而 bug2 是纯局部反应式算法，没有地图、没有回溯机制。</p>
+<p><strong>分析</strong>：</p>
+<ul>
+<li>bug2 的绕行规则是"逆时针沿障碍边界走，直到命中 M-line 上更近点"。在迷宫中，M-line 可能只穿过少数走廊，机器人一旦进入死胡同，逆时针绕行会沿死胡同墙壁走一圈再出来，<strong>不会主动探索其他分支</strong>。</li>
+<li>若 M-line 与迷宫墙壁的交点不满足"更靠近 goal"的条件，bug2 会一直绕行，无法退出。</li>
+<li>因此 bug2 <strong>通常无法解出迷宫</strong>：它既不能记忆已探索区域，也不能在多个分支间做选择。</li>
+</ul>
+<p><strong>结论</strong>：bug2 一般<strong>不能</strong>解迷宫。迷宫需要 A<em>、D</em>、distance transform 或 roadmap（PRM/RRT）这类<strong>基于地图的全局规划器</strong>。原书把 bug 算法定位在"Braitenberg 与地图式规划之间"的谱系上，正是强调其局部性。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>c) 实现 bug1 与 tangent bug，比较表现</h5>
+<p><strong>做什么</strong>：按各自规则实现两种算法，在同一地图上与 bug2 对比路径长度与成功率。</p>
+<p><strong>bug1 的规则</strong>（原书未展开，按经典定义推导）：</p>
+<ul>
+<li>朝 goal 直行；遇障后<strong>完整绕障碍边界一圈</strong>，记录边界上离 goal 最近的点，绕完一圈后回到该点，再朝 goal 直行。</li>
+<li>特点：绕行距离<strong>至少是障碍周长</strong>，比 bug2 更保守，但<strong>不会因 M-line 交点条件不满足而反复绕行</strong>。</li>
+</ul>
+<p><strong>tangent bug 的规则</strong>（原书未展开，按经典定义推导）：</p>
+<ul>
+<li>利用<strong>有限距离传感器</strong>（而非仅接触式），沿障碍边界"切线"方向前进，并持续评估"若离开边界直行能否更接近 goal"。</li>
+<li>特点：比 bug1/bug2 更早离开障碍，路径通常更短。</li>
+</ul>
+<p><strong>比较（定性，原书未给出具体数值）</strong>：</p>
+<table>
+<tr><th>算法</th><th>绕行策略</th><th>路径长度</th><th>成功率</th></tr>
+<tr><td>bug2</td><td>逆时针绕行至 M-line 更近点</td><td>中（本例 332 点）</td><td>凹形/迷宫易失败</td></tr>
+<tr><td>bug1</td><td>完整绕障碍一圈</td><td>通常最长（≥ 周长）</td><td>较稳，但慢</td></tr>
+<tr><td>tangent bug</td><td>切线方向 + 提前离开</td><td>通常最短</td><td>依赖传感器量程</td></tr>
+</table>
+<p><strong>结论</strong>：在简单凸障碍上，三者差异不大；在凹形障碍与迷宫中，<strong>tangent bug 通常表现最好</strong>（路径短、成功率高），<strong>bug1 最稳但最慢</strong>，<strong>bug2 居中但易被特定几何 trap</strong>。三者都<strong>不如基于地图的全局规划器</strong>（distance transform 205 点、PRM 299 点），因为它们都不使用全局信息。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>bug2 的核心弱点</strong>：绕行方向固定为逆时针、退出条件仅依赖 M-line 交点，因此<strong>可以被凹形/多交点障碍 trap</strong>，且<strong>无法解迷宫</strong>。</li>
+<li><strong>局部 vs 全局</strong>：bug 系列（bug1/bug2/tangent bug）都是局部反应式算法，只保证局部最优；迷宫与复杂障碍需要 A<em>、D</em>、distance transform、PRM/RRT 等<strong>基于地图的全局规划器</strong>。</li>
+<li><strong>三种 bug 算法的权衡</strong>：bug1 最稳但绕行最长；bug2 居中但易被特定几何 trap；tangent bug 借助传感器提前离开边界，通常路径最短。</li>
+<li><strong>路径长度基准</strong>：同一 <code>map1</code>、<code>start=[20;10]</code>、<code>goal=[50;30]</code> 下，distance transform 205 点（最优）、PRM 299 点、bug2 332 点——bug 算法明显劣于地图式规划。</li>
+<li><strong>动手验证要点</strong>：用 <code>makemap(100)</code> 造图，改变 <code>start</code> 与障碍形状，观察 <code>numrows(p)</code> 的变化；用 <code>randinit</code> 可复现随机采样（依次为 0.8147、0.9058、0.1270）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 5 章 Navigation</li>
+<li>依据：</li>
+<li>bug2 规则（逆时针绕行、M-line 更近点退出）：事实底座 §3 核心概念 2、§9 must_understand 第 1 题</li>
+<li>bug2 路径 332 点、局部最优、M-line 可视为显式 plan：事实底座 §6 例题、§7 misconceptions</li>
+<li>distance transform 205 点、PRM 299 点：事实底座 §6 例题、§9 must_understand 第 2 题</li>
+<li><code>makemap(100)</code>、<code>map1</code> 100×100、<code>start=[20;10]</code>、<code>goal=[50;30]</code>：事实底座 §6 例题</li>
+<li>bug 算法位于 Braitenberg 与地图式规划之间的谱系：事实底座 §7 misconceptions</li>
+<li>迷宫/全局规划需求：事实底座 §2 一句话定位、§3 核心概念 4–8</li>
+<li><code>randinit</code> 随机数序列：事实底座 §6 例题</li>
+<li>bug1 与 tangent bug 的具体规则：原书未给出具体数值与展开，按经典定义推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确内存估算的模型。</strong></p>
+<p>本章事实底座给出占用栅格的内存基准：cell size 为 1×1 m 时约 <strong>125 kbyte km⁻²</strong>（按每 cell 1 bit 计）。这是本题唯一可用的定量锚点，因此所有估算都从它出发，而不是另起炉灶假设每 cell 用多少字节。</p>
+<p><strong>第 2 步：计算地球表面积对应的 cell 数。</strong></p>
+<p>地球表面积（近似球面总面积）为</p>
+<p>$$A_{\text{Earth}} \approx 5.1\times 10^{8}\ \mathrm{km^2}$$</p>
+<p>在 1 m cell size 下，1 km² = 10⁶ 个 cell，故总 cell 数为</p>
+<p>$$N_{\text{Earth}} = 5.1\times 10^{8}\ \mathrm{km^2} \times 10^{6}\ \mathrm{cell/km^2} = 5.1\times 10^{14}\ \mathrm{cell}$$</p>
+<p>按每 cell 1 bit：</p>
+<p>$$M_{\text{Earth}} = \frac{5.1\times 10^{14}}{8}\ \mathrm{byte} \approx 6.4\times 10^{13}\ \mathrm{byte} \approx 64\ \mathrm{Tbyte}$$</p>
+<p>也可直接用基准换算：$5.1\times 10^{8}\ \mathrm{km^2} \times 125\ \mathrm{kbyte/km^2} \approx 6.4\times 10^{13}\ \mathrm{byte}$，两者一致。</p>
+<p><strong>第 3 步：计算陆地面积对应的内存。</strong></p>
+<p>地球陆地面积约为总表面积的 29%：</p>
+<p>$$A_{\text{land}} \approx 1.49\times 10^{8}\ \mathrm{km^2}$$</p>
+<p>于是</p>
+<p>$$M_{\text{land}} \approx 1.49\times 10^{8} \times 125\ \mathrm{kbyte} \approx 1.9\times 10^{10}\ \mathrm{byte} \approx 19\ \mathrm{Gbyte}$$</p>
+<p><strong>第 4 步：反解 1 Gbyte 约束下的 cell size。</strong></p>
+<p>设 cell size 为 $s$（单位 m），则 1 km² 含 $(1000/s)^2$ 个 cell。1 Gbyte = $8\times 10^{9}$ bit，可容纳的 cell 数为</p>
+<p>$$N_{\max} = 8\times 10^{9}\ \mathrm{cell}$$</p>
+<p>令国家面积为 $A_c$（km²），需满足</p>
+<p>$$A_c \times \left(\frac{1000}{s}\right)^2 \le 8\times 10^{9}$$</p>
+<p>解得</p>
+<p>$$s \ge 1000\sqrt{\frac{A_c}{8\times 10^{9}}}\ \mathrm{m}$$</p>
+<p><strong>第 5 步：代入具体国家。</strong></p>
+<p>原书未给出具体国家面积，故按符号推导。以中国为例，$A_c \approx 9.6\times 10^{6}\ \mathrm{km^2}$：</p>
+<p>$$s \ge 1000\sqrt{\frac{9.6\times 10^{6}}{8\times 10^{9}}} = 1000\sqrt{1.2\times 10^{-3}} \approx 1000 \times 0.0346 \approx 35\ \mathrm{m}$$</p>
+<p>即 cell size 约需 <strong>35 m</strong> 量级。若换成面积更小的国家（如日本 $A_c \approx 3.8\times 10^{5}\ \mathrm{km^2}$），则 $s \ge 1000\sqrt{3.8\times10^{5}/8\times10^{9}} \approx 6.9\ \mathrm{m}$，约 <strong>7 m</strong>。可见国家越小，允许的 cell 越细。</p>
+<p><strong>第 6 步：说明估算的边界。</strong></p>
+<p>上述结果基于「每 cell 1 bit」的占用栅格表示，与本章 125 kbyte km⁻² 的基准严格一致。若改用每 cell 1 byte 的代价图（cost map），内存需乘以 8；若采用四叉树等压缩表示，实际内存会低于该线性估算。原书未给出这些变体的具体数值，故不进一步展开。</p>
+<h4>关键点</h4>
+<ul>
+<li>本题的核心是<strong>用本章给出的 125 kbyte km⁻²（1 m cell、1 bit/cell）作为换算基准</strong>，而不是自行假设每 cell 的存储格式。</li>
+<li>地球表面 1 m cell 约需 <strong>64 Tbyte</strong>；仅陆地约需 <strong>19 Gbyte</strong>；两者相差约 3.4 倍，对应陆地占表面积的约 29%。</li>
+<li>1 Gbyte 约束下，cell size 随国家面积平方根增长：$s \ge 1000\sqrt{A_c/(8\times10^{9})}$ m，中国量级约 35 m，日本量级约 7 m。</li>
+<li>该估算只适用于<strong>稠密占用栅格</strong>；本章后续的 roadmap（PRM/RRT）方法正是为规避大地图稠密表示的存储与计算开销而引入的。</li>
+<li>注意单位一致性：面积用 km²、cell size 用 m 时，1 km² = 10⁶ cell（当 $s=1$ m），这是换算中最易出错的一步。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 5 章</li>
+<li>依据：</li>
+<li>内存基准 125 kbyte km⁻²（1 m cell、1 bit/cell）来自事实底座第 6 节「占用栅格内存」条目（PDF p.92）。</li>
+<li>占用栅格 0/1 表示与 <code>map(y, x)</code> 索引约定来自事实底座第 1 节与第 3 节第 3 条。</li>
+<li>稠密栅格对大范围不实用、需改用 roadmap 方法的论断来自事实底座第 7 节「distance transform 的最优性代价」与第 3 节第 6–8 条（PDF p.94–95, 99–102）。</li>
+<li>地球表面积、陆地面积、各国面积属常识性地理数据，原书未给出；解答中已标注「原书未给出具体数值，按符号推导」，仅以中国、日本作为代入示例。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确问题背景——为什么需要膨胀障碍物。</strong></p>
+<p>本章所有规划器（distance transform、D*、PRM、RRT）在实现时都假设机器人是一个"点"，即机器人只占据一个栅格单元。但真实机器人有物理尺寸，若直接按点机器人规划，路径可能贴着障碍物边缘，导致机器人本体与障碍物碰撞。因此需要把障碍物按机器人半径向外扩张，等效地把"有尺寸的机器人 + 原始障碍"转化为"点机器人 + 膨胀后的障碍"。</p>
+<p><strong>第 2 步：确定膨胀量。</strong></p>
+<p>题干要求膨胀 <strong>4 个栅格单元</strong>（4 grid cells）。在栅格地图中，1 个 cell 对应一个物理尺寸（本章事实底座指出：cell size 1×1 m 时约 125 kbyte km⁻²，即每 cell 1 bit）。因此膨胀 4 cells 意味着障碍物边界向外扩展 4 个 cell 的宽度。</p>
+<p><strong>第 3 步：调用 <code>imorph</code> 做形态学膨胀。</strong></p>
+<p><code>imorph</code> 是本章调用的图像形态学工具（其完整理论在第 12 章展开，本章仅作为工具使用）。膨胀（dilation）的语义是：对障碍集合 $O$ 与结构元 $S$，膨胀结果为</p>
+<p>$$O \oplus S = \{\, p + s \mid p \in O,\ s \in S \,\}$$</p>
+<p>其中结构元 $S$ 决定膨胀的形状与半径。要膨胀 4 个 cell，应选用半径 4 的圆形（或方形）结构元。</p>
+<p><strong>第 4 步：可运行的 MATLAB 代码与预期观察。</strong></p>
+<p>按本章统一参数（<code>load map1</code>，100×100 occupancy grid，<code>map(y,x)</code> 索引约定），代码如下：</p>
+<pre><code class="lang-matlab">% 载入本章统一地图
+load map1                 % 100x100 occupancy grid, 0=free, 1=obstacle
+
+% 构造半径 4 的圆形结构元（dilation 的"探针"）
+se = kcircle(4);          % 半径 4 cells 的圆盘结构元
+
+% 用 imorph 对障碍物做膨胀
+map_dilated = imorph(map, se, 'dilate');
+
+% 可视化对比
+figure;
+subplot(1,2,1); idisp(map,     'title', 'original map');
+subplot(1,2,2); idisp(map_dilated, 'title', 'dilated by 4 cells');</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>原始 <code>map</code> 中每个障碍区域在 <code>map_dilated</code> 中向外"长胖"约 4 个 cell；</li>
+<li>原本狭窄的自由通道（宽度 ≤ 8 cells）可能被完全封闭，说明该通道对半径 4 的机器人不可通行；</li>
+<li>自由空间（0 值区域）相应缩小，规划器在 <code>map_dilated</code> 上得到的路径会与障碍保持至少 4 cells 的安全距离。</li>
+</ul>
+<p><strong>第 5 步：与本章其他规划器衔接。</strong></p>
+<p>膨胀后的地图可直接送入本章任一规划器。例如 PRM 也提供等价的 <code>'inflate'</code> 选项（事实底座给出示例 <code>PRM(map, 'inflate', 3)</code>，即半径 3 cells 的圆），其效果与先用 <code>imorph</code> 膨胀再规划一致。膨胀是"点机器人假设"与"真实机器人尺寸"之间的标准桥梁。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>点机器人假设</strong>：本章所有规划器（distance transform、D*、PRM、RRT）都假设机器人占一格，真实机器人必须通过膨胀障碍来补偿尺寸。</li>
+<li><strong>膨胀量 = 机器人半径</strong>：题干用"半径的一半"作为一般性描述，本题具体膨胀 <strong>4 个栅格单元</strong>。</li>
+<li><strong><code>imorph</code> 是形态学工具</strong>：本章仅调用它做 dilation，其完整理论属第 12 章，不属本章范围。</li>
+<li><strong>膨胀的副作用</strong>：窄通道可能被封闭，导致原本"存在"的路径消失——这是保守但安全的处理。</li>
+<li><strong>等价替代</strong>：PRM 的 <code>'inflate'</code> 参数（如 <code>PRM(map, 'inflate', 3)</code>）与先 <code>imorph</code> 膨胀再规划等价。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 5 章 Navigation，习题 4（Distance transform, page 93）。</li>
+<li>依据：</li>
+<li>"点机器人假设"与"用 Minkowski sum / dilation 膨胀障碍"来自事实底座第 7 节 misconceptions（"点机器人假设：所有规划器假设机器人占一格；真实机器人需用 Minkowski sum / dilation 膨胀障碍。[PDF p.101]"）。</li>
+<li><code>imorph</code> 作为本章调用的形态学工具，来自事实底座第 0 节（"本章仅调用 <code>ithin</code>、<code>imorph</code> 等工具"）与第 8 节（"图像处理工具（<code>ithin</code>、<code>imorph</code>、dilation）在第 12 章展开"）。</li>
+<li><code>PRM(map, 'inflate', 3)</code> 示例来自事实底座第 6 节（"障碍膨胀示例：<code>PRM(map, 'inflate', 3)</code>（半径 3 cells 的圆）。[PDF p.101]"）。</li>
+<li>地图 <code>map1</code> 为 100×100、<code>map(y,x)</code> 索引约定、cell size 1×1 m 约 125 kbyte km⁻² 来自事实底座第 6 节与第 7 节。</li>
+<li>膨胀 4 cells 的具体数值来自题干本身；原书未给出该题对应的路径长度等额外数值，故未编造。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解 D* 的代价图与增量重规划机制</h5>
+<p>D<em> 与 distance transform 的关键区别在于：它把 occupancy grid 升级为 <strong>cost map</strong> $c \in \mathbb{R}$，其中自由空间 $c > 0$，障碍 $c = \infty$（MATLAB <code>Inf</code>），对角穿越代价为 $c\sqrt{2}$。D</em> 用 NEW/OPEN/CLOSED 三态波前传播建立稠密有向图，并支持在代价变化后做<strong>增量重规划</strong>。</p>
+<p>原书给出的基准实验（PDF p.96–97）是：初始规划 <code>ds.niter = 10558</code>；随后用 <code>modify_cost</code> 把区域 <code>y = 78:85, x = 12:45</code> 的代价从 1 提到 2，重规划后 <code>ds.niter = 3178</code>（约为初始的 30%）。这说明增量重规划只更新受影响的那部分单元，而非从头重算。</p>
+<h5>第 2 步：增大粗糙地形代价后会发生什么</h5>
+<p><strong>做什么</strong>：把某块区域的 cost 从 1 提高到 2（或更高）。</p>
+<p><strong>为什么 / 预期观察</strong>：</p>
+<ol>
+<li><strong>路径绕行</strong>：D* 的波前传播最小化累计代价 $\sum c_i$（对角为 $c_i\sqrt{2}$）。当某区域 $c$ 增大，穿过该区域的累计代价上升，最优路径会倾向于<strong>绕开高代价区</strong>，改走代价更低的自由空间——即使几何距离更长。</li>
+<li><strong>迭代数下降</strong>：由于只有被修改单元及其下游受影响节点需要重新传播，<code>ds.niter</code> 会显著小于初始规划（原书从 10558 降到 3178，约 30%）。这正是 D* 相对 distance transform 的核心优势。</li>
+<li><strong>若高代价区恰好卡在唯一通道上</strong>：路径无法绕行，只能"硬穿"，此时路径形状变化不大，但累计代价上升。</li>
+</ol>
+<h5>第 3 步：添加代价小于 1 的低代价区后会发生什么</h5>
+<p><strong>做什么</strong>：在机器人路径附近插入一块 $c < 1$ 的区域（例如 $c = 0.5$）。</p>
+<p><strong>为什么 / 预期观察</strong>：</p>
+<ol>
+<li><strong>路径被"吸引"</strong>：由于 D* 最小化累计代价，低代价区相当于一条"高速公路"。若该区域位于 start 与 goal 之间或附近，最优路径会<strong>主动偏向并穿过</strong>这块低代价区，以降低总代价。</li>
+<li><strong>路径可能变长但代价更低</strong>：几何上路径可能比原来更绕，但累计代价 $\sum c_i$ 更小——这体现了 D* 优化的是<strong>代价</strong>而非<strong>距离</strong>。</li>
+<li><strong>增量重规划同样高效</strong>：<code>modify_cost</code> 后只需重传播受影响单元，<code>niter</code> 再次显著低于完全重规划。</li>
+<li><strong>注意</strong>：D* 的 plan 仍依赖 goal；若改变 goal，必须重新 <code>plan()</code>，增量机制只针对 cost map 变化（PDF p.97）。</li>
+</ol>
+<h5>可运行代码（MATLAB，基于原书 Toolbox）</h5>
+<pre><code class="lang-matlab">% 载入地图与统一参数（PDF p.93）
+load map1
+start = [20; 10];
+goal  = [50; 30];
+
+% 构造 D* 规划器并初始规划
+ds = Dstar(map);
+ds.plan(goal);
+fprintf('initial niter = %d\n', ds.niter);   % 原书基准 10558
+
+% --- 实验 A：增大粗糙地形代价 ---
+ds.modify_cost([12 45 78 85], 2);   % x1 x2 y1 y2, cost=2
+ds.plan(goal);
+fprintf('after cost increase niter = %d\n', ds.niter);  % 原书 3178
+
+% --- 实验 B：添加低代价区（c < 1）---
+% 在路径附近选一块区域，例如 y=40:50, x=30:40
+ds.modify_cost([30 40 40 50], 0.5);
+ds.plan(goal);
+fprintf('after low-cost region niter = %d\n', ds.niter);
+
+% 查询并绘制路径
+p = ds.path(start);
+ds.plot();</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>实验 A 后路径绕开 <code>y=78:85, x=12:45</code> 的高代价区，<code>niter</code> 大幅下降（原书约 30%）。</li>
+<li>实验 B 后路径被吸引穿过 <code>y=40:50, x=30:40</code> 的低代价区，累计代价下降，<code>niter</code> 仍远小于初始值。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>**D* 优化的是累计代价 $\sum c_i$，不是几何距离**：增大 $c$ 使路径绕行，减小 $c$（$<1$）使路径被吸引。</li>
+<li><strong>增量重规划的效率</strong>：<code>modify_cost</code> 后 <code>niter</code> 显著下降（原书 10558 → 3178，约 30%），因为只重传播受影响单元。</li>
+<li><strong>对角代价为 $c\sqrt{2}$，障碍 $c = \infty$</strong>：这是 D* 波前传播的代价模型。</li>
+<li>**D* 的 plan 依赖 goal**：cost map 变化可增量重规划，但换 goal 必须重新 <code>plan()</code>。</li>
+<li><strong>低代价区 $c < 1$ 是合法的</strong>：D* 不要求 $c \ge 1$，因此可以构造"偏好通道"。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 5 章 Navigation</li>
+<li>依据：</li>
+<li>D* 代价图定义、对角代价 $c\sqrt{2}$、障碍 $c=\infty$：事实底座 §1、§5</li>
+<li>D* 三态 NEW/OPEN/CLOSED 与增量重规划：事实底座 §3 第 5 条、§4 第 6 步</li>
+<li>基准数值 <code>niter = 10558</code> → <code>3178</code>、区域 <code>y=78:85, x=12:45</code>、cost 提到 2：事实底座 §6（PDF p.96–97）</li>
+<li>D* 不支持变化的 goal：事实底座 §7（PDF p.97）</li>
+<li>统一参数 <code>start=[20;10]</code>、<code>goal=[50;30]</code>、<code>load map1</code>：事实底座 §6（PDF p.93）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：PRM 在本章的定位</h5>
+<p>依据事实底座第 3 节第 6、7 条与第 4 节第 7–8 步，PRM 属于 <strong>roadmap</strong> 方法，分为两个阶段：</p>
+<ul>
+<li><strong>planning phase</strong>：在自由空间随机采样 $N$ 个点，按距离阈值连边，构成稀疏图 $G(V,E)$。此阶段<strong>不需要 goal</strong>（自测题 4）。</li>
+<li><strong>query phase</strong>：给定 start/goal，把二者接入 roadmap，再在图上求路径。</li>
+</ul>
+<p>本章默认参数（事实底座第 6 节）：采样点数 $N = 100$，距离阈值 30 cells；示例图含 100 vertices、712 edges、3 components。同一 <code>map1</code>、<code>start=[20;10]</code>、<code>goal=[50;30]</code> 下 PRM 路径长度为 299 点（介于 distance transform 的 205 与 bug2 的 332 之间）。</p>
+<h5>a) 运行 100 次并统计路径长度</h5>
+<p><strong>做什么</strong>：固定 <code>map1</code>、<code>start</code>、<code>goal</code>，循环调用 PRM 的 <code>plan</code> 与 <code>path</code>，记录每次的路径长度（点数或欧氏长度），再算均值、标准差、最小值、最大值。</p>
+<p><strong>为什么</strong>：PRM 的采样是随机的，每次运行得到的图 $G(V,E)$ 都不同，因此路径也不同（事实底座第 7 节「PRM 的三个权衡」第 (1) 条：随机采样导致每次运行图不同、路径不同）。统计量正是用来量化这种随机性。</p>
+<pre><code class="lang-matlab">load map1
+start = [20; 10];  goal = [50; 30];
+L = zeros(1,100);
+for k = 1:100
+    randinit            % 或 rand('seed', k)，保证可复现
+    prm = PRM(map);     % 默认 N=100, 阈值=30
+    prm.plan();         % planning phase，不传 goal
+    p = prm.path(start, goal);
+    L(k) = numrows(p);  % 或沿 p 累加欧氏距离
+end
+fprintf('mean=%.1f  std=%.1f  min=%d  max=%d\n', ...
+        mean(L), std(L), min(L), max(L));</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>路径长度围绕 299 上下波动（事实底座第 6 节给出的单次示例值），但<strong>不会</strong>低于 distance transform 的 205——因为 PRM 路径非最优（事实底座第 7 节）。</li>
+<li>偶尔 <code>prm.path</code> 会<strong>报错</strong>：当 start 与 goal 落在不同的连通分量时（示例图有 3 components），roadmap 不连通，无法查询。此时应捕获异常并重跑（事实底座第 7 节第 (2) 条：只能重跑）。</li>
+<li>若把 <code>randinit</code> 放在循环外，则 100 次结果完全相同；必须每次重置随机种子或让随机流自然推进。</li>
+</ul>
+<h5>b) 改变距离阈值参数</h5>
+<p><strong>做什么</strong>：固定 $N = 100$，令阈值 $d_{\text{th}}$ 取一系列值（例如 5、10、20、30、50、80 cells），对每个值重复 a) 的统计。</p>
+<p><strong>为什么</strong>：阈值控制 roadmap 的<strong>连通度</strong>与<strong>稀疏度</strong>，直接决定 PRM 的两大权衡——成功率与路径质量。</p>
+<ul>
+<li>$d_{\text{th}}$ <strong>过小</strong>：每个节点只与极近邻连边，图容易碎成多个连通分量，<code>path</code> 频繁失败；但边短、路径可能更贴近障碍拐角。</li>
+<li>$d_{\text{th}}$ <strong>过大</strong>：图几乎全连通，查询成功率高；但边会<strong>穿越障碍</strong>（若实现中未做碰撞检测）或产生大量冗余边，路径变长、计算量上升。本章默认 30 cells 时得到 712 edges，即平均度约 $2 \times 712 / 100 \approx 14$。</li>
+</ul>
+<pre><code class="lang-matlab">ths = [5 10 20 30 50 80];
+for t = ths
+    ok = 0; Ls = [];
+    for k = 1:100
+        randinit
+        prm = PRM(map, 'threshold', t);
+        prm.plan();
+        try
+            p = prm.path(start, goal);
+            Ls(end+1) = numrows(p); ok = ok + 1;
+        catch
+        end
+    end
+    fprintf('th=%2d  success=%3d%%  meanLen=%.1f\n', ...
+            t, ok, mean(Ls));
+end</code></pre>
+<p><strong>预期观察</strong>：成功率随阈值单调上升；平均路径长度先降后升（阈值太小时被迫绕远，太大时边冗余）。原书未给出各阈值下的具体数值，此处按符号与定性趋势推导。</p>
+<h5>c) 非栅格 PRM 与 piano movers problem</h5>
+<p><strong>做什么</strong>：把世界从 occupancy grid 换成<strong>多边形集合</strong>：机器人是一个任意多边形 $\mathcal{R}$，障碍是若干多边形 $\mathcal{O}_i$。采样不再落在格子上，而是落在自由空间中的连续位姿。</p>
+<p><strong>为什么</strong>：栅格版本把机器人当作<strong>点</strong>（事实底座第 7 节「点机器人假设」），真实机器人需用 Minkowski sum / dilation 膨胀障碍。非栅格版本直接用多边形几何判定，避免离散化误差，这正是 piano movers problem 的标准提法——把钢琴（矩形/多边形）在布满多边形家具的房间里从一处搬到另一处。</p>
+<p><strong>关键几何判定</strong>（用 Toolbox <code>Polygon</code> 类）：</p>
+<ol>
+<li><strong>相交判定</strong>：$\mathcal{R}$ 与 $\mathcal{O}_i$ 相交 $\iff$ 二者边集存在线段相交，或一方顶点落在另一方内部。</li>
+<li><strong>包含判定</strong>：$\mathcal{R} \subseteq \mathcal{O}_i$ $\iff$ $\mathcal{R}$ 的所有顶点都在 $\mathcal{O}_i$ 内（对凸多边形充要；对非凸多边形需配合边相交判定）。</li>
+<li><strong>自由位姿</strong>：位姿 $\boldsymbol{\xi} = (x, y, \theta)$ 合法 $\iff$ 对<strong>所有</strong> $i$，$\mathcal{R}(\boldsymbol{\xi})$ 与 $\mathcal{O}_i$ <strong>既不相交也不被包含</strong>。</li>
+<li><strong>边合法性</strong>：两个自由位姿 $\boldsymbol{\xi}_a, \boldsymbol{\xi}_b$ 之间的边合法 $\iff$ 沿插值路径的<strong>每个</strong>中间位姿都自由（连续碰撞检测），或至少按固定步长离散检查。</li>
+</ol>
+<pre><code class="lang-matlab">% 伪代码：非栅格 PRM
+V = [];
+while numel(V) < N
+    xi = sample_free_pose(robot, obstacles, bounds);  % 拒绝采样
+    V = [V xi];
+end
+E = [];
+for i = 1:numel(V)
+    for j = i+1:numel(V)
+        if pose_distance(V(i), V(j)) < d_th && ...
+           edge_is_free(V(i), V(j), robot, obstacles)
+            E = [E; i j];
+        end
+    end
+end
+% query phase：把 start/goal 接入最近节点，图上最短路</code></pre>
+<p>其中 <code>pose_distance</code> 需对位置与朝向<strong>加权</strong>——这正是事实底座第 7 节指出的 RRT 距离度量量纲问题（把米与弧度相加 "not quite proper"），PRM 在 $SE(2)$ 上同样面临。</p>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>在 piano movers 场景中，若走廊宽度略大于钢琴宽度，采样点必须恰好落在走廊内才能连通两端；采样密度不足时 roadmap 会断开，与栅格版「窄缝几乎不会被采到」的现象一致（事实底座第 7 节第 (3) 条）。</li>
+<li>由于不再有栅格离散化，路径更平滑，但计算量显著上升（每次边检查都要做多边形相交测试）。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>PRM 的随机性</strong>：每次运行图不同、路径不同，必须用统计量（均值/标准差/成功率）而非单次结果评价；不连通分量会导致 <code>path</code> 报错，只能重跑。</li>
+<li><strong>距离阈值是核心超参数</strong>：小则图碎、查询失败；大则图冗余、路径变长。默认 30 cells 对应 100 vertices、712 edges、3 components。</li>
+<li><strong>PRM 路径非最优</strong>：299 点 > distance transform 的 205 点，但 < bug2 的 332 点；这是「稀疏图 + 随机采样」的必然代价。</li>
+<li><strong>planning phase 与 goal 无关</strong>：<code>prm.plan()</code> 不传 goal，因此同一 roadmap 可服务任意 start/goal 查询——这是 roadmap 方法相对 distance transform / D* 的根本优势。</li>
+<li><strong>非栅格 PRM 要处理 $SE(2)$ 距离量纲</strong>：位置（米）与朝向（弧度）相加不严谨，需加权；同时用多边形相交/包含判定替代栅格碰撞检测，对应 piano movers problem 的标准建模。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 5 章 Navigation，习题 6（PRM planner, page 99）。</li>
+<li>依据：</li>
+<li>PRM 两阶段（planning/query）与默认参数 $N=100$、阈值 30 cells、100 vertices/712 edges/3 components：事实底座第 3 节第 6–7 条、第 4 节第 7–8 步、第 6 节。</li>
+<li>PRM 路径长度 299 点及与 205/332 的对比：事实底座第 6 节、第 7 节「PRM 路径非最优」。</li>
+<li>PRM 三个权衡（随机性、不连通、窄缝）：事实底座第 7 节。</li>
+<li>planning phase 不需要 goal：事实底座第 9 节自测题 4。</li>
+<li>点机器人假设与 Minkowski sum / dilation：事实底座第 7 节「点机器人假设」、第 6 节 <code>PRM(map,'inflate',3)</code>。</li>
+<li>$SE(2)$ 距离度量量纲问题：事实底座第 7 节「RRT 距离度量的量纲问题」。</li>
+<li>各阈值下的具体数值：原书未给出，按符号与定性趋势推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 三点掉头路径。</strong></p>
+<p>三点掉头的本质是在狭窄空间内通过“前进—倒车—前进”三次机动把朝向反转约 $\pi$。RRT 的节点含位姿 $\boldsymbol{\xi}=(x,y,\theta)$，扩展时随机选 $v$（可正可负）与 $\alpha$（限幅内均匀采样），用自行车模型积分固定时长。因此只要把目标位姿设为与起始位姿同位置、朝向相反，例如 <code>rrt.path([0 0 0], [0 0 pi])</code>，RRT 就会自然产生若干段 $v>0$ 与 $v<0$ 交替的边，即三点掉头。原书未给出该任务的具体路径点数，按符号推导：路径 <code>p</code> 为 $n\times 3$ 矩阵，每行 $(x,y,\theta)$，其中至少出现两次 $v$ 符号反转。</p>
+<p><strong>b) 定义障碍场后重复规划。</strong></p>
+<p>在 <code>map</code> 中把若干格置 1 形成障碍，再调用同一 <code>rrt.path</code>。由于 RRT 扩展时若 $\boldsymbol{\xi}_{rand}$ 落在障碍内或连线穿障则丢弃该次扩展，树会绕开障碍生长。原书未给出该障碍场的具体数值，按符号推导：只要障碍不把自由空间完全隔断，RRT 仍能返回一条 $n\times 3$ 路径；若隔断则树无法到达目标邻域，<code>path</code> 失败。</p>
+<p><strong>c) 参数试验。</strong></p>
+<ul>
+<li>点数：树节点越多，覆盖越密，越可能找到更短、更接近精确 goal 的路径；代价是计算量增大。</li>
+<li>转向角限幅：限幅越小，每段边曲率越小、越“温和”，但树转向能力弱，窄空间可能找不到路；限幅越大，机动能力强但路径更曲折。</li>
+<li>积分时间：时间越长，单段边越长，树生长快但分辨率低；时间越短，边越短、树越密，路径更平滑但节点数需求更大。</li>
+</ul>
+<p><strong>d) 高斯分布转向角。</strong></p>
+<p>均匀分布使 $\alpha$ 在 $[-\alpha_{\max},\alpha_{\max}]$ 上等概率，等价于“等概率地打满方向盘”。改用零均值高斯分布后，小转向角被高频采样、大转向角被抑制，于是树中大多数边接近直线，路径整体更平滑、更接近人类驾驶习惯。代价是极端转向的边变少，在需要急转弯或狭窄掉头的场景中探索能力下降，可能更难找到可行路径或需要更多节点。原书未给出具体高斯参数，按符号推导。</p>
+<p><strong>e) 绘制转向角与速度序列。</strong></p>
+<p>从目标节点沿父指针回溯到根节点，得到节点序列 $\boldsymbol{\xi}_0,\dots,\boldsymbol{\xi}_n$。每条边 $(\boldsymbol{\xi}_{i-1}\to\boldsymbol{\xi}_i)$ 的附加信息即该次扩展所用的 $(v_i,\alpha_i)$。把序列按时间顺序排列，即可画出 $\alpha(t)$ 与 $v(t)$ 阶梯图。预期观察：三点掉头任务中 $v$ 序列出现正负交替，$\alpha$ 在限幅内跳变；若 d) 用高斯分布，$\alpha$ 幅度整体更小。</p>
+<p><strong>f) 加入局部规划器。</strong></p>
+<p>RRT 路径终止于树中最接近目标的节点，而非精确 goal。做法是：先用第 4 章的点到点运动控制（Sect. 4.2.1）或非完整约束位姿控制（Sect. 4.2.4），从初始位姿 $\boldsymbol{\xi}_{start}$ 驶向树中最近顶点 $\boldsymbol{\xi}_{near}$；再用同一控制器从最终顶点 $\boldsymbol{\xi}_{last}$ 驶向 $\boldsymbol{\xi}_{goal}$。这样整条路径首尾精确，中间由 RRT 提供全局绕障。</p>
+<p><strong>g) 最少方向反转路径。</strong></p>
+<p>把每条边的代价从几何长度改为“反转惩罚”：若边 $i$ 的 $v_i$ 与边 $i-1$ 的 $v_{i-1}$ 异号，则附加代价 $c_{\text{rev}}>0$，否则为 0。然后在图上用 Dijkstra/A* 求最小代价路径。由于 RRT 树本身是树结构（每个节点唯一父节点），需先把树视为有向图或在其上做动态规划；若用 PRM 式稀疏图则直接跑最短路。原书未给出 $c_{\text{rev}}$ 的具体数值，按符号推导。</p>
+<p><strong>h) 有限尺寸矩形 + 多边形障碍。</strong></p>
+<p>点机器人假设不再成立。做法：</p>
+<ol>
+<li>车辆用矩形表示，位姿 $\boldsymbol{\xi}=(x,y,\theta)$ 决定矩形四角坐标；</li>
+<li>世界障碍用多边形表示；</li>
+<li>碰撞检测调用 Toolbox 的 <code>Polygon</code> 类，判断车辆矩形与每个障碍多边形是否相交或被包含；</li>
+<li>在 RRT 扩展时，对积分出的每个中间位姿都做上述检测，任一时刻碰撞则丢弃该次扩展。</li>
+</ol>
+<p>另一种等价做法是用 Minkowski sum / 膨胀把障碍按机器人半径放大（如 <code>PRM(map,'inflate',3)</code>），把问题退回点机器人，但矩形+多边形更精确。</p>
+<p>可运行验证代码（MATLAB，Toolbox 风格）：</p>
+<pre><code class="lang-matlab">% a) 三点掉头
+rrt = RRT();                       % 自行车模型，v=±1, alpha∈[-1.2,1.2], dt=1
+p = rrt.path([0 0 0], [0 0 pi]);   % 目标：同位置、反向
+plot(p(:,1), p(:,2));              % 预期：前进-倒车-前进三段
+
+% d) 高斯转向角（示意，需改 RRT 内部采样）
+% alpha = alpha_max * randn()/3; alpha = max(min(alpha,alpha_max),-alpha_max);
+
+% h) 矩形车辆 + 多边形障碍
+veh = Polygon([-1 -1; 1 -1; 1 1; -1 1]');   % 车身矩形
+obs = Polygon([10 10; 20 10; 20 20; 10 20]');
+if veh.intersect(obs) || obs.contains(veh)
+    % 碰撞，丢弃该扩展
+end</code></pre>
+<p>预期观察：a) 路径含正负 $v$ 交替；d) 高斯采样后 $\alpha$ 幅度整体变小、路径更平滑；h) 有限尺寸车辆在窄缝处被判定碰撞，RRT 绕行更远。</p>
+<h4>关键点</h4>
+<ul>
+<li>RRT 的边不是直线连线，而是随机 $(v,\alpha)$ 经自行车模型积分得到的<strong>可驾驶</strong>运动段，因此天然支持三点掉头这类非完整机动。</li>
+<li>转向角分布从均匀改为高斯，等价于“温和驾驶”先验：路径更平滑，但极端机动探索能力下降。</li>
+<li>节点附加的控制输入 $(v,\alpha)$ 是绘制速度/转向序列、以及做“最少反转”优化的数据来源。</li>
+<li>RRT 终点不精确，需局部规划器补首尾；点机器人假设需用矩形+多边形碰撞检测或障碍膨胀来修正。</li>
+<li>最少方向反转问题可转化为带反转惩罚的图最短路问题。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 5 章</li>
+<li>依据：</li>
+<li>RRT 扩展机制、节点含位姿与控制输入、$v=\pm1$、$\alpha$ 限幅 $\pm1.2$ rad、积分周期 1 s：facts 第 4 节第 9 步、第 6 节 RRT 示例。</li>
+<li>RRT 终点不精确、需局部规划器：facts 第 7 节“RRT 终点不精确”。</li>
+<li>点机器人假设与膨胀：facts 第 7 节“点机器人假设”、第 6 节 <code>PRM(map,'inflate',3)</code>。</li>
+<li>自行车模型与非完整约束：facts 第 0 节、第 1 节、第 8 节。</li>
+<li>点到点/位姿控制属第 4 章：facts 第 0 节、第 8 节。</li>
+<li>高斯分布、最少反转、多边形碰撞检测：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

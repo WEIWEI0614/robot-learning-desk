@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 1 章「Convex sets」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 1 章「Convex sets」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>定义</strong>：集合 $C\subseteq\mathbb{R}^n$ 是仿射集，若对任意 $x_1,x_2\in C$ 与任意 $\theta\in\mathbb{R}$，都有</p>
+<p>$$
+\theta x_1+(1-\theta)x_2\in C.
+$$</p>
+<p>即对任意仿射组合封闭（系数可为负，且和恒为 1）。</p>
+<p><strong>$V=C-x_0$ 是子空间</strong>：取 $v_1,v_2\in V$，则存在 $x_1,x_2\in C$ 使 $v_i=x_i-x_0$。对任意 $\alpha,\beta\in\mathbb{R}$，</p>
+<p>$$
+\alpha v_1+\beta v_2+x_0=\alpha(x_1-x_0)+\beta(x_2-x_0)+x_0
+=\alpha x_1+\beta x_2+(1-\alpha-\beta)x_0.
+$$</p>
+<p>右端是 $x_1,x_2,x_0$ 的仿射组合（系数和 $\alpha+\beta+(1-\alpha-\beta)=1$），由仿射集定义属于 $C$，故 $\alpha v_1+\beta v_2\in V$，$V$ 是子空间。</p>
+<p><strong>与 $x_0$ 无关</strong>：若另取 $x_0'\in C$，则 $C-x_0'=(C-x_0)+(x_0-x_0')=V+(x_0-x_0')$。由于 $x_0-x_0'\in V$（因 $V$ 是子空间且 $x_0,x_0'\in C$），平移不改变子空间，故 $C-x_0'=V$。</p>
+<p><strong>分解与维数</strong>：$C=V+x_0$，其中 $V$ 是子空间。仿射维数定义为</p>
+<p>$$
+\dim C:=\dim V.
+$$</p>
+<p>注意仿射维数不等于通常维数：$\mathbb{R}^2$ 中单位圆的仿射维数为 2，通常维数为 1。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>定义</strong>：</p>
+<p>$$
+\mathrm{relint}\,C=\{x\in C\mid B(x,r)\cap\mathrm{aff}\,C\subseteq C\ \text{for some } r>0\},
+$$</p>
+<p>其中 $\mathrm{aff}\,C$ 是 $C$ 的仿射包，$B(x,r)$ 是以 $x$ 为心、$r$ 为半径的欧氏球。</p>
+<p><strong>为何需要</strong>：当 $C$ 落在低维仿射集（如平面、直线）中时，$C$ 在 $\mathbb{R}^n$ 中的普通 interior 为空——因为任何 $\mathbb{R}^n$ 中的小球都会"戳出" $\mathrm{aff}\,C$。但 $C$ 在其自身仿射包内仍有"内部"。relint 正是把"内部"限制在 $\mathrm{aff}\,C$ 内来定义，从而避免退化情形下 interior 恒为空的问题。</p>
+<p><strong>例 2.2</strong>：$C$ 位于平面 $x_3=0$ 上，$\mathrm{aff}\,C=\{x_3=0\}$。</p>
+<ul>
+<li><strong>interior</strong>：$\mathrm{int}\,C=\varnothing$。因为任何 $\mathbb{R}^3$ 中的球都含 $x_3\ne0$ 的点，不在 $C$ 中。</li>
+<li><strong>relint</strong>：</li>
+</ul>
+<p>$$
+\mathrm{relint}\,C=\{-1<x_1<1,\ -1<x_2<1,\ x_3=0\}.
+$$</p>
+<p>即在平面 $x_3=0$ 内取开正方形。</p>
+<ul>
+<li><strong>相对边界</strong>：</li>
+</ul>
+<p>$$
+\{x\in C\mid \max\{|x_1|,|x_2|\}=1,\ x_3=0\},
+$$</p>
+<p>即正方形的四条边。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>对偶锥定义</strong>：</p>
+<p>$$
+K^*=\{y\mid x^Ty\ge0\ \forall x\in K\}.
+$$</p>
+<p>$K^*$ 本身是凸锥（任意交的凸锥仍是凸锥）。</p>
+<p><strong>广义不等式</strong>：$x\preceq_K y\iff y-x\in K$；$\lambda\succeq_{K^*}0\iff\lambda\in K^*$。</p>
+<p><strong>证明</strong>：</p>
+<p>（$\Rightarrow$）设 $y-x\in K$，$\lambda\in K^*$。由 $K^*$ 定义，对任意 $z\in K$ 有 $\lambda^Tz\ge0$。取 $z=y-x$，得</p>
+<p>$$
+\lambda^T(y-x)\ge0\implies \lambda^Tx\le\lambda^Ty.
+$$</p>
+<p>（$\Leftarrow$）设对任意 $\lambda\in K^*$ 有 $\lambda^Tx\le\lambda^Ty$，即 $\lambda^T(y-x)\ge0$ 对所有 $\lambda\in K^*$ 成立。要证 $y-x\in K$。</p>
+<p>反证：若 $y-x\notin K$，由对偶锥的分离性质（$K$ 凸闭时 $K^{**}=K$），存在 $\lambda\in K^*$ 使 $\lambda^T(y-x)<0$，与假设矛盾。故 $y-x\in K$，即 $x\preceq_K y$。</p>
+<p><strong>注</strong>：一般地 $K^{**}=\mathrm{cl}(\mathrm{conv}\,K)$；当 $K$ 凸闭时 $K^{**}=K$，上述逆命题成立。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>构造</strong>：令</p>
+<p>$$
+a=d-c,\qquad b=\frac12(\|d\|_2^2-\|c\|_2^2).
+$$</p>
+<p>定义仿射函数</p>
+<p>$$
+f(x)=a^Tx-b=(d-c)^T x-\frac12(\|d\|_2^2-\|c\|_2^2).
+$$</p>
+<p>等价地，</p>
+<p>$$
+f(x)=(d-c)^T\left(x-\frac{d+c}{2}\right).
+$$</p>
+<p>则超平面 $\{x\mid f(x)=0\}$ 分离 $C$ 与 $D$：对任意 $x\in C$ 有 $f(x)\le0$，对任意 $x\in D$ 有 $f(x)\ge0$。</p>
+<p><strong>验证 $f(c)\le0$</strong>：</p>
+<p>$$
+f(c)=(d-c)^Tc-\frac12(\|d\|_2^2-\|c\|_2^2)
+=\frac12(\|c\|_2^2-\|d\|_2^2+2c^Td-2\|c\|_2^2)
+=\frac12(2c^Td-\|c\|_2^2-\|d\|_2^2)
+=-\frac12\|d-c\|_2^2\le0.
+$$</p>
+<p>同理 $f(d)=\frac12\|d-c\|_2^2\ge0$。</p>
+<p><strong>反证关键一步</strong>：假设存在 $u\in C$ 使 $f(u)<0$，即</p>
+<p>$$
+(d-c)^T\left(u-\frac{d+c}{2}\right)<0.
+$$</p>
+<p>考虑线段上点 $u_t=(1-t)c+tu$（$t\in[0,1]$，由 $C$ 凸知 $u_t\in C$）。计算 $\|u_t-d\|_2^2$ 对 $t$ 的导数在 $t=0$ 处：</p>
+<p>$$
+\left.\frac{d}{dt}\|u_t-d\|_2^2\right|_{t=0}=2(u-c)^T(c-d).
+$$</p>
+<p>由 $f(u)<0$ 可推出 $(u-c)^T(c-d)<0$，故导数 $<0$，即沿 $c\to u$ 方向移动可减小到 $d$ 的距离，与 $d$ 是 $D$ 中距 $c$ 最近点矛盾。故 $f(u)\ge0$ 对所有 $u\in C$ 成立。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（a）对偶锥</strong>：</p>
+<p>$$
+K^*=\{(u,s)\mid u^Tx+st\ge0\ \forall (x,t)\in K\}.
+$$</p>
+<p>断言 $K^*=K$。</p>
+<p><strong>证明 $K\subseteq K^*$</strong>：设 $(u,s)\in K$，即 $\|u\|_2\le s$。对任意 $(x,t)\in K$（$\|x\|_2\le t$），由 Cauchy–Schwarz：</p>
+<p>$$
+u^Tx+st\ge -\|u\|_2\|x\|_2+st\ge -st+st=0.
+$$</p>
+<p>故 $(u,s)\in K^*$。</p>
+<p><strong>证明 $K^*\subseteq K$</strong>：设 $(u,s)\in K^*$。若 $s<0$，取 $(x,t)=(0,1)\in K$，则 $u^T0+s\cdot1=s<0$，矛盾。故 $s\ge0$。若 $\|u\|_2>s$，取 $x=-u/\|u\|_2$、$t=1$，则 $(x,t)\in K$ 且</p>
+<p>$$
+u^Tx+s=-u^Tu/\|u\|_2+s=-\|u\|_2+s<0,
+$$</p>
+<p>矛盾。故 $\|u\|_2\le s$，即 $(u,s)\in K$。</p>
+<p>因此 $K^*=K$，二阶锥自对偶。</p>
+<p><strong>（b）代码验证</strong>：</p>
+<pre><code class="lang-python">import numpy as np
+rng = np.random.default_rng(0)
+
+def in_cone(y, tol=1e-9):
+    return np.linalg.norm(y[:2]) <= y[2] + tol
+
+# 采样 K 内点，检查内积非负
+for _ in range(5):
+    x = rng.normal(size=2)
+    t = np.linalg.norm(x) + rng.random()  # 保证 (x,t) in K
+    y = np.array([x[0], x[1], t])
+    z = np.array([rng.normal(), rng.normal(), rng.random()+1])
+    z[2] = np.linalg.norm(z[:2]) + rng.random()
+    print("y in K, z in K, y^Tz =", y @ z)  # 预期 >= 0
+
+# 采样 K 外点，寻找 z in K 使内积为负
+y_out = np.array([1.0, 0.0, 0.5])  # ||x||=1 > t=0.5，不在 K
+z = np.array([-1.0, 0.0, 1.0])     # ||x||=1 <= t=1，在 K
+print("y_out^Tz =", y_out @ z)     # 预期 = -1 + 0 + 0.5 = -0.5 < 0</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>对 $y,z\in K$，内积 $y^Tz\ge0$（由 Cauchy–Schwarz 保证）。</li>
+<li>对 $y_{\text{out}}=(1,0,0.5)\notin K$，取 $z=(-1,0,1)\in K$，得 $y_{\text{out}}^Tz=-0.5<0$，验证 $y_{\text{out}}\notin K^*$。</li>
+</ul>
+<p><strong>结论</strong>：数值结果与 $K^*=K$ 一致，二阶锥是自对偶锥。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

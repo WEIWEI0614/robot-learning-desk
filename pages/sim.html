@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>仿真训练 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">仿真训练<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>仿真与训练：在你这台 MacBook Air 上能跑多远</h1>
+<div class="sub">
+  MuJoCo Playground 本机跑通全过程 · 锁版本的血泪教训 · 真实测出来的算力上限 ｜
+  <span class="tag tCon">已实测</span>MacBook Air M4 / 16GB / 无风扇
+</div>
+
+<h2>0 · 先看结论</h2>
+
+<div class="card">
+  <p><strong>这台机器能跑什么：</strong>强化学习的小中环境（倒立摆、猎豹级）——舒适；策略学习（ACT / 扩散策略）——可以；人形步态训练——能跑但要过夜；<strong>VLA 大模型训练——完全不行</strong>。</p>
+  <p><strong>硬件会不会有问题：</strong>不会"烧坏"。Apple Silicon 有硬件级保护，到温度墙只降频不损坏。真正的风险是<strong>电池寿命和 SSD 写入量</strong>，而这两件事都有明确的操作办法避开（见第 6 节）。</p>
+  <p><strong>我实测了一件事：</strong>连续满载工作 7 分钟，吞吐保持 <strong>102.3%</strong>、内存交换 <strong>0 次</strong>、系统无热警告记录——<strong>这个窗口内没有降频</strong>。</p>
+</div>
+
+<div class="toc">
+  <div class="small" style="margin-bottom:6px;">目录</div>
+  <ol>
+    <li>基础概念：仿真、物理引擎、MJX、PPO、sim2real 到底指什么</li>
+    <li>我做了什么：7 步排错链，每一步为什么</li>
+    <li>为什么"锁版本"是这门手艺的命门</li>
+    <li>实测结果：环境跑通 + 真实吞吐数据</li>
+    <li>本机算力上限：能跑到什么量级（核心结论）</li>
+    <li>硬件安全边界：怎么跑不会伤电脑</li>
+    <li>怎么用：命令与检查清单</li>
+  </ol>
+</div>
+
+<h2>1 · 基础概念</h2>
+
+<h3>1.1 为什么要"仿真"</h3>
+<p>训练机器人策略，最直白的办法是<strong>让真机器人反复试错</strong>。但真机试错有三个致命问题：</p>
+<ul>
+  <li><strong>慢</strong>——真机一次动作要几百毫秒，仿真一步只要几毫秒</li>
+  <li><strong>贵</strong>——摔一次可能坏几千块</li>
+  <li><strong>没法并行</strong>——你只有一台机器人；仿真里可以同时跑 1024 个</li>
+</ul>
+<p>所以行业标准流程是：<strong>仿真里学到策略 → 再想办法搬到真机</strong>。这个"搬"的过程就是 sim2real。</p>
+
+<h3>1.2 物理引擎是什么</h3>
+<p>物理引擎就是"算物理的软件"：给它一个机器人模型和一个动作，它算出下一刻各个关节在哪、有没有碰撞、受力多大。</p>
+<table>
+  <tr><th>引擎</th><th>特点</th><th>适合</th></tr>
+  <tr><td><strong>MuJoCo</strong></td><td>接触求解精确、轻量、学术界标准</td><td>强化学习、机械臂、单环境精度</td></tr>
+  <tr><td>Isaac Sim / PhysX</td><td>照片级渲染、大规模 GPU 并行</td><td>视觉感知、数字孪生（<strong>需 NVIDIA 显卡，你这台用不了</strong>）</td></tr>
+  <tr><td>Genesis</td><td>多物理（刚体+软体+流体），支持 Apple Metal</td><td>布料、软体操作</td></tr>
+  <tr><td>Newton</td><td>NVIDIA + DeepMind + 迪士尼共建，试图统一各引擎</td><td>底层引擎层，生态仍在建设</td></tr>
+</table>
+<div class="note">
+  <strong>一句话记住分工：</strong>Isaac 强在<strong>逼真</strong>，MuJoCo 强在<strong>吞吐</strong>。要拍照级数据用 Isaac，要快速迭代物理用 MuJoCo。它们不是替代关系，是分工关系。
+</div>
+
+<h3>1.3 机器人模型文件（MJCF / URDF）</h3>
+<p>引擎需要一个文件告诉它"这个机器人长什么样"：有几根连杆、每个关节在哪、质量多少、限位多少。</p>
+<ul>
+  <li><strong>URDF</strong>——通用格式，ROS 生态用得多</li>
+  <li><strong>MJCF</strong>——MuJoCo 自己的格式（XML），表达力更强（能写执行器模型、接触参数）</li>
+</ul>
+<p>我们看到报错 <code>Error opening file 'mjx_panda.xml'</code>，就是<strong>模型文件缺失</strong>——不是代码问题。</p>
+
+<h3>1.4 MJX 是什么，为什么它改变了一切</h3>
+<p>MJX = MuJoCo 的 <strong>JAX 版本</strong>。关键变化在于：</p>
+<div class="key">
+  <strong>普通仿真器一次只能推进一步；MJX 能在 GPU/加速器上把"1024 个机器人同时推进一步"当成一次运算。</strong><br>
+  这叫"并行环境"（vectorized environments）。对强化学习来说这是数量级的差别——因为 RL 需要的样本量极大，收集速度直接决定你能不能在一天内完成一轮实验。
+</div>
+<p>上面的实测数据会看到：1 个并行环境 361 步/秒，1024 个并行环境 28.7 万步/秒——<strong>吞吐提升近 800 倍</strong>（注意：不是线性 1024 倍，因为单环境时有固定开销摊不平）。</p>
+
+<h3>1.5 PPO 是什么</h3>
+<p>PPO（近端策略优化）是强化学习里最常用的策略梯度算法。用大白话说：</p>
+<ol>
+  <li><strong>Rollout（采样）</strong>：拿当前策略在仿真里跑一批动作，记录"什么状态 → 做了什么 → 得到多少奖励"</li>
+  <li><strong>算优势</strong>：判断"这次动作比平均水平好还是差"</li>
+  <li><strong>更新</strong>：调整网络，让好的动作概率变大、差的变小</li>
+  <li><strong>限制步幅</strong>：不让一次更新改变太多（这是"近端"的含义），否则训练会崩</li>
+  <li>重复 1–4</li>
+</ol>
+<p>几个你一定会遇到的词：</p>
+<table>
+  <tr><th>词</th><th>意思</th></tr>
+  <tr><td><strong>rollout / unroll</strong></td><td>一次采样跑多少个时间步</td></tr>
+  <tr><td><strong>env steps（环境步数）</strong></td><td>总共让仿真走多少步——这是衡量训练量的通用单位</td></tr>
+  <tr><td><strong>timesteps</strong></td><td>同上，常混用</td></tr>
+  <tr><td><strong>on-policy</strong></td><td>只能用"当前策略"产生的数据来更新——所以数据和更新交替进行，不能反复利用旧数据</td></tr>
+  <tr><td><strong>eval</strong></td><td>中途停下来，用独立环境评测当前策略的真实表现</td></tr>
+</table>
+
+<h3>1.6 JIT 编译：为什么第一次跑特别慢</h3>
+<p>JAX 的工作方式是"<strong>先编译，再执行</strong>"。第一次调用一个函数时，它会追踪整个计算图并编译成机器码——这个过程可能几秒到几分钟。之后同样的调用就直接执行，快得多。</p>
+<div class="note">
+  <strong>实用推论：</strong>你看到"第一分钟几乎没动静"是正常的，不是卡死。这也解释了为什么小规模训练（例如 2000 步）的总耗时居然要 6 分钟——<strong>大头是编译，不是计算</strong>。所以调试时别用小规模来"估时间"，会严重高估。
+</div>
+
+<h3>1.7 sim2real 差距从哪来</h3>
+<p>仿真和真机之间的差异，主要来自四个地方：</p>
+<table>
+  <tr><th>来源</th><th>具体是什么</th></tr>
+  <tr><td><strong>物理参数不准</strong></td><td>仿真里的摩擦系数、质量、电机力矩曲线都是估的，真机不一样</td></tr>
+  <tr><td><strong>控制延迟</strong></td><td>仿真里"发指令立刻生效"；真机有通信延迟、电机响应延迟</td></tr>
+  <tr><td><strong>传感器噪声</strong></td><td>真机 IMU 有噪声和漂移，仿真里通常很干净</td></tr>
+  <tr><td><strong>未建模的效应</strong></td><td>线缆拉扯、结构形变、电池电压下降导致力矩变弱</td></tr>
+</table>
+<p>对应的对策是 <strong>域随机化（Domain Randomization）</strong>：训练时故意随机化这些参数（质量、摩擦、延迟、噪声），让策略见过各种情况，从而对真实世界的差异更鲁棒。这就是训练脚本里 <code>--domain_randomization</code> 这个开关的作用。</p>
+
+<h2>2 · 我做了什么：7 步排错链</h2>
+
+<p>这一节是"我到底操作了什么、为什么这么操作"的完整还原。它比结论更有用——因为<strong>这套排错方法你以后装任何科学计算环境都用得上</strong>。</p>
+
+<h3>Step 1 · 装 MuJoCo 本体</h3>
+<p><strong>做了什么：</strong>建隔离虚拟环境，装 <code>mujoco</code>，验证版本。</p>
+<pre><code>python3 -m venv &lt;环境目录&gt;
+&lt;环境&gt;/bin/pip install mujoco
+&gt;&gt;&gt; 3.13.0   ✓</code></pre>
+<p><strong>为什么先装它：</strong>MuJoCo 是地基，没有它后面什么都跑不了。而且它依赖最少，最容易确认"基础环境是干净的"。</p>
+
+<h3>Step 2 · 装 MJX，确认加速后端</h3>
+<p><strong>做了什么：</strong>装 <code>jax</code> + <code>mujoco-mjx</code>，打印可用设备。</p>
+<pre><code>&gt;&gt;&gt; jax 0.11.2
+&gt;&gt;&gt; devices [CpuDevice(id=0)]     ← 只有 CPU
+&gt;&gt;&gt; mjx OK</code></pre>
+<div class="warn">
+  <strong>这里第一个重要结论就出来了：只有 CPU 设备。</strong><br>
+  Apple Silicon 的 GPU 走的是 Metal，而 <strong>JAX 的 Metal 后端（jax-metal）已经停止维护</strong>，所以在 macOS 上 JAX 家族（MJX、brax）<strong>基本只能用 CPU</strong>。<br>
+  这意味着：<strong>你看到的吞吐数字全部是 CPU 的成绩。M4 的 10 核 GPU 在这条线上帮不上忙。</strong>
+</div>
+
+<h3>Step 3 · 想装 Playground，结果包名不对</h3>
+<p><strong>做了什么：</strong><code>pip install mujoco-playground</code> → 报"找不到包"。试下划线版 → 还是找不到。查 PyPI → 404。</p>
+<p><strong>为什么：</strong>这个项目<strong>不在 PyPI 上</strong>（或者发布方式变了），必须从源码装。而且它的<strong>项目名和模块名不一样</strong>——项目叫 <code>playground</code>，import 的时候叫 <code>mujoco_playground</code>。</p>
+<pre><code>git clone https://github.com/google-deepmind/mujoco_playground.git
+pip install ./mujoco_playground          # 源码安装
+python -c "from mujoco_playground import registry; print(len(registry.ALL_ENVS))"
+&gt;&gt;&gt; 54                                   # 54 个环境注册成功</code></pre>
+<div class="note">
+  <strong>教训：</strong>官方 README 写得清清楚楚是 <code>pip install playground</code>，但我实测 PyPI 也拿不到。<strong>源码安装是这里唯一可行的路径。</strong>遇到"找不到包"先别怀疑网络，先怀疑包名。
+</div>
+
+<h3>Step 4 · 训练一跑就崩（第一次）</h3>
+<p><strong>报错：</strong><code>AttributeError: jax.device_put_replicated is deprecated</code></p>
+<p><strong>诊断：</strong>这是<strong>版本不兼容</strong>。brax（Playground 依赖的训练库）用的 API，在新的 JAX 里被删掉了。</p>
+<p><strong>先尝试的办法（错了）：</strong>直接改 brax 的源码，把废弃的 API 换成新的。</p>
+<p><strong>结果：</strong>改完第一层，立刻在更深的地方炸出第二个错（<code>addressable_shards</code> 相关的形状错误）。</p>
+<div class="warn">
+  <strong>这里是最值得记住的一步。</strong>我当时的做法是"打补丁"，但这在科学计算栈里几乎注定失败——因为<strong>依赖是层层咬合的，你看到的第一个错误只是最外面那一层</strong>。正确的做法是回到"哪个版本组合是被验证过的"。
+</div>
+
+<h3>Step 5 · 找到权威版本组合（关键转折）</h3>
+<p><strong>做了什么：</strong>不再猜，直接去翻 Playground 仓库里的 <code>uv.lock</code> 锁文件。</p>
+<div class="key">
+  <strong>这是我整个流程里最关键的一个动作。</strong>
+  <code>uv.lock</code> 是项目自己维护的"经过测试的完整依赖版本清单"。它比 README、比 PyPI 的"最新版"、比任何人的博客都权威——<strong>因为这是作者自己跑通过的那一套</strong>。
+</div>
+<p>查出来的结果：</p>
+<pre><code>jax        = 0.6.2     ← 我用的是 0.11.2，差了 5 个大版本
+jaxlib     = 0.6.2
+flax       = 0.11.2
+ml-dtypes  = 0.5.4
+numpy      = 2.4.0</code></pre>
+<p>按这个组合重建环境后，训练<strong>一次通过</strong>。</p>
+
+<h3>Step 6 · 训练跑完了，卡在录视频</h3>
+<p><strong>报错：</strong><code>RuntimeError: Program 'ffmpeg' is not found</code></p>
+<p><strong>诊断：</strong>训练本体已经完成（checkpoint 已经落盘），只是最后一步"渲染一段评估视频"需要 ffmpeg 这个外部程序。</p>
+<p><strong>怎么处理：</strong>这不是核心问题——训练结果已经产出。要视频就 <code>brew install ffmpeg</code>，不要视频就忽略。</p>
+<div class="note">
+  <strong>为什么值得记一笔：</strong>报错的位置在流程最末端，容易让人误以为"训练失败了"。实际要看的是<strong>checkpoint 有没有落盘</strong>——落盘了就说明前面全成功了。
+</div>
+
+<h3>Step 7 · 想单独加载环境做推理，又缺一个包</h3>
+<p><strong>报错：</strong><code>ModuleNotFoundError: No module named 'mujoco_warp'</code></p>
+<p><strong>诊断：</strong>Playground 的依赖声明里<strong>漏了 <code>mujoco-warp</code></strong>（只声明了它的底层依赖 <code>warp-lang</code>）。</p>
+<p><strong>解决：</strong><code>pip install mujoco-warp</code>。装完之后推理测试通过。</p>
+
+<h2>3 · 为什么"锁版本"是这门手艺的命门</h2>
+
+<div class="warn">
+  <strong>一个真实案例，代价是 86 个百分点。</strong><br>
+  2025 年 12 月 5 日，MuJoCo 发布 3.4.0，更新日志里<strong>只有一条</strong>：修正了盒-盒距离计算。这个改动导致某个基准测试（LIBERO）上一个<strong>完全没变的模型</strong>，成功率从 <strong>98% 直接掉到 12%</strong>。另一个 checkpoint 从 80% 掉到 28%。<br>
+  <strong>代码一行没改，模型一个参数没动，成绩崩了。</strong>
+</div>
+
+<p>这就是为什么：</p>
+<ul>
+  <li><strong>不要相信"最新版最好"。</strong>科学计算栈的兼容性极脆弱，最新版往往是最不稳的。</li>
+  <li><strong>安装时锁到具体版本号</strong>（<code>==</code> 而不是 <code>&gt;=</code>）。</li>
+  <li><strong>在代码开头断言实际版本</strong>，别让依赖解析器替你决定跑的是哪个版本。</li>
+  <li><strong>先找 lock 文件。</strong>有 <code>uv.lock</code> / <code>poetry.lock</code> / <code>requirements.txt</code> 的项目，直接照着装，不要自己配。</li>
+</ul>
+
+<div class="key">
+  <strong>"可复现"不是学术洁癖，是工程底线。</strong>如果你的结果依赖"当时恰好装的是哪个版本"，那这个结果<strong>无法被验证，也无法被信任</strong>。这一条在投资尽调里也是硬伤——一个连环境都锁不住的团队，它的实验数据你敢信吗？
+</div>
+
+<h2>4 · 实测结果</h2>
+
+<div class="ok">
+  <strong>环境状态：</strong>54 个环境注册成功 · CartpoleBalance 加载正常 · 50 步随机策略累计奖励 43.173 · 模型维度 nq=2 / nu=1 · <strong>PPO 训练完整跑完并落盘 checkpoint</strong>
+</div>
+
+<h3>4.1 MJX 吞吐实测（CPU 后端）</h3>
+<p>并行环境数越多吞吐越高——这正是 MJX 的价值所在：</p>
+<table>
+  <tr><th>环境</th><th>自由度 nq/nu</th><th>64 并行</th><th>256 并行</th><th>1024 并行</th></tr>
+  <tr><td>CartpoleBalance（倒立摆）</td><td>2 / 1</td><td class="num">16,998</td><td class="num">79,910</td><td class="num"><strong>287,405</strong></td></tr>
+  <tr><td>CheetahRun（猎豹跑）</td><td>9 / 6</td><td class="num">8,151</td><td class="num">22,944</td><td class="num"><strong>57,415</strong></td></tr>
+  <tr><td>HumanoidWalk（人形走）</td><td>28 / 21</td><td class="num">915</td><td class="num">2,265</td><td class="num"><strong>3,512</strong></td></tr>
+</table>
+<p class="small">单位：环境步/秒。数字是 50 次采样的平均值，已排除 JIT 编译时间。</p>
+<div class="note">
+  <strong>读这张表要注意一件事：复杂度的影响远大于并行度。</strong>人形（28 个自由度）比倒立摆<strong>慢 80 倍</strong>——因为每步要解的接触和约束多得多。所以问"能跑多快"必须说明"跑什么环境"。
+</div>
+
+<h3>4.2 PyTorch GPU（MPS）实测</h3>
+<table>
+  <tr><th>项</th><th>实测值</th></tr>
+  <tr><td>MPS（Metal）可用</td><td>是</td></tr>
+  <tr><td>fp32 矩阵乘吞吐</td><td class="num">2.35 – 2.57 TFLOPS</td></tr>
+  <tr><td><strong>MPS 工作集内存上限</strong></td><td class="num"><strong>10.67 GB</strong> ← 这是硬约束</td></tr>
+</table>
+<p>这里有个关键区别：<strong>PyTorch 能用 M4 的 GPU（走 Metal），但 JAX 不能。</strong>所以：</p>
+<ul>
+  <li>仿真（MJX / brax）→ <strong>只能吃 CPU</strong></li>
+  <li>策略学习（PyTorch / LeRobot）→ <strong>吃得到 GPU</strong></li>
+</ul>
+
+<h3>4.3 持续负载与稳定性实测（7 分钟满载）</h3>
+<table>
+  <tr><th>指标</th><th>结果</th></tr>
+  <tr><td>负载</td><td>1024 并行倒立摆，连续 7 分钟不间断</td></tr>
+  <tr><td>起始吞吐（前 10 次采样均值）</td><td class="num">300,894 步/秒</td></tr>
+  <tr><td>结束吞吐（后 10 次采样均值）</td><td class="num">307,880 步/秒</td></tr>
+  <tr><td><strong>吞吐保持率</strong></td><td class="num"><strong>102.3%</strong>（没有衰减）</td></tr>
+  <tr><td><strong>内存交换次数</strong></td><td class="num"><strong>0</strong></td></tr>
+  <tr><td>系统热警告记录</td><td>无</td></tr>
+  <tr><td>采样总数</td><td>2,693 次</td></tr>
+</table>
+<div class="key">
+  <strong>这组数据说明：在这个负载和时长下，既没有热降频，也没有内存压力。</strong><br>
+  但——<strong>7 分钟太短了</strong>。MacBook Air 没有风扇，热量只能靠机身辐射散出去，累积很慢。所以下结论时必须加限定：<strong>7 分钟内无降频 ≠ 一小时不会降频。</strong>这一条我在第 6 节给了操作建议。
+</div>
+
+<h2>5 · 本机算力上限：能跑到什么量级</h2>
+
+<p>基于上面测出来的数字推算。我把"能不能做"分成三档：<span class="verdict vYes">舒适</span> <span class="verdict vMid">能跑但要忍</span> <span class="verdict vNo">不现实</span></p>
+
+<table>
+  <tr><th>任务</th><th>可行性</th><th>推算依据</th></tr>
+  <tr>
+    <td><strong>RL 小环境</strong><br><span class="small">倒立摆、猎豹级</span></td>
+    <td><span class="verdict vYes">舒适</span></td>
+    <td>28.7 万 / 5.7 万步每秒 → 100 万步 <strong>几秒到十几秒</strong>；1 亿步 <strong>6 分钟 – 半小时</strong>。反复试参数的节奏完全够用。</td>
+  </tr>
+  <tr>
+    <td><strong>人形 locomotion</strong><br><span class="small">PPO 训步态</span></td>
+    <td><span class="verdict vMid">能跑但要忍</span></td>
+    <td>3,512 步/秒 → 1000 万步约 <strong>48 分钟</strong>；1 亿步约 <strong>8 小时</strong>（还没算策略更新开销，实际约 <strong>10–16 小时</strong>）。<strong>过夜能出结果，但一天只能试一次参数。</strong></td>
+  </tr>
+  <tr>
+    <td><strong>LeRobot 策略训练</strong><br><span class="small">ACT / 扩散策略</span></td>
+    <td><span class="verdict vYes">舒适</span></td>
+    <td>走 PyTorch MPS，吃得到 GPU。模型在 8000 万–2.6 亿参数级，50 条演示的训练通常在<strong>几十分钟</strong>量级。这是本机最舒服的一块。</td>
+  </tr>
+  <tr>
+    <td><strong>中型模型微调</strong><br><span class="small">≤ 10 亿参数</span></td>
+    <td><span class="verdict vMid">能跑但要忍</span></td>
+    <td>受 <strong>10.67 GB 显存上限</strong>硬约束，batch 必须压得很小。10 亿参数 fp16 权重约 2 GB，但训练时梯度 + 优化器状态会到 <strong>3–4 倍</strong>，加上激活值就接近上限了。</td>
+  </tr>
+  <tr>
+    <td><strong>VLA 模型训练</strong><br><span class="small">30 亿参数以上</span></td>
+    <td><span class="verdict vNo">不现实</span></td>
+    <td>30 亿参数 fp16 权重 6 GB；训练还需梯度 6 GB + 优化器状态 12 GB ≈ <strong>24 GB</strong>，而上限只有 10.67 GB。<strong>连最激进的 LoRA 都相当勉强。</strong></td>
+  </tr>
+  <tr>
+    <td><strong>70 亿参数模型</strong><br><span class="small">任何形式的训练</span></td>
+    <td><span class="verdict vNo">不现实</span></td>
+    <td>fp16 权重本身就 <strong>14 GB &gt; 10.67 GB 上限</strong>，连加载都困难。量化到 4bit 才勉强能推理。</td>
+  </tr>
+  <tr>
+    <td><strong>大规模并行训练</strong><br><span class="small">10 亿步以上</span></td>
+    <td><span class="verdict vNo">不现实</span></td>
+    <td>人形环境 10 亿步 ≈ <strong>79 小时纯仿真</strong>，加更新开销要 4–7 天。时间成本远超租云 GPU。</td>
+  </tr>
+</table>
+
+<div class="key">
+  <strong>一句话记法：<br>
+  仿真侧看环境复杂度（人形比倒立摆慢 80 倍）；<br>
+  模型侧看 10.67 GB 这道坎（超过 10 亿参数就别在本机训了）。</strong>
+</div>
+
+<h3>5.1 该上云的门槛</h3>
+<p>出现下面任何一条，就不要在本机硬扛了：</p>
+<ul>
+  <li>单次训练预计<strong>超过 4 小时</strong></li>
+  <li>模型参数<strong>超过 10 亿</strong></li>
+  <li>需要显存<strong>超过 10 GB</strong></li>
+  <li>需要<strong>反复试参数</strong>（本机一天只能跑一两次，云上可以并行开几个）</li>
+</ul>
+<p>对应选择：<strong>RunPod / Hugging Face Jobs</strong> 这类按小时租 GPU 的服务。MuJoCo Playground 官方文档也是这么建议的（训练跑在云上，导出的策略再拷回本机部署）。</p>
+
+<h3>5.2 磁盘与内存的余量</h3>
+<table>
+  <tr><th>资源</th><th>当前</th><th>要注意的</th></tr>
+  <tr><td>磁盘可用</td><td class="num">92 GB</td><td>一个大模型 fp16 权重就 14 GB；数据集和 checkpoint 也要空间。<strong>别把磁盘用到 90% 以上</strong>——SSD 满了会变慢且影响寿命。</td></tr>
+  <tr><td>内存</td><td class="num">16 GB（可用约 9–11 GB）</td><td>系统本身要占 4–6 GB。<strong>训练模型时不要同时开一堆浏览器标签页。</strong></td></tr>
+  <tr><td>交换空间</td><td class="num">2 GB（已用 0.7 GB）</td><td>交换是 macOS 的"应急内存"，会把内存内容写到磁盘。<strong>大量交换 = SSD 高写入 + 明显变慢。</strong></td></tr>
+</table>
+
+<h2>6 · 硬件安全边界：怎么跑不会伤电脑</h2>
+
+<h3>6.1 先破除一个恐惧：不会"烧坏"</h3>
+<div class="ok">
+  <strong>Apple Silicon 有硬件级过热保护。</strong>芯片温度到了阈值会自动降频（性能下降但继续工作），再高会强制休眠。你无论如何写代码，都<strong>不可能把 CPU/GPU 烧掉</strong>。这不是厂商的宣传，是芯片设计的基本机制。<br>
+  我在 7 分钟满载测试里读到的系统热状态是"<strong>无热警告记录</strong>"——也就是说这个负载根本没让它接近温度墙。
+</div>
+
+<h3>6.2 真正会受损的两件事</h3>
+<table>
+  <tr><th>风险</th><th>机制</th><th>怎么防</th></tr>
+  <tr>
+    <td><strong>SSD 写入磨损</strong></td>
+    <td>内存打满后系统会把数据反复写到磁盘（swap）。SSD 有写入寿命上限（TBW）。频繁交换 = 持续大额写入。</td>
+    <td><strong>盯住 swap 用量</strong>：<code>sysctl vm.swapusage</code>。看到 used 持续上涨就是内存不够了，立刻停训练、减小 batch 或并行数。</td>
+  </tr>
+  <tr>
+    <td><strong>电池加速老化</strong></td>
+    <td>锂电池在高温 + 高电量状态下容量衰减更快。长时间满载训练正好同时满足这两个条件。</td>
+    <td><strong>插电时训练，放在硬表面上</strong>（桌子，不是床/沙发/腿上——那会堵住底部散热）。</td>
+  </tr>
+</table>
+
+<h3>6.3 具体操作建议</h3>
+<ul>
+  <li><strong>单次连续负载控制在 30 分钟以内</strong>，中间断开让机器散热。7 分钟不降频不代表 1 小时不降频——这是无风扇机型最需要守的一条。</li>
+  <li><strong>用 1024 并行而不是 64 并行。</strong>同一个任务，1024 并行比 64 并行快约 17 倍（实测）——<strong>更快跑完 = 发热时间更短</strong>，对硬件反而更友好。</li>
+  <li><strong>每次长时间训练前，先看 swap</strong>：<code>sysctl vm.swapusage</code>。如果 used 在涨，说明配置超出了这台机器的内存能力。<strong>我实测的负载是 0 次交换</strong>，说明倒立摆级任务完全安全。</li>
+  <li><strong>别在软表面上跑训练。</strong>MacBook Air 靠机身散热，堵住底部等于堵住散热。</li>
+  <li><strong>用电池跑重负载是双重损失</strong>：既损耗电池，又可能因为电池供电降频。</li>
+  <li><strong>大任务上云。</strong>把本机当成"调试和验证机"，把重训练交给租来的 GPU。<strong>这才是这台 Air 的正确用法。</strong></li>
+</ul>
+
+<div class="warn">
+  <strong>一句话总结硬件问题：</strong>这台 MacBook Air 不会因为跑训练而损坏，但<strong>它的散热设计本来就不是为持续满载准备的</strong>。正确的用法是"短时、爆发式、小规模验证"；持续几小时的重训练请上云。<br>
+  真正需要你主动防的只有一件事：<strong>别让内存打满导致大量 swap</strong>——因为那是唯一会留下永久痕迹（SSD 磨损）的操作。
+</div>
+
+<h2>7 · 怎么用：命令与检查清单</h2>
+
+<h3>7.1 可用环境位置</h3>
+<p>我建的隔离环境（按锁文件精确版本）：</p>
+<pre><code>~/.workbuddy/binaries/python/envs/robotics_pg
+  jax / jaxlib   0.6.2      ← 必须是这个，新版本不兼容
+  mujoco         3.13.0
+  mujoco-mjx     3.13.0
+  mujoco-warp    （需单独装，官方漏声明）
+  playground     0.2.0      ← 模块名是 mujoco_playground</code></pre>
+
+<h3>7.2 检查环境是否正常</h3>
+<pre><code>V=~/.workbuddy/binaries/python/envs/robotics_pg/bin
+$V/python -c "
+import jax
+from mujoco_playground import registry
+print('jax', jax.__version__, '| 后端', jax.default_backend())
+print('环境总数', len(registry.ALL_ENVS))
+env = registry.load('CartpoleBalance')
+print('nq', env.mj_model.nq, 'nu', env.mj_model.nu)
+"</code></pre>
+
+<h3>7.3 训练（小规模验证用）</h3>
+<pre><code>cd /tmp/mujoco_playground
+$V/python learning/train_jax_ppo.py \
+  --env_name CartpoleBalance \
+  --num_envs 1024 \
+  --num_timesteps 2000000 \
+  --num_evals 4 --num_eval_envs 32 \
+  --logdir /tmp/pg_run</code></pre>
+<div class="note">
+  <strong>三条经验：</strong><br>
+  ① <code>--num_envs</code> 尽量给大（1024 比 64 快 17 倍）；<br>
+  ② <strong>不要用 <code>--log_training_metrics</code></strong>——我在小规模 eval 下用它触发了一个 <code>KeyError: 'eval/episode_reward'</code>；<br>
+  ③ 想要评估视频就 <code>brew install ffmpeg</code>，不要也不影响训练结果（checkpoint 照常落盘）。
+</div>
+
+<h3>7.4 训练稳不稳的判断标准</h3>
+<ul>
+  <li><strong>看 checkpoint 有没有落盘</strong>——落盘了说明训练本体成功，末尾的视频渲染失败可以忽略。</li>
+  <li><strong>看 eval 回报曲线是否上升</strong>——这是唯一真正的成功标准。回报不涨，环境配得再对也没用。</li>
+  <li><strong>看 swap</strong>——<code>sysctl vm.swapusage</code>，used 持续上涨就减小规模。</li>
+</ul>
+
+<h3>7.5 本机 / 云 的分工建议</h3>
+<table>
+  <tr><th>放在本机</th><th>放到云上</th></tr>
+  <tr>
+    <td>环境是否装得对（几分钟）<br>代码能不能跑通（几分钟）<br>超参数快速试探（千万步内）<br>策略推理与可视化<br>LeRobot 策略训练（几十分钟）</td>
+    <td>人形 locomotion 完整训练（亿步级）<br>大规模超参搜索<br>任何 10 亿参数以上的模型<br>需要跑过夜的实验</td>
+  </tr>
+</table>
+
+<div class="key">
+  <strong>这台机器的正确角色：</strong>它是你的<strong>驾驶舱</strong>，不是你的<strong>发动机</strong>。用它来调试、验证、看结果、写代码；把重训练交给租来的 GPU。<strong>想清楚这个分工，你既不会浪费钱，也不会等得心焦。</strong>
+</div>
+
+</div>
+<nav class="pager" data-for="sim"></nav>
+
+</div>
+</main>
+</body>
+</html>

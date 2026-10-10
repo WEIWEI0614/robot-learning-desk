@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 3 章「Convex optimization problems」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 3 章「Convex optimization problems」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>凸优化问题标准形式 (4.15) 为</p>
+<p>$$
+\min f_0(x)\quad \mathrm{s.t.}\quad f_i(x)\le 0\ (i=1,\dots,m),\qquad a_i^Tx=b_i\ (i=1,\dots,p).
+$$</p>
+<p>结构性要求：</p>
+<ul>
+<li>目标函数 $f_0:\mathbb{R}^n\to\mathbb{R}$ 必须是<strong>凸函数</strong>；</li>
+<li>每个不等式约束函数 $f_i$ 必须是<strong>凸函数</strong>；</li>
+<li>每个等式约束必须是<strong>仿射函数</strong>，即写成 $a_i^Tx=b_i$，而不是一般的 $h_j(x)=0$。</li>
+</ul>
+<p>可行集为</p>
+<p>$$
+X=\left(\bigcap_{i=1}^m \{x\mid f_i(x)\le0\}\right)\cap\left(\bigcap_{j=1}^p \{x\mid a_j^Tx=b_j\}\right).
+$$</p>
+<p>由于凸函数的下水平集 $\{x\mid f_i(x)\le0\}$ 是凸集，仿射等式 $\{x\mid a_j^Tx=b_j\}$ 也是凸集（仿射集），而任意多个凸集的交仍为凸集，所以 $X$ 凸。</p>
+<p>例 (4.17) 为</p>
+<p>$$
+\min\ x_1^2+x_2^2\quad \mathrm{s.t.}\quad \frac{x_1}{1+x_2^2}\le0,\qquad (x_1+x_2)^2=0.
+$$</p>
+<p>其可行集为 $\{x\mid x_1\le0,\ x_1+x_2=0\}$，确实是凸集；但约束 $(x_1+x_2)^2=0$ 不是仿射等式，且 $x_1/(1+x_2^2)\le0$ 也不是凸不等式约束的标准形式。因此它<strong>不满足 (4.15) 的结构要求</strong>，不能直接算作凸优化问题；须改写为 (4.18) 后才符合标准形式。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>可微凸问题的最优性判据 (4.21) 为：若 $f_0$ 可微且凸，则 $x$ 最优当且仅当</p>
+<p>$$
+x\in X,\qquad \nabla f_0(x)^T(y-x)\ge0\quad \forall y\in X.
+$$</p>
+<p>几何解释：向量 $-\nabla f_0(x)$ 在 $x$ 处<strong>支撑</strong>可行集 $X$，即 $X$ 完全位于半空间</p>
+<p>$$
+\{y\mid \nabla f_0(x)^T(y-x)\ge0\}
+$$</p>
+<p>内。等价地，从 $x$ 出发沿任何可行方向 $y-x$，目标函数的一阶变化非负。</p>
+<p><strong>1. 无约束问题</strong>：$X=\mathbb{R}^n$。取 $y=x-\nabla f_0(x)$ 与 $y=x+\nabla f_0(x)$ 代入判据，得</p>
+<p>$$
+\nabla f_0(x)^T(-\nabla f_0(x))\ge0,\qquad \nabla f_0(x)^T(\nabla f_0(x))\ge0,
+$$</p>
+<p>即 $\|\nabla f_0(x)\|_2^2\le0$，故</p>
+<p>$$
+\nabla f_0(x)=0.
+$$</p>
+<p><strong>2. 仅含等式约束 $Ax=b$</strong>：可行方向满足 $A(y-x)=0$。判据要求 $\nabla f_0(x)$ 与所有零空间方向正交，即 $\nabla f_0(x)\in\mathcal{R}(A^T)$。因此存在 $\nu\in\mathbb{R}^p$ 使</p>
+<p>$$
+\nabla f_0(x)+A^T\nu=0,\qquad Ax=b.
+$$</p>
+<p><strong>3. 非负象限 $x\succeq0$</strong>：可行方向 $d=y-x$ 满足 $d_i\ge0$（当 $x_i=0$）或 $d_i\in\mathbb{R}$（当 $x_i>0$）。判据化为</p>
+<p>$$
+x\succeq0,\qquad \nabla f_0(x)\succeq0,\qquad x_i(\nabla f_0(x))_i=0\quad(i=1,\dots,n).
+$$</p>
+<p>这正是非负象限上的 complementarity 条件。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>目标 $f_0$ 的梯度为</p>
+<p>$$
+\nabla f_0(x)=Px+q.
+$$</p>
+<p>由于 $P\succeq0$，$f_0$ 是凸函数，最优性条件为 $Px+q=0$ 且该方程有解时即为全局最优。</p>
+<p><strong>情形 1：$q\notin\mathcal{R}(P)$。</strong></p>
+<p>此时 $Px+q=0$ 无解。由于 $q$ 在 $\mathcal{R}(P)$ 的正交补方向上有非零分量，沿该方向 $f_0$ 可线性下降至 $-\infty$，故问题<strong>无界 below</strong>，$p^\star=-\infty$，$X_{\mathrm{opt}}=\emptyset$。这与"最优值有限但不达到"不同：后者 $p^\star$ 是有限实数，只是没有可行点取到它（如例 4.1 中 $f_0(x)=1/x$，$p^\star=0$ 不达到）；而此处 $p^\star=-\infty$，连有限下界都没有。</p>
+<p><strong>情形 2：$P\succ0$。</strong></p>
+<p>$P$ 可逆，$Px+q=0$ 有唯一解</p>
+<p>$$
+x^\star=-P^{-1}q,\qquad X_{\mathrm{opt}}=\{-P^{-1}q\}.
+$$</p>
+<p>最优值 $p^\star=f_0(x^\star)=r-\frac12q^TP^{-1}q$。</p>
+<p><strong>情形 3：$P$ 奇异且 $q\in\mathcal{R}(P)$。</strong></p>
+<p>$Px+q=0$ 有解，解集为</p>
+<p>$$
+X_{\mathrm{opt}}=-P^\dagger q+\mathcal{N}(P),
+$$</p>
+<p>其中 $P^\dagger$ 为 Moore–Penrose 伪逆，$\mathcal{N}(P)$ 为 $P$ 的零空间。此时 $p^\star$ 有限且 attained，最优解不唯一。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 凸可行性判据 (4.26)。</strong></p>
+<p>拟凸问题</p>
+<p>$$
+\min f_0(x)\quad \mathrm{s.t.}\quad f_i(x)\le0,\ Ax=b
+$$</p>
+<p>中 $f_0$ 拟凸、$f_i$ 凸。对给定 $t$，构造 $\varphi_t$ 使</p>
+<p>$$
+f_0(x)\le t\iff \varphi_t(x)\le0.
+$$</p>
+<p>于是凸可行性问题为</p>
+<p>$$
+\text{find }x\quad \mathrm{s.t.}\quad \varphi_t(x)\le0,\ f_i(x)\le0,\ Ax=b.
+$$</p>
+<p>结论：</p>
+<ul>
+<li>若该问题<strong>可行</strong>，则存在 $x$ 使 $f_0(x)\le t$，故 $p^\star\le t$；</li>
+<li>若该问题<strong>不可行</strong>，则不存在 $x$ 使 $f_0(x)\le t$，故 $p^\star\ge t$。</li>
+</ul>
+<p>这正是 Algorithm 4.1 二分法的依据：每次迭代把区间长度减半，$k$ 次后区间长为 $2^{-k}(u-l)$，恰需 $\lceil\log_2((u-l)/\epsilon)\rceil$ 次达到精度 $\epsilon$。</p>
+<p><strong>2. 判据 (4.25) 的充分性。</strong></p>
+<p>判据 (4.25) 形如</p>
+<p>$$
+\nabla f_0(x)^T(y-x)>0\quad \forall y\in X,\ y\ne x,
+$$</p>
+<p>它保证 $x$ 是全局最优。但它只是充分条件：拟凸函数的一阶条件不像凸函数那样充要。此外，若 $\nabla f_0(x)=0$，该判据自动失效（无法给出严格不等式），此时 $x$ 可能是局部最优但非全局最优。因此判据要求 $\nabla f_0(x)\ne0$。</p>
+<p><strong>3. 局部最优非全局最优。</strong></p>
+<p>图 4.3 给出拟凸函数在可行区间上的反例：函数先下降后上升再下降，存在一个局部极小点 $x_{\mathrm{loc}}$ 和一个更低的全局极小点 $x_{\mathrm{glob}}$。由于 $f_0$ 拟凸，其下水平集 $\{x\mid f_0(x)\le t\}$ 是凸集，但这并不排除多个分离的局部极小点。凸优化问题中"局部最优即全局最优"的证明依赖凸组合 $z=(1-\theta)x+\theta y$ 与凸性不等式，而拟凸函数不满足该不等式，故该结论不成立。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 定义。</strong></p>
+<p>设 $O=\{f_0(x)\mid x\text{ 可行}\}$ 为可达目标值集。</p>
+<ul>
+<li><strong>optimal 点 (4.57)</strong>：$x^\star$ 是 optimal，若</li>
+</ul>
+<p>$$
+O\subseteq f_0(x^\star)+K.
+$$</p>
+<p>即所有可达目标值都不比 $f_0(x^\star)$ "更好"（在 $K$ 诱导的广义不等式下）。多数向量优化问题没有 optimal 点；若 optimal value 存在则唯一。</p>
+<ul>
+<li><strong>Pareto optimal 点 (4.59)</strong>：$x$ 是 Pareto optimal，若</li>
+</ul>
+<p>$$
+(f_0(x)-K)\cap O=\{f_0(x)\}.
+$$</p>
+<p>即不存在可行 $y$ 使 $f_0(y)\preceq_K f_0(x)$ 且 $f_0(y)\ne f_0(x)$。Pareto 最优比 optimal 弱，通常存在多个。</p>
+<p><strong>2. 标量化 (4.60)。</strong></p>
+<p>$$
+\min\ \lambda^Tf_0(x)\quad \mathrm{s.t.}\quad \text{原约束},\qquad \lambda\succ_{K^*}0.
+$$</p>
+<p>性质差别：</p>
+<ul>
+<li>当 $\lambda\succ_{K^*}0$（即 $\lambda$ 在对偶锥 $K^*$ 的内部）时，标量化问题的<strong>每个解都是 Pareto 最优</strong>；</li>
+<li>当 $\lambda\succeq_{K^*}0,\lambda\ne0$（在边界上）时，标量化问题的解<strong>未必 Pareto 最优</strong>，可能被其他可行点支配。</li>
+</ul>
+<p><strong>3. 反例说明。</strong></p>
+<p>图 4.9 中，$f_0(x_3)$ 是 Pareto 最优点，但它位于可达目标值集 $O$ 的"非凸"部分。标量化 $\min\lambda^Tf_0(x)$ 对应在 $O$ 上找一个支撑超平面，其法向量为 $\lambda$。若 $O$ 在该点处没有以 $\lambda\succ_{K^*}0$ 为法向的支撑超平面（例如该点位于 $O$ 的凹入部分），则不存在这样的 $\lambda$ 使其成为标量化问题的最优解。因此，只有位于 $O$ 的"凸包边界"上且能被内部法向支撑的 Pareto 点，才能由 $\lambda\succ_{K^*}0$ 的标量化得到。凸情形下可用 $A=O+K$ (4.62) 的部分逆命题讨论，但一般情形下该逆命题不成立。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

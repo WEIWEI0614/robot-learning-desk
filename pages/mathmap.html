@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>数学脉络 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">数学脉络<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>数学脉络 · 三种体系与资源导航</h1>
+<p class="sub">数学到底怎么连起来？目前世界上只有<b>三套</b>答案：人类给的分科标签、按教材建的课程知识图谱、以及机器里真正可计算的形式化依赖网络。它们互不匹配——这是 2026 年才被量化的事实。本面板给出三者的规模、可信度、以及对应的 GitHub 资源。</p>
+
+<div class="mmStat">
+  <div><div class="n">719</div><div class="l">OpenAI 手稿</div></div>
+  <div><div class="n">372</div><div class="l">结果族 / 17 领域</div></div>
+  <div><div class="n">308,129</div><div class="l">mathlib 声明</div></div>
+  <div><div class="n">8,436,366</div><div class="l">依赖边</div></div>
+  <div><div class="n">0.34</div><div class="l">人类分科 vs 逻辑结构 NMI</div></div>
+  <div><div class="n">50.9%</div><div class="l">跨命名空间依赖</div></div>
+</div>
+
+<div class="note key"><b>一句话结论：</b>人类所谓的"完整数学认知"是组织幻觉。你脑子里那张数学地图是教材顺序和学科标签拼出来的，不是数学本身的依赖结构。真正完整的那张图只在机器里——人脑装不下，也没必要装。所以"具备完整数学认知"这个目标字面上就不成立，它真正该指的能力是：<b>知道自己知道什么、不知道什么，以及不知道的那部分长什么样</b>。</div>
+
+<h2>一、三套体系：规模递增，但互不重合</h2>
+
+<div class="mmBox acc3">
+  <div class="mmHd"><h3>① 人类分科体系 · AMS MSC 2020</h3><span class="mmTag">覆盖全部数学</span><span class="mmTag">无依赖信息</span></div>
+  <p class="mmRow"><span class="d">六十余个二级学科，只分类不排序。代数 / 几何 / 分析 / 数论……这套标签是给人用的检索工具，<b>不携带任何依赖关系</b>。"学完实分析才能学测度论"这类信息，MSC 里一条都没有。数学界沿用了它上百年。</span></p>
+</div>
+
+<div class="mmBox acc2">
+  <div class="mmHd"><h3>② 课程知识图谱 · K12-KGraph / cn-k12</h3><span class="mmTag ok">NeurIPS 2026</span><span class="mmTag">只到 K-12</span></div>
+  <p class="mmRow"><span class="d">约一万节点、两万余条先修边，<b>有向无环图</b>，与课纲对齐。优点是可以直接排学习顺序；缺点是只覆盖义务教育到高中，大学以上断层。构建过程用了"两名独立 AI 审核者 + 一名 AI 仲裁者"，596 个零入度主题复核后<b>只有 158 个拿到补强边</b>，438 个仍保守标为未决——这是判断 LLM 在知识依赖任务上可靠性的最好样本。</span></p>
+</div>
+
+<div class="mmBox acc">
+  <div class="mmHd"><h3>③ 形式化依赖网络 · Lean mathlib</h3><span class="mmTag hot">唯一机器可读</span><span class="mmTag">本科→研究前沿</span></div>
+  <p class="mmRow"><span class="d">308,129 条声明、7,563 个模块、8,436,366 条边。当一条定理被形式化，编译器会记下它的证明调用的每一条前提——<b>这是任何自然语言叙述都复制不出来的机器可读依赖图</b>。代价是混入了大量语言基础设施（类型类实例、强制转换、自动镜像），网络中心性测的往往是"被工具引用多不多"，而不是"数学重不重要"。</span></p>
+</div>
+
+<h2>二、GitHub 资源清单（均已核实）</h2>
+
+<table>
+<tr><th>仓库</th><th>星</th><th>规模 / 内容</th><th>可信度</th></tr>
+<tr><td><a href="https://github.com/haolpku/K12-KGraph" target="_blank">haolpku/K12-KGraph</a></td><td>397</td><td>10,685 节点 / 23,278 边 / 23,640 评测题。源自<b>人教版</b> K-12 教材，每个概念在定义·公式·实验·习题·结构位置·关系邻域六维对齐</td><td><b>最高</b>：NeurIPS 2026 D&amp;E 已接收（北大 DCAI）</td></tr>
+<tr><td><a href="https://github.com/TalalAlrawajfeh/mathematics-roadmap" target="_blank">TalalAlrawajfeh/mathematics-roadmap</a></td><td>3,585</td><td>draw.io 依赖图 + 每个主题配 2–3 本教材；另有纯文本版 topics 清单可自行重排</td><td>高：书目经过人工筛选，但结构图是手工画</td></tr>
+<tr><td><a href="https://github.com/haojing8312/cn-k12-math-knowledge-graph" target="_blank">haojing8312/cn-k12-math-knowledge-graph</a></td><td>47</td><td>18 册 / 132 章 / 1,327 主题 / 1,204 先修边；单文件 Three.js 3D 浏览器，离线可开</td><td>中高：衍生自 K12-KGraph，AI 补边部分已标注</td></tr>
+<tr><td><a href="https://github.com/Jia-Yee/math-knowledge-graph" target="_blank">Jia-Yee/math-knowledge-graph</a></td><td>24</td><td>25,355 节点 / 105,736 边 / 50+ 分支 / 1,092 个前沿问题。<b>LLM 全量生成</b></td><td><b>低</b>：无任何验证环节，只能当索引不能当依据</td></tr>
+<tr><td><a href="https://github.com/InfinityUniverse0/Mathematical-Courses-Knowledge-Graph" target="_blank">InfinityUniverse0/数学课程知识图谱</a></td><td>30</td><td>高等教育数学课程体系知识图谱</td><td>中：适合排课参考</td></tr>
+<tr><td><a href="https://github.com/jasmcaus/ai-math-roadmap" target="_blank">jasmcaus/ai-math-roadmap</a></td><td>548</td><td>只讲 AI 要用到的那部分数学（线代 / 概率 / 优化）</td><td>高：范围窄但扎实</td></tr>
+<tr><td><a href="https://github.com/vellvient/obsidian-learning-engine" target="_blank">vellvient/obsidian-learning-engine</a></td><td>7</td><td>Math Academy 风格：先修知识图 + FSRS v6 间隔重复 + 隐式重复</td><td>中：个人项目</td></tr>
+<tr><td>MathlibExplorer（可视化）</td><td>—</td><td>mathlib import 图映射到 2D 平面，可缩放点选，无需懂 Lean</td><td>工具，非数据源</td></tr>
+</table>
+
+<h2>三、《Mathlib 的网络结构》三条核心发现</h2>
+
+<div class="mmBox acc4">
+  <div class="mmHd"><h3>发现 1 · 人类分类与逻辑结构严重错位</h3></div>
+  <div class="mmRow"><div class="d">命名空间边界与声明依赖的社区结构，归一化互信息只有 <b>0.34</b>；<b>50.9%</b> 的依赖是跨命名空间的。"代数 / 几何 / 分析"这套标签，跟数学实际的依赖网络基本是两套东西。</div></div>
+  <div class="mmRow"><div class="d"><b>对学习的含义：</b>教材顺序是认知顺序，不是逻辑顺序。别指望它们对齐——按教材学完"代数"再学"几何"，不等于真的走完了依赖链。</div></div>
+</div>
+
+<div class="mmBox acc4">
+  <div class="mmHd"><h3>发现 2 · 导入的东西 98.4% 用不上</h3></div>
+  <div class="mmRow"><div class="d">每个模块平均只用到它所导入作用域的 <b>1.6%</b>（中位数，均值 5.1%）。导入图保留了 <b>17.5%</b> 的冗余边。</div></div>
+  <div class="mmRow"><div class="d"><b>对学习的含义：</b>我们严重高估了"先修课"的范围。学一个新主题时，你以为需要先补的那堆东西，实际真正用到的只有极小一部分。<b>直接上手、遇缺再补，比"先把先修补齐"效率高得多。</b></div></div>
+</div>
+
+<div class="mmBox acc4">
+  <div class="mmHd"><h3>发现 3 · 中心性测的是工具，不是数学</h3></div>
+  <div class="mmRow"><div class="d">引用最多的节点往往是 <code>Nat.add</code>、<code>propext</code>（22 万+ 入边）、类型类实例这类基础设施，而不是重要定理。定理产生了 <b>89%</b> 的边，公理是纯汇点。</div></div>
+  <div class="mmRow"><div class="d"><b>对学习的含义：</b>在任何知识网络里，"被引用最多"≠"最重要"。别把高频当高价值——这条对读论文、选学习主题同样适用。</div></div>
+</div>
+
+<h2>四、怎么读这篇</h2>
+<div class="mmBox">
+  <div class="mmHd"><h3>《Mathlib 的网络结构》</h3><span class="mmTag">66 页</span></div>
+  <div class="mmRow"><div class="t"><a href="https://arxiv.org/abs/2604.24797" target="_blank" rel="noopener">原文（arXiv）→</a></div><div class="d">建议对照原文读：数字、公式、表名、定义编号一律以原文为准<code>原文第 n 页</code> 分页标记便于对照原 PDF。</div></div>
+  <div class="mmRow"><div class="d"><b>首次阅读建议跳过附录</b>，只读三处：第 1 节引言（为什么形式化让依赖关系第一次变得可记录）、§4 概念框架（"继承结构 vs 人类组织过程"这组对立是全篇骨架）、§6 结论（三条发现 + 局限性）。</div></div>
+  <div class="mmRow"><div class="d">本地素材：OpenAI 数学数据集中文版（HTML / PDF / Markdown 三种格式）</div></div>
+</div>
+
+<h2>五、我该看哪个</h2>
+
+<div class="note ok"><b>做国际课程数学教学：</b>直接看 <code>haolpku/K12-KGraph</code>。它是目前唯一"有学术背书 + 数据源头明确（人教版）+ 有评测集"的中文数学知识图谱。用它反推学生的先修漏洞，比凭经验准。</div>
+
+<div class="note"><b>学具身智能的数学：</b>科班出身不需要"补数学"。真正的缺口不在数学水平，在<b>记号和建模惯例</b>——这几样通常不在应用数学硕士必修里，是"见过没见过"的问题，一周能补完：<br>
+· <code>SE(3) / so(3)</code> 李群李代数、指数映射、伴随表示（旋转不能相加，位姿插值必须走李代数）<br>
+· 旋量 / twist / wrench、雅可比的几何构造<br>
+· 最优控制与轨迹优化的 KKT 与信赖域实现（接触序列导致非凸，需分层求解）<br>
+· 卡尔曼滤波的<b>推导</b>与可观性（要能自己推，不是调库）<br>
+· 接触动力学的互补问题 LCP / NCP（变分不等式，不是 ODE）</div>
+
+<div class="note warn"><b>想看数学真实的形状：</b>读中文版第 1 节和 §4。它会让你明白——我们教数学的顺序，和数学本身的依赖结构，是两套不同的东西。<b>别拿"数学有没有用"去回答方向选择问题</b>，这两件事量纲不同。</div>
+
+<p class="small">整理于 2026-10-09。数据来源：arXiv 2604.24797、github.com/openai/math（719 篇目录与 history.md）、GitHub 仓库检索结果。所有星级与节点数为检索当日实测值。</p>
+
+</div>
+<nav class="pager" data-for="mathmap"></nav>
+
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中文导读与阅读路径</title>
+<style>
+  :root{--bg:#12141a;--panel:#1a1d26;--panel2:#222633;--line:#2e3342;
+    --tx:#e8eaf0;--tx2:#a8b0c0;--tx3:#6f7889;--amber:#e0a458;--blue:#5b9dd9;--teal:#4bbfa0;--red:#e07a6a;--purple:#a88bd4;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font-family:"Songti SC","Source Han Serif SC","Noto Serif CJK SC",Georgia,serif;
+    font-size:16px;line-height:1.9;}
+  .wrap{max-width:900px;margin:0 auto;padding:44px 30px 90px;}
+  h1{font-size:26px;font-weight:600;margin:0 0 8px;line-height:1.5;}
+  .sub{color:var(--tx2);font-size:13.5px;line-height:1.85;margin-bottom:28px;}
+  h2{font-size:20px;font-weight:600;margin:34px 0 12px;padding-bottom:8px;
+    border-bottom:1px solid var(--line);color:var(--amber);}
+  h3{font-size:17px;font-weight:600;margin:24px 0 10px;color:var(--teal);}
+  h4{font-size:15.5px;font-weight:600;margin:18px 0 8px;}
+  p{margin:0 0 13px;text-align:justify;}
+  ul,ol{margin:0 0 16px;padding-left:24px;}
+  li{margin-bottom:5px;color:var(--tx2);}
+  li b,p b{color:var(--tx);}
+  blockquote{margin:14px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line);
+    color:var(--tx3);font-size:12.5px;}
+  table{border-collapse:collapse;width:100%;margin:15px 0;font-size:13.5px;
+    font-family:"PingFang SC","Helvetica Neue",sans-serif;}
+  th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top;}
+  th{background:var(--panel2);font-weight:600;}
+  code{font-family:"SF Mono",Menlo,ui-monospace,monospace;font-size:13px;
+    background:var(--panel2);padding:1px 5px;border-radius:3px;color:var(--amber);}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:13px 15px;overflow-x:auto;}
+  pre code{background:none;padding:0;color:var(--tx);}
+  a{color:var(--blue);}
+  hr{border:none;border-top:1px solid var(--line);margin:28px 0;}
+  .back{display:inline-block;margin-bottom:22px;font-size:13px;color:var(--blue);text-decoration:none;}
+  @media (max-width:700px){.wrap{padding:24px 16px 60px;}body{font-size:15.5px;}}
+</style>
+</head>
+<body><div class="wrap">
+<a class="back" href="../../pages/robotmath.html">&larr; 返回机器人数学缺口</a>
+<h1>中文导读与阅读路径</h1>
+<p class="sub">五个缺口的穿越路径 · 两本大部头的章节地图 · 术语中英对照</p>
+<h1>机器人数学缺口 · 中文导读与阅读路径</h1>
+<h2>这份材料解决什么</h2>
+<p>你点名的五个缺口，都不是"数学水平"问题，而是<strong>记号与建模惯例没见过</strong>的问题。它们集中在同一个位置：从"会的数学"到"机器人学默认你会"之间，隔着一层特定的符号系统。本导读给出最短的穿越路径。</p>
+<table>
+<thead>
+<tr>
+<th>缺口</th>
+<th>为什么卡人</th>
+<th>最短路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SE(3)/so(3)、指数映射、伴随</td>
+<td>旋转不能相加，位姿插值必须走李代数；四元数只是其中一个参数化</td>
+<td>①《微李理论》17 页 → ② MLS 第 2 章</td>
+</tr>
+<tr>
+<td>旋量、twist/wrench、雅可比几何构造</td>
+<td>速度级运动学全用这套记号，教材默认你会</td>
+<td>MLS 第 2 章 + 第 3.4 节</td>
+</tr>
+<tr>
+<td>最优控制 / 轨迹优化的 KKT 与信赖域</td>
+<td>不是"懂最优化"就行，接触序列导致非凸，需分层求解</td>
+<td>《Posa 接触轨迹优化》</td>
+</tr>
+<tr>
+<td>卡尔曼滤波推导与可观性</td>
+<td>要能自己推，不是调库</td>
+<td>Barfoot §3.3.2–3.3.7 + 《四元数与 ESKF》</td>
+</tr>
+<tr>
+<td>接触动力学互补问题 LCP/NCP</td>
+<td>穿模与抖动的根源在变分不等式，不是 ODE</td>
+<td>《Posa 接触轨迹优化》</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>建议的阅读顺序</h2>
+<p><strong>第一遍（建立记号，约 2–3 天）</strong></p>
+<ol>
+<li>《微李理论》17 页 —— 李群/李代数/指数映射/伴随/雅可比的最小充分集。<strong>先读这个，别一上来啃 MLS。</strong></li>
+<li>MLS 第 2 章《刚体运动》 —— 旋量、twist、wrench 的正统来源，配指数坐标。</li>
+<li>MLS 第 3.4 节《机械臂雅可比》 —— 关键认知：<strong>雅可比是用运动旋量逐列拼出来的，不是对正向运动学求导</strong>。</li>
+</ol>
+<p><strong>第二遍（估计与滤波，约 2–3 天）</strong></p>
+<ol start="4">
+<li>Barfoot §3.3.2–3.3.7 —— 卡尔曼滤波的<strong>三种推导</strong>（MAP / 贝叶斯 / 增益优化）+ 存在唯一性与<strong>可观性</strong>。这一节是"能自己推"的分水岭。</li>
+<li>《四元数运动学与 ESKF》95 页 —— 把旋转-aware 的卡尔曼滤波补上，这是机器人区别于通用滤波的地方。</li>
+</ol>
+<p><strong>第三遍（接触与优化，约 2 天）</strong></p>
+<ol start="6">
+<li>《Posa：刚体接触轨迹优化直接法》—— 互补约束怎么进优化问题、为什么要松弛、为什么分层。</li>
+</ol>
+<hr />
+<h2>两本大部头的章节地图</h2>
+<h3>Barfoot《State Estimation for Robotics》（399 页）</h3>
+<p><strong>第一部分：估计机制（第 2–4 章，p9–142）</strong> —— 你要的卡尔曼推导在这里</p>
+<ul>
+<li>2 概率论基础（p9）：PDF、高斯、Isserlis 定理、高斯过程、<strong>Cramér-Rao 下界与 Fisher 信息</strong></li>
+<li>3 线性高斯估计（p37）：批量离散时间估计 → <strong>最大后验 MAP</strong>、贝叶斯推断、<strong>存在唯一性与可观性（§3.1.4, p46）</strong>、递归平滑（Cholesky / RTS）、<strong>递归滤波：卡尔曼滤波的三种推导（§3.3.2–3.3.4, p63–70）</strong>、误差动态、<strong>可观性（§3.3.7, p72）</strong>、连续时间估计</li>
+<li>4 非线性非高斯估计（p91）：贝叶斯滤波、<strong>扩展卡尔曼滤波 EKF（§4.2.3, p100）</strong>、迭代 EKF、粒子滤波、Sigma 点卡尔曼滤波、批量连续时间估计</li>
+</ul>
+<p><strong>第二部分：三维几何（第 5–7 章）</strong> —— <strong>第 7 章矩阵李群（p215）是主题①最系统的版本</strong></p>
+<ul>
+<li>6 三维几何基础</li>
+<li>7 矩阵李群（p215）：7.1.1 <strong>SO(3) 与 SE(3)</strong>（p215）、7.1.2 <strong>李代数</strong>（p217）、7.1.3 <strong>指数映射</strong>（p219）、7.1.4 <strong>伴随</strong>（p226）、7.1.5 <strong>Baker-Campbell-Hausdorff</strong>（p230）</li>
+</ul>
+<p><strong>第三部分：应用（第 8–9 章）</strong>：位姿估计、捆集调整 BA</p>
+<h3>Murray / Li / Sastry《A Mathematical Introduction to Robotic Manipulation》（474 页）</h3>
+<ul>
+<li>1 引言（p19）</li>
+<li><strong>2 刚体运动（p37）</strong> —— 已全译。旋转矩阵、齐次变换、指数坐标、旋量、twist/wrench、伴随</li>
+<li><strong>3 机械臂运动学（p99）</strong> —— 正向/逆向运动学、<strong>Paden-Kahan 子问题</strong>（p118–126）、<strong>3.4 机械臂雅可比（p133）</strong> 已全译</li>
+<li>后续章节：动力学、控制、抓取、非完整约束（本轮未译，按需再说）</li>
+</ul>
+<hr />
+<h2>术语对照（中 ↔ 英）</h2>
+<table>
+<thead>
+<tr>
+<th>中文</th>
+<th>English</th>
+<th>出现位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>刚体运动</td>
+<td>rigid body motion</td>
+<td>MLS Ch2</td>
+</tr>
+<tr>
+<td>旋转矩阵</td>
+<td>rotation matrix</td>
+<td>MLS Ch2 / Sola</td>
+</tr>
+<tr>
+<td>齐次变换</td>
+<td>homogeneous transformation</td>
+<td>MLS Ch2</td>
+</tr>
+<tr>
+<td>特殊正交群 / 特殊欧氏群</td>
+<td>SO(3) / SE(3)</td>
+<td>全部</td>
+</tr>
+<tr>
+<td>李代数</td>
+<td>Lie algebra (so(3) / se(3))</td>
+<td>Sola / Barfoot Ch7</td>
+</tr>
+<tr>
+<td>指数映射 / 对数映射</td>
+<td>exponential map / logarithm map</td>
+<td>Sola</td>
+</tr>
+<tr>
+<td>伴随（表示 / 变换）</td>
+<td>adjoint (representation / transformation)</td>
+<td>MLS Ch2 / Barfoot §7.1.4</td>
+</tr>
+<tr>
+<td>指数坐标</td>
+<td>exponential coordinates</td>
+<td>MLS Ch2</td>
+</tr>
+<tr>
+<td>旋量</td>
+<td>screw</td>
+<td>MLS Ch2</td>
+</tr>
+<tr>
+<td>运动旋量 / 力旋量</td>
+<td>twist / wrench</td>
+<td>MLS Ch2</td>
+</tr>
+<tr>
+<td>空间雅可比 / 物体雅可比</td>
+<td>spatial / body Jacobian</td>
+<td>MLS §3.4</td>
+</tr>
+<tr>
+<td>奇异构型 / 可操作度</td>
+<td>singular configuration / manipulability</td>
+<td>MLS §3.4</td>
+</tr>
+<tr>
+<td>四元数</td>
+<td>quaternion</td>
+<td>Sola ESKF</td>
+</tr>
+<tr>
+<td>误差状态卡尔曼滤波</td>
+<td>error-state Kalman filter (ESKF)</td>
+<td>Sola ESKF</td>
+</tr>
+<tr>
+<td>标称状态 / 误差状态 / 真状态</td>
+<td>nominal / error / true state</td>
+<td>Sola ESKF</td>
+</tr>
+<tr>
+<td>卡尔曼增益 / 协方差</td>
+<td>Kalman gain / covariance</td>
+<td>Barfoot §3.3</td>
+</tr>
+<tr>
+<td>可观性</td>
+<td>observability</td>
+<td>Barfoot §3.1.4 / §3.3.7</td>
+</tr>
+<tr>
+<td>互补约束 / 互补问题</td>
+<td>complementarity constraint / LCP·NCP</td>
+<td>Posa</td>
+</tr>
+<tr>
+<td>摩擦锥 / 库仑摩擦</td>
+<td>friction cone / Coulomb friction</td>
+<td>Posa</td>
+</tr>
+<tr>
+<td>直接法 / 配点法</td>
+<td>direct method / collocation</td>
+<td>Posa</td>
+</tr>
+<tr>
+<td>序列二次规划</td>
+<td>sequential quadratic programming (SQP)</td>
+<td>Posa</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>一句提醒</h2>
+<p>这五样东西的共同点是：<strong>它们都是"语言"，不是"难题"</strong>。你不需要更深的数学，你需要的是把这层符号系统过一遍，之后所有机器人学论文对你就是可读的。预计一周。别把它当成补课，当成学一门方言。</p>
+</div></body>
+</html>

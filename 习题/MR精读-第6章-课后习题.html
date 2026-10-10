@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 6 章「Inverse Kinematics」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 6 章「Inverse Kinematics」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章对 inverse kinematics 问题的定位是：给定 \(X\in SE(3)\)，求 \(\theta\in\mathbb{R}^n\) 使</p>
+<p>\[</p>
+<p>T(\theta)=X.</p>
+<p>\]</p>
+<p>与 forward kinematics 不同，inverse kinematics 不是“给定 \(\theta\) 唯一得到 \(T\)”的简单反函数。它可能：</p>
+<ul>
+<li>无解；</li>
+<li>有有限多解；</li>
+<li>有无限多解。</li>
+</ul>
+<p>因此，IK 的解集结构比 FK 复杂得多。FK 通常由 \(\theta\) 唯一确定末端配置 \(T(\theta)\)；而 IK 是反问题，可能存在多个 \(\theta\) 对应同一个 \(X\)，也可能不存在任何 \(\theta\) 对应给定的 \(X\)。</p>
+<p>对于 2R planar chain，当 \(L_1>L_2\) 时，reachable set 是一个 annulus：</p>
+<ul>
+<li>inner radius：\(L_1-L_2\)；</li>
+<li>outer radius：\(L_1+L_2\)。</li>
+</ul>
+<p>解数分布为：</p>
+<ul>
+<li>目标点在 annulus 外部：零解；</li>
+<li>目标点在 annulus 边界上：一解；</li>
+<li>目标点在 annulus 内部：二解。</li>
+</ul>
+<p>这两个解通常称为 elbow-up 与 elbow-down，或 lefty 与 righty。该结论说明 IK 的多解性不是算法缺陷，而是问题本身的结构性质。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>在 body-frame numerical IK 中，速度级关系为</p>
+<p>\[</p>
+<p>V_b=J_b(\theta)\dot{\theta}.</p>
+<p>\]</p>
+<p>其中 \(V_b\in\mathbb{R}^6\) 是 body twist，\(J_b\in\mathbb{R}^{6\times n}\) 是 body Jacobian。因此，若要用伪逆更新关节变量，必须得到一个 body twist 误差 \(V_b\)，再计算</p>
+<p>\[</p>
+<p>\theta_{i+1}=\theta_i+J_b^\dagger(\theta_i)V_b.</p>
+<p>\]</p>
+<p>问题在于：\(T_{sd}\) 与 \(T_{sb}\) 都是 \(SE(3)\) 中的齐次变换，直接相减</p>
+<p>\[</p>
+<p>T_{sd}-T_{sb}</p>
+<p>\]</p>
+<p>得到的是一般矩阵差，并不天然属于 \(se(3)\)，也不能直接解释为 body twist。伪逆 \(J_b^\dagger\) 作用的对象必须是 \(\mathbb{R}^6\) 中的 twist 向量，而不是 \(4\times4\) 矩阵差。</p>
+<p>正确做法是先求相对变换</p>
+<p>\[</p>
+<p>T_{bd}=T_{sb}^{-1}T_{sd}.</p>
+<p>\]</p>
+<p>它表示从当前 body frame \(\{b\}\) 到 desired frame \(\{d\}\) 的相对配置。然后取矩阵对数：</p>
+<p>\[</p>
+<p>[V_b]=\log T_{bd}.</p>
+<p>\]</p>
+<p>这样得到的 \([V_b]\in se(3)\)，其向量形式 \(V_b\in\mathbb{R}^6\) 才是 body frame 下的误差 twist。随后才能用</p>
+<p>\[</p>
+<p>\theta_{i+1}=\theta_i+J_b^\dagger(\theta_i)V_b</p>
+<p>\]</p>
+<p>进行 Newton-Raphson 型迭代。</p>
+<p>因此，关键不是“比较两个变换矩阵的大小”，而是把相对变换映射到 \(se(3)\)，得到与 \(J_b\) 同一坐标系下的 twist 误差。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>PUMA-type 6R analytic IK 将问题解耦为 inverse position 与 inverse orientation。已知 \(\theta_1,\theta_2,\theta_3\) 后，forward kinematics 可整理为</p>
+<p>\[</p>
+<p>e^{[S_4]\theta_4}e^{[S_5]\theta_5}e^{[S_6]\theta_6}</p>
+<p>=</p>
+<p>e^{-[S_3]\theta_3}e^{-[S_2]\theta_2}e^{-[S_1]\theta_1}XM^{-1}.</p>
+<p>\]</p>
+<p>其中 \(X=T_{sd}\) 是期望末端配置，\(M=T_{sb}(0)\) 是 home configuration。</p>
+<p>该方程右端完全由已知量构成：\(\theta_1,\theta_2,\theta_3\) 已求出，\(X\) 给定，\(M\) 已知。因此右端是一个已知的 \(SE(3)\) 元素。左端只含未知的 wrist joints \(\theta_4,\theta_5,\theta_6\)。</p>
+<p>取该方程的 \(SO(3)\) 部分，即旋转部分：</p>
+<p>\[</p>
+<p>R_4(\theta_4)R_5(\theta_5)R_6(\theta_6)=R_{\text{known}}.</p>
+<p>\]</p>
+<p>对于 PUMA 的 wrist，三个 wrist axes 通常满足特定几何关系，使得该旋转乘积可写成 ZYX Euler angles 形式。也就是说，\(\theta_4,\theta_5,\theta_6\) 分别对应绕 \(z,y,x\) 轴的旋转组合。因此，inverse orientation 问题转化为从已知旋转矩阵 \(R_{\text{known}}\) 中提取 ZYX Euler angles。</p>
+<p>需要注意：inverse orientation 不是重新做位置 IK。位置部分已经由 wrist center 和平面 two-link IK 解决；这里只处理 wrist 的三个旋转关节。通过分离出</p>
+<p>\[</p>
+<p>e^{[S_4]\theta_4}e^{[S_5]\theta_5}e^{[S_6]\theta_6},</p>
+<p>\]</p>
+<p>才能把 wrist 解与位置解解耦。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>Newton-Raphson 数值 IK 的基本思想是：令</p>
+<p>\[</p>
+<p>g(\theta)=x_d-f(\theta),</p>
+<p>\]</p>
+<p>其中 \(x=f(\theta)\in\mathbb{R}^m\) 是任务空间坐标，\(x_d\) 是期望坐标。对 \(f(\theta)\) 在当前 \(\theta_i\) 处做一阶 Taylor 截断：</p>
+<p>\[</p>
+<p>f(\theta_i+\Delta\theta)\approx f(\theta_i)+J(\theta_i)\Delta\theta.</p>
+<p>\]</p>
+<p>令其等于 \(x_d\)，得</p>
+<p>\[</p>
+<p>J(\theta_i)\Delta\theta=x_d-f(\theta_i).</p>
+<p>\]</p>
+<p>因此迭代为</p>
+<p>\[</p>
+<p>\theta_{i+1}=\theta_i+\Delta\theta.</p>
+<p>\]</p>
+<p>具体更新方式：</p>
+<ol>
+<li>若 \(J\) 为方阵且可逆：</li>
+</ol>
+<p>\[</p>
+<p>\Delta\theta=J^{-1}(\theta_i)\bigl(x_d-f(\theta_i)\bigr).</p>
+<p>\]</p>
+<ol>
+<li>若 \(J\) 不是方阵或不可逆，使用伪逆：</li>
+</ol>
+<p>\[</p>
+<p>\Delta\theta=J^\dagger(\theta_i)\bigl(x_d-f(\theta_i)\bigr).</p>
+<p>\]</p>
+<p>其中：</p>
+<ul>
+<li>若 \(J\) fat 且 \(n>m\)：</li>
+</ul>
+<p>\[</p>
+<p>J^\dagger=J^T(JJ^T)^{-1};</p>
+<p>\]</p>
+<ul>
+<li>若 \(J\) tall 且 \(n<m\)：</li>
+</ul>
+<p>\[</p>
+<p>J^\dagger=(J^TJ)^{-1}J^T.</p>
+<p>\]</p>
+<p>因此一般迭代公式为</p>
+<p>\[</p>
+<p>\theta_{i+1}=\theta_i+J^\dagger(\theta_i)\bigl(x_d-f(\theta_i)\bigr).</p>
+<p>\]</p>
+<ol>
+<li>在 \(SE(3)\) 的 body-frame 版本中，不能直接用 \(T_{sd}-T_{sb}\)。应先构造相对变换</li>
+</ol>
+<p>\[</p>
+<p>T_{bd}=T_{sb}^{-1}T_{sd},</p>
+<p>\]</p>
+<p>再取矩阵对数：</p>
+<p>\[</p>
+<p>[V_b]=\log T_{bd}.</p>
+<p>\]</p>
+<p>然后更新：</p>
+<p>\[</p>
+<p>\theta_{i+1}=\theta_i+J_b^\dagger(\theta_i)V_b.</p>
+<p>\]</p>
+<p>若使用 space frame，则可通过</p>
+<p>\[</p>
+<p>V_s=[Ad_{T_{sb}}]V_b</p>
+<p>\]</p>
+<p>与 \(J_s\) 进行对应更新。</p>
+<p>Newton-Raphson 不保证全局收敛。初值必须足够接近真解；多解时通常收敛到离初值最近的解。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>速度级 inverse kinematics 由</p>
+<p>\[</p>
+<p>J\dot{\theta}=V_d</p>
+<p>\]</p>
+<p>出发。当 \(J\) 为 fat，即 \(n>m\) 时，存在无穷多 \(\dot{\theta}\) 满足该方程。伪逆解</p>
+<p>\[</p>
+<p>\dot{\theta}=J^\dagger V_d</p>
+<p>\]</p>
+<p>给出的是满足 \(J\dot{\theta}=V_d\) 的最小二范数解，即它最小化</p>
+<p>\[</p>
+<p>\|\dot{\theta}\|.</p>
+<p>\]</p>
+<p>这隐含各关节速度等权。若希望按质量或惯量加权，则需要使用 weighted pseudoinverse。</p>
+<p>当使用 mass matrix \(M(\theta)\) 作为权重时，weighted pseudoinverse 形式为</p>
+<p>\[</p>
+<p>\dot{\theta}=M^{-1}J^T(JM^{-1}J^T)^{-1}V_d.</p>
+<p>\]</p>
+<p>这等价于在满足 \(J\dot{\theta}=V_d\) 的前提下，最小化与 \(M(\theta)\) 相关的 kinetic energy 型指标，而不是简单的 \(\|\dot{\theta}\|^2\)。</p>
+<p>更一般地，若还希望优化某个 potential \(h(\theta)\)，可写成</p>
+<p>\[</p>
+<p>\dot{\theta}=G V_d+(I-GJ)M^{-1}\nabla h,</p>
+<p>\]</p>
+<p>其中</p>
+<p>\[</p>
+<p>G=M^{-1}J^T B,\qquad B=(JM^{-1}J^T)^{-1}.</p>
+<p>\]</p>
+<p>各项作用如下：</p>
+<ul>
+<li>\(G V_d\)：完成主任务，即满足 \(J\dot{\theta}=V_d\)；</li>
+<li>\((I-GJ)\)：零空间投影矩阵，把附加项投影到 \(J\) 的零空间中，从而不破坏主任务；</li>
+<li>\(M^{-1}\nabla h\)：沿 potential \(h\) 的梯度方向运动，用于优化冗余自由度，例如避障、关节限位或姿态优化。</li>
+</ul>
+<p>最后，本章的 closed-loop caveat 指出：即使 desired end-effector trajectory 在 task space 中是 closed loop，即</p>
+<p>\[</p>
+<p>T_{sd}(0)=T_{sd}(t_f),</p>
+<p>\]</p>
+<p>数值 IK 得到的 joint-space motion 也可能不是 closed loop，即</p>
+<p>\[</p>
+<p>\theta(0)\neq\theta(t_f).</p>
+<p>\]</p>
+<p>原因是冗余机器人的 IK 解不唯一，数值迭代可能在不同时刻收敛到不同的 joint-space 分支。task space 的闭合并不自动保证 joint space 的闭合。若需要 joint-space closed loop，必须额外施加条件或约束。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

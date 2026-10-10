@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>讲解版 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">讲解版<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+  <h1>强化学习与机器人 · 讲解版</h1>
+  <p class="sub">把教材、机器人学课本和论文，一篇一篇讲透。<strong>每篇只干一件事：让你读完能对别人复述出这个概念的"是什么 + 怎么做"。</strong></p>
+
+  <div class="note">
+    <strong>每篇的固定结构：</strong>真实案例开场（翻车/反直觉的真事）→ 问题场景 → <strong>术语直解表（中文｜英文｜一句话｜本例对应）</strong> → 公式 + 逐项翻译表（标出哪一项是<em>实测</em>、哪一项是<em>估计</em>）→ 不跳步的数字演算（并指出"它哪儿做错了"）→ 两个最容易搞错的地方 + 对照表 → 一句话记住 → 词汇总表 → 原始出处页码。
+  </div>
+
+  <div class="warn">
+    <strong>三条硬规矩：</strong>① 专业词一律中英并列直呼其名，<strong>不用任何代称或隐喻</strong>；② 公式必须配人话翻译表，没有翻译表的公式不收录；③ 页码与公式全部回原书原文核验，<strong>核不到就明确标注"未核验"，宁可少写不许编</strong>。
+  </div>
+
+  <p><a class="key" href="../强化学习讲解.html">打开讲解版阅读器</a>&nbsp;<span class="small">（左侧分系列目录 · 表格可横向滚动 · 支持公式渲染）</span></p>
+
+  <div class="card">
+    <h2>三条线，共 46 篇</h2>
+    <div class="flow">
+      <b>R 系列 · 强化学习</b>（源：张伟楠《强化学习》15 讲，SJTU 2022）——从"智能体怎么从试错里学会做决定"一路讲到决策大模型。<br>
+      <b>B 系列 · 机器人学</b>（源：Lynch &amp; Park《Modern Robotics》，644 页）——从"一具身体有几个自由度"讲到抓取与控制。<br>
+      <b>P 系列 · 论文导读</b>（源：机器人高影响力论文库 21 篇 + 后续补齐 17 篇）——真读原文，数字都标页码。
+    </div>
+  </div>
+
+  <div class="toc">
+    <h2>R 系列 · 强化学习（24 篇）</h2>
+    <table>
+      <tr><th>编号</th><th>标题</th><th>核心内容</th><th>状态</th></tr>
+      <tr><td>R01</td><td>强化学习到底在解决什么问题</td><td>预测型 vs 决策型任务、智能体与环境、交互循环、历史与状态</td><td class="ok">已完成</td></tr>
+      <tr><td>R02</td><td>探索与利用：赌场里怎么赢</td><td>多臂老虎机、悔值、ε-贪心、衰减贪心、UCB、汤普森采样</td><td class="ok">已完成</td></tr>
+      <tr><td>R03</td><td>马尔可夫决策过程：五元组</td><td>马尔可夫性、MDP 五元组、折扣因子 γ、累积奖励</td><td class="ok">已完成</td></tr>
+      <tr><td>R04</td><td>动态规划：把未来的账算清楚</td><td>贝尔曼方程、策略评估/改进/迭代、价值迭代、收敛</td><td class="ok">已完成</td></tr>
+      <tr><td>R05</td><td>蒙特卡洛：走完全程才算账</td><td>采样估计、回报 G、增量更新、大数定律、MC 的硬限制</td><td class="ok">已完成</td></tr>
+      <tr><td>R06</td><td>时序差分：边走边改账</td><td>TD 更新、TD 误差 δ、自举、MC vs TD、偏差-方差权衡</td><td class="ok">已完成</td></tr>
+      <tr><td>R07</td><td>重要性采样：借别人的路</td><td>权重 p/q、离线策略 MC、方差爆炸、为什么只折一步</td><td class="ok">已完成</td></tr>
+      <tr><td>—</td><td>Q 学习（已出：外卖机器人版）</td><td>Q 值定义、更新公式逐项翻译、五天演算、奖励作弊</td><td class="ok">已完成</td></tr>
+      <tr><td>R08</td><td>SARSA：给"实际会怎么做"打分</td><td>在线 vs 离线策略、悬崖漫步实验、学最优 vs 学自己</td><td class="ok">已完成</td></tr>
+      <tr><td>R09</td><td>多步自助法：n 步与 TD(λ)</td><td>n 步回报、平均 n 步、TD(λ)、n 步 SARSA、树回溯</td><td class="ok">已完成</td></tr>
+      <tr><td>R10</td><td>规划与学习：Dyna 一身两用</td><td>模型、规划、直接/间接强化学习、Dyna-Q、Dyna-Q+</td><td class="ok">已完成</td></tr>
+      <tr><td>R11</td><td>决策时规划：Rollout 与 MCTS</td><td>优先级采样、轨迹采样、RTDP、启发式搜索、MCTS</td><td class="ok">已完成</td></tr>
+      <tr><td>R12</td><td>函数逼近：从查表到参数化</td><td>离散化/分桶、参数化值函数、线性近似、SGD</td><td class="ok">已完成</td></tr>
+      <tr><td>R13</td><td>DQN：深度强化学习怎么跑起来</td><td>值函数逼近、DQN、经验回放、目标网络</td><td class="ok">已完成</td></tr>
+      <tr><td>R14</td><td>策略梯度与 REINFORCE</td><td>似然比、策略梯度定理、REINFORCE、Softmax 策略</td><td class="ok">已完成</td></tr>
+      <tr><td>R15</td><td>Actor-Critic：演员与评论家</td><td>Actor-Critic、优势函数、A2C、A3C</td><td class="ok">已完成</td></tr>
+      <tr><td>R16</td><td>TRPO 与 PPO：怎么稳着往前走</td><td>信任域、TRPO、PPO 裁剪目标</td><td class="ok">已完成</td></tr>
+      <tr><td>R17</td><td>DDPG 与 SAC：连续动作怎么办</td><td>确定性策略梯度、DDPG、最大熵、SAC</td><td class="ok">已完成</td></tr>
+      <tr><td>R18</td><td>基于模型的深度强化学习</td><td>MPC、MBPO、在想象中训练</td><td class="ok">已完成</td></tr>
+      <tr><td>R19</td><td>模仿学习：看人怎么做</td><td>行为克隆、复合误差、逆强化学习、GAIL</td><td class="ok">已完成</td></tr>
+      <tr><td>R20</td><td>离线强化学习</td><td>离线数据、分布偏移、保守估计</td><td class="ok">已完成</td></tr>
+      <tr><td>R21</td><td>参数化行动空间</td><td>连续与高维动作的表示</td><td class="ok">已完成</td></tr>
+      <tr><td>R22</td><td>目标导向的强化学习</td><td>目标表示、事后重标注</td><td class="ok">已完成</td></tr>
+      <tr><td>R23</td><td>多智能体强化学习</td><td>博弈、合作与竞争、集中训练分散执行</td><td class="ok">已完成</td></tr>
+      <tr><td>R24</td><td>决策大模型</td><td>决策 Transformer、大模型做决策</td><td class="ok">已完成</td></tr>
+    </table>
+  </div>
+
+  <div class="toc">
+    <h2>B 系列 · 机器人学（11 篇）</h2>
+    <table>
+      <tr><th>编号</th><th>标题</th><th>核心内容</th><th>状态</th></tr>
+      <tr><td>B01</td><td>自由度与位形空间</td><td>自由度、位形、C 空间、拓扑、Grübler 公式、工作空间</td><td class="ok">已完成</td></tr>
+      <tr><td>B02</td><td>刚体运动与齐次变换</td><td>旋转矩阵、角速度、齐次变换、旋量、指数坐标</td><td class="ok">已完成</td></tr>
+      <tr><td>B03</td><td>正运动学：手伸出去到哪儿</td><td>指数积公式（POE）、螺旋轴、为什么不用 DH 参数、URDF</td><td class="ok">已完成</td></tr>
+      <tr><td>B04</td><td>雅可比：速度与力怎么传</td><td>速度运动学、雅可比、静力、奇异位形</td><td class="ok">已完成</td></tr>
+      <tr><td>B05</td><td>逆运动学</td><td>解析解、牛顿-拉夫森数值解、多解问题</td><td class="ok">已完成</td></tr>
+      <tr><td>B06</td><td>开链动力学</td><td>拉格朗日动力学、惯量矩阵、重力项</td><td class="ok">已完成</td></tr>
+      <tr><td>B07</td><td>轨迹生成</td><td>多项式轨迹、时间最优</td><td class="ok">已完成</td></tr>
+      <tr><td>B08</td><td>运动规划</td><td>格栅法、RRT、PRM</td><td class="ok">已完成</td></tr>
+      <tr><td>B09</td><td>机器人控制</td><td>PID、计算力矩控制、力控</td><td class="ok">已完成</td></tr>
+      <tr><td>B10</td><td>抓取与操作</td><td>抓取接触模型、力闭合</td><td class="ok">已完成</td></tr>
+      <tr><td>B11</td><td>轮式移动与非完整约束</td><td>非完整约束、里程计</td><td class="ok">已完成</td></tr>
+    </table>
+  </div>
+
+  <div class="toc">
+    <h2>P 系列 · 论文导读（14 篇）</h2>
+    <table>
+      <tr><th>编号</th><th>标题</th><th>对应论文</th><th>状态</th></tr>
+      <tr><td>P01</td><td>MuJoCo 与仿真基建</td><td>mujoco-2012 ／ isaac-gym-2021</td><td class="ok">已完成</td></tr>
+      <tr><td>P02</td><td>Sim2Real 与域随机化</td><td>sim2real-quadruped-2018 ／ domain-randomization-2017</td><td class="ok">已完成</td></tr>
+      <tr><td>P03</td><td>四足运动：从学会走路到快速适应</td><td>learning-to-walk-2019 ／ learning-to-walk-minutes-2021 ／ rma-2021</td><td class="ok">已完成</td></tr>
+      <tr><td>P04</td><td>深度 RL 六大经典算法</td><td>ddpg／trpo／a3c／ppo／sac／td3</td><td class="ok">已完成</td></tr>
+      <tr><td>P05</td><td>模仿学习与 Diffusion Policy</td><td>diffusion-policy-2023</td><td class="ok">已完成</td></tr>
+      <tr><td>P06</td><td>双手操作：ALOHA 与 Mobile ALOHA</td><td>aloha-2023 ／ mobile-aloha-2024</td><td class="ok">已完成</td></tr>
+      <tr><td>P07</td><td>VLA 主线：从 RT-1 到 π0</td><td>rt-1／rt-2／openvla／octo／pi0</td><td class="ok">已完成</td></tr>
+      <tr><td>P08</td><td>世界模型</td><td>world-model-2018 ／ dreamerv3-2023</td><td class="ok">已完成</td></tr>
+      <tr><td>P09</td><td>SLAM：机器人怎么知道自己在哪</td><td>monoslam-2007 ／ orb-slam3-2020</td><td class="ok">已完成</td></tr>
+      <tr><td>P10</td><td>视觉语言导航与具身问答</td><td>vision-language-navigation-2018 ／ embodied-qa-2018</td><td class="ok">已完成</td></tr>
+      <tr><td>P11</td><td>抓取与 6D 位姿估计</td><td>anygrasp-2022 ／ foundationpose-2023</td><td class="ok">已完成</td></tr>
+      <tr><td>P12</td><td>接触隐式优化与 MuJoCo MPC</td><td>contact-implicit-opt-2021 ／ mjpc-2022<br><span class="small">⚠️ 本地 PDF 错版（实为天文论文／鸟蛋壳力学），已改期</span></td><td class="todo">改期</td></tr>
+      <tr><td>P13</td><td>虚拟训练场：Habitat 与触觉感知</td><td>habitat-2019 ／ pratt-williamson-1995</td><td class="ok">已完成</td></tr>
+      <tr><td>P14</td><td>SayCan：让大模型指挥机器人</td><td>saycan-2022</td><td class="ok">已完成</td></tr>
+    </table>
+  </div>
+
+  <p><a class="key" href="../强化学习讲解.html">打开讲解版阅读器</a></p>
+  <p class="small">阅读器左侧按 R / B / P 三个系列分组，正文里的表格在手机上可横向滚动；公式用 KaTeX 渲染，首次打开需要联网加载一次。</p>
+</div>
+<nav class="pager" data-for="lect"></nav>
+
+</div>
+</main>
+</body>
+</html>

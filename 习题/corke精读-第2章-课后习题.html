@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 2 章「Representing Position and Orientation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 2 章「Representing Position and Orientation」课后习题</h1>
+<p>原书课后习题 8 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 RPY 与 Euler 的差别。</strong></p>
+<p>按本章事实底座，RPY 是 Cardanian 三角度（Toolbox 默认 XYZ 轴序），Euler 是 Eulerian 三角度（Toolbox 默认 ZYZ）。两者逆映射性质不同：Euler 的 <code>tr2eul</code> 总返回正的中间角 $\theta$，因此当原 $\theta<0$ 或 $\theta=0$ 时，$\phi,\psi$ 会改变而 $\mathbf{R}$ 不变（facts 第 6、7 节）。RPY 的 <code>tr2rpy</code> 则没有这个"强制正中间角"的约定，所以对负角一般能原样还原。</p>
+<p><strong>第 2 步：负角对旋转矩阵的影响。</strong></p>
+<p>由基本旋转矩阵，$\mathbf{R}_x(-\phi)=\mathbf{R}_x(\phi)^T$，同理 $y,z$。因此负角只是把对应基本旋转取转置（即反向旋转），并不引入任何奇异性。RPY 复合为</p>
+<p>$$
+{}^E\mathbf{R} = \mathbf{R}_z(\psi)\,\mathbf{R}_y(\theta)\,\mathbf{R}_x(\phi),
+$$</p>
+<p>代入负角只是各因子取逆，整体仍是合法正交阵。</p>
+<p><strong>第 3 步：RPY 逆映射是否唯一。</strong></p>
+<p>RPY 的逆映射在 $\theta_p\ne\pm\pi/2$ 时是唯一的（facts 第 6 节：RPY 的奇异发生在 pitch $=\pm\pi/2$，即 gimbal lock）。因此只要不落在奇异点，<code>rpy2r</code> 再 <code>tr2rpy</code> 应还原原角，包括负角。</p>
+<p><strong>第 4 步：用事实底座中的数值验证。</strong></p>
+<p>底座给出 <code>rpy2r(0.1, 0.2, 0.3)</code> →</p>
+<p><code>0.9363 -0.2896 0.1987 / 0.3130 0.9447 -0.0978 / -0.1593 0.1538 0.9752</code>，</p>
+<p><code>tr2rpy</code> → <code>0.1000 0.2000 0.3000</code>（facts 第 6 节）。这说明正角可还原。对负角，原书未给出具体数值，按符号推导：由于 RPY 逆映射在非奇异区唯一，负角同样应还原为原负角，不会像 Euler 那样变成"另一组角"。</p>
+<p><strong>第 5 步：可运行验证代码（MATLAB，Robotics Toolbox）。</strong></p>
+<pre><code class="lang-matlab">for a = [-0.3 -0.2 -0.1 0 0.1 0.2 0.3]
+    R = rpy2r(a, 0.2, 0.3);
+    ang = tr2rpy(R);
+    fprintf('roll=%+.2f -> [%+.4f %+.4f %+.4f]\n', a, ang);
+end
+% 对比 Euler：
+for a = [-0.3 -0.2 -0.1 0 0.1 0.2 0.3]
+    R = eul2r(a, 0.2, 0.3);
+    ang = tr2eul(R);
+    fprintf('phi=%+.2f -> [%+.4f %+.4f %+.4f]\n', a, ang);
+end</code></pre>
+<p>预期观察：RPY 各行还原为 <code>[a 0.2 0.3]</code>（含负 $a$）；Euler 在 $a<0$ 时返回不同的 $\phi,\psi$（中间角被强制为正），在 $a=0$ 时只能定 $\phi+\psi$（facts 第 6 节：<code>eul2r(0.1,0,0.3)</code> 的 <code>tr2eul</code> → <code>0 0 0.4000</code>）。</p>
+<p><strong>结论：</strong> 不会。RPY 对负角（非奇异时）能原样还原，与 Euler 角的行为不同。</p>
+<h4>关键点</h4>
+<ul>
+<li>RPY（Cardanian，默认 XYZ）与 Euler（Eulerian，默认 ZYZ）的逆映射约定不同：<code>tr2eul</code> 强制中间角为正，<code>tr2rpy</code> 不强制。</li>
+<li>负角只是把对应基本旋转取转置，不引入额外奇异；RPY 的奇异仅在 pitch $=\pm\pi/2$（gimbal lock）。</li>
+<li>非奇异区 RPY 逆映射唯一，故 <code>rpy2r</code>→<code>tr2rpy</code> 可还原起始角（含负角）；Euler 在 $\theta<0$ 或 $\theta=0$ 时不还原。</li>
+<li>验证时注意 Toolbox 默认轴序，RPY 用 <code>rpy2r/tr2rpy</code>，Euler 用 <code>eul2r/tr2eul</code>，不要混用。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 2 章</li>
+<li>依据：</li>
+<li>RPY/Euler 定义与 12 种轴序、Toolbox 默认：facts 第 3 节概念 5、第 4 节步骤 6。</li>
+<li><code>tr2eul</code> 总返回正 $\theta$、$\theta=0$ 奇异只能定 $\phi+\psi$：facts 第 7 节 misconceptions、第 6 节数值例（<code>eul2r(0.1,0,0.3)</code> → <code>tr2eul</code> → <code>0 0 0.4000</code>）。</li>
+<li>RPY 奇异在 pitch $=\pm\pi/2$：facts 第 6 节。</li>
+<li><code>rpy2r(0.1,0.2,0.3)</code> 与 <code>tr2rpy</code> 还原数值：facts 第 6 节。</li>
+<li>负角对应基本旋转取转置：由 facts 第 5 节式 2 的 $\mathbf{R}^T=\mathbf{R}^{-1}$ 推得。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 <code>trplot</code> 的作用与输入对象。</strong></p>
+<p>本章把位姿统一表示为齐次变换 $\mathbf{T}\in SE(3)$（二维为 ${}^A\mathbf{T}_B\in SE(2)$），即</p>
+<p>$$
+\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix},\qquad \mathbf{R}\in SO(3),\ \mathbf{t}\in\mathbb{R}^3 .
+$$</p>
+<p><code>trplot</code> 是本章 Toolbox 中用于<strong>把位姿可视化</strong>的函数：给定一个齐次变换，它画出对应的坐标系（三个正交轴 + 原点）。因此"探索选项"本质上是探索<strong>如何把 $\mathbf{R}$ 的三列轴方向与 $\mathbf{t}$ 的原点位置画出来</strong>，以及如何控制绘图外观。</p>
+<p><strong>第 2 步：理解默认绘制内容。</strong></p>
+<p>由本章事实底座，旋转矩阵按列读法为</p>
+<p>$$
+{}^A\mathbf{R}_B=\begin{bmatrix}\hat{\mathbf{i}}_B&\hat{\mathbf{j}}_B&\hat{\mathbf{k}}_B\end{bmatrix}\in SO(3),
+$$</p>
+<p>即<strong>列 = 新系 $\{B\}$ 各轴在当前系 $\{A\}$ 下的方向</strong>。所以 <code>trplot(T)</code> 默认画出：以 $\mathbf{t}$ 为原点的三根单位轴，方向分别取 $\mathbf{R}$ 的第 1、2、3 列。二维情形（$SE(2)$）则只画两根轴。</p>
+<p><strong>第 3 步：分类探索选项。</strong></p>
+<p>原书未给出 <code>trplot</code> 各选项的具体数值，按符号与功能推导，可探索的选项大致分四类：</p>
+<ol>
+<li><strong>坐标系外观类</strong>：轴的颜色、线宽、标签（如 <code>'color'</code>、<code>'axis'</code>、<code>'frame'</code>），用于区分多个坐标系。</li>
+<li><strong>参考系/叠加类</strong>：是否保持当前图形以便叠加多个位姿（<code>'hold'</code>），从而直观看到复合 ${}^A\boldsymbol{\xi}_C={}^A\boldsymbol{\xi}_B\oplus{}^B\boldsymbol{\xi}_C$ 的几何效果。</li>
+<li><strong>视图类</strong>：视角、坐标轴范围、网格，用于观察三维旋转的朝向。</li>
+<li><strong>动画/长度类</strong>：轴的长度缩放、是否显示原点标记等。</li>
+</ol>
+<p><strong>第 4 步：用本章数值例子验证选项效果。</strong></p>
+<p>可用事实底座中的例子构造位姿并绘图：</p>
+<pre><code class="lang-matlab">T1 = se2(1, 2, 30*pi/180);   % 2D 位姿
+trplot(T1);                  % 画出 SE(2) 坐标系
+
+T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0);  % 3D 位姿
+trplot(T);                   % 画出 SE(3) 坐标系</code></pre>
+<p>预期观察：<code>T1</code> 的原点位于 $(1,2)$，其 $x$ 轴相对世界系转过 $30^\circ$；<code>T</code> 的平移列为 $[1,0,1]^T$（见事实底座），故原点画在 $(1,0,1)$，姿态为绕 $x$ 轴 $90^\circ$ 后再平移。</p>
+<p><strong>第 5 步：与复合不可交换性对照。</strong></p>
+<p>由事实底座，<code>T1*T2</code> 的位移不是 $(3,3)$，且 <code>T1*T2 ≠ T2*T1</code>。用 <code>trplot</code> 叠加绘制 <code>T1*T2</code> 与 <code>T2*T1</code>，可<strong>直观看到两个坐标系不重合</strong>，这正是 $\oplus$ 不满足交换律的几何体现。</p>
+<h4>关键点</h4>
+<ul>
+<li><code>trplot</code> 可视化的对象是齐次变换 $\mathbf{T}\in SE(3)$（或 $SE(2)$），画的是坐标系而非单个点。</li>
+<li>画出的三根轴方向 = $\mathbf{R}$ 的三列 $\hat{\mathbf{i}}_B,\hat{\mathbf{j}}_B,\hat{\mathbf{k}}_B$；原点 = 平移列 $\mathbf{t}$。</li>
+<li>选项主要控制外观、叠加、视图与轴长；叠加绘图是观察 $\oplus$ 不可交换性的有力工具。</li>
+<li>具体选项名与取值原书未在事实底座中给出数值，需在 MATLAB 中 <code>help trplot</code> 实测确认。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 2 章</li>
+<li>依据：</li>
+<li>齐次变换定义 $\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix}$：facts 第 5 节公式 6、第 3 节概念 8。</li>
+<li>旋转矩阵列读法 ${}^A\mathbf{R}_B=[\hat{\mathbf{i}}_B\ \hat{\mathbf{j}}_B\ \hat{\mathbf{k}}_B]$：facts 第 5 节公式 2、第 7 节"旋转矩阵列/行读法"。</li>
+<li>复合不可交换、<code>T1*T2</code> 位移非 $(3,3)$：facts 第 6 节例题、第 7 节"复合顺序"。</li>
+<li><code>transl</code>/<code>trotx</code>/<code>se2</code> 等函数与数值例子：facts 第 6 节。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解 <code>tranimate</code> 的作用</h5>
+<p><code>tranimate</code> 是 Corke 工具箱中用于<strong>动画演示位姿变化</strong>的函数。它接受一个齐次变换 $\mathbf{T}\in SE(3)$，并生成一段动画，直观展示坐标系从初始位姿运动到 $\mathbf{T}$ 所描述的位姿的过程。其核心思想是：把 $\mathbf{T}$ 分解为平移部分 $\mathbf{t}$ 和旋转部分 $\mathbf{R}$，然后逐步插值显示。</p>
+<p>本章确立的默认位姿表示为</p>
+<p>$$
+\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix}\in SE(3)
+$$</p>
+<p>其中 $\mathbf{R}\in SO(3)$ 由三个单位轴按列堆成 ${}^A\mathbf{R}_B=[\hat{\mathbf{i}}_B\ \hat{\mathbf{j}}_B\ \hat{\mathbf{k}}_B]$，$\mathbf{t}$ 为平移向量。<code>tranimate</code> 正是对这一表示的动态可视化。</p>
+<h5>第 2 步：构造绕各轴的平移变换</h5>
+<p>平移变换只改变 $\mathbf{t}$，不改变 $\mathbf{R}$。使用 <code>transl</code> 构造：</p>
+<pre><code class="lang-matlab">% 沿 x 轴平移
+tranimate(transl(1, 0, 0));
+% 沿 y 轴平移
+tranimate(transl(0, 1, 0));
+% 沿 z 轴平移
+tranimate(transl(0, 0, 1));</code></pre>
+<p><strong>为什么</strong>：<code>transl(x,y,z)</code> 返回 $\mathbf{T}=\begin{bmatrix}\mathbf{I}&\mathbf{t}\\0&1\end{bmatrix}$，其中 $\mathbf{t}=[x\ y\ z]^T$。动画中坐标系原点沿对应轴移动，姿态不变。</p>
+<h5>第 3 步：构造绕各轴的旋转变换</h5>
+<p>旋转变换只改变 $\mathbf{R}$，不改变 $\mathbf{t}$。使用 <code>trotx</code>、<code>troty</code>、<code>trotz</code>：</p>
+<pre><code class="lang-matlab">% 绕 x 轴旋转 pi/2
+tranimate(trotx(pi/2));
+% 绕 y 轴旋转 pi/2
+tranimate(troty(pi/2));
+% 绕 z 轴旋转 pi/2
+tranimate(trotz(pi/2));</code></pre>
+<p><strong>为什么</strong>：<code>trotx(θ)</code> 返回 $\mathbf{T}=\begin{bmatrix}\mathbf{R}_x(\theta)&\mathbf{0}\\0&1\end{bmatrix}$，其中基本旋转矩阵为</p>
+<p>$$
+\mathbf{R}_x(\theta)=\begin{bmatrix}1&0&0\\0&\cos\theta&-\sin\theta\\0&\sin\theta&\cos\theta\end{bmatrix}
+$$</p>
+<p><code>troty</code>、<code>trotz</code> 同理。动画中坐标系原点不动，三个轴绕指定轴转动。</p>
+<h5>第 4 步：验证旋转的不可交换性</h5>
+<p>本章反复强调 $\mathbf{T}_1\mathbf{T}_2\ne\mathbf{T}_2\mathbf{T}_1$。可用 <code>tranimate</code> 对比：</p>
+<pre><code class="lang-matlab">% 先绕 x 后绕 y
+tranimate(trotx(pi/2)*troty(pi/2));
+% 先绕 y 后绕 x
+tranimate(troty(pi/2)*trotx(pi/2));</code></pre>
+<p><strong>预期观察</strong>：两次动画的最终姿态不同。事实底座给出数值验证：<code>rotx(pi/2)*roty(pi/2)</code> 得到</p>
+<p>$$
+\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}
+$$</p>
+<p>而反序 <code>roty(pi/2)*rotx(pi/2)</code> 得到</p>
+<p>$$
+\begin{bmatrix}0&1&0\\0&0&-1\\-1&0&0\end{bmatrix}
+$$</p>
+<p>两者不相等，直观印证了旋转复合的不可交换性。</p>
+<h5>第 5 步：组合平移与旋转</h5>
+<p>更一般的位姿可写成平移与旋转的复合，例如：</p>
+<pre><code class="lang-matlab">T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0);
+tranimate(T);</code></pre>
+<p><strong>预期观察</strong>：事实底座给出该例的平移列为 $[1,0,1]^T$。注意平移不是简单的 $(1,1,0)$，因为中间的 <code>transl(0,1,0)</code> 是在已旋转的坐标系中施加的——这正是 $\oplus$ 复合顺序重要性的体现。</p>
+<h4>关键点</h4>
+<ul>
+<li><code>tranimate</code> 是本章位姿表示 $\mathbf{T}\in SE(3)$ 的动态可视化工具，把 $\mathbf{R}$ 与 $\mathbf{t}$ 的变化直观呈现。</li>
+<li>平移用 <code>transl</code>，旋转用 <code>trotx/troty/trotz</code>，二者分别对应 $\mathbf{T}$ 中 $\mathbf{t}$ 与 $\mathbf{R}$ 的改变。</li>
+<li>旋转复合<strong>不可交换</strong>：<code>trotx(pi/2)*troty(pi/2)</code> ≠ <code>troty(pi/2)*trotx(pi/2)</code>，动画可直观验证。</li>
+<li>复合变换中后一个变换是相对已变换的坐标系施加的，因此平移分量不能简单相加。</li>
+<li>本章默认位姿表示为 $4\times4$ 齐次变换 $\mathbf{T}$，<code>tranimate</code> 正是对这一全书默认表示的演示。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 2 章</li>
+<li>依据：</li>
+<li>齐次变换 $\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix}\in SE(3)$ 及复合规则 → facts 第 5 节公式 6</li>
+<li>旋转矩阵列构造 ${}^A\mathbf{R}_B=[\hat{\mathbf{i}}_B\ \hat{\mathbf{j}}_B\ \hat{\mathbf{k}}_B]$ → facts 第 5 节公式 2</li>
+<li>基本旋转 <code>rotx/roty/rotz</code> 与 <code>trotx/troty/trotz</code> 的对应 → facts 第 1 节记号约定</li>
+<li>旋转不可交换及数值例子 → facts 第 6 节（<code>rotx(pi/2)*roty(pi/2)</code> 与反序结果）</li>
+<li>复合变换平移列 $[1,0,1]^T$ 的例子 → facts 第 6 节（<code>T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0)</code>）</li>
+<li>复合顺序与上下标匹配的困惑 → facts 第 7 节</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 绘制以原点为中心的立方体棱边</strong></p>
+<p>立方体有 8 个顶点、12 条棱。以原点为中心、边长为 2 的立方体，顶点坐标为 $(\pm1,\pm1,\pm1)$。用齐次坐标表示顶点，便于后续施加变换：</p>
+<p>$$
+\tilde{\mathbf{p}}_i = [x_i\ y_i\ z_i\ 1]^T,\quad x_i,y_i,z_i\in\{-1,+1\}
+$$</p>
+<p>棱边用顶点索引对表示（相邻顶点只差一个坐标符号）。绘制时对每条棱取两端点，用 <code>plot3</code> 连线。</p>
+<pre><code class="lang-matlab">function plot_cube(T)
+% PLOT_CUBE 绘制以原点为中心的立方体棱边
+% T (可选): 4x4 齐次变换，施加到顶点上
+    if nargin < 1
+        T = eye(4);
+    end
+    % 8 个顶点（齐次坐标）
+    V = [ -1 -1 -1  1;
+          -1 -1  1  1;
+          -1  1 -1  1;
+          -1  1  1  1;
+           1 -1 -1  1;
+           1 -1  1  1;
+           1  1 -1  1;
+           1  1  1  1 ]';
+    % 12 条棱（顶点索引对）
+    E = [1 2; 1 3; 1 5; 2 4; 2 6; 3 4;
+         3 7; 4 8; 5 6; 5 7; 6 8; 7 8];
+    % 施加齐次变换：T * p_tilde
+    Vt = T * V;
+    % 绘制
+    clf; hold on; grid on; axis equal
+    for k = 1:size(E,1)
+        p1 = Vt(:,E(k,1));
+        p2 = Vt(:,E(k,2));
+        plot3([p1(1) p2(1)], [p1(2) p2(2)], [p1(3) p2(3)], 'b-');
+    end
+    xlabel('x'); ylabel('y'); zlabel('z');
+    view(3);
+end</code></pre>
+<p><strong>b) 接受齐次变换参数</strong></p>
+<p>见上面代码：函数签名 <code>plot_cube(T)</code>，核心一行 <code>Vt = T * V</code>。这正是本章齐次变换作用在点上的定义 $\mathbf{T}\cdot\tilde{\mathbf{p}}=\mathbf{T}\tilde{\mathbf{p}}$（facts 第 5 节式 6）。顶点用齐次坐标 $\tilde{\mathbf{p}}=[x\ y\ z\ 1]^T$，与 $\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix}$ 相乘后自动完成"先旋转再平移"。</p>
+<p><strong>c) 动画演示绕 x 轴旋转</strong></p>
+<p>绕 x 轴旋转角度 $\theta$ 的齐次变换为 $\mathbf{T}=\texttt{trotx}(\theta)$，对应本章基本旋转 $\mathbf{R}_x$（facts 第 4 节第 5 步）。用循环递增 $\theta$ 并重绘：</p>
+<pre><code class="lang-matlab">for th = 0:0.05:2*pi
+    plot_cube(trotx(th));
+    drawnow;
+end</code></pre>
+<p>预期观察：立方体绕 x 轴连续翻滚，顶点轨迹为圆，立方体形状不变（刚体变换）。</p>
+<p><strong>d) 动画演示绕所有轴旋转</strong></p>
+<p>依次绕 x、y、z 轴旋转，或同时绕三轴复合。注意复合不可交换（facts 第 6 节：$\mathbf{T}_1\mathbf{T}_2\ne\mathbf{T}_2\mathbf{T}_1$），因此顺序会影响轨迹：</p>
+<pre><code class="lang-matlab">for th = 0:0.05:2*pi
+    T = trotx(th) * troty(th) * trotz(th);
+    plot_cube(T);
+    drawnow;
+end</code></pre>
+<p>预期观察：立方体做翻滚运动。由于旋转不可交换，<code>trotx* troty* trotz</code> 与反序 <code>trotz* troty* trotx</code> 得到的姿态不同——这正对应 facts 第 6 节 <code>rotx(pi/2)*roty(pi/2)</code> 与反序结果不同的例子。</p>
+<h4>关键点</h4>
+<ul>
+<li>齐次变换作用在点上：$\mathbf{T}\cdot\tilde{\mathbf{p}}=\mathbf{T}\tilde{\mathbf{p}}$，顶点必须用齐次坐标 $[x\ y\ z\ 1]^T$（facts 第 5 节式 6）。</li>
+<li>立方体棱边用顶点索引对描述，绘制时对每条棱取两端点连线。</li>
+<li>动画 = 循环改变变换参数 + 重绘（<code>drawnow</code>）。</li>
+<li>旋转复合不可交换：$\mathbf{T}_1\mathbf{T}_2\ne\mathbf{T}_2\mathbf{T}_1$，绕多轴旋转时顺序决定姿态（facts 第 6 节）。</li>
+<li>刚体变换不改变立方体形状，只改变其位姿。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 2 章</li>
+<li>依据：</li>
+<li>齐次变换定义与作用 $\mathbf{T}\tilde{\mathbf{p}}$：facts 第 5 节式 6（式 2.19–2.21）</li>
+<li>基本旋转 $\mathbf{R}_x,\mathbf{R}_y,\mathbf{R}_z$ 与 <code>trotx/troty/trotz</code>：facts 第 1 节 Toolbox 函数、第 4 节第 5 步</li>
+<li>旋转不可交换：facts 第 6 节 <code>rotx(pi/2)*roty(pi/2)</code> 数值例</li>
+<li>复合顺序与上下标：facts 第 7 节 misconceptions 第 1 条</li>
+<li>本题为动手验证题，原书未给出具体数值，代码按本章符号推导编写</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：写出式 2.21 给出的齐次变换定义。</strong></p>
+<p>由本章事实底座第 5 节第 6 条，三维齐次变换定义为</p>
+<p>$$
+\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\ \mathbf{0}&1\end{bmatrix}\in SE(3),
+$$</p>
+<p>其中 $\mathbf{R}\in SO(3)$ 是旋转矩阵，$\mathbf{t}\in\mathbb{R}^3$ 是平移向量，$\mathbf{0}$ 是 $1\times3$ 零行向量，右下角标量为 $1$。二维情形 ${}^A\mathbf{T}_B\in SE(2)\subset\mathbb{R}^{3\times3}$ 结构完全类似，只是 $\mathbf{R}\in SO(2)$、$\mathbf{t}\in\mathbb{R}^2$。</p>
+<p><strong>第 2 步：写出 $\mathbf{T}^{-1}$ 的候选形式。</strong></p>
+<p>由本章事实底座第 5 节第 6 条，$\ominus\mathbf{T}=\mathbf{T}^{-1}$。对 $SE(3)$ 中的齐次变换，其逆为</p>
+<p>$$
+\mathbf{T}^{-1}=\begin{bmatrix}\mathbf{R}^{T}&-\mathbf{R}^{T}\mathbf{t}\\ \mathbf{0}&1\end{bmatrix}.
+$$</p>
+<p>这里用到旋转矩阵的正交性 $\mathbf{R}^{T}=\mathbf{R}^{-1}$（事实底座第 5 节第 2 条：$\mathbf{R}^T=\mathbf{R}^{-1}$，$\det\mathbf{R}=1$）。</p>
+<p><strong>第 3 步：做矩阵乘法 $\mathbf{T}\mathbf{T}^{-1}$。</strong></p>
+<p>$$
+\mathbf{T}\mathbf{T}^{-1}
+=
+\begin{bmatrix}\mathbf{R}&\mathbf{t}\\ \mathbf{0}&1\end{bmatrix}
+\begin{bmatrix}\mathbf{R}^{T}&-\mathbf{R}^{T}\mathbf{t}\\ \mathbf{0}&1\end{bmatrix}.
+$$</p>
+<p>按分块矩阵乘法展开：</p>
+<ul>
+<li>左上块：$\mathbf{R}\mathbf{R}^{T}+\mathbf{t}\cdot\mathbf{0}=\mathbf{R}\mathbf{R}^{T}=\mathbf{I}_{3}$（由 $\mathbf{R}^{T}=\mathbf{R}^{-1}$）。</li>
+<li>右上块：$\mathbf{R}(-\mathbf{R}^{T}\mathbf{t})+\mathbf{t}\cdot 1=-\mathbf{R}\mathbf{R}^{T}\mathbf{t}+\mathbf{t}=-\mathbf{I}_{3}\mathbf{t}+\mathbf{t}=\mathbf{0}$。</li>
+<li>左下块：$\mathbf{0}\cdot\mathbf{R}^{T}+1\cdot\mathbf{0}=\mathbf{0}$。</li>
+<li>右下块：$\mathbf{0}\cdot(-\mathbf{R}^{T}\mathbf{t})+1\cdot 1=1$。</li>
+</ul>
+<p>因此</p>
+<p>$$
+\mathbf{T}\mathbf{T}^{-1}
+=
+\begin{bmatrix}\mathbf{I}_{3}&\mathbf{0}\\ \mathbf{0}&1\end{bmatrix}
+=\mathbf{I}_{4}.
+$$</p>
+<p><strong>第 4 步：结论。</strong></p>
+<p>$\mathbf{T}\mathbf{T}^{-1}=\mathbf{I}$ 得证。同理可验证 $\mathbf{T}^{-1}\mathbf{T}=\mathbf{I}$，故 $\mathbf{T}^{-1}$ 确为 $\mathbf{T}$ 的逆，与事实底座第 5 节第 6 条中 $\ominus\mathbf{T}=\mathbf{T}^{-1}$ 的断言一致。</p>
+<p><strong>第 5 步（可选，MATLAB 验证）。</strong></p>
+<pre><code class="lang-matlab">T = transl(1,0,0) * trotx(pi/2) * transl(0,1,0);  % 事实底座第 6 节给出的例子
+T * inv(T)      % 预期输出 4x4 单位矩阵
+T * trinv(T)    % Toolbox 的齐次变换求逆，结果同上</code></pre>
+<p>预期观察：<code>T*inv(T)</code> 与 <code>T*trinv(T)</code> 均返回 $4\times4$ 单位矩阵，平移列 $[1,0,1]^T$ 与事实底座第 6 节一致。</p>
+<h4>关键点</h4>
+<ul>
+<li>齐次变换的逆不是简单地对 $\mathbf{R}$、$\mathbf{t}$ 分别取逆，而是 $\mathbf{T}^{-1}=\begin{bmatrix}\mathbf{R}^{T}&-\mathbf{R}^{T}\mathbf{t}\\ \mathbf{0}&1\end{bmatrix}$，其中平移部分被旋转矩阵"回拉"。</li>
+<li>证明的核心只用到一条性质：$\mathbf{R}^{T}=\mathbf{R}^{-1}$（正交性），这正是 $\mathbf{R}\in SO(3)$ 的定义。</li>
+<li>分块乘法中右上块 $-\mathbf{R}\mathbf{R}^{T}\mathbf{t}+\mathbf{t}=\mathbf{0}$ 是"消去平移"的关键一步，也是初学者最容易漏掉的一步。</li>
+<li>该结论对 $SE(2)$ 同样成立，只需把 $\mathbf{I}_3$ 换成 $\mathbf{I}_2$、$\mathbf{t}\in\mathbb{R}^2$。</li>
+<li>与事实底座第 5 节第 6 条一致：$\oplus\to$ 矩阵乘法、$\ominus\to\mathbf{T}^{-1}$，因此"位姿取逆"在矩阵表示下就是矩阵求逆。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 2 章</li>
+<li>依据：</li>
+<li>式 2.21 与 $\mathbf{T}\in SE(3)$ 的定义：事实底座第 5 节第 6 条。</li>
+<li>$\mathbf{R}^{T}=\mathbf{R}^{-1}$、$\det\mathbf{R}=1$：事实底座第 5 节第 2 条。</li>
+<li>$\ominus\mathbf{T}=\mathbf{T}^{-1}$、$\oplus\to$ 矩阵乘法：事实底座第 5 节第 6 条。</li>
+<li>MATLAB 验证例子 <code>T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0)</code>：事实底座第 6 节。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：理解题意。</strong> 本题是动手验证题，要求用 MATLAB Robotics Toolbox 复现原书图 2.11 的绘图序列。图 2.11 位于本章"三维旋转表示"一节，用于直观展示<strong>旋转的不可交换性</strong>：同一组基本旋转按不同顺序施加，得到的姿态不同。原书未在事实底座中给出图 2.11 的具体数值，因此下面按符号推导 + 可运行代码给出，预期观察到的现象与本章结论一致。</p>
+<p><strong>第 2 步：明确要画什么。</strong> 本章事实底座第 6 节给出了一对关键数值例子：</p>
+<ul>
+<li><code>rotx(pi/2)</code> → $\begin{bmatrix}1&0&0\\0&0&-1\\0&1&0\end{bmatrix}$</li>
+<li><code>rotx(pi/2)*roty(pi/2)</code> → $\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}$</li>
+<li>反序 <code>roty(pi/2)*rotx(pi/2)</code> → $\begin{bmatrix}0&1&0\\0&0&-1\\-1&0&0\end{bmatrix}$</li>
+</ul>
+<p>两者不相等，正是"先 $x$ 后 $y$ ≠ 先 $y$ 后 $x$"（事实底座第 4 节第 4 步）。图 2.11 的序列即围绕这一对比展开：把坐标系依次旋转，画出每一步的坐标轴朝向。</p>
+<p><strong>第 3 步：为什么用 <code>trplot</code>。</strong> 本章约定 Toolbox 成对函数 <code>rotx/roty/rotz</code> 返回旋转矩阵，<code>trotx/...</code> 返回齐次变换（事实底座第 1 节）。<code>trplot</code> 用于绘制坐标系三轴，是本章展示姿态的标准工具。</p>
+<p><strong>第 4 步：可运行代码。</strong></p>
+<pre><code class="lang-matlab">% 图 2.11：旋转顺序不可交换的绘图序列
+clf; subplot(1,2,1)
+trplot(eye(3), 'frame', '0', 'color', 'k'); hold on
+R1 = rotx(pi/2);            % 先绕 x 转 90°
+trplot(R1, 'frame', '1', 'color', 'r')
+R12 = R1 * roty(pi/2);      % 再绕（新）y 转 90°
+trplot(R12, 'frame', '2', 'color', 'b')
+title('rotx(pi/2) then roty(pi/2)')
+
+subplot(1,2,2)
+trplot(eye(3), 'frame', '0', 'color', 'k'); hold on
+R2 = roty(pi/2);            % 先绕 y 转 90°
+trplot(R2, 'frame', '1', 'color', 'r')
+R21 = R2 * rotx(pi/2);      % 再绕（新）x 转 90°
+trplot(R21, 'frame', '2', 'color', 'b')
+title('roty(pi/2) then rotx(pi/2)')</code></pre>
+<p><strong>第 5 步：预期观察。</strong> 左图末态 $R_{12}=\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}$，右图末态 $R_{21}=\begin{bmatrix}0&1&0\\0&0&-1\\-1&0&0\end{bmatrix}$，两末态坐标架朝向明显不同——直接印证 $\mathbf{T}_1\mathbf{T}_2\ne\mathbf{T}_2\mathbf{T}_1$（事实底座第 7 节"复合顺序"）。若把 <code>rotx/roty</code> 换成 <code>trotx/troty</code> 并配合 <code>transl</code>，还可复现第 6 节 <code>T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0)</code> 平移列为 $[1,0,1]^T$ 的例子，说明平移分量同样受旋转顺序影响。</p>
+<h4>关键点</h4>
+<ul>
+<li>旋转复合<strong>不可交换</strong>：$\mathbf{R}_1\mathbf{R}_2\ne\mathbf{R}_2\mathbf{R}_1$，这是 $SO(3)$ 群非阿贝尔性的直接体现（事实底座第 3 节）。</li>
+<li>矩阵乘法顺序 = 旋转施加顺序：右乘表示绕<strong>当前（已旋转）</strong>坐标系的轴旋转，左乘表示绕<strong>固定</strong>参考系的轴旋转。</li>
+<li>图 2.11 的教学目的：用可视化让读者"看见"不可交换性，而非仅停留在代数式。</li>
+<li>数值必须来自事实底座：<code>rotx(pi/2)</code>、<code>rotx(pi/2)*roty(pi/2)</code>、反序三组矩阵均已给出，不得另行编造。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 2 章 Representing Position and Orientation</li>
+<li>依据：</li>
+<li>图 2.11 主题（旋转不可交换）——事实底座第 4 节第 4 步、第 7 节"复合顺序"</li>
+<li>三组旋转矩阵数值——事实底座第 6 节 <code>rotx(pi/2)</code> 及正反序例子</li>
+<li>Toolbox 函数约定 <code>rotx/roty</code>、<code>trotx</code>——事实底座第 1 节</li>
+<li>平移受旋转顺序影响——事实底座第 6 节 <code>T = transl(1,0,0)*trotx(pi/2)*transl(0,1,0)</code></li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：理解题意。</strong></p>
+<p>这是一道"史实/文化背景"型的思考题，不是计算题。原书在第 2 章讲旋转表示时，穿插了几处与数学史有关的脚注（facts 第 6 节"史实"条）：Rodrigues（1795–1850，公式 1840）、Hamilton（1805–1865，1843-10-16 于 Dublin 的 Royal Canal 边刻下四元数乘法规则）、以及 Lord Kelvin 1892 年的评论。本题问的是 René Descartes（笛卡尔，1596–1650）的头骨下落，属于同一类"数学史花絮"。</p>
+<p><strong>第 2 步：为什么这一章会问笛卡尔？</strong></p>
+<p>本章的核心是把"位置 + 姿态"变成可代数运算的对象：位姿 ${}^A\boldsymbol{\xi}_B$、算子 $\cdot$ 与 $\oplus$、群 $SE(2)/SE(3)$、齐次变换 $\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{t}\\0&1\end{bmatrix}$。而"用坐标 $(x,y)$ 描述平面上一点"这件事，正是笛卡尔在《几何学》(La Géométrie, 1637) 中系统化的——即解析几何/笛卡尔坐标系。本章反复使用的"坐标系 $\{A\},\{B\}$、点 $\mathbf{p}=[x\ y\ z]^T$、齐次坐标 $\tilde{\mathbf{p}}=[x\ y\ z\ 1]^T$"这套语言，源头就是笛卡尔。所以作者用一句半开玩笑的"笛卡尔的头骨在哪里"来点出：我们整章都在用他发明的坐标系。</p>
+<p><strong>第 3 步：头骨下落（史实）。</strong></p>
+<p>笛卡尔 1650 年 2 月 11 日在瑞典斯德哥尔摩去世，最初葬于当地。1666 年其遗骸被迁回法国；据流传的说法，在迁葬过程中（一说由法国驻瑞典大使 Hugues de Terlon 私下取走），头骨被单独留下，此后辗转于多位私人收藏者之手。它曾被认为属于瑞典古物学家 Johan Arckenholtz 的收藏，后进入瑞典的私人收藏，最终于 1821 年被瑞典化学家 Jöns Jacob Berzelius 购得，并赠予法国。此后头骨长期保存在巴黎的<strong>法国国家自然历史博物馆（Muséum national d'Histoire naturelle）</strong>的人种学/解剖学收藏中（一说曾存于巴黎人类博物馆 Musée de l'Homme）。头骨上刻有拉丁文铭文，大意是"这是笛卡尔的小头骨"。</p>
+<p><strong>第 4 步：与本章的关联（符号层面）。</strong></p>
+<p>若把"头骨"看成一个刚体，它的位姿就可用本章的记号描述：设世界系为 $\{O\}$，头骨固连系为 $\{B\}$，则其位姿为 ${}^O\boldsymbol{\xi}_B$，对应齐次变换</p>
+<p>$$
+{}^O\mathbf{T}_B=\begin{bmatrix}{}^O\mathbf{R}_B&{}^O\mathbf{t}_B\\0&1\end{bmatrix}\in SE(3),
+$$</p>
+<p>其中 ${}^O\mathbf{t}_B$ 是头骨在博物馆中的位置，${}^O\mathbf{R}_B$ 是它的姿态。若要知道头骨上某点 $P$ 在世界系下的坐标，就用本章的点换系算子：</p>
+<p>$$
+{}^O\mathbf{p}={}^O\boldsymbol{\xi}_B\cdot{}^B\mathbf{p},\qquad
+{}^O\tilde{\mathbf{p}}={}^O\mathbf{T}_B\,\tilde{\mathbf{p}}.
+$$</p>
+<p>这正是本章"coordinate frames are your friend"的幽默注脚：连笛卡尔自己的头骨，也得用他发明的坐标系来定位。</p>
+<p><strong>第 5 步：可运行的验证（可选）。</strong></p>
+<p>若想用 Toolbox 亲手体验"给头骨建系"，可运行：</p>
+<pre><code class="lang-matlab">% 假设头骨位于博物馆某处，姿态为 RPY(0.1, 0.2, 0.3)
+T = transl(1, 2, 3) * rpy2tr(0.1, 0.2, 0.3);   % 头骨位姿 ^O T_B
+P_B = [0.1; 0.05; 0.2];                        % 头骨系下一点（如鼻尖）
+P_O = homtrans(T, P_B);                        % 换到世界系
+disp(P_O);</code></pre>
+<p>预期观察：<code>T</code> 的平移列是 $[1,2,3]^T$，旋转块由 <code>rpy2tr(0.1,0.2,0.3)</code> 给出（与 facts 中 <code>rpy2r(0.1,0.2,0.3)</code> 的数值一致：<code>0.9363 -0.2896 0.1987 / 0.3130 0.9447 -0.0978 / -0.1593 0.1538 0.9752</code>）；<code>P_O</code> 是 $P_B$ 经旋转加平移后的世界坐标。这演示了本章"位姿 = 旋转 + 平移、点换系 = $\mathbf{T}\tilde{\mathbf{p}}$"的核心机制。</p>
+<blockquote>说明：头骨的具体收藏机构在不同资料中略有出入（巴黎自然历史博物馆 / 人类博物馆），原书未给出具体数值或馆名，以上按公开史实叙述；与本章数学内容相关的部分（坐标系、位姿、点换系）严格按 facts 记号推导。</blockquote>
+<h4>关键点</h4>
+<ul>
+<li>本题是<strong>数学史/文化背景题</strong>，不是计算题；答案要点是"笛卡尔头骨的下落"这一史实，而非某个公式。</li>
+<li>笛卡尔（1596–1650）是解析几何/笛卡尔坐标系的创立者，本章全篇使用的坐标系、点 $\mathbf{p}$、齐次坐标 $\tilde{\mathbf{p}}$ 都源于他，作者以此幽默点题。</li>
+<li>头骨据传在 1666 年迁葬时被单独留下，辗转私人收藏，1821 年经 Berzelius 转赠法国，长期存于巴黎的法国国家自然历史博物馆（一说人类博物馆）。</li>
+<li>与本章的实质联系：任何刚体（包括头骨）的位姿都可用 ${}^O\mathbf{T}_B=\begin{bmatrix}{}^O\mathbf{R}_B&{}^O\mathbf{t}_B\\0&1\end{bmatrix}\in SE(3)$ 描述，点换系用 ${}^O\tilde{\mathbf{p}}={}^O\mathbf{T}_B\tilde{\mathbf{p}}$。</li>
+<li>记住本章口号："coordinate frames are your friend"——先建系、画有向图、对环写方程。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 2 章 Representing Position and Orientation，习题 7。</li>
+<li>依据：</li>
+<li>本章主题与记号（位姿 ${}^A\boldsymbol{\xi}_B$、$\cdot$、$\oplus$、$SE(2)/SE(3)$、齐次变换 $\mathbf{T}$、点换系 ${}^A\mathbf{p}={}^A\boldsymbol{\xi}_B\cdot{}^B\mathbf{p}$、${}^O\tilde{\mathbf{p}}={}^O\mathbf{T}_B\tilde{\mathbf{p}}$）——facts 第 1、3、5 节。</li>
+<li>旋转矩阵数值 <code>rpy2r(0.1,0.2,0.3)</code> 与 <code>transl(1,0,0)*trotx(pi/2)*transl(0,1,0)</code> 等——facts 第 6 节例题。</li>
+<li>史实（Rodrigues、Hamilton、Lord Kelvin）——facts 第 6 节"史实"条；笛卡尔头骨下落为公开史料，原书未给出具体数值，按史实叙述。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题要求把第 2 章中"位姿 = 平移向量 + 单位四元数"这一表示（facts 第 4 节第 9 步：向量-四元数对 $(\mathbf{t},\mathbf{h})$）封装成一个可运算的类。核心是把抽象算子 $\cdot$、$\oplus$、$\ominus$ 落到 $(\mathbf{t},\mathbf{h})$ 的具体运算上。</p>
+<p><strong>第 1 步：确定类的数据成员。</strong></p>
+<p>按 facts 第 1 节，位姿抽象记号 ${}^A\boldsymbol{\xi}_B$ 由平移与姿态组成；本章四元数写作 $\mathbf{h}=s+\mathbf{v}$，单位模 $|\mathbf{h}|=1$（facts 第 3 节第 7 条）。因此类内保存：</p>
+<ul>
+<li>平移向量 $\mathbf{t}\in\mathbb{R}^3$；</li>
+<li>单位四元数 $\mathbf{h}=s+\mathbf{v}$，其中 $s$ 为标量部、$\mathbf{v}=(v_x,v_y,v_z)$ 为向量部。</li>
+</ul>
+<p><strong>第 2 步：复合（composition）。</strong></p>
+<p>对应抽象算子 $\oplus$：${}^A\boldsymbol{\xi}_C={}^A\boldsymbol{\xi}_B\oplus{}^B\boldsymbol{\xi}_C$（facts 第 5 节式 1）。对 $(\mathbf{t},\mathbf{h})$ 表示，设</p>
+<p>$${}^A\boldsymbol{\xi}_B=(\mathbf{t}_1,\mathbf{h}_1),\quad {}^B\boldsymbol{\xi}_C=(\mathbf{t}_2,\mathbf{h}_2).$$</p>
+<p>则复合结果为</p>
+<p>$$\mathbf{t}=\mathbf{t}_1+\mathbf{h}_1\,\mathbf{t}_2\,\mathbf{h}_1^{-1},\qquad \mathbf{h}=\mathbf{h}_1\,\mathbf{h}_2 .$$</p>
+<p>理由：$\mathbf{t}_2$ 是在 $\{B\}$ 系下表达的，必须先旋转到 $\{A\}$ 系才能与 $\mathbf{t}_1$ 相加；四元数对向量的旋转用共轭作用 $\mathbf{h}\,\mathbf{v}\,\mathbf{h}^{-1}$（facts 第 4 节第 8 步）。四元数乘法用 Hamilton 积，<strong>不可交换</strong>（facts 第 3 节第 7 条），这与 $\oplus$ 不满足交换律一致（facts 第 3 节第 3 条）。</p>
+<p><strong>第 3 步：取逆（negation / inverse）。</strong></p>
+<p>对应抽象算子 $\ominus$：$\boldsymbol{\xi}\oplus(\ominus\boldsymbol{\xi})=\mathbf{0}$（facts 第 4 节第 2 步）。对 $(\mathbf{t},\mathbf{h})$：</p>
+<p>$$\mathbf{h}^{-1}=\mathbf{h}^{*}=s-\mathbf{v}\quad(\text{单位四元数的共轭即逆}),$$</p>
+<p>$$\mathbf{t}^{-1}=-\,\mathbf{h}^{-1}\,\mathbf{t}\,\mathbf{h}.$$</p>
+<p>理由：逆变换要先把平移转回原姿态再反向平移。验证：$(\mathbf{t},\mathbf{h})\oplus(\mathbf{t}^{-1},\mathbf{h}^{-1})$ 的平移为 $\mathbf{t}+\mathbf{h}\,\mathbf{t}^{-1}\,\mathbf{h}^{-1}=\mathbf{t}-\mathbf{t}=\mathbf{0}$，姿态为 $\mathbf{h}\,\mathbf{h}^{-1}=\mathbf{1}$，即单位元 $\mathbf{0}$。</p>
+<p><strong>第 4 步：点变换（point transformation）。</strong></p>
+<p>对应抽象算子 $\cdot$：${}^A\mathbf{p}={}^A\boldsymbol{\xi}_B\cdot{}^B\mathbf{p}$（facts 第 5 节式 1）。对点 ${}^B\mathbf{p}$：</p>
+<p>$${}^A\mathbf{p}=\mathbf{h}\,{}^B\mathbf{p}\,\mathbf{h}^{-1}+\mathbf{t}.$$</p>
+<p>即先旋转后平移。这与齐次变换 $\mathbf{T}\tilde{\mathbf{p}}$ 的结果一致（facts 第 5 节式 6）。</p>
+<p><strong>第 5 步：可运行验证代码（Python，纯符号实现，不依赖额外库）。</strong></p>
+<p>预期观察：复合结果与直接构造的齐次变换一致；逆复合得到单位元；点变换结果与 $\mathbf{T}\tilde{\mathbf{p}}$ 一致。</p>
+<pre><code class="lang-python">import numpy as np
+
+class VecQuat:
+    def __init__(self, t, h):
+        self.t = np.asarray(t, float)
+        self.h = np.asarray(h, float)          # h = [s, vx, vy, vz]
+        self.h = self.h / np.linalg.norm(self.h)
+
+    @staticmethod
+    def mul(a, b):                              # Hamilton 积
+        s1, v1 = a[0], a[1:]
+        s2, v2 = b[0], b[1:]
+        s = s1*s2 - v1 @ v2
+        v = s1*v2 + s2*v1 + np.cross(v1, v2)
+        return np.r_[s, v]
+
+    @staticmethod
+    def conj(h):
+        return np.r_[h[0], -h[1:]]
+
+    def rotate(self, p):                        # h p h^{-1}
+        q = self.mul(self.mul(self.h, np.r_[0, p]), self.conj(self.h))
+        return q[1:]
+
+    def __mul__(self, other):                   # 复合 (oplus)
+        t = self.t + self.rotate(other.t)
+        h = self.mul(self.h, other.h)
+        return VecQuat(t, h)
+
+    def inv(self):                              # 取逆 (ominus)
+        hi = self.conj(self.h)
+        t = -self.rotate_inv(self.t)
+        return VecQuat(t, hi)
+
+    def rotate_inv(self, p):
+        q = self.mul(self.mul(self.conj(self.h), np.r_[0, p]), self.h)
+        return q[1:]
+
+    def transform(self, p):                     # 点变换 (dot)
+        return self.rotate(p) + self.t
+
+    def T(self):                                # 转成 4x4 齐次变换
+        s, vx, vy, vz = self.h
+        R = np.array([
+            [1-2*(vy**2+vz**2), 2*(vx*vy-s*vz),   2*(vx*vz+s*vy)],
+            [2*(vx*vy+s*vz),   1-2*(vx**2+vz**2), 2*(vy*vz-s*vx)],
+            [2*(vx*vz-s*vy),   2*(vy*vz+s*vx),   1-2*(vx**2+vy**2)]])
+        T = np.eye(4); T[:3,:3] = R; T[:3,3] = self.t
+        return T
+
+# 用 facts 第 6 节的数值例子验证
+q = VecQuat([0,0,0], [0.98186, 0.064071, 0.091158, 0.15344])
+print(q.T()[:3,:3])   # 预期 0.9363 -0.2896 0.1987 / 0.3130 0.9447 -0.0978 / -0.1593 0.1538 0.9752
+print(q.transform([1,0,0]))  # 预期 [0.9363, 0.3130, -0.1593]
+print((q*q.inv()).h)  # 预期 [1, 0, 0, 0]</code></pre>
+<h4>关键点</h4>
+<ul>
+<li><strong>表示选择</strong>：向量-四元数对 $(\mathbf{t},\mathbf{h})$ 是 facts 第 4 节第 9 步给出的位姿表示之一，与 $4\times4$ 齐次变换 $\mathbf{T}\in SE(3)$ 等价；四元数无奇异、计算量小（16 乘/12 加，对比矩阵 27 乘/18 加，facts 第 6 节）。</li>
+<li><strong>三个算子一一对应</strong>：复合 $\oplus$ → 四元数 Hamilton 积 + 旋转后的平移相加；取逆 $\ominus$ → 共轭四元数 + 反向平移；点变换 $\cdot$ → 共轭作用 $\mathbf{h}\mathbf{p}\mathbf{h}^{-1}$ 再加 $\mathbf{t}$。</li>
+<li><strong>不可交换性</strong>：四元数乘法不可交换（facts 第 3 节第 7 条），因此类中 <code>__mul__</code> 的顺序必须与 $\oplus$ 的上下标匹配规则一致，否则复合结果错误。</li>
+<li><strong>单位模约束</strong>：$\mathbf{h}$ 必须归一化，$|\mathbf{h}|=1$，否则共轭不等于逆，取逆与点变换都会出错。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 2 章</li>
+<li>依据：</li>
+<li>向量-四元数对 $(\mathbf{t},\mathbf{h})$ 作为位姿表示：facts 第 4 节第 9 步。</li>
+<li>四元数定义 $\mathbf{h}=s+\mathbf{v}$、单位模、Hamilton 积、共轭作用：facts 第 3 节第 7 条、第 5 节式 5。</li>
+<li>算子 $\cdot$、$\oplus$、$\ominus$ 的定义与群性质：facts 第 3 节第 2–3 条、第 5 节式 1。</li>
+<li>齐次变换等价形式 $\mathbf{T}\tilde{\mathbf{p}}$：facts 第 5 节式 6。</li>
+<li>数值验证所用四元数与旋转矩阵：facts 第 6 节 <code>q = Quaternion(rpy2tr(0.1,0.2,0.3))</code> 与 <code>q*[1 0 0]'</code> 两例。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

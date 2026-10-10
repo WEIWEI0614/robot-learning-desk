@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>逐日执行 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">逐日执行<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>逐日执行计划 · 主线 + 两轮自平衡支线</h1>
+<div class="sub">
+  起算日 2026-09-22 ｜ 本文件解决"每天到底干什么" ｜
+  配套：《具身智能学习路线》（战略与资源版）+《双足机器人从零到自攒》（术语版）
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <ol>
+    <li><a href="#p-daily-s0">这份计划与原路线图的分工</a></li>
+    <li><a href="#p-daily-s1">每天的时间怎么切（"一天看几课"的换算规则）</a></li>
+    <li><a href="#p-daily-s-ai">怎么用 AI 写代码（比时间安排更重要）</a></li>
+    <li><a href="#p-daily-s2">PHASE 0 逐日计划 · 6 周（09-22 → 11-01）</a></li>
+    <li><a href="#p-daily-s3">PHASE 1 逐周计划 · 13 周（11-03 → 2027-01-31）</a></li>
+    <li><a href="#p-daily-s4">PHASE 2 / 3 执行要点</a></li>
+    <li><a href="#p-daily-s5">两轮自平衡支线 · 10 周完整计划</a></li>
+    <li><a href="#p-daily-s6">对原路线图的三处修正</a></li>
+    <li><a href="#p-daily-s7">打卡表与进度自检</a></li>
+  </ol>
+</div>
+
+<h2 id="p-daily-s0">〇　这份计划与原路线图的分工</h2>
+
+<table>
+<thead><tr><th style="width:26%">文件</th><th style="width:24%">回答什么问题</th><th>什么时候用</th></tr></thead>
+<tbody>
+<tr><td><strong>具身智能学习路线-2026.html</strong><br><span class="small">（已存在，43KB）</span></td><td>为什么学、走哪条路、资源在哪、花多少钱、与 2028 窗口怎么对应</td><td>月初复盘时看。定方向用。</td></tr>
+<tr><td><strong>双足机器人-从零到自攒-2026.html</strong><br><span class="small">（已生成，81KB）</span></td><td>架构术语词典、Sim2Real 原理、动手路径概览</td><td>遇到看不懂的术语时当字典查</td></tr>
+<tr><td><strong>本文件</strong></td><td>今天/本周具体看哪几页、哪几集视频、写什么代码、答什么思考题</td><td><strong>每天打开</strong>。执行用。</td></tr>
+</tbody>
+</table>
+
+<div class="key">
+<strong>只有一个原则：本文件里的"材料编号"全部对齐官方公开资源，不用你自己找。</strong>王树森书的页码对应人民邮电出版社正式版；视频标题可以直接在 B 站搜到；CS285 的讲次对应 2026 春季版正式课表。
+</div>
+
+<h2 id="p-daily-s1">一　每天的时间怎么切</h2>
+
+<p>你问"一天看几课"，先给你换算规则，后面所有周计划都按这个规则排。规则只有三条：</p>
+
+<div class="card">
+<h4>规则 1 · 一集视频 = 一个 30 分钟以内的单元</h4>
+<p>王树森 B 站系列的时长分布是：核心概念集 12–54 分钟，专题集 5–25 分钟。<strong>所以平日 1.5 小时里，视频部分不超过 30 分钟</strong>——剩下 60 分钟必须留给读书和动手。看视频不等于学习。</p>
+
+<h4>规则 2 · 一讲 CS285 = 两个平日早上</h4>
+<p>CS285 每讲录播约 1.2–1.5 小时。<strong>不要一次看完，拆成两天：</strong>第一天看前半 + 记疑问，第二天看后半 + 合上视频写笔记。间隔一天能让遗忘帮你筛出真正没懂的部分。</p>
+
+<h4>规则 3 · 一篇论文 = 三个平日早上（每天 3 页）</h4>
+<p>具身智能的论文正文通常 8 页左右。每天精读 3 页、含把关键公式自己推一遍。<strong>一周的论文配额是 1–2 篇，不要贪。</strong>读完的标志不是"看完了"，是"能用一句话说出它的核心 trick 和它的失效条件"。</p>
+</div>
+
+<h3>三档时长的具体切分</h3>
+
+<table>
+<thead><tr><th style="width:16%">档位</th><th style="width:14%">适用</th><th>切法</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>1.5 小时</strong></td><td>9–10 月<br>平日</td>
+<td><strong>50 分钟读书</strong>（王树森书约 5–6 页精读，或 Modern Robotics 约 8–10 页）＋<strong>40 分钟动手</strong>（敲代码 / 推导 / 跑例子）。<br>视频只在这 50 分钟里占 ≤25 分钟，且只在"书读不懂"时才看对应那一集。</td>
+</tr>
+<tr>
+<td><strong>2.5 小时</strong></td><td>11 月起<br>平日</td>
+<td>拆成两段：<br><strong>早 1h</strong>＝理论（CS285 一讲的半天／或论文 3 页／或王树森一章）<br><strong>晚 1.5h</strong>＝代码（一个作业子任务 / 一段实现 / 挂一次训练）<br><strong>训练挂云端后台跑</strong>，人去做别的——这是省时间的关键。</td>
+</tr>
+<tr>
+<td><strong>4 小时</strong></td><td>周末<br>一天</td>
+<td>整块连续时间，只做"碎片时间做不了的事"：<br>① 装环境、调依赖；② 跑一次完整实验并记录结果；③ 真机调试。<br><strong>不要用周末补平日的读书进度</strong>——那是浪费连续块。</td>
+</tr>
+</tbody>
+</table>
+
+<div class="note">
+<strong>关于中秋（9/25）与国庆（10/1–10/7）：</strong>教培机构的假期基本是排课高峰，我不给你排硬任务。这几个日期在下面的周表里标成「机动」，规则是：<strong>有机动时间就用来提前做下一周的读书量，没有就跳过，不要事后补</strong>。整条计划的总量留了约 10% 的缓冲，跳几天不影响 Phase 0 的验收。
+</div>
+
+<div class="key">
+<strong>每天结束前花 2 分钟做一件事：</strong>在打卡表里写一行"今天卡在哪"。月底复盘时你会发现，真正的瓶颈永远是同两三个点（通常是状态估计和奖励设计），而不是"看得不够多"。这一行字的复利比多读两页书高得多。
+</div>
+
+<h2 id="p-daily-s-ai">一·五　怎么用 AI 写代码（这一节比时间安排更重要）</h2>
+
+<div class="key">
+<strong>直接回答："可以，但不是『AI 写、你负责看懂』，而是『分工写』。"</strong><br>
+理由不是道德洁癖。是因为有三个技能只能靠"自己写过"获得，而它们恰好是你这份计划里最值钱的部分——其余的代码，让 AI 写完全正确。
+</div>
+
+<p>你的目标不是当算法工程师，是<strong>能在尽调会上判断一条技术路线可不可信</strong>。在这个目标下，"写得出来"不重要，"<strong>读得懂 + 改得动 + 判断得了</strong>"才重要。所以绝大部分代码交给 AI 是对的——手抄一遍 300 行的 PPO 实现，纯粹是浪费你每天那 2.5 小时。</p>
+
+<p>但有 3 类东西必须你自己写，因为<strong>它们不是"实现"，是"判断"</strong>：</p>
+
+<div class="card">
+<p style="margin:0 0 6px;font-size:14px;font-weight:600;color:var(--tx);">① 奖励函数（5–30 行）</p>
+<p>强化学习里真正的心智劳动就在这几十行。AI 能帮你把奖励写成代码，但"该奖励什么""策略在钻什么空子"是判断。而且<strong>AI 面对一个新的机器人，第一版奖励几乎一定是错的</strong>——它会给你一段看起来无懈可击、跑起来却学会原地抖腿的东西。</p>
+<p>参考：Microduck 官方把"奖励设计的教训"单独写成一个文件（<code>AGENTS.md</code>）开源，而不是写成论文。因为<strong>那些失败经验才是真东西</strong>。</p>
+
+<p style="margin:14px 0 6px;font-size:14px;font-weight:600;color:var(--tx);">② 诊断代码（打印什么、怎么切分、看哪条曲线）</p>
+<p><strong>这一条对你最重要。</strong>你在 CartPole 里已经用血换过一次：<em>"算法不收敛时先打印中间量，不要先调参。本次调了 5 轮超参无效，加了 3 行日志立刻定位。"</em></p>
+<p>那 3 行日志，是你能不能自己走出故障的唯一工具。如果整条训练管线都是 AI 写的，"该打印什么"这件事你根本想不到——因为你不清楚内部有哪些中间量。<strong>而且你的核心能力是"这个数字可不可信、这个 ablation 做得对不对"，诊断代码正是这套判断力的来源。</strong></p>
+
+<p style="margin:14px 0 6px;font-size:14px;font-weight:600;color:var(--tx);">③ 环境与任务的建模选择</p>
+<p>MJCF 模型里哪些碰撞体保留、观测里放哪几个量、动作空间是角度还是力矩增量——每一条都是设计决策，改一两行就决定策略能不能学会。这些必须你自己读、自己改，不能让我替你总结。</p>
+</div>
+
+<h3>分工表：逐周标清楚</h3>
+<table>
+<thead><tr><th style="width:9%">阶段</th><th style="width:37%">必须自己写（不许 AI 代劳）</th><th style="width:30%">交给 AI 写</th><th>自己调</th></tr></thead>
+<tbody>
+<tr><td><strong>W1</strong></td><td>贝尔曼两个方程的默写推导；把 MDP 五元组用 CartPole 实例化一遍</td><td>Gym 环境调用样板、曲线绘制脚本</td><td>—</td></tr>
+<tr><td><strong>W2</strong></td><td><strong>在 DQN 里插日志定位 Q 值发散</strong>（打印哪几个量由你决定）</td><td>DQN / SARSA 主体实现、经验回放缓冲</td><td>目标网络更新周期、多步 n</td></tr>
+<tr><td><strong>W3</strong></td><td><strong>策略梯度定理手推</strong>；REINFORCE 里计算梯度那一行</td><td>训练循环、超参搜索脚手架</td><td>梯度裁剪阈值</td></tr>
+<tr><td><strong>W4</strong></td><td><strong>优势函数的三种估计</strong>（只有 10 行，但这是 PPO 的心脏）；2 连杆正运动学</td><td>齐次变换工具函数、旋转矩阵库</td><td>GAE 的 λ、基线形式</td></tr>
+<tr><td><strong>W5</strong></td><td><strong>2 连杆 Jacobian ＋ 数值 IK 迭代</strong>；动力学方程各项的物理含义标注</td><td>DDPG / TD3 / SAC 实现</td><td>奖励函数、熵系数</td></tr>
+<tr><td><strong>W6</strong></td><td><strong>逐行读通 MJCF 模型</strong>——读不算写，但必须自己读</td><td>环境依赖安装、一键跑通脚本</td><td>—</td></tr>
+<tr><td><strong>S0–S5</strong><br><span class="small">平衡车</span></td><td><strong>奖励函数</strong>（每一版都自己写）；<strong>诊断代码</strong>；sim2real 的对策清单；控制环里观测向量的拼接顺序</td><td>MuJoCo XML 骨架、ONNX→C 导出、串口通信、控制环框架</td><td>域随机化范围、滤波器参数</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+<strong>给我下指令时的三条要求</strong>（这样我写的代码才有学习价值）：<br>
+① 让我<strong>标出"哪几行是核心、哪几行是样板"</strong>——样板不用看，核心必须吃透；<br>
+② 要求我<strong>"只讲核心 20 行"</strong>，不要让 AI 逐行念 300 行；<br>
+③ 每写完一段，让我<strong>出一道"改坏它"的预测题</strong>给你。这是把"读过"变成"懂了"最低成本的手段。
+</div>
+
+<h3>"看懂每一行"要怎么验证——别靠感觉</h3>
+
+<div class="warn">
+<strong>"我每一行都看懂了"是 AI 结对最容易制造的错觉。</strong>因为我能把任何一行解释得很有道理，你就会很自然地点头。这里的风险不是被骗，是<strong>你无法区分"懂了"和"听了觉得有道理"</strong>——而这两种状态在当下感觉完全相同。
+</div>
+
+<p>用下面三条测。它们的共同点是：<strong>都能给出是/否的答案，不依赖自我感觉。</strong></p>
+
+<ol>
+<li><strong>改一行 → 先预测 → 再运行。</strong>把某个关键量改成极端值，<em>在运行之前</em>写下你的预测。<strong>预测对了才算懂。</strong>三个现成的题目：把 GAE 的 λ 从 0.95 改成 0；把 PPO 的 clip ε 从 0.2 改成 10；把观测里"关节角速度"那一维删掉。</li>
+<li><strong>关掉对话默写核心 20 行。</strong>不查任何资料，写出"优势函数的三种估计"，或者写出你最新改过的那版奖励函数。<strong>写不出来就是没懂</strong>，没有第二种解释。</li>
+<li><strong>找故障——最硬的检验。</strong>拿一份故意注入 bug 的代码，不告诉你在哪。<strong>你能否只用打印语句 + 二分排查，在 30 分钟内定位？</strong>这一条最能区分"真懂"和"看过"，也最接近你未来在尽调会上要做的事：给一个数字，判断它可不可信。</li>
+</ol>
+
+<h3>三个"假懂"信号（随时自检）</h3>
+<ul>
+<li>关掉这个对话，你<strong>没法用自己的话</strong>把它讲给一个懂行的人听</li>
+<li>遇到报错第一反应是复制粘贴给我，而不是<strong>先猜一个原因、再打印一个量去验证</strong></li>
+<li>看代码时"每一行都懂"，但说不出<strong>"这一行如果删掉会怎样"</strong></li>
+</ul>
+
+<div class="key">
+<strong>最后一句话，说给"你这种定位的人"听：</strong>对你而言，最该自己写的代码不是"训练代码"，是"诊断代码"。<br>
+训练代码写得再漂亮也只证明你会调库；而"知道该看哪个数字、以及这个数字偏了意味着什么"——这才是能在尽调会上换钱的能力。所以从这个角度看，<strong>你让 AI 写训练代码是对的，但必须把"打印什么"这件事牢牢攥在自己手里。</strong>
+</div>
+
+<h2 id="p-daily-s2">二　PHASE 0 逐日计划 · 6 周</h2>
+
+<div class="p0">
+<div class="ph">2026-09-22（周二）→ 11-01（周日）｜ 约 66 小时 ｜ 三条线并行</div>
+<h3>补地基：强化学习 + 机器人学 + 环境搭建</h3>
+<p>比原路线图的 09-14 起算晚了一周（原起点已过）。总量不变：RL 约 40h ＋ 机器人学约 20h ＋ 环境约 5h。<br>
+<strong>本阶段唯一的硬标准：11-01 那天能在 robosuite 里让 Panda 机械臂跑通 Lift 任务，并且能不看笔记讲清下面第 4 节那 7 个概念。</strong></p>
+</div>
+
+<h3>PHASE 0 · 材料清单（先备齐，不用自己找）</h3>
+<table>
+<thead><tr><th style="width:30%">材料</th><th style="width:22%">在哪</th><th>本阶段用到哪部分</th></tr></thead>
+<tbody>
+<tr><td><strong>《深度强化学习》</strong>王树森 · 黎彧君 · 张志华<br><span class="small">人民邮电出版社 2022（正式版）</span><br><span class="small">你本地已有：<code>强化学习/强化学习.pdf</code>（289 页的<b>初稿版</b>）</span></td><td>初稿版：<code>github.com/wangshusen/DRL</code>；正式版：北大数学科学学院官网免费 PDF</td><td><strong>精读</strong> ch2 / ch3 / ch7 / ch8 / ch10<br><strong>快读</strong> ch4 / ch5 / ch6<br>附录 A（贝尔曼方程）<br><span class="small">⚠️ 下表周表里的页码是<b>正式版</b>页码，与你本地的初稿版不同——见下方对照表</span></td></tr>
+<tr><td><strong>B 站「王树森 深度强化学习」系列</strong></td><td>B 站搜「王树森 深度强化学习」，官方合集（频道 ID: Shusen Wang）</td><td>按下面的周表指定集数，<strong>只在这些指定点看视频</strong>，不整刷</td></tr>
+<tr><td><strong>CS285 (Berkeley, Spring 2026)</strong></td><td>课件 <code>rail.eecs.berkeley.edu/deeprlcourse/</code></td><td>本阶段只看 L1（课程介绍）+ L2–3（模仿学习）。<strong>注意：2026 春季版录播不公开</strong>，用 Fall 2023 录播配 Spring 2026 的 slides（详见第 6 节修正）</td></tr>
+<tr><td><strong>Modern Robotics</strong> Lynch &amp; Park</td><td><code>hades.mech.northwestern.edu</code> 作者自放免费 PDF + 全套视频 + Python 库</td><td>ch1 构型空间 / ch2 刚体运动 / ch3 正运动学 / ch4 速度运动学与静力学 / ch5 逆运动学 / ch6 动力学（选读前两节）</td></tr>
+<tr><td><strong>MuJoCo + robosuite</strong></td><td><code>github.com/google-deepmind/mujoco</code> ／ <code>robosuite.ai</code></td><td>W6 装好并跑通 Lift</td></tr>
+</tbody>
+</table>
+
+<h3>⚠️ 王树森书：两个版本，页码不通用（2026-09-21 补）</h3>
+
+<div class="warn">
+<strong>你本地 <code>强化学习/强化学习.pdf</code> 是「初稿版」（2021 年 GitHub 初稿，289 页）；下面周表里写的页码是「正式版」（人民邮电出版社 2022，正文到 P318）。两版章节编号完全一致（ch1–19 + 附录 A），但<b>页码完全不同，且偏差逐章增大</b>（从 +11 页拉到 +36 页）。<br>
+<b>定位内容的正确做法：以「章 + 小节号」为准（如 ch3 §3.1–3.3），页码只当参考。</b>下表供你换算。</strong>
+</div>
+
+<table>
+<thead><tr><th style="width:34%">章节</th><th style="width:22%">初稿版（你本地）</th><th style="width:22%">正式版（周表所用）</th><th>本阶段</th></tr></thead>
+<tbody>
+<tr><td>第 1 章　深度学习基础 ／ 机器学习基础</td><td>P13</td><td>P2</td><td>—</td></tr>
+<tr><td><strong>第 2 章　概率论基础与蒙特卡洛 ／ 蒙特卡洛方法</strong></td><td><strong>P25</strong></td><td><strong>P20</strong></td><td>精读</td></tr>
+<tr><td><strong>第 3 章　马尔可夫决策过程 ／ 强化学习基本概念</strong></td><td><strong>P37</strong></td><td><strong>P34</strong></td><td>精读</td></tr>
+<tr><td>第 4 章　DQN 与 Q 学习</td><td>P53</td><td>P52</td><td>快读</td></tr>
+<tr><td>第 5 章　SARSA 算法</td><td>P65</td><td>P69</td><td>快读</td></tr>
+<tr><td>第 6 章　价值学习高级技巧</td><td>P77</td><td>P81</td><td>快读（只读经验回放与目标网络）</td></tr>
+<tr><td><strong>第 7 章　策略梯度方法</strong></td><td><strong>P99</strong></td><td><strong>P107</strong></td><td>精读</td></tr>
+<tr><td><strong>第 8 章　带基线的策略梯度方法</strong></td><td><strong>P119</strong></td><td><strong>P129</strong></td><td>精读</td></tr>
+<tr><td>第 9 章　策略学习高级技巧（TRPO）</td><td>P131</td><td>P142</td><td>选读</td></tr>
+<tr><td><strong>第 10 章　连续控制</strong></td><td><strong>P141</strong></td><td><strong>P154</strong></td><td>精读</td></tr>
+<tr><td>第 11 章　对状态的不完全观测</td><td>P161</td><td>P175</td><td>选读</td></tr>
+<tr><td>第 12 章　模仿学习</td><td>P167</td><td>P182</td><td>Phase 1 用</td></tr>
+<tr><td>第 13–19 章　多智能体 / 应用</td><td>P183 起</td><td>P200 起</td><td>暂不用</td></tr>
+<tr><td><strong>附录 A　贝尔曼方程</strong></td><td><strong>P281</strong></td><td><strong>P319</strong></td><td>W1 对答案用</td></tr>
+</tbody>
+</table>
+
+<p class="small">换算规律（约）：初稿 → 正式版，ch1–4 加约 10 页，ch5–9 加约 4–11 页，ch10 之后加约 13–36 页。章节编号一一对应，所以<strong>用小节号定位永远安全</strong>。</p>
+
+<!-- W1 -->
+<div class="wk">
+<div class="wh"><span class="wt">W1 · 09-22（二）– 09-28（一）</span><span class="wd">主题：把 RL 的符号体系建起来</span><span class="tag tRL">RL</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">09-22 二</td><td class="h">1.5h</td><td>王树森 <strong>ch3 §3.1–3.3</strong>（P31–38）状态·动作·奖励 / 状态转移 / 策略 / 随机性<br>＋ 视频「深度强化学习：基本概念」<span class="small">12:05</span></td><td>把 MDP 五元组 (S, A, P, R, γ) 用你自己的话写一遍，每个符号配一个 CartPole 里的具体例子</td><td class="q">策略 π(a|s) 是条件概率。那"确定性策略"是它的特例吗？如果不是，两者怎么统一描述？</td></tr>
+<tr><td class="d">09-23 三</td><td class="h">1.5h</td><td><strong>ch3 §3.4</strong>（P37–39）回报与折扣回报</td><td>手算一条 3 步轨迹的折扣回报，γ=0.9 和 γ=0.99 各算一遍，比较差多少</td><td class="q">为什么 γ&lt;1 能保证无限期 MDP 的回报有限？γ=1 时会发生什么、什么时候还能用？</td></tr>
+<tr><td class="d">09-24 四</td><td class="h">1.5h</td><td><strong>ch3 §3.5–3.6</strong>（P39–44）价值函数 / Gym 环境</td><td>跑通 CartPole，打印 <code>state.shape</code> / <code>action_space</code> / <code>reward</code>，确认它们对应 MDP 里的哪个量</td><td class="q">Q(s,a) 和 V(s) 的关系式？为什么有了 Q 就不需要单独学 V？反过来呢？</td></tr>
+<tr><td class="d">09-25 五</td><td class="h">1.5h</td><td><strong>ch2 蒙特卡洛方法</strong>（P20–29）<br>＋ 视频「蒙特卡洛 Monte Carlo」<span class="small">25:24</span><br><span class="rest">中秋，若排课可跳过</span></td><td>用 1000 个随机样本估计 π，和 3.14159 比误差；再用 10000 个比一次</td><td class="q">为什么"用样本均值估计期望"是后面所有 RL 算法的共同底层？这个估计的误差随样本数怎么衰减？</td></tr>
+<tr><td class="d">09-26 六</td><td class="h">3.5h</td><td><span class="tag tHW">作业</span>整块时间</td><td>① ch3 课后习题全部做完<br>② <strong>合上书默写</strong>贝尔曼期望方程和贝尔曼最优方程的推导<br>③ 再翻附录 A（P319–320）对答案、标出哪里错了</td><td class="q">两个贝尔曼方程的区别到底是什么？为什么最优方程里有 max 而期望方程里没有？</td></tr>
+<tr><td class="d">09-27 日</td><td class="h">—</td><td class="rest">机动 / 休息</td><td class="rest">—</td><td class="rest">—</td></tr>
+<tr><td class="d">09-28 一</td><td class="h">1.5h</td><td><span class="tag tMIX">复盘</span>不读新内容</td><td>画一张「RL 地图」：MDP → 贝尔曼方程 → 分叉成价值学习 / 策略学习两条路。贴在书桌上。</td><td class="q">这张地图里哪条路对应你后面要用的 PPO？另一条路为什么不适用机器人控制？</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px">W1 验收：能不看书写出 MDP 五元组和两个贝尔曼方程；能讲清 Q 和 V 的关系。</p>
+
+<!-- W2 -->
+<div class="wk">
+<div class="wh"><span class="wt">W2 · 09-29（二）– 10-05（一）</span><span class="wd">主题：价值学习（快读，你已做过 DQN）</span><span class="tag tRL">RL</span><span class="tag tMIX">国庆缓冲</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">09-29 二</td><td class="h">1.5h</td><td><strong>ch4 §4.1–4.2</strong>（P52–53）DQN 表达式与梯度 / TD 算法</td><td>打开你自己的 CartPole DQN 代码，逐行标注"这一行对应书里哪个公式"</td><td class="q">DQN 的梯度为什么可以只对 Q(s,a;w) 求，而不用管目标那一边？</td></tr>
+<tr><td class="d">09-30 三</td><td class="h">1.5h</td><td><strong>ch4 §4.3–4.4</strong>（P53–58）用 TD 训练 DQN / Q 学习算法</td><td>新增一个日志：每 100 步打印 Q 的均值。对照你之前"Q 冲到 6400 万"的记录，看它在哪一步开始偏离 1/(1−γ) 上界</td><td class="q">你现在能从理论上解释"死亡三元组"了吗？是函数逼近、自举、异策略三个里去掉哪个就不会发散？</td></tr>
+<tr><td class="d">10-01 四</td><td class="h">—</td><td class="rest">国庆 · 机动</td><td class="rest">有机动就提前读 W3 的 ch6</td><td class="rest">—</td></tr>
+<tr><td class="d">10-02 五</td><td class="h">—</td><td class="rest">国庆 · 机动</td><td class="rest">同上</td><td class="rest">—</td></tr>
+<tr><td class="d">10-03 六</td><td class="h">3.5h</td><td><strong>ch4 §4.5</strong>（P59）同策略与异策略<br>＋ <strong>ch5</strong>（P69–74）SARSA 算法推导与流程</td><td>把 DQN 改成 SARSA，两条学习曲线画在一张图上，比较样本效率和稳定性</td><td class="q">悬崖行走里 Q 学习和 SARSA 学出的最优策略为什么不同？这对应现实中的哪一类风险偏好差异？</td></tr>
+<tr><td class="d">10-04 日</td><td class="h">—</td><td class="rest">机动</td><td class="rest">—</td><td class="rest">—</td></tr>
+<tr><td class="d">10-05 一</td><td class="h">1.5h</td><td><strong>ch5 §5.2</strong>（P74–80）价值网络形式的 SARSA<br>＋ 视频「Sarsa算法」<span class="small">10:56</span>、「Multi-Step TD Target」<span class="small">06:36</span></td><td>把 multi-step TD 的 n 从 1 调到 5，看曲线变化，记录最优 n</td><td class="q">自举（bootstrap）和蒙特卡洛的偏差-方差权衡，具体体现在哪两个量上？</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px">W2 验收：能说清 DQN 为什么发散、Q 学习与 SARSA 的本质差别。本阶段不要求精读 ch6 之后的内容。</p>
+
+<!-- W3 -->
+<div class="wk">
+<div class="wh"><span class="wt">W3 · 10-06（二）– 10-12（一）</span><span class="wd">主题：策略学习入门（本阶段第一个重点）</span><span class="tag tRL">RL</span><span class="tag tENV">机器人学开篇</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">10-06 二</td><td class="h">1.5h</td><td><strong>ch6 选读</strong>：只读经验回放与目标网络两节（P81–88）</td><td>在你 DQN 代码里把目标网络更新周期从 100 步改成 1 步（等于取消），看训练怎么崩</td><td class="q">目标网络为什么能稳定训练？它牺牲了什么？</td></tr>
+<tr><td class="d">10-07 三</td><td class="h">1.5h</td><td><strong>ch7 §7.1–7.2</strong>（P107–115）策略网络 / 目标函数<br>＋ 视频「策略学习 Policy-Based RL」<span class="small">28:13</span></td><td>写出策略网络的输入输出维度，对照 DQN 的网络：两个网络的输出分别代表什么？</td><td class="q">为什么策略学习的目标是最大化 J(θ)=E[V(s)]，而不是像 DQN 那样最小化 TD 误差？</td></tr>
+<tr><td class="d">10-08 四</td><td class="h">1.5h</td><td><strong>ch7 §7.3–7.4</strong>（P115–122）策略梯度定理的推导</td><td><strong>手推</strong> ∇<sub>θ</sub>J(θ) = E[∇<sub>θ</sub>ln π(a|s;θ) · Q<sub>π</sub>(s,a)]，每一步都写出来，不许跳</td><td class="q">这个推导里"对数"是从哪一步冒出来的？为什么它能绕开对分布求导的困难？</td></tr>
+<tr><td class="d">10-09 五</td><td class="h">1.5h</td><td><strong>ch7 剩余</strong>（P122–128）Actor-Critic<br>＋ 视频「Actor-Critic Methods」<span class="small">23:41</span></td><td>把你已有的 CartPole REINFORCE 改造成 Actor-Critic，两种方法各训 3 个种子，记录"达到 475 帧所需交互帧数"</td><td class="q">Actor-Critic 里 critic 估计的是什么？它和 REINFORCE 用到的整条轨迹回报相比，偏差和方差怎么变？</td></tr>
+<tr><td class="d">10-10 六</td><td class="h">3.5h</td><td><span class="tag tHW">作业</span>整块时间</td><td>① ch7 课后习题<br>② 完成 Actor-Critic 改造与三种子对比表<br>③ 写半页结论：REINFORCE 和 AC 各在什么条件下更好</td><td class="q">为什么"梯度裁剪"对 REINFORCE 是必须的，而对 AC 没那么关键？（你踩过这个坑）</td></tr>
+<tr><td class="d">10-11 日</td><td class="h">—</td><td class="rest">机动</td><td class="rest">—</td><td class="rest">—</td></tr>
+<tr><td class="d">10-12 一</td><td class="h">1.5h</td><td><span class="tag tRO">机器人学</span>Modern Robotics <strong>ch1 构型空间</strong>（P1–30）自由度的定义 / 拓扑 / 构型空间</td><td>数一数：一个平面 2 连杆臂有几个自由度？一个刚体在空间里有几个？</td><td class="q">为什么机器人学的第一课是"自由度"而不是"电机"？自由度和电机数量一定相等吗？</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px">W3 验收：能独立推出策略梯度定理；能讲清 REINFORCE 方差大的根源和基线的减方差原理。</p>
+
+<!-- W4 -->
+<div class="wk">
+<div class="wh"><span class="wt">W4 · 10-13（二）– 10-19（一）</span><span class="wd">主题：Actor-Critic 与正运动学（PPO 的直接前置）</span><span class="tag tRL">RL</span><span class="tag tRO">机器人学</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">10-13 二</td><td class="h">1.5h</td><td><strong>ch8 带基线的策略梯度方法</strong>（P129–135）<br>＋ 视频「策略梯度中的Baseline」<span class="small">09:48</span>、「REINFORCE with Baseline」<span class="small">11:26</span></td><td>给你的 REINFORCE 加上基线（用 V(s)），三种子对比：无基线 / 常值基线 / 学习基线</td><td class="q">为什么减去基线不改变梯度的期望？那它改变了什么？</td></tr>
+<tr><td class="d">10-14 三</td><td class="h">1.5h</td><td><strong>ch8 剩余</strong>（P135–141）优势函数 / A2C<br>＋ 视频「A2C方法」<span class="small">18:46</span>、「REINFORCE与A2C的异同」<span class="small">07:44</span></td><td>写出优势函数 A(s,a)=Q(s,a)−V(s) 的三种估计方式，比较各自的偏差-方差</td><td class="q">GAE 里的 λ 在 0 和 1 之间滑动时，分别退化成什么？这个 λ 就是 PPO 里那个 λ 吗？</td></tr>
+<tr><td class="d">10-15 四</td><td class="h">1.5h</td><td><strong>ch9 选读</strong> TRPO（P142–153）：信任域与 KL 约束</td><td>写出 TRPO 的目标函数和约束，标注出哪一项在 PPO 里被换成了 clip</td><td class="q"><strong>PPO 的 clip 是 TRPO 约束的什么近似？</strong>为什么工程上更愿意用 PPO？</td></tr>
+<tr><td class="d">10-16 五</td><td class="h">1.5h</td><td><span class="tag tRO">机器人学</span>Modern Robotics <strong>ch2 刚体运动</strong>（P31–65）旋转矩阵 / 齐次变换 / 螺旋轴</td><td>用 numpy 手写旋转矩阵与齐次变换；验证"先转后移"和"先移后转"结果不同</td><td class="q">为什么表达旋转用矩阵而不是三个欧拉角？欧拉角有什么致命问题？（后面 IMU 会再遇到它）</td></tr>
+<tr><td class="d">10-17 六</td><td class="h">3.5h</td><td><span class="tag tRO">机器人学</span><strong>ch3 正运动学</strong>（P66–105）<br><span class="tag tHW">作业</span></td><td>写一个平面 2 连杆臂的正运动学（用齐次变换链），和解析解 x=l₁cosθ₁+l₂cos(θ₁+θ₂) 对照，误差应 &lt;1e-10</td><td class="q">为什么用"变换矩阵连乘"比"解析式"更通用？解析式在什么情况下会写不出来？</td></tr>
+<tr><td class="d">10-18 日</td><td class="h">—</td><td class="rest">机动</td><td class="rest">—</td><td class="rest">—</td></tr>
+<tr><td class="d">10-19 一</td><td class="h">1.5h</td><td><strong>ch10 §10.1–10.2</strong>（P154–163）离散控制与连续控制 / 确定策略梯度 DPG<br>＋ 视频「离散控制与连续控制」<span class="small">04:22</span>、「确定策略梯度DPG」<span class="small">15:50</span></td><td>把 CartPole 的动作空间从"离散 2 个"改成"连续 1 维"，感受为什么 DQN 在这里失效</td><td class="q">机器人关节的目标角度是连续的。所以为什么机器人控制必然走策略学习这条路？</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px">W4 验收：能推出 2 连杆正运动学；能说清 DPG 与随机策略梯度的区别；能指出 PPO 的 clip 在限制什么。</p>
+
+<!-- W5 -->
+<div class="wk">
+<div class="wh"><span class="wt">W5 · 10-20（二）– 10-26（一）</span><span class="wd">主题：连续控制 + 状态不完全观测（直接连到机器人）</span><span class="tag tRL">RL</span><span class="tag tRO">机器人学</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">10-20 二</td><td class="h">1.5h</td><td><strong>ch10 §10.3</strong>（P163–170）DDPG</td><td>跑通书里 DDPG 在 Pendulum 上的实现，记录训练曲线</td><td class="q">为什么 DDPG 在 CartPole 这种离散动作任务上反而更差？</td></tr>
+<tr><td class="d">10-21 三</td><td class="h">1.5h</td><td><strong>ch10 剩余</strong>（P170–174）TD3 / SAC<br>＋ 视频「随机策略做连续控制」<span class="small">20:33</span></td><td>把同一个 Pendulum 任务分别用 DDPG / TD3 / SAC 各训一次，做对比表</td><td class="q">SAC 的"最大熵"目标为什么能改善探索？它在机器人上带来什么实际好处？</td></tr>
+<tr><td class="d">10-22 四</td><td class="h">1.5h</td><td><span class="tag tRO">机器人学</span>Modern Robotics <strong>ch4 速度运动学与静力学</strong>（P106–145）Jacobian</td><td>推导平面 2 连杆的 Jacobian，然后解 det(J)=0 找出奇异位形</td><td class="q">奇异位形在物理上意味着什么？（提示：那个位置上末端在某个方向推不动）</td></tr>
+<tr><td class="d">10-23 五</td><td class="h">1.5h</td><td><strong>ch11 对状态的不完全观测</strong>（P175–181）POMDP</td><td>列出 CartPole 的观测里"缺了什么"才让它成为 POMDP；写出你会怎么补</td><td class="q"><strong>双足机器人的状态估计问题为什么本质上是 POMDP？</strong>IMU 测到的是加速度和角速度，不是姿态——这中间缺的是什么？（这条直接连到鸭子）</td></tr>
+<tr><td class="d">10-24 六</td><td class="h">3.5h</td><td><span class="tag tRO">机器人学</span><strong>ch5 逆运动学</strong>（P146–185）解析法 / 数值法<br><span class="tag tHW">作业</span></td><td>用雅可比迭代法解 2 连杆逆运动学（不要用解析解），从一个够远的目标点出发，画出迭代轨迹</td><td class="q">数值法比解析法慢，为什么工业界还用？解析法在什么自由度下会失效？</td></tr>
+<tr><td class="d">10-25 日</td><td class="h">—</td><td class="rest">机动</td><td class="rest">—</td><td class="rest">—</td></tr>
+<tr><td class="d">10-26 一</td><td class="h">1.5h</td><td><span class="tag tRO">机器人学</span><strong>ch6 动力学</strong>（P186–230）<strong>选读前两节</strong>：质量矩阵 / 科氏力与重力项</td><td>写出机器人动力学方程 M(q)q̈ + C(q,q̇)q̇ + g(q) = τ，标注每一项的物理含义</td><td class="q"><strong>为什么说"动力学仿真精度决定 sim2real 的上限"？</strong>如果仿真里的 M(q) 是错的，策略会怎样？</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px">W5 验收：能写出动力学方程并解释每一项；能讲清 POMDP 与双足状态估计的关系。</p>
+
+<!-- W6 -->
+<div class="wk">
+<div class="wh"><span class="wt">W6 · 10-27（二）– 11-01（日）</span><span class="wd">主题：环境搭建 + 阶段验收</span><span class="tag tENV">环境</span><span class="tag tHW">验收</span></div>
+<table>
+<thead><tr><th style="width:14%">日期</th><th style="width:7%">时长</th><th style="width:34%">看什么</th><th style="width:24%">动手 / 产出</th><th>思考题</th></tr></thead>
+<tbody>
+<tr><td class="d">10-27 二</td><td class="h">1.5h</td><td>环境准备</td><td>装 Ubuntu 22.04（或 Windows 下 WSL2）。<strong>只装系统，不装 Python 包</strong></td><td class="q">为什么要 Linux？直接用 Windows 会卡在哪？（后面真机调试会再遇到）</td></tr>
+<tr><td class="d">10-28 三</td><td class="h">1.5h</td><td><code>github.com/google-deepmind/mujoco</code> 官方 tutorial 前 3 个</td><td>装 MuJoCo，跑 tutorial。目标是看懂 <strong>MJCF</strong> 的四类标签：<code>body</code>（层级）、<code>joint</code>（自由度）、<code>geom</code>（碰撞体）、<code>actuator</code>（驱动）</td><td class="q">为什么一个机器人用 XML 描述比用代码描述更好？XML 里 <code>body</code> 的嵌套结构对应什么物理含义？</td></tr>
+<tr><td class="d">10-29 四</td><td class="h">1.5h</td><td><code>robosuite.ai</code> 文档</td><td>装 robosuite，跑通 Panda 机械臂的 <strong>Lift</strong> 任务，录一段视频</td><td class="q">robosuite 为什么要建在 MuJoCo 上而不是自己写物理？（提示：接触动力学）</td></tr>
+<tr><td class="d">10-30 五</td><td class="h">1.5h</td><td><span class="tag tRL">RL</span>CS285 <strong>L1</strong>（课程介绍）+ <strong>L2–3</strong>（模仿学习）<br><span class="small">用 Fall 2023 录播 + Spring 2026 slides 对照看</span></td><td>记下 L2–3 里出现的四个名词：行为克隆 / 分布漂移 / DAgger / 逆强化学习，各写一句话</td><td class="q">为什么"行为克隆会遇到分布漂移"是模仿学习的核心难点？这直接连到 Phase 1</td></tr>
+<tr><td class="d">10-31 六</td><td class="h">3.5h</td><td><span class="tag tHW">验收</span>整块时间</td><td>① 确认 robosuite Lift 完整跑通并留存视频<br>② 整理"RL 地图"和"正/逆运动学推导"两页纸<br>③ 写 <strong>一页阶段验收报告</strong>（见下方清单）</td><td class="q">看着你自己的 RL 地图：PPO 在这个地图的哪个位置？它的上游是哪两个算法？</td></tr>
+<tr><td class="d">11-01 日</td><td class="h">—</td><td><span class="tag tHW">阶段验收</span></td><td>对照下方清单逐项自评，未达标的项列出来</td><td class="rest">—</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>PHASE 0 阶段验收清单（做不到就别进 Phase 1）</h3>
+<div class="card">
+<ul class="chk">
+<li>robosuite 里 Panda 机械臂跑通 <strong>Lift</strong> 任务，有一段能播放的视频</li>
+<li>能<strong>不看笔记</strong>讲清这 7 个概念各自解决什么问题：MDP、贝尔曼方程、策略梯度、Actor-Critic、优势函数与 GAE、DPG/DDPG、正运动学与逆运动学</li>
+<li>能解释你自己的实测现象：DQN 的 Q 值为什么会冲到 6400 万（死亡三元组），去掉三个条件里的哪一个就不会</li>
+<li>能解释 PPO 的 clip 在限制什么，它和 TRPO 的关系</li>
+<li>能写出机器人动力学方程 M(q)q̈ + C(q,q̇)q̇ + g(q) = τ 并说明每项的物理意义</li>
+<li>手里有两页纸的自制材料：「RL 地图」和「正/逆运动学及 Jacobian 推导」</li>
+<li>一页阶段验收报告，含：我卡住的三个点、它们是理论问题还是工程问题、我打算怎么解</li>
+<li><strong>破坏性测试：至少改坏过 3 处代码并正确预测了后果</strong>（改一行 → 先写预测 → 再运行，三条预测全对）</li>
+<li><strong>光靠打印语句，定位过至少 1 个不是自己写的 bug</strong>（让对方或 AI 注入一个错，不告诉你位置）</li>
+<li>关掉 AI 对话，能默写出「优势函数的三种估计」和你自己写过的最新版奖励函数</li>
+</ul>
+</div>
+
+<div class="warn">
+<strong>如果 11-01 只完成了 70%——不要拖。</strong>Phase 1 的第一周刻意排得轻（见下），就是给漏项留的补课窗口。真正不允许跳过的是两件事：<strong>robosuite 跑通</strong>和<strong>策略梯度+优势函数这两块理论</strong>。前者是后面所有实验的地基，后者是 PPO 和所有 VLA 训练循环的地基。其余漏了可以边走边补。
+</div>
+
+<h2 id="p-daily-s3">三　PHASE 1 逐周计划 · 13 周</h2>
+
+<div class="p0">
+<div class="ph">2026-11-03（周二）→ 2027-01-31（周日）｜ 约 250 小时 ｜ 每天 2.5h</div>
+<h3>核心功夫：模仿学习与策略学习 —— 这是具身智能真正的心脏</h3>
+<p><strong>先明确一条优先级，这决定了你这 13 周的重心：</strong>具身智能的当前主流范式<strong>不是强化学习，是模仿学习</strong>。真实机器人上跑 RL 太贵太慢，而遥操作采数据 + 模仿学习便宜得多。所以本阶段的中心是 <strong>BC / ACT / Diffusion Policy</strong>，RL 只作为底层理解保留。<br>
+<strong>千万不要一头扎进 RL 里出不来</strong>——这是自学具身智能最常见的坑，你原路线图里也标了这条。</p>
+<p>每天结构固定：<strong>早 1h 理论</strong>（CS285 一讲的半天 / 论文 3 页 / 王树森一章）＋ <strong>晚 1.5h 代码</strong>（作业子任务 / 实现 / 挂训练）。训练一律挂云端后台，人去做别的。</p>
+</div>
+
+<h3>PHASE 1 的四个模块</h3>
+<table>
+<thead><tr><th style="width:10%">模块</th><th style="width:16%">周次 / 日期</th><th style="width:30%">看什么</th><th>做什么 / 验收</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>M1</strong><br><span class="small">模仿学习<br>基础</span></td>
+<td>W1–3<br><span class="small">11/03–11/22</span></td>
+<td><strong>王树森 ch12 模仿学习</strong>（P182–198，BC / 逆向 RL / GAIL）先读——它是中英文之间最好的软着陆<br>→ 再 <strong>CS285 L2–3</strong> 精看（模仿学习、分布漂移）<br>→ <strong>CS285 HW1</strong>（模仿学习作业，<span class="small">CPU 可跑</span>）</td>
+<td>① 写出 BC 在什么条件下必然失败（分布漂移的形式化）<br>② DAgger 为什么能缓解、代价是什么<br>③ HW1 跑通并记录数字<br><strong>验收：能讲清 BC / DAgger / IRL / GAIL 四者的假设差异</strong></td>
+</tr>
+<tr>
+<td><strong>M2</strong><br><span class="small">策略学习<br>与基准</span></td>
+<td>W4–6<br><span class="small">11/23–12/13</span></td>
+<td><strong>CS285 L4–10</strong>：RL 基础 → 策略梯度与 AC → 值方法 → 高级策略梯度<br>（每讲拆两个早上）<br><strong>CS285 HW2 / HW3</strong>（<span class="small">HW2 CPU 可跑；HW3 昂贵实验约 3 GPU 小时/次，选做最小配置</span>）<br>同步起 <strong>RoboMimic</strong> 环境</td>
+<td>① HW2、HW3 跑通<br>② RoboMimic 装上、跑通一个 BC 基线<br>③ 建立"训练记账本"：每次训练的配置、耗时、卡路里（GPU 小时）、结果<br><strong>验收：你的 BC 在 RoboMimic 上有一个数字，且能和论文对上量级</strong></td>
+</tr>
+<tr>
+<td><strong>M3</strong><br><span class="small">Diffusion Policy<br>与 ACT 复现</span></td>
+<td>W7–10<br><span class="small">12/14–2027/01/10</span></td>
+<td><strong>Diffusion Policy</strong> 论文 + 官方代码（<code>diffusion-policy.cs.columbia.edu</code>）精读复现<br><strong>ACT / ALOHA</strong>（<code>tonyzhaozh.github.io/aloha</code>）——<span class="small">它的数据采集范式正是 Phase 2 要用 SO-101 复刻的东西</span><br>把 <strong>LIBERO</strong> 装起来</td>
+<td>① 在 RoboMimic 上横向跑 <strong>BC / ACT / Diffusion Policy</strong> 三种方法<br>② 做成功率对比表（3 个种子，报均值和标准差）<br>③ LIBERO 上复现一个基线<br><strong>验收：三种方法的对比表，数字自己能解释为什么</strong></td>
+</tr>
+<tr>
+<td><strong>M4</strong><br><span class="small">实验报告<br>（作品 #1）</span></td>
+<td>W11–13<br><span class="small">01/11–01/31</span></td>
+<td>补充阅读：<strong>MIT 6.4210</strong>（Russ Tedrake，配 Drake）看逆运动学 / 轨迹优化 / 抓取三块<br><strong>Open X-Embodiment</strong> 数据集结构过一遍</td>
+<td>① 写一份 <strong>10 页内的中文实验报告</strong>：问题 / 方法 / 三方法对比 / 失败分析 / 结论<br>② 代码整理成一个能公开的仓库（README 写清怎么跑）<br><strong>验收：这份报告就是第一个可对外展示的作品</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="key">
+<strong>关于 CS285 的作业：挑着做，别全做。</strong><br>
+Spring 2026 的五次作业是：HW1 模仿学习 / HW2 策略梯度 / HW3 Q 学习与 actor-critic / HW4 LLM RL / HW5 离线 RL。<br>
+· <strong>HW1、HW2</strong>：CPU 可跑，<strong>必做</strong>（直接对应你的方向）<br>
+· <strong>HW3</strong>：大部分实验本地可跑，昂贵的那几次约 3 GPU 小时/次，<strong>做最小配置</strong><br>
+· <strong>HW4</strong>：默认要 H100，四次运行 —— <strong>跳过</strong>。LLM RL 跟你的方向无关<br>
+· <strong>HW5</strong>：单次运行约 6 小时 —— <strong>选做</strong>，如果你后来想做离线 RL 再回来<br>
+课程给分是作业 50% + 期末项目 20% + 考试 20% + 小测 10%。<strong>你是旁听者，只取作业，不要追求"完成课程"。</strong>
+</div>
+
+<h2 id="p-daily-s4">四　PHASE 2 / 3 执行要点</h2>
+
+<p>原路线图的 Phase 2（2027.02–06，真机 SO-101 + VLA 微调）和 Phase 3（2027.07–12，前沿跟踪 + 定位固化）保持在<strong>阶段粒度</strong>，不逐日细化——距现在还有 4–10 个月，逐日排会变成 Fiction。但有几条执行要点现在就要记下来，因为它们会影响你现在的决策：</p>
+
+<table>
+<thead><tr><th style="width:22%">时点</th><th>要做的判断 / 动作</th></tr></thead>
+<tbody>
+<tr><td><strong>2026-12 月中</strong><br><span class="small">Phase 1 的 M3 开始时</span></td><td>决定 Phase 2 的真机买哪台。选项：① SO-101 单从臂（约 $120）② SO-101 主从双臂（$280–350）③ 先不上臂。<strong>判断依据是你 M3 的实验报告里"我最想验证什么"</strong>——如果只想验证 sim2real，单臂够；想做 ACT 的数据采集范式，需要主从双臂。</td></tr>
+<tr><td><strong>2026-12 月中</strong></td><td>同时决定<strong>两轮自平衡支线什么时候插进来</strong>（见下一节）。我的建议是 <strong>2027 年 2–4 月</strong>：那时 Phase 1 刚结束、Phase 2 的硬件还没到货，正好是个空档。</td></tr>
+<tr><td><strong>2027-01 月底</strong><br><span class="small">Phase 1 结束时</span></td><td>把 M4 的实验报告 + 代码仓库整理成可展示状态。<strong>这是你 2027 年唯一需要"产出"的东西</strong>，别等到 2028。</td></tr>
+<tr><td><strong>2027-03 / 2027-06</strong></td><td>Phase 2 的两个硬验收：① SO-101 能跑 <code>lerobot-teleoperate</code> 采集、能录 20+ 条任务轨迹；② 能用 LoRA 微调出一个自己的模型并真机执行同一任务、录视频。<br><span class="small">踩坑提示（已验证）：舵机 SDK 包名是 <code>feetech-servo-sdk</code>；报 <code>ConnectionError: Failed to write 'Lock'</code> 通常是供电不足，要用独立电源适配器；新版 LeRobot 要求 Python ≥3.12，但舵机驱动在 3.10 上更稳。</span></td></tr>
+<tr><td><strong>Phase 2 期间</strong></td><td><strong>开环验证纪律：</strong>训练完先把采集数据回放给模型、看预测动作是否贴合人类示范，确认收敛再上机。<strong>直接上真机的代价是"乱动一下午还分不清是数据、训练还是标定的问题"。</strong></td></tr>
+</tbody>
+</table>
+
+<h2 id="p-daily-s5">五　两轮自平衡支线 · 10 周完整计划</h2>
+
+<div class="p0">
+<div class="ph">建议插入点：2027-02 → 2027-04（Phase 1 结束、Phase 2 硬件未到货的空档）｜ 约 100 小时 ｜ ¥270–630</div>
+<h3>为什么是两轮自平衡，而不是直接从双足开始</h3>
+</div>
+
+<table>
+<thead><tr><th style="width:20%">技术要素</th><th style="width:40%">两轮自平衡</th><th>Microduck（双足）</th></tr></thead>
+<tbody>
+<tr><td><strong>控制难点</strong></td><td>单轴倒立摆，欠驱动 1 维</td><td>双轴 + 左右腿协调，欠驱动多维</td></tr>
+<tr><td><strong>状态估计</strong></td><td>IMU 俯仰角 + 编码器测速（互补滤波即可）</td><td>双 IMU + 14 关节编码器 + 足底接触检测（必须做融合）</td></tr>
+<tr><td><strong>控制频率</strong></td><td>RL 推理 50 Hz，底层 PWM 200 Hz–1 kHz</td><td>RL 推理 50 Hz（官方明确 50 Hz）</td></tr>
+<tr><td><strong>仿真</strong></td><td>MuJoCo XML（教程已提供）</td><td>MJCF（从 Onshape 导出）</td></tr>
+<tr><td><strong>算法</strong></td><td><strong>PPO</strong>（同一族）</td><td><strong>PPO</strong></td></tr>
+<tr><td><strong>部署链路</strong></td><td><code>ONNX → C header → 编进固件</code>（网络很小，纯乘加 + tanh，ESP32 上 2–3 ms）</td><td><code>ONNX → ONNX Runtime</code>（Rust 守护进程加载）</td></tr>
+<tr><td><strong>sim2real 差距</strong></td><td>传感器噪声 / 电机不准 / 建模误差 / 标定偏移</td><td>上面四项 <strong>＋ 执行器动力学 ＋ 齿隙</strong></td></tr>
+<tr><td><strong>对策</strong></td><td>域随机化 + 低通滤波 + 动作死区 + 角度偏置</td><td>BAM 执行器模型 + 域随机化 + 齿隙仿真</td></tr>
+</tbody>
+</table>
+
+<div class="key">
+<strong>看这张表的最后两行：</strong>两轮自平衡和 Microduck 相比，<strong>少的正是"执行器动力学"和"齿隙"这两块</strong>——而这两块恰恰是双足 sim2real 最难的部分。<br>
+换句话说：<strong>做完两轮自平衡，你已经掌握了 sim2real 通用链路；后面要补的只是"把执行器模型做准"这一件事。</strong>这就是先做它的全部理由。
+</div>
+
+<h3>参考项目（我已逐个核实过，按推荐度排序）</h3>
+<table>
+<thead><tr><th style="width:28%">项目</th><th>为什么推荐 / 它有什么</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>① Shawn Hymel / DigiKey<br>《Reinforcement Learning for Robotics》系列</strong><br><span class="small">github.com/ShawnHymel/reinforcement-learning-for-robotics</span></td>
+<td><strong>首选，直接照它做。</strong>这是一个四集视频 + 完整开源代码的系列，内容是"用 PPO 训一个平衡车并部署到真机"。仓库里有：<strong>FreeCAD 机械模型 + MuJoCo XML 描述 + Docker 环境 + 训练代码 + Arduino 固件</strong>。<br>它的价值在于<strong>第 3 集专门演示 sim2real gap</strong>：策略部署上去只会短暂平衡然后漂移倒下；然后逐个加对策——俯仰角偏置、电机增益补偿、动作死区、低通滤波——每一招都现场演示效果。第 4 集讲域随机化。<br><strong>这正是 Microduck 那套东西的 1/10 成本版本。</strong></td>
+</tr>
+<tr>
+<td><strong>② giulioturrisi/Self-Balancing-Robot</strong></td>
+<td>同一个机器人上<strong>并排实现六种控制器</strong>：PID、LQR、LQI、自适应 LQR、滑模、RL（IsaacGym 版）、MPC（Acados）、iLQR。还带 EKF 状态估计。仿真支持 MuJoCo 和 CoppeliaSim。<br><strong>想看"RL 相对经典控制的优劣"就看这个</strong>——对建立"RL 相对经典控制的优劣"的真实判断有直接帮助（"为什么不直接用 LQR"是个必须能回答的问题）。</td>
+</tr>
+<tr>
+<td><strong>③ sanfeps/J0</strong></td>
+<td>更工程化的架构参考：<strong>Isaac Lab 训练 + ROS2 + 树莓派跑 ONNX（60 Hz）+ ESP32 跑 1 kHz 实时层</strong>，电机 JGA25-371（11 PPR 编码器）+ MPU6050。想看"训练和实时控制怎么分工"看这个。</td>
+</tr>
+<tr>
+<td><strong>④ Nero7991/two-wheel-bot-sim-rl</strong></td>
+<td><strong>零成本先玩这个。</strong>浏览器里跑 DQN 训练（WebGPU 加速 5–10×，CPU 上每分钟 100+ 回合），实时 2D 物理可视化，能把训好的模型导出 C++ 给 STM32。有在线 demo。<br><span class="small">注意：它用的算法是 DQN（因为动作是"两个轮子的转速"，可以离散化）；官方教程那条线用 PPO。为了和 Microduck 对齐，你的主线用 PPO。</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>六个阶段（10 周）</h3>
+
+<div class="wk">
+<div class="wh"><span class="wt">S0 · 第 1–2 周</span><span class="wd">仿真建模与训练 ｜ 20 h</span><span class="tag tRL">RL</span></div>
+<table>
+<tbody>
+<tr><td class="d">W1 前半</td><td>读通教程仓库里的 MuJoCo XML：它怎么描述车身、两个轮子、IMU 安装位置？<strong>把每个数值改成你的实物尺寸。</strong>对照你 Phase 0 学的 MJCF 四类标签，逐行读。</td></tr>
+<tr><td class="d">W1 后半</td><td>跑通训练脚本（PPO）。先确认"默认配置能平衡"——这是你的基线。</td></tr>
+<tr><td class="d">W2 前半</td><td><strong>开始改奖励函数</strong>（你在路径 A 里练过这个）。初始奖励通常含：保持直立（正）、速度跟踪（正）、动作幅度（负）、摔倒（大负 + 终止）。逐项关掉看会怎样。</td></tr>
+<tr><td class="d">W2 后半</td><td>① 开域随机化（电机增益、传感器噪声、初始角度偏差）；② 训练时加入"外部推力扰动"，看策略能否恢复；③ 导出 ONNX。</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px"><strong>S0 验收：</strong>仿真里能平衡 30 秒以上，能跟踪速度指令，能在被推后恢复。有一张"关掉某个奖励项 → 行为怎么坏掉"的记录表。</p>
+
+<div class="wk">
+<div class="wh"><span class="wt">S1 · 第 1 周（与 S0 并行）</span><span class="wd">采购 ｜ 3 h</span><span class="tag tENV">硬件</span></div>
+<table>
+<tbody>
+<tr><td class="d">要点</td><td>按下方 BOM 买。<strong>买之前只做一件事：确认电机带编码器。</strong>这是新手最常买错的一项——不带编码器就意味着测不到轮速，观测直接缺一半，后面全部白做。</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="wk">
+<div class="wh"><span class="wt">S2 · 第 3–4 周</span><span class="wd">硬件最小闭环（不涉及 AI）｜ 18 h</span><span class="tag tENV">硬件</span></div>
+<table>
+<tbody>
+<tr><td class="d">W3</td><td>① IMU 读通：能把俯仰角以 ≥50 Hz 打印到串口；② 加低通滤波，看噪声降下来多少。</td></tr>
+<tr><td class="d">W4</td><td>① 两个电机 PWM 都能双向转起来；② 编码器计数读通（正转+、反转−）；③ <strong>用编码器测速并与 PWM 指令对照</strong>——你会发现"同样的占空比，转速不一样"，这就是 sim2real 的第一个 gap。</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px"><strong>S2 验收：</strong>串口能同时输出「俯仰角 + 左轮速 + 右轮速」三个量，且手动转动车身时角度符号正确。<strong>这一步 90% 的时间会花在"线接反、地线没共、I2C 地址不对、编码器相位反了"这些事上——这是必经之路，不是你的错。</strong></p>
+
+<div class="wk">
+<div class="wh"><span class="wt">S3 · 第 5–6 周</span><span class="wd">固件：控制环 + 观测构造 + 推理 ｜ 20 h</span><span class="tag tENV">固件</span></div>
+<table>
+<tbody>
+<tr><td class="d">W5</td><td>① 定控制环周期。RL 推理跑 <strong>50 Hz</strong>（20 ms），与训练时严格一致；底层电机 PWM 可以更快（200 Hz–1 kHz）。这两个频率要分开设计。<br>② 按训练时的顺序构造观测向量。<strong>顺序错一位，策略立刻失效，而且极难发现</strong>——建议写一个单元测试：用仿真里的某个状态手工构造观测，和 Python 侧的输出逐位对比。</td></tr>
+<tr><td class="d">W6</td><td>① 把 ONNX 转成 C 数组编进固件，实现纯乘加 + tanh 的推理（网络很小，ESP32 上 2–3 ms 足够）。<br>② 加安全兜底：俯仰角超过阈值就切断电机（防摔坏硬件）。</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px"><strong>S3 验收：</strong>能用一个"假的观测"（手工输入固定向量）跑出和 Python 端完全相同的输出，逐位一致。</p>
+
+<div class="wk">
+<div class="wh"><span class="wt">S4 · 第 7–8 周</span><span class="wd">部署与 sim2real（最关键的两周）｜ 22 h</span><span class="tag tRL">RL</span><span class="tag tHW">核心</span></div>
+<table>
+<tbody>
+<tr><td class="d">W7</td><td>第一次上机。<strong>预期结果：它能短暂平衡，然后漂移、倒下。</strong>这不是失败，这是教程第 3 集里一模一样的现象。<br>然后按顺序加对策，每加一招记录效果：<br>① <strong>俯仰角偏置校正</strong>（IMU 安装或标定导致的系统性偏差）<br>② <strong>动作死区</strong>（PWM 太小电机根本不转，但策略以为在出力）<br>③ <strong>低通滤波</strong>（IMU 噪声进到策略里会被放大）<br>④ <strong>电机增益补偿</strong>（电池电压下降导致同样 PWM 出力变小）</td></tr>
+<tr><td class="d">W8</td><td>把这些"手工补丁"当作反面教材：<strong>它们能work，但每一招都是你在替策略干活、而且需要人工调参。</strong>正解是把它们变成仿真里的随机化项，让策略自己学会容忍。</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small" style="margin-top:-8px"><strong>S4 验收：</strong>一份"我遇到的 4 个 sim2real 问题 + 各自对策 + 效果"的记录。这份记录是 sim2real 能力的最直接凭据。</p>
+
+<div class="wk">
+<div class="wh"><span class="wt">S5 · 第 9–10 周</span><span class="wd">域随机化重训 + 收尾 ｜ 18 h</span><span class="tag tRL">RL</span></div>
+<table>
+<tbody>
+<tr><td class="d">W9</td><td>把 S4 手工加的补偿，转成训练时的随机化项：电机增益 ±20%、电池电压跌落、IMU 噪声、初始角度偏差 ±5°、地面摩擦。重训。<br><strong>调随机化宽度</strong>——太窄没用、太宽学不会。这正好是你读过的域随机化那一条的实操。</td></tr>
+<tr><td class="d">W10</td><td>① 部署新策略，和 S4 的"手工补丁版"对比：<strong>同样的鲁棒性，但不再需要人工调参</strong>。<br>② 写两页总结：这次实验和 Microduck 的 BAM/齿隙差在哪、补上它们需要什么。<br>③ 录一个视频。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>两轮自平衡 BOM</h3>
+<table>
+<thead><tr><th style="width:22%">部件</th><th style="width:30%">规格要求</th><th style="width:14%">参考价</th><th>要点</th></tr></thead>
+<tbody>
+<tr><td><strong>主控板</strong></td><td>ESP32 开发板（或 M5Stack Fire）</td><td>¥60–200</td><td>双核 240 MHz，跑推理完全够。选 M5Stack 系的好处是官方固件库里已有平衡车驱动</td></tr>
+<tr><td><strong>IMU</strong></td><td>MPU6886 或 MPU6050 模块</td><td>¥15–50</td><td><span class="small">见下方修正说明：平衡车用 MPU6050 够，双足不够</span></td></tr>
+<tr><td><strong>减速电机 ×2</strong></td><td><strong>N20 或 JGA25 带霍尔/光电编码器</strong></td><td>¥60–120</td><td><strong>必须有编码器。</strong>轮径一致、转速一致</td></tr>
+<tr><td><strong>电机驱动</strong></td><td>TB6612 或 HR8833 双路 H 桥</td><td>¥15–30</td><td>要支持双向 PWM + 刹车</td></tr>
+<tr><td><strong>电源系统</strong></td><td>2S 锂电 800–1500 mAh + 充电器 + DC-DC 稳压</td><td>¥60–120</td><td><strong>稳压很关键</strong>——电池从 8.4 V 掉到 7.0 V 时，同样的 PWM 出力明显变小，这就是 S4 里"电机增益补偿"的来源</td></tr>
+<tr><td><strong>车架</strong></td><td>3D 打印（PLA）或铝板</td><td>¥30–80</td><td>重心要低，电池尽量靠下——重心越低越好控</td></tr>
+<tr><td><strong>杂项</strong></td><td>杜邦线、螺丝、开关、扎带</td><td>¥30</td><td>—</td></tr>
+<tr><td colspan="2"><strong>合计（自己攒）</strong></td><td><strong>¥270–630</strong></td><td>若买现成套件（带编码器电机 + IMU + 驱动 + 车架）约 ¥200–400，再补 ESP32/IMU 改造</td></tr>
+</tbody>
+</table>
+
+<div class="warn">
+<strong>修正我上一份文档里一个说法：</strong>我在《双足机器人-从零到自攒》里写过"MPU6050 噪声和漂移对 RL 策略是灾难"——这话过头了。<strong>对两轮自平衡，MPU6050 完全够用</strong>（教程就是用它跑通的，50 Hz + 低通滤波）。它的噪声问题在<strong>双足</strong>上才会暴露——因为步态落地有冲击、需要更高带宽的角速度信息。<br>
+所以：<strong>平衡车用 MPU6050 省钱，双足至少要 BMI270 / ICM-42688。</strong>
+</div>
+
+<h3>这条支线插在主线哪里</h3>
+<div class="card">
+<p><strong>推荐插入点：2027-02 → 2027-04。</strong>理由：</p>
+<ul>
+<li>Phase 1 刚在 1 月底结束，你手上有 RL 基础 + 模仿学习经验，正好用得上；</li>
+<li>Phase 2 的 SO-101 还在采购/打印阶段，真机还没到，这段时间本来就有空档；</li>
+<li><strong>时间占比控制在总学习时间的 20% 以内</strong>——支线的目标不是成为运动控制专家，而是建立对 locomotion / Sim2Real 的基本判断力。</li>
+</ul>
+<p><strong>如果 Phase 1 进度落后，这条支线可以整体后移，甚至砍掉。</strong>它的收益是"补一条技术腿"，不是主线的必要条件。判断标准很简单：<strong>主线实验报告没做完之前，先别碰它。</strong></p>
+</div>
+
+<h2 id="p-daily-s6">六　对原路线图的三处修正</h2>
+
+<div class="card">
+<h4>修正 1 · CS285 的录播不公开，别再找 2026 版视频</h4>
+<p>原路线图写的是「CS285 深度强化学习（2026 春季版）……此阶段只看前 4–5 讲，配合 PPT 而非全视频」——<strong>"配合 PPT"这个判断是对的，但原因不是"省时间"，而是"2026 版根本没有公开录播"。</strong></p>
+<p>已核实：Spring 2026 的录播放在 bCourses 里，<strong>外部自学者拿不到</strong>。公开的只有：</p>
+<ul>
+<li><strong>Slides</strong>（25 讲的 PDF，公开下载）—— 这是本年度的事实标准材料</li>
+<li><strong>作业</strong>（<code>homework_spring2026</code> 仓库，MIT 许可，公开）</li>
+<li><strong>Fall 2023 的录播</strong>（YouTube）—— 是历史替代品，<strong>不是 2026 讲次的录像</strong></li>
+</ul>
+<p><strong>正确用法：</strong>以 <strong>Spring 2026 的 slides + 作业</strong> 为主，遇到看不懂的地方再翻 <strong>Fall 2023 录播</strong>的对应主题。不要因为"找不到 2026 视频"就以为这门课不能自学了。</p>
+<p>Spring 2026 的讲次结构（25 讲）：L1–3 课程介绍与模仿学习 → L4 RL 基础 → L5–6 策略梯度与 actor-critic → L7–8 值方法 → L9–10 高级策略梯度 → L11–12 变分推断 → L13–14 control as inference 与 LLM RL → L15–16 基于模型的 RL → L17–18 离线 RL → L19–20 探索与 RL 理论 → L23–24 高级探索与多任务 → 开放问题与嘉宾讲座。</p>
+</div>
+
+<div class="card">
+<h4>修正 2 · 王树森书的精读范围要扩，不是"第 2–7 章"</h4>
+<p>原路线图写「精读第 2–7 章即可，不要通读」。按你现在的方向（PPO + 机器人），<strong>这个范围缺了两块关键内容</strong>：</p>
+<ul>
+<li><strong>第 8 章「带基线的策略梯度方法」</strong>（P129–141）—— 优势函数与 A2C 在这一章。这是理解 <strong>PPO 的直接前置</strong>，跳过它 PPO 就是黑箱。</li>
+<li><strong>第 10 章「连续控制」</strong>（P154–174）—— DPG / DDPG / TD3 / SAC。<strong>机器人关节是连续动作空间</strong>，这一章是你的方向必需，而原范围完全没包含。</li>
+</ul>
+<p><strong>修正后的范围：</strong></p>
+<table style="margin:8px 0">
+<thead><tr><th style="width:30%">处理方式</th><th>章节</th></tr></thead>
+<tbody>
+<tr><td><strong>精读</strong></td><td>ch2 蒙特卡洛 · ch3 RL 基本概念 · ch7 策略梯度方法 · <strong>ch8 带基线的策略梯度方法</strong> · <strong>ch10 连续控制</strong></td></tr>
+<tr><td><strong>快读</strong>（你已做过 DQN）</td><td>ch4 DQN 与 Q 学习 · ch5 SARSA · ch6 价值学习高级技巧（只读经验回放与目标网络）</td></tr>
+<tr><td><strong>选读</strong></td><td>ch9 TRPO（理解 PPO 的严格前身）· ch11 对状态的不完全观测（连到状态估计）</td></tr>
+<tr><td><strong>Phase 1 再加</strong></td><td><strong>ch12 模仿学习</strong>（P182–198，BC / 逆向 RL / GAIL）——这是从 RL 过渡到模仿学习最好的软着陆，比直接啃论文平缓得多</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<h4>修正 3 · MPU6050 的适用边界（见上一节的 warn 框）</h4>
+<p>对两轮自平衡够用，对双足不够。已在上文详细说明，不再重复。</p>
+</div>
+
+<h2 id="p-daily-s7">七　打卡表与进度自检</h2>
+
+<h3>每日本地打卡（复制到你的笔记里，每天一行）</h3>
+<div class="card">
+<p style="font-family:ui-monospace,monospace;font-size:12.5px;color:var(--tx);line-height:2;">
+日期 ｜ 时长 ｜ 主线进度（读到哪／看到哪）｜ 是否动手（Y/N）｜ <strong>今天卡在哪</strong> ｜ 明天第一件事
+</p>
+<p class="small">"今天卡在哪"这一栏只允许写具体的东西（"分不清 Q 和 V 什么时候用哪个"），不允许写"状态不好""效率不高"。月末把这一栏里重复出现的条目圈出来——<strong>那些才是你的真实瓶颈，也是你该去找人问的问题</strong>。</p>
+</div>
+
+<h3>每周自检（周日 5 分钟）</h3>
+<div class="card">
+<ul class="chk">
+<li>本周的计划时长有没有实际做到 80% 以上？没做到的原因是什么（排课 / 疲劳 / 材料太难）？</li>
+<li><strong>本周有没有"动手产出"？</strong>（一段代码 / 一份推导 / 一次训练记录）如果连续两周没有，计划已经在空转。</li>
+<li>本周的"卡在哪"有没有重复上周的条目？重复两次以上就要停下来专门解决它，不要绕着走。</li>
+<li>下周的材料是否已备齐（PDF / 视频链接 / 代码仓库）？<strong>不要在开始学习的那一刻才去找资料。</strong></li>
+</ul>
+</div>
+
+<h3>Phase 0 结束时的总判断（11-01）</h3>
+<div class="card">
+<p>只问自己一个问题：<strong>「如果现在给我一个我完全没见过的机器人控制论文，我能看懂它的核心方法吗？」</strong></p>
+<p>能看懂，说明 Phase 0 达标，进 Phase 1。<br>
+看不懂，具体是卡在<strong>数学</strong>（贝尔曼/策略梯度）还是<strong>物理</strong>（运动学/动力学）还是<strong>工程</strong>（环境跑不通）？这三类的补救方式完全不同——数学回去读书、物理去补 Modern Robotics、工程去查文档。<strong>先定位再补，不要笼统地"再学一遍"。</strong></p>
+</div>
+
+<hr>
+
+<p class="small" style="margin-top:30px">
+材料核实至 2026-09-21。王树森书页码对应人民邮电出版社正式版；CS285 讲次结构与作业要求对应 Spring 2026 课表；两轮自平衡参考项目与硬件规格已逐项核对官方仓库与产品页。<br>
+关于"两轮自平衡"的方向选择：<strong>若你想要的是"最快跑通 sim2real 全链路"，两轮自平衡是最优解；若你想要的是"看起来像 Microduck 的双足"，它不能给你——那是路径 C 的事，而路径 C 要 4–6 个月。</strong>
+</p>
+
+</div>
+<nav class="pager" data-for="daily"></nav>
+
+</div>
+</main>
+</body>
+</html>

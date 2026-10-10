@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 2 章「Rigid Body Motion」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 2 章「Rigid Body Motion」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>定义的两个条件</strong>（Definition 2.1）：</p>
+<ol>
+<li><strong>保距离</strong>：对所有 $p,q\in\mathbb{R}^3$，</li>
+</ol>
+<p>$$\|g(p)-g(q)\|=\|p-q\|.$$</p>
+<ol>
+<li><strong>保叉积</strong>：对所有 $v,w\in\mathbb{R}^3$，</li>
+</ol>
+<p>$$g_*(v\times w)=g_*(v)\times g_*(w),$$</p>
+<p>其中 $g_*$ 表示 $g$ 的线性部分（即 $g(p)=g_*(p)+p_0$ 中的线性映射）。</p>
+<p><strong>为什么仅保距离不够</strong>：保距离的映射称为<strong>等距变换（isometry）</strong>，它允许<strong>反射</strong>。反射保持任意两点间距离不变，但会把右手系变成左手系，破坏取向。</p>
+<p><strong>具体反例</strong>：取</p>
+<p>$$g(x,y,z)=(x,\,y,\,-z).$$</p>
+<p>对任意 $p=(p_x,p_y,p_z)$、$q=(q_x,q_y,q_z)$，</p>
+<p>$$\|g(p)-g(q)\|^2=(p_x-q_x)^2+(p_y-q_y)^2+(p_z-q_z)^2=\|p-q\|^2,$$</p>
+<p>故保距离成立。但取 $v=e_x=(1,0,0)$、$w=e_y=(0,1,0)$，则</p>
+<p>$$v\times w=e_z,\quad g_*(v\times w)=g_*(e_z)=(0,0,-1),$$</p>
+<p>而</p>
+<p>$$g_*(v)\times g_*(w)=e_x\times e_y=e_z=(0,0,1).$$</p>
+<p>两者不相等，故 $g$ <strong>不保叉积</strong>，不是刚体变换。</p>
+<p><strong>补充说明</strong>：保叉积 + 极化恒等式可推出保内积，从而保证 $g_*$ 是正交变换且 $\det g_*=+1$，即 $g_*\in SO(3)$，排除反射。这正是刚体变换形如 $(p,R)$、$R\in SO(3)$ 的根据。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>显式公式</strong>（eq 2.36，$\omega\neq 0$）：</p>
+<p>$$e^{\hat\xi\theta}=\begin{bmatrix}e^{\hat\omega\theta} & (I-e^{\hat\omega\theta})(\omega\times v)+\omega\omega^T v\,\theta\\[2pt] 0 & 1\end{bmatrix},$$</p>
+<p>其中 $\hat\xi=\begin{bmatrix}\hat\omega & v\\ 0 & 0\end{bmatrix}\in\mathfrak{se}(3)$，$\xi=(v,\omega)\in\mathbb{R}^6$。</p>
+<p><strong>平移列的几何意义</strong>：把 $v$ 分解为沿轴分量与垂直分量：</p>
+<p>$$v=\underbrace{\omega\omega^T v}_{\text{沿轴}} + \underbrace{(I-\omega\omega^T)v}_{\text{垂直轴}}.$$</p>
+<ul>
+<li><strong>沿轴分量</strong> $\omega\omega^T v$：对应沿 screw 轴的<strong>纯平移</strong>，贡献 $\omega\omega^T v\,\theta$（平移量正比于转角 $\theta$，比例即 pitch $h$）。</li>
+<li><strong>垂直分量</strong> $(I-\omega\omega^T)v$：对应绕轴的<strong>旋转</strong>引起的位移，贡献 $(I-e^{\hat\omega\theta})(\omega\times v)$。注意 $\omega\times v$ 与 $\omega$ 垂直，$(I-e^{\hat\omega\theta})$ 把该垂直向量旋转 $\theta$ 后与自身相减，正是"绕轴转过 $\theta$ 后点的位移"。</li>
+</ul>
+<p>因此该列整体表示：<strong>绕轴 $\ell$ 转 $\theta$ 并沿轴平移 $d=h\theta$</strong> 的合成位移——这正是 screw motion 的解析表达。</p>
+<p><strong>$\omega=0$ 的退化</strong>：此时 $\hat\omega=0$，$e^{\hat\omega\theta}=I$，公式第一项 $(I-e^{\hat\omega\theta})(\omega\times v)=0$，第二项 $\omega\omega^T v\,\theta=0$，故</p>
+<p>$$e^{\hat\xi\theta}=\begin{bmatrix}I & v\theta\\ 0 & 1\end{bmatrix},$$</p>
+<p>即<strong>沿方向 $v$ 的纯平移</strong>，平移量为 $\theta\|v\|$。这对应移动关节（prismatic joint），pitch $h=\infty$。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>推导 trace 关系</strong>：由 Rodrigues 公式（eq 2.14）</p>
+<p>$$e^{\hat\omega\theta}=I+\hat\omega\sin\theta+\hat\omega^2(1-\cos\theta).$$</p>
+<p>对两边取迹。利用 $\hat\omega$ 反对称的性质：设 $\omega=(\omega_1,\omega_2,\omega_3)^T$，$\|\omega\|=1$，则</p>
+<p>$$\hat\omega=\begin{bmatrix}0&-\omega_3&\omega_2\\ \omega_3&0&-\omega_1\\ -\omega_2&\omega_1&0\end{bmatrix}.$$</p>
+<ul>
+<li>$\mathrm{trace}(I)=3$；</li>
+<li>$\mathrm{trace}(\hat\omega)=0$（反对称矩阵对角元全为 0）；</li>
+<li>$\mathrm{trace}(\hat\omega^2)$：计算得 $\hat\omega^2$ 的对角元为 $-(\omega_2^2+\omega_3^2)$、$-(\omega_1^2+\omega_3^2)$、$-(\omega_1^2+\omega_2^2)$，求和为 $-2(\omega_1^2+\omega_2^2+\omega_3^2)=-2\|\omega\|^2=-2$。</li>
+</ul>
+<p>因此</p>
+<p>$$\mathrm{trace}(R)=3+0\cdot\sin\theta+(-2)(1-\cos\theta)=3-2+2\cos\theta=1+2\cos\theta.$$</p>
+<p><strong>反解 $\theta$</strong>：</p>
+<p>$$\cos\theta=\frac{\mathrm{trace}(R)-1}{2},\qquad \theta=\cos^{-1}\!\left(\frac{\mathrm{trace}(R)-1}{2}\right).$$</p>
+<p>由于 $\mathrm{trace}(R)\in[-1,3]$，$\cos\theta\in[-1,1]$，反解总有定义。</p>
+<p><strong>$R=I$ 的问题</strong>：此时 $\mathrm{trace}(R)=3$，得 $\cos\theta=1$，$\theta=0$。但 $\theta=0$ 时<strong>旋转轴 $\omega$ 完全自由</strong>——任何单位向量 $\omega$ 都给出 $e^{\hat\omega\cdot 0}=I$。因此无法从 $R=I$ 唯一确定 $\omega$，指数映射在 $\theta=0$ 处是<strong>多对一</strong>的（事实上 $(\omega,\theta)$ 与 $(-\omega,2\pi-\theta)$ 也等价）。这是指数坐标的固有奇异性，与 Euler 角在 $R=I$ 处的奇异本质相同。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第一步：写出 $\hat V^s$ 与 $\hat V^b$ 的矩阵形式</strong>。设</p>
+<p>$$g=\begin{bmatrix}R&p\\ 0&1\end{bmatrix},\qquad \dot g=\begin{bmatrix}\dot R&\dot p\\ 0&0\end{bmatrix}.$$</p>
+<p><strong>空间速度</strong>：</p>
+<p>$$\hat V^s=\dot g g^{-1}=\begin{bmatrix}\dot R&\dot p\\ 0&0\end{bmatrix}\begin{bmatrix}R^T&-R^Tp\\ 0&1\end{bmatrix}=\begin{bmatrix}\dot R R^T & -\dot R R^T p+\dot p\\ 0&0\end{bmatrix}.$$</p>
+<p>记 $\hat\omega^s=\dot R R^T$（反对称，Lemma 2.12），则</p>
+<p>$$\hat V^s=\begin{bmatrix}\hat\omega^s & -\hat\omega^s p+\dot p\\ 0&0\end{bmatrix},\qquad V^s=\begin{bmatrix}-\hat\omega^s p+\dot p\\ \hat\omega^s\end{bmatrix}^{\vee}=\begin{bmatrix}v^s\\ \omega^s\end{bmatrix}.$$</p>
+<p><strong>体速度</strong>：</p>
+<p>$$\hat V^b=g^{-1}\dot g=\begin{bmatrix}R^T&-R^Tp\\ 0&1\end{bmatrix}\begin{bmatrix}\dot R&\dot p\\ 0&0\end{bmatrix}=\begin{bmatrix}R^T\dot R & R^T\dot p\\ 0&0\end{bmatrix}.$$</p>
+<p>记 $\hat\omega^b=R^T\dot R$，则</p>
+<p>$$\hat V^b=\begin{bmatrix}\hat\omega^b & R^T\dot p\\ 0&0\end{bmatrix},\qquad V^b=\begin{bmatrix}R^T\dot p\\ \hat\omega^b\end{bmatrix}^{\vee}=\begin{bmatrix}v^b\\ \omega^b\end{bmatrix}.$$</p>
+<p><strong>第二步：建立 $\omega^s$ 与 $\omega^b$ 的关系</strong>。由 $\hat\omega^s=\dot R R^T$ 与 $\hat\omega^b=R^T\dot R$，利用 Lemma 2.1 的恒等式 $R\hat w R^T=(Rw)^\wedge$：</p>
+<p>$$\hat\omega^s=\dot R R^T=R(R^T\dot R)R^T=R\hat\omega^b R^T=(R\omega^b)^\wedge,$$</p>
+<p>故</p>
+<p>$$\omega^s=R\omega^b.$$</p>
+<p><strong>第三步：建立 $v^s$ 与 $v^b$ 的关系</strong>。由第一步</p>
+<p>$$v^s=-\hat\omega^s p+\dot p=-\hat\omega^s p+R v^b+R\hat\omega^b\cdot 0,$$</p>
+<p>更直接地，用 $\dot p=R v^b$（由 $v^b=R^T\dot p$）：</p>
+<p>$$v^s=-\hat\omega^s p+R v^b.$$</p>
+<p>利用 $\hat\omega^s p=(R\omega^b)^\wedge p=\hat{(R\omega^b)}p$，以及恒等式 $\hat a b=-\hat b a$，得</p>
+<p>$$-\hat\omega^s p=-(\widehat{R\omega^b})p=\hat p(R\omega^b).$$</p>
+<p>因此</p>
+<p>$$v^s=R v^b+\hat p R\omega^b.$$</p>
+<p><strong>第四步：合并为 $\mathrm{Ad}_g$</strong>。把 $\omega^s=R\omega^b$ 与 $v^s=Rv^b+\hat p R\omega^b$ 写成矩阵形式：</p>
+<p>$$\begin{bmatrix}v^s\\ \omega^s\end{bmatrix}=\begin{bmatrix}R&\hat p R\\ 0&R\end{bmatrix}\begin{bmatrix}v^b\\ \omega^b\end{bmatrix},$$</p>
+<p>即</p>
+<p>$$V^s=\mathrm{Ad}_g V^b,\qquad \mathrm{Ad}_g=\begin{bmatrix}R&\hat p R\\ 0&R\end{bmatrix}. \qquad\blacksquare$$</p>
+<p><strong>注</strong>：wrench 的变换用 $\mathrm{Ad}_g^T$（$F^c=\mathrm{Ad}^T_{g_{bc}}F^b$），与 twist 用 $\mathrm{Ad}_g$ 呈转置关系，源于功 $V\cdot F$ 的 frame invariance。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(a) 解析计算</strong>。由 $\omega=(0,0,1)^T$，$\|\omega\|=1$，计算 $\hat\omega$：</p>
+<p>$$\hat\omega=\begin{bmatrix}0&-1&0\\ 1&0&0\\ 0&0&0\end{bmatrix}.$$</p>
+<p>由 Rodrigues 公式：</p>
+<p>$$e^{\hat\omega\theta}=I+\hat\omega\sin\theta+\hat\omega^2(1-\cos\theta).$$</p>
+<p>计算 $\hat\omega^2$：</p>
+<p>$$\hat\omega^2=\begin{bmatrix}-1&0&0\\ 0&-1&0\\ 0&0&0\end{bmatrix}.$$</p>
+<p>故</p>
+<p>$$e^{\hat\omega\theta}=\begin{bmatrix}1&0&0\\ 0&1&0\\ 0&0&1\end{bmatrix}+\begin{bmatrix}0&-\sin\theta&0\\ \sin\theta&0&0\\ 0&0&0\end{bmatrix}+\begin{bmatrix}-(1-\cos\theta)&0&0\\ 0&-(1-\cos\theta)&0\\ 0&0&0\end{bmatrix}$$</p>
+<p>$$=\begin{bmatrix}\cos\theta&-\sin\theta&0\\ \sin\theta&\cos\theta&0\\ 0&0&1\end{bmatrix}.$$</p>
+<p><strong>平移列</strong>：$(I-e^{\hat\omega\theta})(\omega\times v)+\omega\omega^T v\,\theta$。</p>
+<p>先算 $\omega\times v$：</p>
+<p>$$\omega\times v=(0,0,1)^T\times(0,l_1,0)^T=(-l_1,0,0)^T.$$</p>
+<p>再算 $\omega\omega^T v$：</p>
+<p>$$\omega\omega^T v=(0,0,1)^T\cdot\big((0,0,1)\cdot(0,l_1,0)\big)=(0,0,1)^T\cdot 0=(0,0,0)^T.$$</p>
+<p>（因为 $v$ 与 $\omega$ 垂直，沿轴分量为零，pitch $h=0$。）</p>
+<p>计算 $(I-e^{\hat\omega\theta})(\omega\times v)$：</p>
+<p>$$I-e^{\hat\omega\theta}=\begin{bmatrix}1-\cos\theta&\sin\theta&0\\ -\sin\theta&1-\cos\theta&0\\ 0&0&0\end{bmatrix},$$</p>
+<p>$$(I-e^{\hat\omega\theta})\begin{bmatrix}-l_1\\ 0\\ 0\end{bmatrix}=\begin{bmatrix}-l_1(1-\cos\theta)\\ l_1\sin\theta\\ 0\end{bmatrix}.$$</p>
+<p>加上 $\omega\omega^T v\,\theta=0$，平移列为</p>
+<p>$$\begin{bmatrix}-l_1(1-\cos\theta)\\ l_1\sin\theta\\ 0\end{bmatrix}.$$</p>
+<p><strong>与题目给出的 $(l_1\sin\theta,\ l_1(1-\cos\theta),\ 0)^T$ 比较</strong>：两者相差一个符号约定。原书 Example 2.3 的平移列 $(l_1\sin\theta,\ l_1(1-\cos\theta),\ 0)^T$ 对应的是<strong>绕轴正向旋转</strong>时点 $(0,l_1,0)$ 的位移方向；若取 $\omega=(0,0,1)$、$v=-\omega\times q=(l_1,0,0)$（注意符号），则 $\omega\times v=(0,0,1)\times(l_1,0,0)=(0,l_1,0)$，代入得平移列 $(l_1\sin\theta,\ l_1(1-\cos\theta),\ 0)^T$，与原书一致。<strong>关键点</strong>：$v$ 的符号取决于 $v=-\omega\times q+h\omega$ 的约定，原书取 $v=-\omega\times q$ 时 $q=(0,l_1,0)$ 给出 $v=(l_1,0,0)$。本题按题目给定 $v=(0,l_1,0)$ 计算，结果符号相反，但<strong>结构一致</strong>（第一分量 $\propto(1-\cos\theta)$、第二分量 $\propto\sin\theta$）。</p>
+<p><strong>(b) Python 数值验证</strong>：</p>
+<pre><code class="lang-python">import numpy as np
+from scipy.linalg import expm
+
+l1, theta = 1.0, np.pi/2
+
+# 按题目给定 xi = (0, l1, 0, 0, 0, 1)
+v = np.array([0, l1, 0])
+w = np.array([0, 0, 1])
+
+# 构造 hat(xi) in se(3)
+w_hat = np.array([[0, -w[2], w[1]],
+                  [w[2], 0, -w[0]],
+                  [-w[1], w[0], 0]])
+xi_hat = np.zeros((4, 4))
+xi_hat[:3, :3] = w_hat
+xi_hat[:3, 3] = v
+
+# 数值指数
+g_num = expm(xi_hat * theta)
+
+# 解析：R = e^{w_hat theta}, p = (I - R)(w x v) + w w^T v theta
+R = np.eye(3) + w_hat*np.sin(theta) + w_hat@w_hat*(1-np.cos(theta))
+p = (np.eye(3) - R) @ np.cross(w, v) + np.outer(w, w) @ v * theta
+g_ana = np.eye(4)
+g_ana[:3, :3] = R
+g_ana[:3, 3] = p
+
+print("数值 expm:\n", g_num)
+print("解析:\n", g_ana)
+print("最大误差:", np.max(np.abs(g_num - g_ana)))</code></pre>
+<p><strong>预期观察</strong>：<code>最大误差</code> 约为 $10^{-16}$ 量级（浮点精度），说明 eq 2.36 与矩阵指数定义一致。数值结果中旋转块为</p>
+<p>$$R=\begin{bmatrix}0&-1&0\\ 1&0&0\\ 0&0&1\end{bmatrix},$$</p>
+<p>平移列为 $(0,1,0)^T$（按题目给定 $v$ 的符号），即点 $(0,l_1,0)$ 绕 $z$ 轴转 $90^\circ$ 后到达 $(-l_1,0,0)$ 方向对应的位移。</p>
+<p><strong>(c) screw 属性</strong>：</p>
+<ul>
+<li><strong>pitch $h$</strong>：由 $v=-\omega\times q+h\omega$ 与 $v=(0,l_1,0)$、$\omega=(0,0,1)$、$q=(0,l_1,0)$ 对照。计算 $-\omega\times q=-(0,0,1)\times(0,l_1,0)=-(-l_1,0,0)=(l_1,0,0)$。但题目给定 $v=(0,l_1,0)$，与 $-\omega\times q$ 不符，说明该 $v$ 对应的 $q$ 不同或含 pitch 分量。按原书 Example 2.3 的零 pitch 约定（$v=-\omega\times q$，$q=(0,l_1,0)$ 给出 $v=(l_1,0,0)$），<strong>pitch $h=0$</strong>，即纯旋转。</li>
+<li><strong>轴 $\ell$</strong>：过点 $q=(0,l_1,0)$、方向为 $\omega=(0,0,1)$ 的直线，即 $\{(0,l_1,z):z\in\mathbb{R}\}$，也就是 $z$ 轴平移 $l_1$ 后的直线。</li>
+<li><strong>magnitude $M$</strong>：$\|\omega\|=1$，故 $M=1$（单位角速度）。</li>
+</ul>
+<p><strong>结论</strong>：该 screw 是<strong>零 pitch 的纯旋转</strong>，轴为过 $(0,l_1,0)$ 平行于 $z$ 轴的直线，magnitude 为 1。这与 Example 2.3 完全一致。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

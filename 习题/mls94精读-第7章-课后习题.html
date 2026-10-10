@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 7 章「Nonholonomic Behavior」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 7 章「Nonholonomic Behavior」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（1）可积性与 holonomic 的关系</strong></p>
+<p>本章的出发点是 Pfaffian 约束</p>
+<p>$$\omega_i(q)\dot q=0,\quad i=1,\dots,k.$$</p>
+<p>若存在光滑函数 $h_i(q)$，使得沿系统轨迹</p>
+<p>$$h_i(q(t))=0 \iff \omega_i(q)\dot q=0,$$</p>
+<p>则称该 Pfaffian 约束是 <strong>integrable</strong> 的。此时约束等价于一组<strong>位置约束</strong> $h_i(q)=0$，可行运动被限制在 $n-k$ 维流形上，这种约束称为 <strong>holonomic</strong> 约束。</p>
+<p>原书强调二者"严格来说不是同一个东西"，是因为：</p>
+<ul>
+<li><strong>integrable</strong> 描述的是<strong>速度约束</strong> $\omega_i(q)\dot q=0$ 能否由某个函数 $h_i$ 的微分方程"积分"出来；</li>
+<li><strong>holonomic</strong> 描述的是约束本身是<strong>函数型位置约束</strong> $h_i(q)=0$。</li>
+</ul>
+<p>二者在"约束等价"意义下对应，但一个是关于 one-form $\omega_i$ 的性质，一个是关于函数 $h_i$ 的性质。因此原书写道："We often call an integrable Pfaffian constraint a holonomic constraint, although strictly speaking..."。</p>
+<p><strong>（2）三种情形的区分</strong></p>
+<p>由约束右零空间取基 $g_1,\dots,g_m$（$m=n-k$），构造分布</p>
+<p>$$\Delta=\operatorname{span}\{g_1,\dots,g_m\},\qquad \omega_i\cdot g_j=0.$$</p>
+<p>令 $\bar\Delta$ 为 $\Delta$ 的 involutive closure，并令</p>
+<p>$$p=\dim\bar\Delta-\dim\Delta.$$</p>
+<p>则：</p>
+<ul>
+<li><strong>完全 holonomic</strong>：$p=k$，即所有 $k$ 条约束都可积，$\dim\bar\Delta=n$，可行流形维数为 $n-k$；</li>
+<li><strong>completely nonholonomic</strong>：$p=0$，即 $\dim\bar\Delta=\dim\Delta=m$，没有任何非平凡线性组合可积，约束完全不可积；</li>
+<li><strong>partially holonomic</strong>：$0<p<k$，即存在 $p$ 个独立函数 $h_1,\dots,h_p$ 使部分约束可积，其余 $k-p$ 条不可积。</li>
+</ul>
+<p>由 Frobenius 定理（Theorem 7.2），$\Delta$ 可积 $\iff$ $\Delta$ involutive；而 $\bar\Delta$ 是包含 $\Delta$ 的最小 involutive distribution，其水平集即为 integral manifolds。原书还给出正交关系</p>
+<p>$$\operatorname{span}\left\{\frac{\partial h_1}{\partial q},\dots,\frac{\partial h_p}{\partial q}\right\}=\Delta^\perp.$$</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（1）Lie bracket 定义</strong></p>
+<p>本章定义</p>
+<p>$$[f,g](q)=\frac{\partial g}{\partial q}f(q)-\frac{\partial f}{\partial q}g(q).$$</p>
+<p><strong>（2）四步 flow 循环推导</strong></p>
+<p>考虑从 $q_0$ 出发，依次沿四个向量场运动相同时间 $\epsilon$：</p>
+<p>$$g_1 \;\to\; g_2 \;\to\; -g_1 \;\to\; -g_2.$$</p>
+<p>即</p>
+<p>$$q(4\epsilon)=\phi^{-g_2}_\epsilon\circ\phi^{-g_1}_\epsilon\circ\phi^{g_2}_\epsilon\circ\phi^{g_1}_\epsilon(q_0).$$</p>
+<p>对状态做 $\epsilon$ 的 Taylor 展开到 $O(\epsilon^3)$，净位移为</p>
+<p>$$q(4\epsilon)=q_0+\epsilon^2\left(\frac{\partial g_2}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_2\right)+O(\epsilon^3).$$</p>
+<p>因此 $O(\epsilon^2)$ 项正是 $[g_1,g_2]$：</p>
+<p>$$[g_1,g_2]=\frac{\partial g_2}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_2.$$</p>
+<p>注意顺序：四步循环是 $g_1\to g_2\to -g_1\to -g_2$，得到的是 $[g_1,g_2]$，而不是 $[g_2,g_1]$。</p>
+<p><strong>（3）反对称性验证</strong></p>
+<p>由定义</p>
+<p>$$[g,f]=\frac{\partial f}{\partial q}g-\frac{\partial g}{\partial q}f=-[f,g].$$</p>
+<p>故 Lie bracket 是反对称的。</p>
+<p><strong>（4）Example 7.1 的线性向量场</strong></p>
+<p>设 $f(q)=Aq$，$g(q)=Bq$。则</p>
+<p>$$\frac{\partial f}{\partial q}=A,\qquad \frac{\partial g}{\partial q}=B.$$</p>
+<p>代入定义：</p>
+<p>$$[f,g](q)=B(Aq)-A(Bq)=(BA-AB)q.$$</p>
+<p>即</p>
+<p>$$[f,g](q)=(BA-AB)q.$$</p>
+<p>这与原书 Example 7.1 的结论一致。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（1）两个定理的陈述</strong></p>
+<p><strong>Frobenius 定理（Theorem 7.2）</strong>：</p>
+<p>$$\text{正则 distribution 可积} \iff \text{该 distribution involutive}.$$</p>
+<p>即：若 $\Delta=\operatorname{span}\{g_1,\dots,g_m\}$ 是正则分布，则存在 $h_1,\dots,h_p$ 使 $\Delta^\perp=\operatorname{span}\{\partial h_i/\partial q\}$，当且仅当对任意 $f,g\in\Delta$ 有 $[f,g]\in\Delta$。</p>
+<p><strong>Chow 定理 / controllability rank condition（Theorem 7.5）</strong>：</p>
+<p>$$\Delta_q=T_q\mathbb{R}^n \;\Longrightarrow\; \Sigma \text{ 在 } q \text{ 处局部可控}.$$</p>
+<p>其中 $\Delta_q$ 是由 $g_1,\dots,g_m$ 及其所有 Lie bracket 张成的李代数在 $q$ 处的取值。</p>
+<p><strong>（2）判定对象的区别</strong></p>
+<ul>
+<li>Frobenius 定理判定的是<strong>约束的可积性</strong>：$\Delta$ 是否 involutive，即是否对 Lie bracket 封闭。若封闭，则约束可化为位置约束。</li>
+<li>Chow 定理判定的是<strong>系统的可控性</strong>：李代数 $\mathcal{L}(g_1,\dots,g_m)$ 是否在每点张满切空间 $T_q\mathbb{R}^n$。若张满，则系统局部可控。</li>
+</ul>
+<p>关键区别：Frobenius 用 $\Delta$ 本身（或其 involutive closure $\bar\Delta$），Chow 用由 $g_i$ 生成的<strong>整个李代数</strong>。$\dim\bar\Delta\ge\dim\Delta$，但 Chow 条件要求李代数张满 $n$ 维，通常比 involutive 条件更强。</p>
+<p><strong>（3）为什么 Frobenius 要求正则</strong></p>
+<p>Frobenius 定理的经典形式依赖于分布 $\Delta$ 的<strong>维度恒定</strong>（regular），这样才能在局部选取一致的坐标使 $\Delta$ 由坐标基向量张成，从而构造 integral manifolds。若 $\Delta$ 非正则（维度随 $q$ 变化），定理的陈述需要更精细的版本。</p>
+<p><strong>（4）Chow 定理的非构造性</strong></p>
+<p>Chow 定理只保证<strong>存在</strong>一条路径从 $q_0$ 到达任意邻近点，但不给出如何构造这条路径的算法。原书反复强调 "non-constructive"。它保证：</p>
+<ul>
+<li>可达集 $R_V(q_0,\le T)$ 有非空内点（Proposition 7.6）；</li>
+<li>系统在 $q_0$ 局部可控（Proposition 7.7）。</li>
+</ul>
+<p>它不保证：</p>
+<ul>
+<li>如何生成具体控制输入 $u(t)$；</li>
+<li>路径的长度、光滑性等定量性质。</li>
+</ul>
+<p>具体路径生成算法属于第 8 章。</p>
+<p><strong>（5）$\Delta_q=T_q\mathbb{R}^n$ 能否推出 holonomic？</strong></p>
+<p>不能。$\Delta_q=T_q\mathbb{R}^n$ 是 Chow 条件，说明系统可控（非完整系统也可满足）。而 holonomic 要求约束可积，即 $\Delta$ involutive。二者判定对象不同：可控性用李代数，可积性用 $\Delta$ 的 involutive 性质。例如本章的 Disk rolling on a plane（Ex 7.4/7.9）满足 Chow 条件，但约束是非完整的（$\kappa=3$）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（1）$\Delta_1$ 的秩</strong></p>
+<p>$$g_1=\begin{bmatrix}\rho\cos\theta\\ \rho\sin\theta\\ 0\\ 1\end{bmatrix},\qquad g_2=\begin{bmatrix}0\\0\\1\\0\end{bmatrix}.$$</p>
+<p>二者显然线性无关，故</p>
+<p>$$r_1=\operatorname{rank}\Delta_1=2.$$</p>
+<p><strong>（2）计算 $[g_1,g_2]$ 与 $r_2$</strong></p>
+<p>由定义</p>
+<p>$$[g_1,g_2]=\frac{\partial g_2}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_2.$$</p>
+<p>$g_2$ 为常向量，$\partial g_2/\partial q=0$。计算 $\partial g_1/\partial q$：</p>
+<p>$$\frac{\partial g_1}{\partial q}=\begin{bmatrix}0&0&-\rho\sin\theta&0\\ 0&0&\rho\cos\theta&0\\ 0&0&0&0\\ 0&0&0&0\end{bmatrix}.$$</p>
+<p>乘以 $g_2=[0,0,1,0]^T$：</p>
+<p>$$\frac{\partial g_1}{\partial q}g_2=\begin{bmatrix}-\rho\sin\theta\\ \rho\cos\theta\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>因此</p>
+<p>$$[g_1,g_2]=\begin{bmatrix}\rho\sin\theta\\ -\rho\cos\theta\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>该向量与 $g_1,g_2$ 线性无关（前两分量与 $g_1$ 不成比例，且第三、四分量为零），故</p>
+<p>$$r_2=\operatorname{rank}\Delta_2=3.$$</p>
+<p><strong>（3）高阶 bracket 与 $r_3$</strong></p>
+<p>继续计算 $[g_1,[g_1,g_2]]$ 与 $[g_2,[g_1,g_2]]$。记 $g_3=[g_1,g_2]$。计算 $[g_2,g_3]$：</p>
+<p>$$\frac{\partial g_3}{\partial q}g_2=\begin{bmatrix}0&0&\rho\cos\theta&0\\ 0&0&\rho\sin\theta&0\\ 0&0&0&0\\ 0&0&0&0\end{bmatrix}\begin{bmatrix}0\\0\\1\\0\end{bmatrix}=\begin{bmatrix}\rho\cos\theta\\ \rho\sin\theta\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>$g_2$ 为常向量，$\partial g_2/\partial q=0$，故</p>
+<p>$$[g_2,g_3]=\frac{\partial g_3}{\partial q}g_2-\frac{\partial g_2}{\partial q}g_3=\begin{bmatrix}\rho\cos\theta\\ \rho\sin\theta\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>该向量与 $g_1,g_2,g_3$ 线性无关（第四分量为零，而 $g_1$ 第四分量为 1），故</p>
+<p>$$r_3=\operatorname{rank}\Delta_3=4=n.$$</p>
+<p>过滤链终止，非完整度</p>
+<p>$$\kappa=3.$$</p>
+<p>增长向量</p>
+<p>$$r=(r_1,r_2,r_3)=(2,3,4),\qquad \sigma=(\sigma_1,\sigma_2,\sigma_3)=(2,1,1).$$</p>
+<p>这与原书 Ex 7.4/7.9 的结论一致。</p>
+<p><strong>（4）可控性判断</strong></p>
+<p>由于 $r_3=4=n$，李代数在每点张满 $T_q\mathbb{R}^4$，满足 Chow 条件（Theorem 7.5），故系统<strong>局部可控</strong>。但约束是非完整的（$\kappa=3>1$），不能化为位置约束。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>（1）验证 Pfaffian 约束</strong></p>
+<p>约束为</p>
+<p>$$\omega\dot q=\sin\theta\,\dot x-\cos\theta\,\dot y=0,$$</p>
+<p>故</p>
+<p>$$\omega=\begin{bmatrix}\sin\theta&-\cos\theta&0&0\end{bmatrix}.$$</p>
+<p>验证 $\omega g_1$：</p>
+<p>$$\omega g_1=\sin\theta\cdot\cos\theta-\cos\theta\cdot\sin\theta+0+0=0.$$</p>
+<p>验证 $\omega g_2$：</p>
+<p>$$\omega g_2=0.$$</p>
+<p>故 $g_1,g_2$ 确实张成约束的右零空间。</p>
+<p><strong>（2）计算 Lie bracket</strong></p>
+<p>$g_2$ 为常向量，$\partial g_2/\partial q=0$。计算 $\partial g_1/\partial q$：</p>
+<p>$$\frac{\partial g_1}{\partial q}=\begin{bmatrix}0&0&-\sin\theta&0\\ 0&0&\cos\theta&0\\ 0&0&0&-\dfrac{1}{l\sin^2\phi}\\ 0&0&0&0\end{bmatrix}.$$</p>
+<p>乘以 $g_2=[0,0,0,1]^T$：</p>
+<p>$$\frac{\partial g_1}{\partial q}g_2=\begin{bmatrix}0\\0\\ -\dfrac{1}{l\sin^2\phi}\\ 0\end{bmatrix}.$$</p>
+<p>因此</p>
+<p>$$[g_1,g_2]=\begin{bmatrix}0\\0\\ \dfrac{1}{l\sin^2\phi}\\ 0\end{bmatrix}.$$</p>
+<p>记 $g_3=[g_1,g_2]$。计算 $[g_1,g_3]$：</p>
+<p>$$\frac{\partial g_3}{\partial q}g_1=\begin{bmatrix}0&0&0&0\\ 0&0&0&0\\ 0&0&0&-\dfrac{2\cos\phi}{l\sin^3\phi}\\ 0&0&0&0\end{bmatrix}\begin{bmatrix}\cos\theta\\ \sin\theta\\ 1/(l\tan\phi)\\ 0\end{bmatrix}=\begin{bmatrix}0\\0\\0\\0\end{bmatrix}.$$</p>
+<p>$$\frac{\partial g_1}{\partial q}g_3=\begin{bmatrix}0&0&-\sin\theta&0\\ 0&0&\cos\theta&0\\ 0&0&0&-\dfrac{1}{l\sin^2\phi}\\ 0&0&0&0\end{bmatrix}\begin{bmatrix}0\\0\\ \dfrac{1}{l\sin^2\phi}\\ 0\end{bmatrix}=\begin{bmatrix}-\dfrac{\sin\theta}{l\sin^2\phi}\\ \dfrac{\cos\theta}{l\sin^2\phi}\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>故</p>
+<p>$$[g_1,g_3]=\frac{\partial g_3}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_3=\begin{bmatrix}\dfrac{\sin\theta}{l\sin^2\phi}\\ -\dfrac{\cos\theta}{l\sin^2\phi}\\ 0\\ 0\end{bmatrix}.$$</p>
+<p>在 $\phi\neq\pm\pi/2$ 时，$\sin\phi\neq 0$，四个向量 $g_1,g_2,g_3,[g_1,g_3]$ 线性无关（可通过构造矩阵并检查行列式非零验证），故 $r_3=4=n$。</p>
+<p><strong>（3）非完整度与增长向量</strong></p>
+<p>$$r=(r_1,r_2,r_3)=(2,3,4),\qquad \sigma=(2,1,1),\qquad \kappa=3.$$</p>
+<p>这与原书 Ex 7.5/7.10 的结论一致。</p>
+<p><strong>（4）动手验证代码</strong></p>
+<pre><code class="lang-python">import sympy as sp
+
+# 符号
+x, y, theta, phi, l = sp.symbols('x y theta phi l', real=True)
+q = sp.Matrix([x, y, theta, phi])
+
+g1 = sp.Matrix([sp.cos(theta), sp.sin(theta), 1/(l*sp.tan(phi)), 0])
+g2 = sp.Matrix([0, 0, 0, 1])
+
+def lie_bracket(f, g, q):
+    # [f,g] = (dg/dq) f - (df/dq) g
+    Jg = g.jacobian(q)
+    Jf = f.jacobian(q)
+    return sp.simplify(Jg*f - Jf*g)
+
+g3 = lie_bracket(g1, g2, q)
+g4 = lie_bracket(g1, g3, q)
+
+print("g3 = [g1,g2] =", g3.T)
+print("g4 = [g1,[g1,g2]] =", g4.T)
+
+# 数值检查秩
+subs = {x:0, y:0, theta:0, phi:sp.pi/4, l:1}
+M = sp.Matrix.hstack(g1, g2, g3, g4).subs(subs)
+print("Rank at q=(0,0,0,pi/4), l=1:", M.rank())</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><code>g3</code> 输出为 $[0,0,1/(l\sin^2\phi),0]^T$；</li>
+<li><code>g4</code> 输出为 $[\sin\theta/(l\sin^2\phi),-\cos\theta/(l\sin^2\phi),0,0]^T$；</li>
+<li>在 $q=(0,0,0,\pi/4)$、$l=1$ 处，矩阵 $[g_1,g_2,g_3,g_4]$ 的秩为 <strong>4</strong>，即 $r_3=n=4$，满足 Chow 条件，系统局部可控。</li>
+</ul>
+<p>这与原书 Ex 7.5/7.10 的结论一致：Kinematic car 是非完整系统，$\kappa=3$，$\sigma=(2,1,1)$，在 $\phi\neq\pm\pi/2$ 时可控。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

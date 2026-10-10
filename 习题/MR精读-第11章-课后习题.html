@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 11 章「Robot Control」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 11 章「Robot Control」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>误差定义</strong>：本章统一采用</p>
+<p>\[</p>
+<p>\theta_e(t)=\theta_d(t)-\theta(t),</p>
+<p>\]</p>
+<p>其中 $\theta_d(t)$ 为期望关节位置，$\theta(t)$ 为实际关节位置。注意符号方向是「期望减实际」，不是反过来。</p>
+<p><strong>误差动力学的核心地位</strong>：本章把任务规格转换为执行器力/力矩或速度指令，核心思路是用反馈构造期望的误差动力学。也就是说，控制器设计的目标不是直接指定 $\theta(t)$，而是让误差 $\theta_e(t)$ 满足某个微分方程，例如一阶形式</p>
+<p>\[</p>
+<p>\dot\theta_e+\frac{1}{\tau}\theta_e=0</p>
+<p>\]</p>
+<p>或二阶标准形式</p>
+<p>\[</p>
+<p>\ddot\theta_e+2\zeta\omega_n\dot\theta_e+\omega_n^2\theta_e=0.</p>
+<p>\]</p>
+<p>通过选择增益（如 $K_p,K_i,K_d$）来配置该误差方程的根，从而决定误差是否趋零、收敛多快、是否振荡。</p>
+<p><strong>三个性能指标</strong>：本章用以下三个指标描述误差响应：</p>
+<ul>
+<li>steady-state error $e_{ss}$：稳态误差；</li>
+<li>overshoot：超调量；</li>
+<li>2% settling time：误差进入并保持在终值 $\pm 2\%$ 范围内所需时间。</li>
+</ul>
+<p>这三个指标分别对应「最终准不准」「过程冲不冲」「收敛快不快」。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>速度输入 P 控制</strong>：控制律为</p>
+<p>\[</p>
+<p>\dot\theta=K_p\theta_e.</p>
+<p>\]</p>
+<p>当参考为 setpoint 时，$\dot\theta_d=0$，由 $\theta_e=\theta_d-\theta$ 得</p>
+<p>\[</p>
+<p>\dot\theta_e=\dot\theta_d-\dot\theta=-K_p\theta_e,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\dot\theta_e+K_p\theta_e=0.</p>
+<p>\]</p>
+<p>这是一阶误差动力学，时间常数 $\tau=1/K_p$，误差指数收敛到零。</p>
+<p><strong>恒速参考下的 P 控制</strong>：设 $\dot\theta_d=c$，则</p>
+<p>\[</p>
+<p>\dot\theta_e=\dot\theta_d-\dot\theta=c-K_p\theta_e,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\dot\theta_e+K_p\theta_e=c.</p>
+<p>\]</p>
+<p>稳态时 $\dot\theta_e=0$，得</p>
+<p>\[</p>
+<p>e_{ss}=\frac{c}{K_p}.</p>
+<p>\]</p>
+<p>因此 P 控制对恒速参考存在非零稳态误差，且 $K_p$ 越大误差越小，但不能消除。</p>
+<p><strong>速度输入 PI 控制</strong>：控制律为</p>
+<p>\[</p>
+<p>\dot\theta=K_p\theta_e+K_i\int_0^t\theta_e\,dt.</p>
+<p>\]</p>
+<p>对恒速参考 $\dot\theta_d=c$，有</p>
+<p>\[</p>
+<p>\dot\theta_e=c-K_p\theta_e-K_i\int_0^t\theta_e\,dt.</p>
+<p>\]</p>
+<p>对时间求导：</p>
+<p>\[</p>
+<p>\ddot\theta_e=-K_p\dot\theta_e-K_i\theta_e,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\ddot\theta_e+K_p\dot\theta_e+K_i\theta_e=0.</p>
+<p>\]</p>
+<p>这是二阶误差动力学，其标准形为</p>
+<p>\[</p>
+<p>\ddot\theta_e+2\zeta\omega_n\dot\theta_e+\omega_n^2\theta_e=0,</p>
+<p>\]</p>
+<p>对应</p>
+<p>\[</p>
+<p>\omega_n=\sqrt{K_i},\qquad \zeta=\frac{K_p}{2\sqrt{K_i}}.</p>
+<p>\]</p>
+<p>只要 $K_p>0,K_i>0$，特征根实部为负，误差收敛到零，因此恒速参考下 $e_{ss}=0$。</p>
+<p><strong>PI 能消除恒速参考稳态误差的原因</strong>：积分项 $\int_0^t\theta_e\,dt$ 会持续累积误差。若存在非零稳态误差，积分项将不断增大，从而改变控制输入，直到误差被驱动到零。P 控制没有这种「记忆」，恒速参考下必须保留一个非零误差才能产生足够的 $\dot\theta$ 来匹配 $c$。</p>
+<p><strong>若 $\dot\theta_d$ 不是常数</strong>：原书明确指出，PI 对恒速参考可零稳态误差，但若 $\dot\theta_d$ 不是常数，PI 不能保证完全消除稳态误差。因为积分项只能消除常值偏差，对时变参考需要更高阶或前馈补偿。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>推导误差微分方程</strong>：由</p>
+<p>\[</p>
+<p>\dot\theta=\dot\theta_d+K_p\theta_e+K_i\int_0^t\theta_e\,dt</p>
+<p>\]</p>
+<p>以及 $\theta_e=\theta_d-\theta$，得</p>
+<p>\[</p>
+<p>\dot\theta_e=\dot\theta_d-\dot\theta</p>
+<p>=\dot\theta_d-\left(\dot\theta_d+K_p\theta_e+K_i\int_0^t\theta_e\,dt\right)</p>
+<p>=-K_p\theta_e-K_i\int_0^t\theta_e\,dt.</p>
+<p>\]</p>
+<p>对时间求导：</p>
+<p>\[</p>
+<p>\ddot\theta_e=-K_p\dot\theta_e-K_i\theta_e,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\ddot\theta_e+K_p\dot\theta_e+K_i\theta_e=0.</p>
+<p>\]</p>
+<p>标准二阶形式为</p>
+<p>\[</p>
+<p>\ddot\theta_e+2\zeta\omega_n\dot\theta_e+\omega_n^2\theta_e=0,</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\omega_n=\sqrt{K_i},\qquad \zeta=\frac{K_p}{2\sqrt{K_i}}.</p>
+<p>\]</p>
+<p><strong>前馈项 $\dot\theta_d$ 的作用</strong>：前馈项直接提供期望速度，使控制器不需要仅靠反馈来「追赶」参考速度。对恒速参考，前馈项已经提供了正确的稳态速度，PI 只需消除初始误差和扰动，因此可以做到零稳态误差。前馈+PI 是本章推荐的首选速度控制律。</p>
+<p><strong>数值计算</strong>：已知 $K_p=20$，$K_i=100$。</p>
+<p>\[</p>
+<p>\omega_n=\sqrt{100}=10,\qquad</p>
+<p>\zeta=\frac{20}{2\sqrt{100}}=\frac{20}{20}=1.</p>
+<p>\]</p>
+<p>因为 $\zeta=1$，系统是 critically damped。</p>
+<p>2% settling time 为</p>
+<p>\[</p>
+<p>t_s=\frac{4}{\zeta\omega_n}=\frac{4}{1\times 10}=0.4\ \text{s}.</p>
+<p>\]</p>
+<p>这与原书 PI 速度控制例子中 $K_i=100$ 时根 $s_{1,2}=-10=-K_p/2$、critically damped、2% settling time $0.4$ s 一致。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>正确的任务空间误差</strong>：本章定义</p>
+<p>\[</p>
+<p>[X_e]=\log(X^{-1}X_d),</p>
+<p>\]</p>
+<p>其中 $X_e\in\mathbb{R}^6$ 是该 twist 的向量表示。$X_e$ 不是 $X_d-X$，而是使 $X$ 单位时间到 $X_d$ 的 twist。SE(3) 元素不能相减，因此必须用群运算 $\log$ 和 $X^{-1}X_d$ 来构造误差。</p>
+<p><strong>任务空间速度控制律</strong>：完整形式为</p>
+<p>\[</p>
+<p>V_b(t)=\mathrm{Ad}_{X^{-1}X_d}V_d(t)+K_pX_e(t)+K_i\int_0^t X_e(t)\,dt,</p>
+<p>\]</p>
+<p>其中 $[X_e]=\log(X^{-1}X_d)$，然后</p>
+<p>\[</p>
+<p>\dot\theta=J_b^\dagger(\theta)V_b.</p>
+<p>\]</p>
+<p>这里 $V_b$ 是 body twist，$V_d$ 是期望 twist，$\mathrm{Ad}_{X^{-1}X_d}$ 把期望 twist 转换到当前 body frame。</p>
+<p><strong>为什么要经过 $J_b^\dagger(\theta)$</strong>：任务空间控制律直接给出的是末端 body twist $V_b$，但机器人执行器接受的是关节速度 $\dot\theta$。body Jacobian 满足</p>
+<p>\[</p>
+<p>V_b=J_b(\theta)\dot\theta.</p>
+<p>\]</p>
+<p>因此需要从 $V_b$ 反解 $\dot\theta$。当 $J_b$ 为方阵且可逆时，$\dot\theta=J_b^{-1}V_b$；当机器人冗余或非方阵时，用伪逆</p>
+<p>\[</p>
+<p>\dot\theta=J_b^\dagger(\theta)V_b</p>
+<p>\]</p>
+<p>得到最小范数解。</p>
+<p><strong>奇异情形</strong>：若 $J_b(\theta)$ 在某配置下奇异，$J_b^{-1}$ 不存在，但 Moore-Penrose 伪逆 $J_b^\dagger$ 仍然存在（只要 $J_b$ 不是零矩阵）。伪逆可以通过 SVD 构造，对奇异值取倒数时对零奇异值取零。因此 $\dot\theta=J_b^\dagger V_b$ 仍然可以计算，但此时某些任务空间方向不可实现，实际末端 twist 会丢失奇异方向分量。原书在本章使用 $J_b^\dagger(\theta)$ 作为一般形式，并未要求 $J_b$ 始终满秩。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>computed torque 控制律各项作用</strong>：</p>
+<p>\[</p>
+<p>\tau=M(\theta)\left(\ddot\theta_d+K_p\theta_e+K_i\int\theta_e(t)\,dt+K_d\dot\theta_e\right)+\tilde h(\theta,\dot\theta).</p>
+<p>\]</p>
+<ul>
+<li>$M(\theta)$：质量矩阵，用于把期望的关节加速度转换为力矩；</li>
+<li>$\ddot\theta_d$：期望加速度前馈；</li>
+<li>$K_p\theta_e$：位置误差比例反馈；</li>
+<li>$K_i\int\theta_e\,dt$：积分反馈，消除稳态误差；</li>
+<li>$K_d\dot\theta_e$：速度误差微分反馈，提供阻尼；</li>
+<li>$\tilde h(\theta,\dot\theta)$：模型非线性项（Coriolis、重力等），用于补偿机器人自身动力学。</li>
+</ul>
+<p><strong>为什么能消去非线性项</strong>：机器人动力学一般形式为</p>
+<p>\[</p>
+<p>M(\theta)\ddot\theta+\tilde h(\theta,\dot\theta)=\tau.</p>
+<p>\]</p>
+<p>将 computed torque 控制律代入，得</p>
+<p>\[</p>
+<p>M(\theta)\ddot\theta+\tilde h</p>
+<p>=M(\theta)\left(\ddot\theta_d+K_p\theta_e+K_i\int\theta_e\,dt+K_d\dot\theta_e\right)+\tilde h.</p>
+<p>\]</p>
+<p>两边消去 $\tilde h$，再左乘 $M^{-1}(\theta)$，得</p>
+<p>\[</p>
+<p>\ddot\theta=\ddot\theta_d+K_p\theta_e+K_i\int\theta_e\,dt+K_d\dot\theta_e.</p>
+<p>\]</p>
+<p>由 $\theta_e=\theta_d-\theta$，有 $\ddot\theta_e=\ddot\theta_d-\ddot\theta$，因此</p>
+<p>\[</p>
+<p>\ddot\theta_e+K_d\dot\theta_e+K_p\theta_e+K_i\int\theta_e\,dt=0.</p>
+<p>\]</p>
+<p>非线性项被精确消去，误差动力学变成线性二阶（或三阶）系统，增益可以按标准二阶响应设计。</p>
+<p><strong>PD + gravity compensation</strong>：若忽略积分项和模型误差，且重力模型完美，本章给出的控制律为</p>
+<p>\[</p>
+<p>\tau=K_p\theta_e+K_d\dot\theta+\tilde g(\theta).</p>
+<p>\]</p>
+<p>注意这里速度项写的是 $\dot\theta$ 而非 $\dot\theta_e$，因为在 setpoint 控制中 $\dot\theta_d=0$，所以 $\dot\theta_e=-\dot\theta$，符号吸收进增益后形式一致。该控制律由 Krasovskii-LaSalle 定理得到全局收敛。</p>
+<p><strong>Python 伪代码验证 2% settling time</strong>：</p>
+<pre><code class="lang-python">import numpy as np
+import matplotlib.pyplot as plt
+
+# 一阶误差动力学: dtheta_e/dt = -Kp * theta_e
+Kp = 10.0
+tau = 1.0 / Kp
+theta_e0 = 1.0
+dt = 0.001
+T = 1.0
+t = np.arange(0, T, dt)
+theta_e = np.zeros_like(t)
+theta_e[0] = theta_e0
+
+for i in range(1, len(t)):
+    dtheta_e = -Kp * theta_e[i-1]
+    theta_e[i] = theta_e[i-1] + dtheta_e * dt
+
+# 找到 2% settling time
+threshold = 0.02 * abs(theta_e0)
+settling_idx = np.where(np.abs(theta_e) < threshold)[0]
+if len(settling_idx) > 0:
+    t_s = t[settling_idx[0]]
+else:
+    t_s = None
+
+print(f"Kp = {Kp}, tau = {tau:.4f} s")
+print(f"理论 2% settling time ≈ 4/Kp = {4/Kp:.4f} s")
+print(f"数值 2% settling time = {t_s:.4f} s")
+
+plt.plot(t, theta_e)
+plt.axhline(threshold, color='r', linestyle='--')
+plt.axhline(-threshold, color='r', linestyle='--')
+plt.xlabel('t (s)')
+plt.ylabel('theta_e')
+plt.title('First-order error dynamics')
+plt.grid(True)
+plt.show()</code></pre>
+<p><strong>预期观察</strong>：当 $K_p=10$ 时，$\tau=0.1$ s，理论 2% settling time 约为 $4/K_p=0.4$ s。数值模拟应给出接近 $0.4$ s 的结果，误差曲线从 $1$ 指数衰减，进入 $\pm 0.02$ 带内后不再超出。这验证了本章一阶误差响应中 $t_s\approx 4\tau=4/K_p$ 的结论。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

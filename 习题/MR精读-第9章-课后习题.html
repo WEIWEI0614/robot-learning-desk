@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 9 章「Trajectory Generation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 9 章「Trajectory Generation」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章把轨迹定义为</p>
+<p>\[</p>
+<p>\theta(t)=\theta(s(t)),</p>
+<p>\]</p>
+<p>其中</p>
+<p>\[</p>
+<p>\theta(s):[0,1]\to\Theta</p>
+<p>\]</p>
+<p>是几何路径，\(s=0\) 对应起点，\(s=1\) 对应终点；而</p>
+<p>\[</p>
+<p>s(t):[0,T]\to[0,1]</p>
+<p>\]</p>
+<p>是时间标定，决定何时到达路径上的哪个位置。</p>
+<p>这样分解的原因是：路径只描述“走什么几何序列”，时间标定决定“走多快”。二者解耦后，可以分别处理几何约束与速度、加速度、力矩等时间相关约束。</p>
+<p>由链式法则，</p>
+<p>\[</p>
+<p>\dot\theta=\frac{d\theta}{ds}\dot s,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\ddot\theta=\frac{d\theta}{ds}\ddot s+\frac{d^2\theta}{ds^2}\dot s^2.</p>
+<p>\]</p>
+<p>对于 joint-space straight-line path，</p>
+<p>\[</p>
+<p>\theta(s)=\theta_{\text{start}}+s(\theta_{\text{end}}-\theta_{\text{start}}),</p>
+<p>\]</p>
+<p>有</p>
+<p>\[</p>
+<p>\frac{d\theta}{ds}=\theta_{\text{end}}-\theta_{\text{start}},</p>
+<p>\qquad</p>
+<p>\frac{d^2\theta}{ds^2}=0.</p>
+<p>\]</p>
+<p>因此加速度表达式中第二项</p>
+<p>\[</p>
+<p>\frac{d^2\theta}{ds^2}\dot s^2</p>
+<p>\]</p>
+<p>消失，得到</p>
+<p>\[</p>
+<p>\ddot\theta=(\theta_{\text{end}}-\theta_{\text{start}})\ddot s.</p>
+<p>\]</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li><strong>错误。</strong> 关节空间直线一般不等于任务空间末端直线运动。任务空间直线可能靠近 kinematic singularity，导致关节速度过大；机器人可达任务空间在 \(X\) 坐标下可能非凸，两个可达端点之间的直线可能不可达。</li>
+</ol>
+<ol>
+<li><strong>错误。</strong> 在 \(SE(3)\) 中，</li>
+</ol>
+<p>   \[</p>
+<p>   X_{\text{start}}+s(X_{\text{end}}-X_{\text{start}})</p>
+<p>   \]</p>
+<p>   一般不属于 \(SE(3)\)，不能直接当位姿路径。应使用 constant screw motion</p>
+<p>   \[</p>
+<p>   X(s)=X_{\text{start}}\exp\!\big(\log(X_{\text{start}}^{-1}X_{\text{end}})s\big),</p>
+<p>   \]</p>
+<p>   或 decoupled 路径：</p>
+<p>   \[</p>
+<p>   p(s)=p_{\text{start}}+s(p_{\text{end}}-p_{\text{start}}),</p>
+<p>   \]</p>
+<p>   \[</p>
+<p>   R(s)=R_{\text{start}}\exp\!\big(\log(R_{\text{start}}^T R_{\text{end}})s\big).</p>
+<p>   \]</p>
+<ol>
+<li><strong>错误。</strong> Constant screw motion 的 screw axis 恒定，但末端原点一般不沿 Cartesian 直线走。若希望原点走直线，应使用 decoupled 路径。</li>
+</ol>
+<ol>
+<li><strong>错误。</strong> Cubic time scaling 满足起终点零速度，但在 \(t=0\) 与 \(t=T\) 处加速度阶跃，意味着 infinite jerk，可能引起机器人振动。若还要求起终点零加速度，应改用 quintic。</li>
+</ol>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>由边界条件：</p>
+<p>\[</p>
+<p>s(0)=0,\qquad \dot s(0)=0,</p>
+<p>\]</p>
+<p>\[</p>
+<p>s(T)=1,\qquad \dot s(T)=0.</p>
+<p>\]</p>
+<p>先求导：</p>
+<p>\[</p>
+<p>s(t)=a_0+a_1t+a_2t^2+a_3t^3,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\dot s(t)=a_1+2a_2t+3a_3t^2.</p>
+<p>\]</p>
+<p>由 \(s(0)=0\)，得</p>
+<p>\[</p>
+<p>a_0=0.</p>
+<p>\]</p>
+<p>由 \(\dot s(0)=0\)，得</p>
+<p>\[</p>
+<p>a_1=0.</p>
+<p>\]</p>
+<p>于是</p>
+<p>\[</p>
+<p>s(t)=a_2t^2+a_3t^3,</p>
+<p>\qquad</p>
+<p>\dot s(t)=2a_2t+3a_3t^2.</p>
+<p>\]</p>
+<p>由 \(s(T)=1\)：</p>
+<p>\[</p>
+<p>a_2T^2+a_3T^3=1.</p>
+<p>\]</p>
+<p>由 \(\dot s(T)=0\)：</p>
+<p>\[</p>
+<p>2a_2T+3a_3T^2=0.</p>
+<p>\]</p>
+<p>第二式给出</p>
+<p>\[</p>
+<p>a_3=-\frac{2a_2}{3T}.</p>
+<p>\]</p>
+<p>代入第一式：</p>
+<p>\[</p>
+<p>a_2T^2-\frac{2a_2}{3T}T^3=1,</p>
+<p>\]</p>
+<p>\[</p>
+<p>a_2T^2-\frac{2}{3}a_2T^2=1,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\frac{1}{3}a_2T^2=1,</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>a_2=\frac{3}{T^2}.</p>
+<p>\]</p>
+<p>进而</p>
+<p>\[</p>
+<p>a_3=-\frac{2}{T^3}.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>s(t)=\frac{3t^2}{T^2}-\frac{2t^3}{T^3}.</p>
+<p>\]</p>
+<p>速度：</p>
+<p>\[</p>
+<p>\dot s(t)=\frac{6t}{T^2}-\frac{6t^2}{T^3}</p>
+<p>=\frac{6t(T-t)}{T^3}.</p>
+<p>\]</p>
+<p>最大值出现在 \(t=T/2\)：</p>
+<p>\[</p>
+<p>\dot s_{\max}=\frac{3}{2T}.</p>
+<p>\]</p>
+<p>加速度：</p>
+<p>\[</p>
+<p>\ddot s(t)=\frac{6}{T^2}-\frac{12t}{T^3}.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\ddot s_{\max}=\frac{6}{T^2},</p>
+<p>\qquad</p>
+<p>\ddot s_{\min}=-\frac{6}{T^2}.</p>
+<p>\]</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>Trapezoidal profile 分为三阶段：</p>
+<ol>
+<li>加速阶段：\(0\le t\le t_a\)，加速度为 \(a\)；</li>
+<li>匀速阶段：\(t_a\le t\le T-t_a\)，速度为 \(v\)；</li>
+<li>减速阶段：\(T-t_a\le t\le T\)，加速度为 \(-a\)。</li>
+</ol>
+<p>加速阶段结束时达到巡航速度：</p>
+<p>\[</p>
+<p>v=a t_a,</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>t_a=\frac{v}{a}.</p>
+<p>\]</p>
+<p>匀速阶段持续时间为</p>
+<p>\[</p>
+<p>t_v=T-2t_a.</p>
+<p>\]</p>
+<p>总位移为 1，因此</p>
+<p>\[</p>
+<p>1=vT-\frac{v^2}{a}.</p>
+<p>\]</p>
+<p>这就是三阶段情形下的约束关系。</p>
+<p>若</p>
+<p>\[</p>
+<p>v^2/a>1,</p>
+<p>\]</p>
+<p>则机器人永远不会达到速度 \(v\)。三阶段退化为两阶段 accelerate-decelerate，\(\dot s(t)\) 的梯形变成三角形，即 bang-bang 形式。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>因为目标是最小化</li>
+</ol>
+<p>   \[</p>
+<p>   T=\int_0^1 \dot s^{-1}(s)\,ds,</p>
+<p>   \]</p>
+<p>   在给定 \(s\) 处，\(\dot s\) 越大，被积函数越小。因此希望尽可能提高 \(\dot s\)。在相平面中，\(\ddot s\) 决定 \(\dot s\) 的变化率。若当前允许 \(\ddot s\) 取正，则应取最大允许值 \(U\) 来尽快提高 \(\dot s\)；若需要降低 \(\dot s\)，则应取最小允许值 \(L\)。因此最优解总在 \(U\) 或 \(L\) 上，呈 bang-bang 形式。</p>
+<ol>
+<li>在 velocity limit curve 上，</li>
+</ol>
+<p>   \[</p>
+<p>   L(s,\dot s)=U(s,\dot s).</p>
+<p>   \]</p>
+<p>   此时加速度限制区间退化为一个点，motion cone 退化为一个向量，即只能沿该唯一允许方向运动。</p>
+<ol>
+<li>该 time-scaling algorithm 依赖三条假设：</li>
+</ol>
+<ul>
+<li>static posture maintenance；</li>
+<li>每个 \(s\) 有唯一速度上限；</li>
+<li>无 zero-inertia points。</li>
+</ul>
+<p>   若不满足，例如存在 zero-inertia points 或速度上限不唯一，则相平面中的可行运动锥结构会改变，原算法中基于唯一 \(U\)、\(L\) 和 velocity limit curve 的 forward/backward 积分、binary search、switching points 逻辑不再直接适用，需要修改算法。</p>
+<ol>
+<li>运行代码后，相平面轨迹会呈现三段：</li>
+</ol>
+<ul>
+<li>第一段以 \(\ddot s=U=1\) 运动，\(\dot s\) 随 \(s\) 增大而增大；</li>
+<li>第二段以 \(\ddot s=L=-1\) 运动，\(\dot s\) 随 \(s\) 增大而减小；</li>
+<li>第三段再次以 \(\ddot s=U=1\) 运动，\(\dot s\) 再次增大。</li>
+</ul>
+<p>   预期观察：轨迹在 \((s,\dot s)\) 相平面中由三段抛物线状曲线组成，切换点处 \(\ddot s\) 从 \(U\) 跳到 \(L\) 再跳回 \(U\)，体现 bang-bang 控制特征。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

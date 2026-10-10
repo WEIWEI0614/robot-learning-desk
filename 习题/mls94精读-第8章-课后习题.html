@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 8 章「Nonholonomic Motion Planning」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 8 章「Nonholonomic Motion Planning」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>秩条件（式 8.1 之后）</strong>：对控制系</p>
+<p>$$\dot q=g_1(q)u_1+\cdots+g_m(q)u_m,\qquad q\in\mathbb{R}^n,\ u\in\mathbb{R}^m,$$</p>
+<p>一阶可控性要求</p>
+<p>$$T_q\mathbb{R}^n=\text{span}\{g_i,\,[g_j,g_k]:\,i,j,k=1,\dots,m\}.$$</p>
+<p>即 $g_i$ 与所有一阶 Lie bracket $[g_j,g_k]$ 在每一点 $q$ 张成整个切空间。</p>
+<p><strong>维数推导</strong>：</p>
+<ul>
+<li>$g_i$ 共有 $m$ 个独立向量；</li>
+<li>$[g_j,g_k]$ 中，由于反对称性 $[g_j,g_k]=-[g_k,g_j]$，且 $[g_j,g_j]=0$，独立 bracket 个数为 $\binom{m}{2}=m(m-1)/2$；</li>
+<li>因此张成空间的维数上界为</li>
+</ul>
+<p>$$n=m+\frac{m(m-1)}{2}=\frac{2m+m^2-m}{2}=\frac{m^2+m}{2}=\frac{m(m+1)}{2}.$$</p>
+<p><strong>为什么不是 $m(m-1)/2$</strong>：$m(m-1)/2$ 只是 bracket 方向的个数，它<strong>不含</strong>原始的 $m$ 个控制向量场 $g_i$。秩条件要求 $g_i$ 与 bracket 一起张成 $T_q\mathbb{R}^n$，所以必须把 $m$ 加回去。若误写成 $n=m(m-1)/2$，则当 $m=2$ 时会得到 $n=1$，与 Brockett 系统 $m=2,n=3$ 直接矛盾。</p>
+<p><strong>验证</strong>：$m=2$ 时 $n=2\cdot3/2=3$，正是 Brockett 系统的 $(m,n)=(2,3)$，growth vector $(2,3)$，degree of nonholonomy 2。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>Brockett 系统（式 8.2）</strong>：</p>
+<p>$$\dot q_1=u_1,\qquad \dot q_2=u_2,\qquad \dot q_3=q_1u_2-q_2u_1.$$</p>
+<p><strong>向量场</strong>（事实底座第 6 节）：</p>
+<p>$$g_1=(1,0,-q_2)^T,\qquad g_2=(0,1,q_1)^T.$$</p>
+<p>验证：$g_1u_1+g_2u_2=(u_1,u_2,-q_2u_1+q_1u_2)^T$，与上式一致。</p>
+<p><strong>Lie bracket</strong>：</p>
+<p>$$[g_1,g_2]=\frac{\partial g_2}{\partial q}g_1-\frac{\partial g_1}{\partial q}g_2.$$</p>
+<p>计算 $\partial g_2/\partial q$ 只有第 3 行对 $q_1$ 的偏导为 1，故 $\frac{\partial g_2}{\partial q}g_1=(0,0,1)^T$；$\partial g_1/\partial q$ 只有第 3 行对 $q_2$ 的偏导为 $-1$，故 $\frac{\partial g_1}{\partial q}g_2=(0,0,-1)^T$。相减得</p>
+<p>$$[g_1,g_2]=(0,0,2)^T.$$</p>
+<p><strong>maximally nonholonomic</strong>：在每一点 $q$，$g_1,g_2,[g_1,g_2]$ 三个向量线性独立，张成 $T_q\mathbb{R}^3$，故 growth vector 为 $(2,3)$，degree of nonholonomy 为 2。由于 $n=3=m(m+1)/2$ 恰好取到一阶可控性的维数上界，系统是「最大非完整」的——不能再加入更多独立 bracket 方向。</p>
+<p><strong>Euler–Lagrange 推导起点</strong>：构造拉格朗日量</p>
+<p>$$L=(\dot q_1^2+\dot q_2^2)+\lambda(\dot q_3-q_1\dot q_2+q_2\dot q_1),$$</p>
+<p>其中 $\lambda$ 为约束乘子。对 $L$ 应用 Euler–Lagrange 方程，得到 $\dot\lambda=0$ 与 $\dot u=\Lambda u$（$\Lambda\in so(2)$ 常数），从而</p>
+<p>$$u(t)=e^{\Lambda t}u(0),$$</p>
+<p>即最优输入是频率为 $\lambda$ 的 sinusoids。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>设定</strong>：由题 2，最优输入满足 $u(t)=e^{\Lambda t}u(0)$，$\Lambda\in so(2)$ 常数。记 $\Lambda=\begin{bmatrix}0&-\lambda\\ \lambda&0\end{bmatrix}$，则</p>
+<p>$$u(t)=\begin{bmatrix}\cos\lambda t&-\sin\lambda t\\ \sin\lambda t&\cos\lambda t\end{bmatrix}u(0).$$</p>
+<p><strong>闭环条件</strong>：要求 $q_1(1)=q_2(1)=0$。由于 $\dot q_1=u_1,\dot q_2=u_2$，有</p>
+<p>$$\begin{bmatrix}q_1(1)\\q_2(1)\end{bmatrix}=\int_0^1 u(t)\,dt=\left(\int_0^1 e^{\Lambda t}dt\right)u(0).$$</p>
+<p>当 $\lambda\ne0$ 时 $\int_0^1 e^{\Lambda t}dt=\Lambda^{-1}(e^{\Lambda}-I)$。要使该积分为零（对任意 $u(0)$），必须</p>
+<p>$$e^{\Lambda}=I\ \Longrightarrow\ \lambda=2n\pi,\quad n=0,\pm1,\pm2,\dots$$</p>
+<p><strong>$q_3(1)$ 的计算</strong>：由 $\dot q_3=q_1u_2-q_2u_1$，代入 $u(t)=e^{\Lambda t}u(0)$ 并积分，可得（事实底座第 6 节）</p>
+<p>$$q_3(1)=-\frac{1}{\lambda}\|u(0)\|^2.$$</p>
+<p>令 $q_3(1)=a$，则</p>
+<p>$$-\frac{1}{\lambda}\|u(0)\|^2=a\ \Longrightarrow\ \|u(0)\|^2=-\lambda a.$$</p>
+<p><strong>代价与符号</strong>：代价为 $\int_0^1\|u\|^2dt=\|u(0)\|^2=-\lambda a$。由于 $a>0$ 且 $\|u(0)\|^2>0$，必须有 $\lambda<0$。在 $\lambda=2n\pi$ 中取最小的负值，即 $n=-1$，得 $\lambda=-2\pi$，于是</p>
+<p>$$\|u(0)\|^2=2\pi a.$$</p>
+<p>这就是从 $(0,0,0)$ 到 $(0,0,a)$ 的最小代价。</p>
+<p><strong>要点</strong>：$q_3(1)=-\frac1\lambda\|u(0)\|^2=a$ 与代价 $=-\lambda a$ 必须联立；若只取 $\lambda=2\pi$（$n=1$）会得到 $\|u(0)\|^2=-2\pi a<0$，矛盾。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>Algorithm 1 的两步结构</strong>（事实底座第 4 节第 5 步）：</p>
+<ul>
+<li><strong>第一步</strong>：先用任意输入把 $q_i$（$i=1,\dots,m$）steered 至目标值，此时忽略 $q_{ij}$（$i<j$）分量。</li>
+<li><strong>第二步</strong>：再用整数相关频率的 sinusoids 找输入 $u_0$，把 $q_{ij}$ steered 至目标值，同时保证 $q_i$ 不变。</li>
+</ul>
+<p><strong>为什么必须整数相关频率</strong>：由题 3，闭环条件 $q_i(1)=q_i(0)$ 要求 $e^{\Lambda}=I$，即 $\lambda=2n\pi$。若频率不是 $2\pi$ 的整数倍，则 $e^{\Lambda}\ne I$，第一步已经调好的 $q_i$ 会在第二步被破坏。整数相关频率保证每个 sinusoid 在 $t\in[0,1]$ 上整周期闭合，从而 $q_i$ 的净变化为零。</p>
+<p><strong>sinusoids 个数与频率</strong>（事实底座第 6 节）：</p>
+<ul>
+<li><strong>$m$ 偶、$Y$ 非奇异</strong>：需要 $m/2$ 个 sinusoids，频率为</li>
+</ul>
+<p>$$2\pi,\ 2\cdot2\pi,\ \dots,\ \frac{m}{2}\cdot2\pi.$$</p>
+<ul>
+<li><strong>$m$ 奇、$\mathrm{rank}(Y)=m-1$</strong>：需要 $(m-1)/2$ 个 sinusoids，频率为</li>
+</ul>
+<p>$$2\pi,\ 2\cdot2\pi,\ \dots,\ \frac{m-1}{2}\cdot2\pi.$$</p>
+<p><strong>直观解释</strong>：$Y\in so(m)$ 的秩决定了可独立控制的 bracket 方向数。$m$ 偶时 $so(m)$ 的秩为 $m$（非奇异），可支持 $m/2$ 个独立频率；$m$ 奇时 $so(m)$ 必奇异，秩至多 $m-1$，故只能支持 $(m-1)/2$ 个频率。频率取 $2\pi$ 的整数倍是为了满足闭环条件。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(1) 四段拼接与 $v_3,v_4$</strong></p>
+<p>四段拼接（式 8.28）为</p>
+<p>$$e^{\sqrt\epsilon g_1}e^{\sqrt\epsilon g_2}e^{-\sqrt\epsilon g_1}e^{-\sqrt\epsilon g_2}.$$</p>
+<p>由 Campbell–Baker–Hausdorff 公式（式 8.29）</p>
+<p>$$e^{g_1}e^{g_2}=e^{g_1+g_2+\frac12[g_1,g_2]+\frac1{12}([g_1,[g_1,g_2]]-[g_2,[g_1,g_2]])+\cdots},$$</p>
+<p>四段拼接的主项为 $\epsilon[g_1,g_2]$，对应 Philip Hall 坐标中的 $v_3$ 方向（$B_3=[g_1,g_2]$）。但 CBH 展开中同时出现 $\frac{1}{12}([g_1,[g_1,g_2]]-[g_2,[g_1,g_2]])$ 项，其量级为 $\epsilon^{3/2}$，对应 $v_4$ 方向（$B_4$ 为二阶 bracket）。因此四段拼接在生成 $v_3$ 的同时「污染」了 $v_4$。</p>
+<p><strong>(2) 八段拼接生成 $v_4$</strong></p>
+<p>要单独生成 $v_4$ 方向，需要构造一个 CBH 展开中 $v_3$ 项相消、$v_4$ 项保留的输入序列。书中给出的方案是八段拼接，每段 $3\sqrt\epsilon$ 秒。由于系统 nilpotent 阶 $k=4$，所有超过 4 项的 Lie 积为零，CBH 级数有限终止，因此可以精确读出 $h=(0,0,\epsilon,h_4(\epsilon))$ 形式的净位移。八段的设计使得一阶 bracket 贡献相互抵消，只剩二阶 bracket 贡献。</p>
+<p><strong>(3) Python 数值验证</strong></p>
+<pre><code class="lang-python">import numpy as np
+
+def g1(q):
+    return np.array([1.0, 0.0, q[1], q[3], 0.0])
+
+def g2(q):
+    return np.array([0.0, 1.0, 0.0, q[2], 0.0])
+
+def simulate(eps, dt=1e-5):
+    q = np.zeros(5)
+    segs = [(1,0), (0,1), (-1,0), (0,-1)]
+    T = np.sqrt(eps)
+    for u1, u2 in segs:
+        t = 0.0
+        while t < T:
+            q = q + dt * (u1*g1(q) + u2*g2(q))
+            t += dt
+    return q
+
+eps = 0.01
+q_final = simulate(eps)
+print("q3 net =", q_final[2], " expected ~", eps)
+print("q4 net =", q_final[3], " expected nonzero, order eps^(3/2) =", eps**1.5)</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>$q_3$ 的净变化约为 $\epsilon=0.01$，与 $v_3$ 方向的主项 $\epsilon[g_1,g_2]$ 一致；</li>
+<li>$q_4$ 的净变化非零，量级约为 $\epsilon^{3/2}\approx10^{-3}$，对应 CBH 中二阶 bracket 项；</li>
+<li>若把四段拼接改为八段拼接（每段 $3\sqrt\epsilon$ 秒），可观察到 $q_3$ 的净变化被抵消至零，而 $q_4$ 的净变化保留，从而单独生成 $v_4$ 方向。</li>
+</ul>
+<p><strong>注意</strong>：数值积分步长 $dt$ 需足够小以分辨 $\epsilon^{3/2}$ 量级的效应；若 $dt$ 过大，Euler 积分的截断误差会淹没 $q_4$ 的信号。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

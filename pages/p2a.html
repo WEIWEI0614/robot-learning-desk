@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>论文转Agent · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">论文转Agent<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>paper2agent 实测：把论文变成能调用的 Agent</h1>
+<div class="sub">
+  Stanford 的 Nature 论文 · 2026-09-16 发表 · 本机实测通过 ｜
+  <span class="tag tCon">已实测</span>验收 3/3 通过
+</div>
+
+<h2>0 · 先看结论</h2>
+
+<div class="card">
+  <p>你问的是"GitHub 上那个把论文转成 agent 的项目是真的吗"。三句话回答：</p>
+  <ol>
+    <li><strong>是真的</strong>——Stanford 团队，2026-09-16 发表在《Nature》，代码 MIT 开源。</li>
+    <li><strong>但它做的不是"给 PDF 套个聊天框"</strong>——它把「论文 + 配套代码仓库」转成一个 <strong>MCP 服务器</strong>，让 AI 能用自然语言去<strong>真跑原作者的代码</strong>。</li>
+    <li><strong>它最值钱的部分不是"生成"，是"验证"</strong>——它会真的把代码跑起来、比对数值，跑不通的工具直接扔掉。这一点我实测中被验证了两次。</li>
+  </ol>
+</div>
+
+<div class="toc">
+  <div class="small" style="margin-bottom:6px;">目录</div>
+  <ol>
+    <li>基础概念：Agent、MCP、tools/resources/prompts、skill 到底是什么</li>
+    <li>paper2agent 到底是怎么工作的（六个阶段）</li>
+    <li>我的完整操作链：11 步，每步为什么</li>
+    <li>实测结果与两个被验证环节拦下的真问题</li>
+    <li>怎么用：接进 WorkBuddy 的具体配置</li>
+    <li>能力边界：什么时候它帮不上忙</li>
+    <li>这东西最终能给你带来什么</li>
+  </ol>
+</div>
+
+<h2>1 · 基础概念</h2>
+
+<p>你之前说"不知道我是怎么操作的"。不先弄清这几个词，后面每一步都会看得云里雾里。所以先扫盲。</p>
+
+<h3>1.1 Agent（智能体）</h3>
+<p>日常说的"AI 聊天"是<strong>你问它答</strong>。Agent 的区别是：<strong>它能自己调用工具、执行动作、看结果、再决定下一步</strong>。</p>
+<div class="flow">
+  <span>你的需求</span><b>→</b><span>Agent 决定用什么工具</span><b>→</b><span>工具真的执行了</span><b>→</b><span>读到执行结果</span><b>→</b><span>决定下一步 / 给答案</span>
+</div>
+<p>关键差别：<strong>它的答案来自"真的跑过"，而不是"看起来像"</strong>。这也是下文的重点。</p>
+
+<h3>1.2 MCP 是什么（这是理解全文的关键）</h3>
+<p>MCP = <strong>Model Context Protocol</strong>，模型上下文协议。一句话类比：</p>
+<div class="key">
+  <strong>MCP 就是"AI 世界的 USB-C 接口"。</strong><br>
+  在没有 MCP 之前，每让 AI 用一个新的软件（数据库、绘图库、机械臂），都要单独写一套对接代码。有了 MCP，任何软件只要实现这个统一接口，<strong>所有支持 MCP 的 AI 就都能用它</strong>——就像任何设备做成 USB-C 头，所有电脑都能插。
+</div>
+
+<h3>1.3 MCP 服务器里的三层东西</h3>
+<p>论文里最关键的工程细节，就是它把一个研究成果拆成了三层：</p>
+<table>
+  <tr><th>层</th><th>是什么</th><th>论文里的例子</th></tr>
+  <tr><td><strong>tools</strong></td><td>可执行的函数</td><td>"输入一段基因变异，跑一次 AlphaGenome 预测它的影响"</td></tr>
+  <tr><td><strong>resources</strong></td><td>静态资料</td><td>论文正文、代码链接、数据集、图表</td></tr>
+  <tr><td><strong>prompts</strong></td><td>固定工作流顺序</td><td>"先质控 → 再归一化 → 再降维 → 再聚类"</td></tr>
+</table>
+<div class="note">
+  <strong>为什么第三层最容易被忽略却最重要：</strong>单细胞分析里，"先归一化还是先质控"不是随便的——<strong>顺序本身就是一个方法学假设</strong>。一般 AI 用代码时最容易错的就是顺序。把顺序写死成 prompt，等于把原论文里隐含的操作知识显式化。
+</div>
+
+<h3>1.4 MCP 服务器 vs 客户端</h3>
+<ul>
+  <li><strong>服务器</strong>：提供工具的一方。我们这次做的就是给 CleanRL 建一个服务器。</li>
+  <li><strong>客户端</strong>：调用工具的一方。Claude Code、Codex、WorkBuddy 都算。</li>
+  <li><strong>stdio 传输</strong>：客户端把服务器当成一个本地子进程启动，通过标准输入输出通信。不用开端口、不用联网，最安全也最简单。</li>
+</ul>
+
+<h3>1.5 Skill 和 MCP 有什么区别</h3>
+<table>
+  <tr><th></th><th>Skill（技能）</th><th>MCP 服务器</th></tr>
+  <tr><td>本质</td><td>一份写给人看的<strong>操作手册</strong>（Markdown）</td><td>一个<strong>程序</strong>，对外暴露可调用的函数</td></tr>
+  <tr><td>谁执行</td><td>AI 读完之后<strong>自己按步骤操作</strong></td><td>AI <strong>调用</strong>它，由程序执行</td></tr>
+  <tr><td>类比</td><td>菜谱</td><td>厨房里的机器</td></tr>
+</table>
+<p>paper2agent 恰好<strong>两者都产出</strong>：一张技能卡（告诉 AI 该怎么用）＋ 一个 MCP 服务器（真正干活的部分）。</p>
+
+<h3>1.6 为什么"验证环节"是整个设计里最值钱的东西</h3>
+<p>大模型写代码有个著名毛病叫 <strong>代码幻觉</strong>：生成的代码看起来对、语法能跑、甚至能画出一张图——<strong>但做的不是原论文那个方法</strong>。这种错误比直接报错危险得多，因为不报错你就发现不了。</p>
+<p>Paper2Agent 的应对方式很硬：<strong>把原作者的教程真的跑一遍，记下数值和图片作为"标准答案"；然后让生成的工具再跑一次，比对数值（容差约 3%）和图片（感知哈希）。对不上就修，修不过就扔掉这个工具。</strong></p>
+<div class="ok">
+  <strong>这不是宣传话术——我在实测里被它拦下两次真问题。</strong>详见第 4 节。
+</div>
+
+<h3>1.7 paper2agent 是什么</h3>
+<p>论文标题 <em>Reimagining research papers as interactive and reliable AI agents</em>，一作 Jiacheng Miao，合作者含 Jonathan K. Pritchard 和 James Zou，均在 Stanford。发表在 <strong>Nature，2026-09-16</strong>，DOI <code>10.1038/s41586-026-11044-y</code>。</p>
+<p>它做的事：<strong>把论文的正文、补充材料、代码仓库、数据集、教程，打包成一个 MCP 服务器。</strong>作者管这叫把论文变成"虚拟通讯作者"——你原本要发邮件问原作者怎么把代码跑起来，现在直接问它。</p>
+
+<h2>2 · 它是怎么工作的</h2>
+
+<p>Paper2Agent 本身也是一个多智能体系统。它不是让一个大模型读完论文直接生成服务器，而是<strong>把任务拆给多个专职智能体</strong>：</p>
+
+<table>
+  <tr><th>阶段</th><th>谁做</th><th>做什么</th></tr>
+  <tr><td>1</td><td>环境管理</td><td>定位并下载代码仓库，建隔离的虚拟环境</td></tr>
+  <tr><td>2</td><td>扫描</td><td>扫描 README、教程 notebook、脚本，判断哪些是论文的核心方法</td></tr>
+  <tr><td>3</td><td>执行</td><td><strong>真的把教程跑一遍</strong>，记录参考输出（这是"标准答案"）</td></tr>
+  <tr><td>4</td><td>抽取</td><td>把教程步骤封装成带参数说明的 MCP 工具</td></tr>
+  <tr><td>5</td><td>验证</td><td>跑生成的工具，比对数值和图片；失败就诊断修复，最多重试 6 次</td></tr>
+  <tr><td>6</td><td>集成交付</td><td>把通过验证的工具组装成 MCP 服务器 + 打包 ZIP</td></tr>
+</table>
+
+<div class="key">
+  <strong>一条硬规则：每个工具必须绑定到仓库里真实存在的代码。</strong>论文原话是不要在仓库有缺口的地方"发明科学算法"。这条规则是为了防止 AI 用看起来合理的代码填补空白——那是最隐蔽的错误来源。
+</div>
+
+<h3>论文自己报告的成绩（作者自评，无第三方复现）</h3>
+<table>
+  <tr><th>指标</th><th>数值</th></tr>
+  <tr><td>100 篇计算生物学论文中成功转换</td><td><strong>74 篇</strong>（失败主因：没有可执行代码 / 没有数据 / 依赖装不上 / 脚本一次性不可泛化）</td></tr>
+  <tr><td>自动提出的工具中通过验证</td><td>599 个里 <strong>593 个</strong></td></tr>
+  <tr><td>单次构建成本（AlphaGenome 案例）</td><td>约 45 分钟 / $14</td></tr>
+  <tr><td>单次查询成本</td><td>约 $0.20 / 1.6 分钟</td></tr>
+</table>
+
+<div class="warn">
+  <strong>两个必须点破的注意事项：</strong><br>
+  ① 上面的数字全部来自<strong>作者自己的评测集</strong>（Paper2AgentBench），没有第三方独立复现。当成"作者宣称"看，不要当成铁证。<br>
+  ② 网上流传的一份"教程"是<strong>编出来的</strong>——里面写的 <code>pip install paper2agent</code>、<code>github.com/stanfordnlp/paper2agent</code>、<code>paper_parser.py</code> 这些<strong>全都不存在</strong>。真仓库是 <code>github.com/jmiao24/Paper2Agent</code>。而且这个项目<strong>不是一个 pip 包</strong>，是一个装在编码 Agent 里的<strong>技能</strong>。
+</div>
+
+<h2>3 · 我的完整操作链</h2>
+
+<p>下面是我实际做的 11 步。每一步都写清楚"为什么"，因为<strong>知道为什么才叫会做</strong>。</p>
+
+<h3>Step 0 · 先判断真假，而不是先动手</h3>
+<p><strong>做了什么：</strong>搜索确认它存在 → 核对 Nature 论文的 DOI → 找到真实 GitHub 仓库 → 拉下 README 看它到底是什么形态。</p>
+<p><strong>为什么：</strong>AI 相关的项目名极容易撞车或被编造。如果直接照着搜到的教程去操作，很可能在跑一个不存在的东西。我先确认了"Nature 论文真实存在 + 仓库最近有提交 + MIT 许可"这三条锚点，才继续。</p>
+
+<h3>Step 1 · 顺手打了一个假</h3>
+<p><strong>做了什么：</strong>发现搜索排前的某篇"教程"里的安装命令、仓库地址、文件名全是虚构的，明确标出。</p>
+<p><strong>为什么：</strong>你拿到的信息质量取决于我给你的是不是干净的。这类内容比没有更糟——因为它会让你照着做一些永远不可能成功的事，然后在环境问题上浪费几个小时。</p>
+
+<h3>Step 2 · 装之前先做安全审计</h3>
+<p><strong>做了什么：</strong>把整个技能目录拉下来，逐类扫描危险模式。结果如下：</p>
+<table>
+  <tr><th>检查项</th><th>结果</th></tr>
+  <tr><td>下载即执行（curl/wget 管道给 shell）</td><td><strong>0</strong></td></tr>
+  <tr><td>命令执行（subprocess / os.system / eval / exec）</td><td><strong>0</strong></td></tr>
+  <tr><td>网络请求（requests / urllib / socket）</td><td><strong>0</strong></td></tr>
+  <tr><td>敏感路径（~/.ssh、.env、credential、api_key、token）</td><td><strong>0</strong></td></tr>
+  <tr><td>破坏性操作（rm -rf / chmod / sudo）</td><td>仅 2 处 <code>shutil.rmtree</code>，<strong>均限定在技能自己的临时工作目录内，不触碰用户文件</strong></td></tr>
+  <tr><td>硬编码密钥 / Base64 混淆串</td><td><strong>0</strong></td></tr>
+  <tr><td>元数据异常（超长 description、占位符 license）</td><td>正常</td></tr>
+</table>
+<p><strong>结论：P2 安全，可以装。</strong></p>
+<div class="note">
+  <strong>为什么这一步不能省：</strong>Skill 是一份"让 AI 去执行操作"的说明书。如果你装了一个来路不明的技能，等于把指令权交给陌生人。<strong>我给出的唯一 P1 提示是：这个技能的设计本身就是会 clone 第三方仓库并运行它的代码</strong>——这不是投毒，是它的功能。但意味着<strong>你只该喂它你信任的仓库</strong>。
+</div>
+
+<h3>Step 3 · 安装 + 补齐依赖</h3>
+<p><strong>做了什么：</strong>装到 <code>~/.workbuddy/skills/paper2agent/</code>（用户级，所有项目可用）。然后发现它的"论文转技能"分支需要 <code>pymupdf</code> 和 <code>pillow</code> 两个库，装进了<strong>隔离的虚拟环境</strong>。</p>
+<p><strong>为什么用隔离环境：</strong>不污染你本机的 Python。你的系统 Python 如果被一堆版本冲突的库搞乱，之后所有项目都会遭殃，而且这种问题极难排查。<strong>项目依赖必须待在项目自己的盒子里。</strong></p>
+
+<h3>Step 4 · 冒烟测试（先确认能跑，再谈用它）</h3>
+<p><strong>做了什么：</strong>跑 <code>--help</code> 验证脚本能启动。结果发现一个细节：<code>pdf_to_skill.py</code> 和 <code>reading_package.py</code> <strong>不是命令行入口</strong>——它们是被 <code>paper_bundle.py</code> import 的库模块。真正的入口是 <code>paper_bundle.py</code>，有 6 个子命令。</p>
+<p><strong>为什么：</strong>如果我不测，等你自己去用时敲 <code>python pdf_to_skill.py</code>，会看到屏幕上一片空白——既不报错也不输出。这种"静默失败"最消耗时间。</p>
+
+<h3>Step 5 · 选一篇论文（这是唯一需要判断力的地方）</h3>
+<p>你说"机器人 / 深度强化学习 / VLA 的经典论文"，我最后选了 <strong>CleanRL</strong>（深度强化学习领域单文件实现 PPO/DQN/SAC 的经典教学库）。</p>
+<table>
+  <tr><th>候选</th><th>为什么不选 / 选</th></tr>
+  <tr><td><strong>CleanRL</strong> <span class="tag tCon">选它</span></td><td>有官方教程、CPU 几分钟能跑完、<strong>能在我这台机器上走完"跑参考 → 抽工具 → 验证 → 打包"的完整闭环</strong></td></tr>
+  <tr><td>OpenVLA / SmolVLA（VLA）</td><td>要下载 7B 参数权重，本机验证跑不动（这正是 Paper2Agent 会因为"验证失败"而丢弃工具的场景）</td></tr>
+  <tr><td>MuJoCo Playground（机器人）</td><td>依赖太重、训练在 CPU 上要几十分钟，做演示不划算</td></tr>
+</table>
+<div class="key">
+  <strong>选型原则：用"能不能完整跑完验证"来挑，而不是用"哪个更酷"来挑。</strong>因为你要验证的是<strong>这个方法好不好用</strong>，如果卡在环境上没跑完，你得到的信息是"环境难装"，而不是"这方法行不行"。
+</div>
+
+<h3>Step 6 · 建隔离环境，把仓库拉下来</h3>
+<p><strong>做了什么：</strong>克隆 CleanRL，建独立虚拟环境，装 <code>torch</code>（CPU 版本）、<code>gymnasium</code>、<code>tyro</code>、<code>tensorboard</code>。</p>
+<p><strong>为什么用 CPU 版 PyTorch：</strong>装的时候加 <code>--index-url https://download.pytorch.org/whl/cpu</code>，能避开几个 GB 的 CUDA 包。这是这类任务省时间省磁盘的标准做法。</p>
+
+<h3>Step 7 · 先跑一次"标准答案"（这一步决定成败）</h3>
+<p><strong>做了什么：</strong>用固定参数（环境 CartPole-v1、10000 步、种子 1、4 个并行环境）跑一次 PPO，把输出存成参考文件。得到 <strong>288 条回合记录、末 20 条均值 44.45、峰值 106.0</strong>。</p>
+<p><strong>为什么必须先有"标准答案"：</strong>没有参考值，"验证"就无从谈起。Paper2Agent 的整套可靠性都建立在"能比对"上。<strong>这一步是整个流程的地基。</strong></p>
+
+<h3>Step 8 · 抽取工具（不重写任何算法）</h3>
+<p><strong>做了什么：</strong>建了一个 MCP 服务器，3 个工具：</p>
+<table>
+  <tr><th>工具</th><th>怎么实现的</th><th>为什么这样实现</th></tr>
+  <tr><td><code>list_algorithms()</code></td><td>列出仓库里的算法脚本</td><td>让 AI 先知道"这里有什么能用"</td></tr>
+  <tr><td><code>get_ppo_config()</code></td><td>用 AST 解析 <code>ppo.py</code> 源码里的参数默认值</td><td><strong>解析源码而不是硬编码</strong>——仓库更新后它自动跟着变，不会说谎</td></tr>
+  <tr><td><code>train_ppo(...)</code></td><td>调用仓库自己的命令行入口跑训练，解析输出</td><td><strong>只做转接，不做重写</strong>——这是 Paper2Agent "必须绑定原代码"那条硬规矩</td></tr>
+</table>
+<div class="ok">
+  <strong>为什么坚持"不重写算法"：</strong>如果我为了省事，自己写一个"简化版 PPO"，那这个工具就<strong>不再是那篇论文的方法</strong>了。看起来能跑、结果也像，但它验证的不是原作者的代码。<strong>这正是代码幻觉最典型的形态</strong>，而 Paper2Agent 用架构规则从源头堵住了它。
+</div>
+
+<h3>Step 9 · 用技能自带的验收脚本做验证</h3>
+<p><strong>做了什么：</strong>用它自带的 <code>verify_mcp_server.py</code>，真实启动服务器、列出工具、逐个调用、断言返回值符合预期。</p>
+<p><strong>为什么用它的脚本而不是我另写一套：</strong>一是官方脚本本身就检验了"服务器能不能被客户端正常连上"（这是真实可用性，不是我自己声明可用）；二是<strong>用它自己的标准验收它，避免了"我定个容易过的标准"这种自欺</strong>。</p>
+
+<h3>Step 10 · 验证环节拦下了两个真问题 <span class="tag tCore">重点</span></h3>
+
+<div class="warn">
+  <strong>问题一：我的参考口径和工具调用不一致。</strong><br>
+  参考跑我没有显式指定并行环境数（默认 4），而工具调用传了 1。结果<strong>回合数 288 vs 202、均值 44.45 vs 71.85，全对不上</strong>。<br>
+  <strong>价值：</strong>如果我只是"看了看输出觉得差不多"，这个错误会一路带到交付。是验证脚本<strong>用精确比对把它拦了下来</strong>。<br>
+  <strong>教训：参考口径必须显式写全所有参数，绝不要依赖默认值。</strong>（顺带说明一件事：修正之后两次运行<strong>逐位一致</strong>，证明 CleanRL 在固定种子下是可复现的。）
+</div>
+
+<div class="warn">
+  <strong>问题二：依赖升级导致回报数据静默消失。</strong><br>
+  最新的 gymnasium 1.3.0 修改了向量环境的信息字段名，导致 CleanRL 打印训练回报的那段代码<strong>再也匹配不上</strong>。<br>
+  <strong>最阴的地方是：它不报错。</strong>程序正常跑完、正常输出、正常保存模型——只是回报数字一个都不打印了。如果你不比对，你会以为"这次跑得挺快"。<br>
+  <strong>价值：</strong>降到 0.29.1 后恢复。这件事<strong>完美演示了 Paper2Agent 验证层的用途</strong>——它防的不是"跑不起来"，而是"跑起来了但结果不是你要的"。
+</div>
+
+<h3>Step 11 · 打包交付</h3>
+<p><strong>做了什么：</strong>把服务器程序和一份使用说明打包成 ZIP，附上验收报告（含每个用例的通过状态）。</p>
+<p><strong>为什么单独写一份使用说明：</strong>因为这个服务器<strong>需要两个环境变量才能启动</strong>（仓库路径、Python 路径）。不写清楚，你过两天回来就打不开了。</p>
+
+<h2>4 · 实测结果</h2>
+
+<table>
+  <tr><th>验收用例</th><th>结果</th></tr>
+  <tr><td>工具清单与预期一致（3 个）</td><td>通过</td></tr>
+  <tr><td><code>list_algorithms</code> 返回仓库路径与 33 个算法</td><td>通过</td></tr>
+  <tr><td><code>get_ppo_config</code> 解析出的默认超参与源码一致</td><td>通过</td></tr>
+  <tr><td><code>train_ppo</code> 复现参考运行（288 回合 / 均值 44.45 / 峰值 106.0）</td><td><strong>逐位一致</strong></td></tr>
+</table>
+
+<div class="ok">
+  <strong>最终判定：3/3 通过，与参考运行数值完全一致。</strong>
+</div>
+
+<h2>5 · 怎么用</h2>
+
+<p>生成的服务器是 stdio 传输——客户端把它当成一个本地子进程启动。<strong>必须带上两个环境变量</strong>：</p>
+
+<table>
+  <tr><th>变量</th><th>值</th></tr>
+  <tr><td><code>CLEANRL_REPO</code></td><td>CleanRL 仓库的本地路径（含 <code>cleanrl/ppo.py</code>）</td></tr>
+  <tr><td><code>CLEANRL_PY</code></td><td>那个隔离环境里的 Python 绝对路径</td></tr>
+</table>
+
+<h3>接进 WorkBuddy</h3>
+<p>把下面这段合并进 <code>~/.workbuddy/mcp.json</code> 的 <code>mcpServers</code> 里（<strong>注意不是</strong> <code>.mcp.json</code>，文件名前面没有点），然后重启：</p>
+<pre><code>{
+  "mcpServers": {
+    "cleanrl-ppo": {
+      "command": "&lt;你的 venv&gt;/bin/python",
+      "args": ["&lt;交付目录&gt;/server.py"],
+      "env": {
+        "CLEANRL_REPO": "&lt;CleanRL 仓库路径&gt;",
+        "CLEANRL_PY": "&lt;你的 venv&gt;/bin/python"
+      }
+    }
+  }
+}</code></pre>
+
+<div class="note">
+  <strong>一个容易踩的坑：</strong>新写的 MCP 服务器<strong>不会自动生效</strong>。要打开「连接器管理」页面右上角的「自定义连接器」入口，点一下新服务器的「信任」，它才会启用。不点这一步，你会以为配置写错了。
+</div>
+
+<h3>接好之后怎么说话</h3>
+<p>不需要记函数名，直接用自然语言说你要什么：</p>
+<div class="card">
+  <p style="color:var(--tx);">"用 CleanRL 的 PPO 在 CartPole-v1 上跑 10000 步，种子设 1，把末 20 局的平均回报告诉我。"</p>
+  <p style="color:var(--tx);">"对比一下种子 1 和种子 2 下 PPO 的收敛差异。"</p>
+  <p style="color:var(--tx);">"CleanRL 里 PPO 默认的 minibatch 数和 update epoch 是多少？"</p>
+</div>
+<p>Agent 会自己决定调用哪个工具、传什么参数，然后把真实运行结果拿回来告诉你。<strong>关键区别：这些数字是它跑出来的，不是它编的。</strong></p>
+
+<h2>6 · 能力边界</h2>
+
+<table>
+  <tr><th>能做的</th><th>做不到的</th></tr>
+  <tr><td>把<strong>有代码 + 有教程</strong>的研究仓库变成可调用工具</td><td>处理<strong>没有可执行代码</strong>的论文（只能拿到静态资料层，生成不了工具）</td></tr>
+  <tr><td>Python / R / 命令行程序</td><td><strong>ROS、嵌入式固件、硬件相关的一切</strong>（语言支持里没有这些）</td></tr>
+  <tr><td>用"数值容差 + 图像比对"验证计算型流程</td><td>验证<strong>控制策略好不好</strong>——"通过验证"只说明复现了论文数字，<strong>完全不说明策略能在真机上站得起来</strong></td></tr>
+  <tr><td>跨论文组合（A 论文的工具 + B 论文的数据）</td><td>替代实验验证。论文自己也强调开放式科学推理需要人在回路</td></tr>
+</table>
+
+<div class="warn">
+  <strong>最需要记住的一条：</strong>它<strong>不能帮你造机器人</strong>。<br>
+  3D 打印、BOM 采购、舵机接线、IMU 校准、树莓派部署——这些占掉"造一台机器人"80% 的工作量，而 Paper2Agent 一个都碰不到。<strong>它是论文侧的加速器，不是硬件侧的工具。</strong>
+</div>
+
+<h2>7 · 这东西最终能给你什么</h2>
+
+<div class="card">
+  <h3 style="margin-top:0;">对你的强化学习材料（55 篇 PDF）</h3>
+  <p>先按"有没有配套代码和教程"一刀切：</p>
+  <ul>
+    <li><strong>有代码的</strong>（PPO/SAC 实现、MuJoCo Playground、MJX、LeRobot）——这些是甜区，能变成可调用的工具。</li>
+    <li><strong>纯理论的</strong>（收敛性证明、数学推导）——只能拿到资料层，生成不了工具。这类占你材料的相当一部分。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">真正的价值在于"省掉重复劳动"</h3>
+  <p>你读一篇论文的方法，通常要经历：读正文 → 找仓库 → 配环境 → 找入口脚本 → 理解参数 → 跑通 → 才能用在自己的问题上。</p>
+  <p>Paper2Agent 把这些前置成本<strong>一次性付清</strong>，之后每次问都是几秒钟。<strong>它买的不是"更聪明的 AI"，是"不用每次从头理解一遍"。</strong></p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">对你的硬科技投资岗</h3>
+  <p>这件事本身就是一个可以讲的技术判断，而且比背概念有用得多：</p>
+  <ul>
+    <li>你能说清 <strong>MCP 为什么成为事实标准</strong>，以及 tools / resources / prompts 三层各自解决什么问题。</li>
+    <li>你能指出<strong>这个方法的瓶颈不在模型，在原论文的质量</strong>——74% 的成功率意味着 26% 的论文因为"代码缺失、数据丢失、环境不可复现"而失败。这直接连着"可复现性"这个投资尽调里的真问题。</li>
+    <li>你能说出<strong>"通过验证"和"能用"之间的差距</strong>——数值容差 3% 只证明复现了论文数字，不证明方法在新场景下有效。</li>
+  </ul>
+</div>
+
+<div class="key">
+  <strong>一句话总结：</strong>paper2agent 把一个科研成果从"<strong>文档</strong>"变成了"<strong>接口</strong>"。它能让你从"我读过这篇论文"变成"我调用过这篇论文的方法"——<strong>这个差别，在复现里和在理解里，都是真的</strong>。
+</div>
+
+</div>
+<nav class="pager" data-for="p2a"></nav>
+
+</div>
+</main>
+</body>
+</html>

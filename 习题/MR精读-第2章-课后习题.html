@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 2 章「Configuration Space」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 2 章「Configuration Space」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章的定义是：</p>
+<ul>
+<li><strong>Configuration</strong>：机器人所有点位置的一次完整指定。</li>
+<li><strong>C-space</strong>：所有 possible configurations 的集合。</li>
+<li><strong>dof</strong>：表示 configuration 所需的最少实值坐标数。</li>
+</ul>
+<p>“给每个关节一个角度值”不一定等于完整指定 configuration，原因是：</p>
+<ol>
+<li>关节变量只是机器人内部连接关系的一种坐标描述，不一定能唯一确定机器人所有点的位置；</li>
+<li>对 closed-chain 机构，关节变量之间可能存在 holonomic constraints，不能独立自由选取；</li>
+<li>对同一 C-space，可以选择不同坐标表示，dof 是 C-space 的维数，而不是某个特定坐标卡的变量个数；</li>
+<li>若存在 nonholonomic constraints，它限制的是可行速度，而不是直接减少 reachable C-space 的维度。</li>
+</ol>
+<p>刚体自由度结论为：</p>
+<p>\[</p>
+<p>\text{spatial rigid body}=6,\qquad \text{planar rigid body}=3.</p>
+<p>\]</p>
+<p>对应典型 C-space 拓扑为：</p>
+<p>\[</p>
+<p>\text{spatial rigid body}: R^3\times S^2\times S^1,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\text{planar rigid body}: R^2\times S^1.</p>
+<p>\]</p>
+<p>其中 \(R^3\) 或 \(R^2\) 表示位置，\(S^2\) 表示 spatial 情形下的方向单位球面，\(S^1\) 表示平面情形下的朝向角或 spatial 情形下的自转。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>Grübler’s formula 为：</p>
+<p>\[</p>
+<p>\text{dof}=m(N-1-J)+\sum_{i=1}^J f_i.</p>
+<p>\]</p>
+<p>各符号含义：</p>
+<ul>
+<li>\(N\)：links 数，且 ground 也算一个 link；</li>
+<li>\(J\)：joints 数；</li>
+<li>\(m=3\) 用于 planar mechanisms，\(m=6\) 用于 spatial mechanisms；</li>
+<li>joint \(i\) 有 \(f_i\) 个 freedoms；</li>
+<li>joint \(i\) 有 \(c_i\) 个 constraints，且</li>
+</ul>
+<p>  \[</p>
+<p>  f_i+c_i=m,\qquad c_i=m-f_i.</p>
+<p>  \]</p>
+<p>对 <strong>planar four-bar linkage</strong>：</p>
+<ul>
+<li>planar，所以 \(m=3\)；</li>
+<li>\(N=4\)；</li>
+<li>\(J=4\)；</li>
+<li>每个 joint 都是 revolute joint，因此每个 \(f_i=1\)。</li>
+</ul>
+<p>代入：</p>
+<p>\[</p>
+<p>\text{dof}=3(4-1-4)+\sum_{i=1}^4 1</p>
+<p>=3(-1)+4</p>
+<p>=1.</p>
+<p>\]</p>
+<p>所以 planar four-bar linkage 的 dof 为 \(1\)。它是一个单自由度闭链机构。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>推导如下。</p>
+<p>先看 \(N\) 个 links，其中 ground 固定，因此只有 \(N-1\) 个 link 可动。若暂时没有 joints 约束，每个可动刚体有 \(m\) 个 freedoms，所以总 freedoms 为：</p>
+<p>\[</p>
+<p>m(N-1).</p>
+<p>\]</p>
+<p>每个 joint \(i\) 提供 \(f_i\) 个 freedoms，同时施加 \(c_i\) 个 constraints，并且：</p>
+<p>\[</p>
+<p>f_i+c_i=m.</p>
+<p>\]</p>
+<p>因此：</p>
+<p>\[</p>
+<p>c_i=m-f_i.</p>
+<p>\]</p>
+<p>所有 joints 的总 constraints 为：</p>
+<p>\[</p>
+<p>\sum_{i=1}^J c_i</p>
+<p>=</p>
+<p>\sum_{i=1}^J (m-f_i).</p>
+<p>\]</p>
+<p>若这些 constraints 独立，则：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>\text{sum of freedoms of bodies}</p>
+<p>-</p>
+<p>\text{number of independent constraints}.</p>
+<p>\]</p>
+<p>于是：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>m(N-1)-\sum_{i=1}^J c_i.</p>
+<p>\]</p>
+<p>代入 \(c_i=m-f_i\)：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>m(N-1)-\sum_{i=1}^J (m-f_i).</p>
+<p>\]</p>
+<p>展开：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>m(N-1)-mJ+\sum_{i=1}^J f_i.</p>
+<p>\]</p>
+<p>整理得：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>m(N-1-J)+\sum_{i=1}^J f_i.</p>
+<p>\]</p>
+<p>其中 \(N-1\) 来自 ground 固定，只有 \(N-1\) 个 link 可作为自由刚体；加上 \(\sum f_i\) 是因为每个 joint 并不是完全约束，而是保留 \(f_i\) 个自由度。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>对 <strong>parallelogram linkage</strong>，若按通常数法：</p>
+<ul>
+<li>planar，所以 \(m=3\)；</li>
+<li>\(N=5\)；</li>
+<li>\(J=6\)；</li>
+<li>每个 joint 的 \(f_i=1\)。</li>
+</ul>
+<p>代入 Grübler：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>3(5-1-6)+\sum_{i=1}^6 1</p>
+<p>=</p>
+<p>3(-2)+6</p>
+<p>=</p>
+<p>0.</p>
+<p>\]</p>
+<p>公式给出 \(0\) dof，似乎说明它是刚性结构。</p>
+<p>但实际 parallelogram linkage 仍可动，具有 \(1\) dof。原因是：这些 joints 提供的 constraints 并不 independent，存在 <strong>redundant constraints</strong>。Grübler 公式默认 constraints independent，因此在这种非 generic 情况下会给出错误结果。</p>
+<p>修正数法为：</p>
+<ul>
+<li>\(N=4\)；</li>
+<li>\(J=4\)；</li>
+<li>每个 \(f_i=1\)。</li>
+</ul>
+<p>于是：</p>
+<p>\[</p>
+<p>\text{dof}</p>
+<p>=</p>
+<p>3(4-1-4)+\sum_{i=1}^4 1</p>
+<p>=</p>
+<p>3(-1)+4</p>
+<p>=</p>
+<p>1.</p>
+<p>\]</p>
+<p>这与实际可动性一致。</p>
+<p>该例子说明：dof 不是简单地“变量数减方程数”，而应是“变量数减 independent equations 数”。当存在 redundant constraints 时，约束方程数不能直接当作独立约束数，Grübler 公式只在 generic 情况下成立。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>对 <strong>planar 2R robot arm</strong>，两个关节都是 revolute joint，每个关节角取值于 \(S^1\)。因此：</li>
+</ol>
+<p>\[</p>
+<p>\text{C-space}=S^1\times S^1=T^2.</p>
+<p>\]</p>
+<ol>
+<li>若把该 2R arm 安装在一个 <strong>planar rigid body</strong> 上，planar rigid body 的 C-space 为：</li>
+</ol>
+<p>\[</p>
+<p>R^2\times S^1.</p>
+<p>\]</p>
+<p>再叠加 2R arm 的 \(T^2\)，整体为：</p>
+<p>\[</p>
+<p>R^2\times S^1\times T^2</p>
+<p>=</p>
+<p>R^2\times T^3.</p>
+<p>\]</p>
+<ol>
+<li>可运行代码如下：</li>
+</ol>
+<pre><code class="lang-python">import numpy as np
+import matplotlib.pyplot as plt
+
+# 离散采样两个关节角
+theta1 = np.linspace(0, 2*np.pi, 60, endpoint=False)
+theta2 = np.linspace(0, 2*np.pi, 60, endpoint=False)
+
+# 构造 C-space 网格
+T1, T2 = np.meshgrid(theta1, theta2)
+
+# 观察边界：theta=0 与 theta=2*pi 应视为同一点
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.scatter(T1.ravel(), T2.ravel(), s=2)
+
+ax.set_xlabel(r"$\theta_1$")
+ax.set_ylabel(r"$\theta_2$")
+ax.set_title(r"Discrete samples of 2R arm C-space: $T^2=S^1\times S^1$")
+ax.set_xticks([0, np.pi, 2*np.pi])
+ax.set_yticks([0, np.pi, 2*np.pi])
+ax.set_xticklabels(["0", r"$\pi$", r"$2\pi$"])
+ax.set_yticklabels(["0", r"$\pi$", r"$2\pi$"])
+plt.show()</code></pre>
+<p>预期观察：</p>
+<ul>
+<li>采样点填满一个正方形区域；</li>
+<li>但该正方形的左边界 \(\theta_1=0\) 与右边界 \(\theta_1=2\pi\) 应视为同一条边；</li>
+<li>下边界 \(\theta_2=0\) 与上边界 \(\theta_2=2\pi\) 也应视为同一条边；</li>
+<li>因此这个“正方形”的上下边粘合、左右边粘合后得到 torus \(T^2\)，而不是普通平面 \(R^2\)。</li>
+</ul>
+<ol>
+<li>\(T^2\) 不能简单等同于 \(R^2\)，因为拓扑不同：</li>
+</ol>
+<ul>
+<li>在 \(R^2\) 中，直线可以一直延伸，不会自动回到起点；</li>
+<li>在 \(S^1\) 中，角度增加 \(2\pi\) 后回到同一构型；</li>
+<li>因此 \(T^2=S^1\times S^1\) 具有周期性闭合结构；</li>
+<li>例如在 2R arm 中，\(\theta_1=0\) 与 \(\theta_1=2\pi\) 表示同一个 configuration，\(\theta_2=0\) 与 \(\theta_2=2\pi\) 也表示同一个 configuration。</li>
+</ul>
+<p>所以 \(T^2\) 与 \(R^2\) 虽然局部都可用两个坐标描述，但整体拓扑不同。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 2 章「Convex functions」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 2 章「Convex functions」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>一阶条件</strong>（式 (3.2) 附近）：设 $f$ 可微，则 $f$ 凸当且仅当 $\mathrm{dom}f$ 凸，且对任意 $x,y\in\mathrm{dom}f$，</p>
+<p>$$f(y)\ge f(x)+\nabla f(x)^T(y-x).$$</p>
+<p>几何含义：一阶 Taylor 展开是 $f$ 的<strong>全局下估计</strong>。推论：若 $\nabla f(x)=0$，则对所有 $y$ 有 $f(y)\ge f(x)$，即 $x$ 是全局极小点。</p>
+<p><strong>二阶条件</strong>：设 $f$ 二阶可微，则 $f$ 凸当且仅当 $\mathrm{dom}f$ 凸，且</p>
+<p>$$\nabla^2 f(x)\succeq0,\quad \forall x\in\mathrm{dom}f.$$</p>
+<p>一维退化为 $f''(x)\ge0$。</p>
+<p><strong>为什么 $\mathrm{dom}f$ 凸不能省</strong>：凸性定义本身要求对任意 $x,y\in\mathrm{dom}f$ 与 $\theta\in[0,1]$，点 $\theta x+(1-\theta)y$ 仍在 $\mathrm{dom}f$ 内，否则 $f(\theta x+(1-\theta)y)$ 无定义。反例（Remark 3.1）：</p>
+<p>$$f(x)=\frac{1}{x^2},\qquad \mathrm{dom}f=\{x\ne0\}.$$</p>
+<p>在定义域内 $f''(x)=6/x^4>0$，逐点二阶条件成立，但 $\mathrm{dom}f=(-\infty,0)\cup(0,\infty)$ 非凸，且取 $x=-1,y=1,\theta=1/2$ 得 $\theta x+(1-\theta)y=0\notin\mathrm{dom}f$，故 $f$ 不是凸函数。这说明"逐点 $\nabla^2f\succeq0$"只是必要条件的一部分，必须与"$\mathrm{dom}f$ 凸"联合使用。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li><strong>错误</strong>。事实底座明确强调：$f^*$ <strong>总是凸的</strong>，与 $f$ 是否凸无关。理由：$f^*(y)=\sup_x\{y^Tx-f(x)\}$ 是一族关于 $y$ 的仿射函数 $y\mapsto y^Tx-f(x)$（每个固定 $x$ 对应一个）的逐点上确界，而仿射函数既凸又凹，凸函数的逐点上确界仍凸，故 $f^*$ 恒凸。</li>
+</ol>
+<ol>
+<li><strong>正确</strong>。$f^{**}=f$ 需要 $f$ 凸且 <strong>closed</strong>（即 $\mathrm{epi}f$ 为闭集）这一技术条件；当 $\mathrm{dom}f=\mathbb{R}^n$ 时该条件自动满足。这是第 5 章对偶自反性的基础。</li>
+</ol>
+<ol>
+<li><strong>错误</strong>。$\nabla^2f(x)\succ0$ 只是严格凸的<strong>充分条件</strong>，不是必要条件。反例：$f(x)=x^4$ 严格凸，但 $f''(0)=0$，不满足 $\nabla^2f(0)\succ0$。</li>
+</ol>
+<ol>
+<li><strong>错误</strong>。这是凸函数与拟凸函数的关键区别。对凸函数，$\nabla f(x)=0\Rightarrow x$ 全局极小；但对拟凸函数，$\nabla f(x)=0$ 处<strong>不一定是全局最小点</strong>。拟凸的一阶条件形式为：若 $f(y)\le f(x)$，则 $\nabla f(x)^T(y-x)\le0$，即 $\nabla f(x)$ 支撑 sublevel set $S_{f(x)}$，而非给出全局下估计。</li>
+</ol>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第一步：写出共轭定义。</strong></p>
+<p>$$f^*(y)=\sup_{x>0}\{yx-x\log x\}.$$</p>
+<p>记 $h(x)=yx-x\log x$，$x>0$。</p>
+<p><strong>第二步：求内层上确界。</strong></p>
+<p>$$h'(x)=y-\log x-1.$$</p>
+<p>令 $h'(x)=0$ 得 $\log x=y-1$，即 $x=e^{y-1}$。又</p>
+<p>$$h''(x)=-\frac{1}{x}<0,$$</p>
+<p>故 $h$ 严格凹，驻点即全局最大点。代入：</p>
+<p>$$h(e^{y-1})=y e^{y-1}-e^{y-1}(y-1)=e^{y-1}\bigl[y-(y-1)\bigr]=e^{y-1}.$$</p>
+<p>对任意 $y\in\mathbb{R}$，$x=e^{y-1}>0$ 均可行，故</p>
+<p>$$f^*(y)=e^{y-1},\qquad \mathrm{dom}f^*=\mathbb{R}.$$</p>
+<p>这与 Example 3.21 中 $x\log x$ 的共轭结果一致。</p>
+<p><strong>第三步：验证 Fenchel 不等式。</strong></p>
+<p>需证对任意 $x>0$、$y\in\mathbb{R}$：</p>
+<p>$$x\log x+e^{y-1}\ge xy.$$</p>
+<p>令 $t=y-1$，则 $y=t+1$，不等式等价于</p>
+<p>$$x\log x+e^{t}\ge x(t+1).$$</p>
+<p>由指数函数的凸性（或 $e^t\ge 1+t$ 的加强形式），对任意 $t$ 有 $e^t\ge e\cdot t$ 并不直接成立；改用标准做法：对固定 $x>0$，函数 $y\mapsto xy-f^*(y)=xy-e^{y-1}$ 关于 $y$ 是凹函数（$xy$ 线性，$-e^{y-1}$ 凹），其最大值在 $y=1+\log x$ 处取得，最大值为</p>
+<p>$$x(1+\log x)-e^{\log x}=x+x\log x-x=x\log x.$$</p>
+<p>因此 $xy-f^*(y)\le x\log x$，即 $f(x)+f^*(y)\ge x^Ty$。等号当且仅当 $y=1+\log x$，即 $x=e^{y-1}$，正是共轭取上确界的点。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第一步：写出共轭定义。</strong></p>
+<p>$$f^*(y)=\sup_{x\in\mathbb{R}^n}\left\{y^Tx-\frac12 x^TQx\right\}.$$</p>
+<p>记 $h(x)=y^Tx-\frac12 x^TQx$。</p>
+<p><strong>第二步：求梯度与驻点。</strong></p>
+<p>$$\nabla h(x)=y-Qx.$$</p>
+<p>令 $\nabla h(x)=0$ 得 $x=Q^{-1}y$（$Q\succ0$ 保证可逆）。</p>
+<p><strong>第三步：验证是全局最大点。</strong></p>
+<p>$$\nabla^2 h(x)=-Q\prec0,$$</p>
+<p>故 $h$ 严格凹，驻点即全局最大点。</p>
+<p><strong>第四步：代入求值。</strong></p>
+<p>$$h(Q^{-1}y)=y^TQ^{-1}y-\frac12 (Q^{-1}y)^TQ(Q^{-1}y)=y^TQ^{-1}y-\frac12 y^TQ^{-1}y=\frac12 y^TQ^{-1}y.$$</p>
+<p>因此</p>
+<p>$$f^*(y)=\frac12 y^TQ^{-1}y,\qquad \mathrm{dom}f^*=\mathbb{R}^n.$$</p>
+<p>这与 Example 3.22 一致。</p>
+<p><strong>为什么定义域是整个 $\mathbb{R}^n$</strong>：对任意 $y\in\mathbb{R}^n$，$x=Q^{-1}y$ 都是有限点，且 $h$ 在 $x\to\infty$ 时因 $-\frac12 x^TQx$ 的二次负增长而趋于 $-\infty$，故上确界有限且可达。换言之，$f$ 是强凸二次函数，其共轭仍是强凸二次函数，定义域不受限制。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合应用 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 问：二阶条件证明凸性。</strong></p>
+<p>记 $z_i=e^{x_i}$，$Z=\sum_i z_i$，则 $f(x)=\log Z$。计算梯度：</p>
+<p>$$\frac{\partial f}{\partial x_i}=\frac{e^{x_i}}{Z}=\frac{z_i}{Z}.$$</p>
+<p>再求二阶偏导：</p>
+<p>$$\frac{\partial^2 f}{\partial x_i\partial x_j}=\frac{\delta_{ij}e^{x_i}Z-e^{x_i}e^{x_j}}{Z^2}=\frac{z_i}{Z}\delta_{ij}-\frac{z_i z_j}{Z^2}.$$</p>
+<p>写成矩阵形式，令 $p_i=z_i/Z$（即 softmax，满足 $p_i>0$、$\sum_i p_i=1$）：</p>
+<p>$$\nabla^2 f(x)=\mathrm{diag}(p)-pp^T.$$</p>
+<p>对任意 $v\in\mathbb{R}^n$：</p>
+<p>$$v^T\nabla^2f(x)v=\sum_i p_i v_i^2-\Bigl(\sum_i p_i v_i\Bigr)^2=\mathrm{Var}_{p}(v)\ge0,$$</p>
+<p>其中方差按概率分布 $p$ 计算。故 $\nabla^2f(x)\succeq0$，$f$ 凸。同时由 $\max_i x_i\le f(x)\le\max_i x_i+\log n$ 可知 $f$ 是 $\max$ 的光滑近似。</p>
+<p><strong>第 2 问：共轭函数。</strong></p>
+<p>由 Example 3.25，log-sum-exp 的共轭是概率单纯形上的负熵：</p>
+<p>$$f^*(y)=\sum_{i=1}^n y_i\log y_i,\qquad \mathrm{dom}f^*=\left\{y\in\mathbb{R}^n\ \middle|\ y\succeq0,\ \sum_i y_i=1\right\},$$</p>
+<p>其中约定 $0\log0=0$。定义域是概率单纯形，而非整个 $\mathbb{R}^n$。</p>
+<p><strong>第 3 问：数值验证代码。</strong></p>
+<pre><code class="lang-python">import numpy as np
+
+def f(x):
+    return np.log(np.sum(np.exp(x)))
+
+def grad(x):
+    z = np.exp(x)
+    return z / z.sum()
+
+def hess(x):
+    p = grad(x)
+    return np.diag(p) - np.outer(p, p)
+
+# 1) 检查 Hessian 半正定
+rng = np.random.default_rng(0)
+for _ in range(5):
+    x = rng.normal(size=2)
+    H = hess(x)
+    eig = np.linalg.eigvalsh(H)
+    print("x =", x, "eig(H) =", eig, "min eig >= 0:", eig.min() >= -1e-12)
+
+# 2) 数值求共轭并与解析式比较
+from scipy.optimize import minimize
+
+def f_conj_numeric(y):
+    res = minimize(lambda x: -(y @ x - f(x)), x0=np.zeros(2))
+    return -res.fun
+
+def f_conj_analytic(y):
+    y = np.asarray(y)
+    if np.any(y < 0) or abs(y.sum() - 1) > 1e-9:
+        return np.inf
+    return np.sum(np.where(y > 0, y * np.log(y), 0.0))
+
+for y in [np.array([0.3, 0.7]), np.array([0.5, 0.5]), np.array([0.9, 0.1])]:
+    print("y =", y,
+          "numeric =", f_conj_numeric(y),
+          "analytic =", f_conj_analytic(y))</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>每个随机点的 Hessian 最小特征值 $\ge0$（数值误差内），验证 $\nabla^2f\succeq0$。</li>
+<li>对 $y$ 在概率单纯形内，数值共轭与解析值 $\sum_i y_i\log y_i$ 一致（如 $y=(0.5,0.5)$ 给出 $-\log2\approx-0.6931$）。</li>
+<li>若取 $y$ 不在单纯形内（如 $y=(1,1)$ 或含负分量），数值上内层 $\sup$ 会发散或趋于 $\infty$，与 $\mathrm{dom}f^*$ 为单纯形一致。</li>
+</ul>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

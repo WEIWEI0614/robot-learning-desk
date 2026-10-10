@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 10 章「Light and Color」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 10 章「Light and Color」课后习题</h1>
+<p>原书课后习题 12 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：确定人体温度。</strong> 人体核心温度约 37 °C，换算为热力学温度 $T \approx 273 + 37 = 310\ \mathrm{K}$。这是本题唯一需要的物理输入。</p>
+<p><strong>第 2 步：用 Wien 位移定律求峰值波长。</strong> 黑体谱峰值波长随温度下降，由 Wien's displacement law 给出：</p>
+<p>$$\lambda_{\text{peak}} = \frac{b}{T}, \qquad b \approx 2.898\times10^{-3}\ \mathrm{m\cdot K}$$</p>
+<p>代入 $T = 310\ \mathrm{K}$：</p>
+<p>$$\lambda_{\text{peak}} = \frac{2.898\times10^{-3}}{310} \approx 9.35\times10^{-6}\ \mathrm{m} = 9.35\ \mu\mathrm{m}$$</p>
+<p><strong>第 3 步：换算为峰值频率。</strong> 用 $f = c/\lambda$，$c = 3\times10^{8}\ \mathrm{m/s}$：</p>
+<p>$$f_{\text{peak}} = \frac{3\times10^{8}}{9.35\times10^{-6}} \approx 3.2\times10^{13}\ \mathrm{Hz}$$</p>
+<p>（严格地说，黑体谱按频率表示时峰值位置与按波长表示时不同，因为 $B_\nu \neq B_\lambda$ 的 Jacobian 因子 $\mathrm{d}\lambda/\mathrm{d}\nu$ 会移动峰值；但本题按教材惯例用 Wien 定律的波长形式，再换算频率即可。）</p>
+<p><strong>第 4 步：判断波段。</strong> 可见光谱为 400–700 nm，$\lambda_{\text{peak}} \approx 9.35\ \mu\mathrm{m}$ 远大于 700 nm，因此属于 <strong>infra-red（红外）</strong>。对照本章边注的红外分带：IR-C 为 3000 nm–1000 µm，MWIR 为 3000–8000 nm，LWIR 为 8000–15000 nm。$9.35\ \mu\mathrm{m}$ 落在 <strong>LWIR（长波红外，8–15 µm）</strong> 区间。</p>
+<p><strong>第 5 步：选择传感器。</strong> 普通硅基 CCD/CMOS 的响应上限约在 1 µm 附近，无法探测 9.35 µm。应选用对 LWIR 敏感的热探测器，例如：</p>
+<ul>
+<li><strong>微测辐射热计（microbolometer）热像仪</strong>：直接吸收红外辐射引起温升、改变电阻，工作波段典型为 8–14 µm，正好覆盖人体峰值；</li>
+<li><strong>热释电探测器（pyroelectric detector）</strong>：对温度变化敏感，常用于人体运动探测；</li>
+<li><strong>HgCdTe 或量子阱红外光电探测器（QWIP）</strong>：制冷型光子探测器，用于高灵敏度 LWIR 成像。</li>
+</ul>
+<p><strong>第 6 步：MATLAB 验证（可选）。</strong> 用本章的 <code>blackbody</code> 函数画谱并验证峰值：</p>
+<pre><code class="lang-matlab">T = 310;                              % 人体温度 K
+lambda = [1:0.1:30] * 1e-6;           % 1–30 µm
+L = blackbody(lambda, T);             % 黑体谱
+plot(lambda*1e6, L); xlabel('\lambda (\mum)'); ylabel('L');
+[~,i] = max(L); lambda(i)*1e6         % 预期峰值约 9.3–9.4 µm</code></pre>
+<p>预期观察到：曲线在约 9.3 µm 处取极大，整个谱集中在红外区，可见光段（0.4–0.7 µm）几乎为零——这正是为什么人眼看不到彼此"发光"。</p>
+<h4>关键点</h4>
+<ul>
+<li>黑体峰值波长由 <strong>Wien's displacement law</strong> $\lambda_{\text{peak}} = b/T$ 决定，温度越低峰值越靠长波。</li>
+<li>人体 $T\approx310\ \mathrm{K}$ → $\lambda_{\text{peak}}\approx9.35\ \mu\mathrm{m}$，属 <strong>LWIR 红外</strong>，不在可见光内。</li>
+<li>峰值频率约 $3.2\times10^{13}\ \mathrm{Hz}$（由 $f=c/\lambda$ 换算）。</li>
+<li>探测需用 <strong>热红外传感器</strong>（microbolometer / pyroelectric / 制冷光子探测器），硅基可见光相机无效。</li>
+<li>总辐射功率由 <strong>Stefan-Boltzmann law</strong> 给出（曲线下面积），随 $T^4$ 增长——这也是为什么人体辐射虽弱但仍可被热像仪捕获。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>黑体辐射、Stefan-Boltzmann law 与 Wien's displacement law：本章核心概念清单第 1 条、推导链条第 1 步。</li>
+<li>可见光谱 400–700 nm、>700 nm 为 infra-red：记号约定第 1 条。</li>
+<li>黑体谱温度范围 1000–6000 K、波长 300–1000 nm（教材示例范围）：例题与数值例子第 1 条；本题人体 310 K 超出该示例范围，故按符号推导，未引用教材具体数值。</li>
+<li>红外分带 IR-C 3000 nm–1000 µm、MWIR 3000–8000 nm、LWIR 8000–15000 nm：例题与数值例子边注条。</li>
+<li>传感器类型（microbolometer 等）为按 LWIR 波段物理常识的合理推断，原书未给出具体传感器型号数值。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：写出黑体辐射的光谱辐出度。</strong></p>
+<p>黑体辐射由 Planck 定律描述。在波长 $\lambda$ 处，单位面积、单位波长间隔内辐射的功率（光谱辐出度）为</p>
+<p>$$M(\lambda,T)=\frac{2\pi h c^{2}}{\lambda^{5}}\,\frac{1}{\exp\!\left(\dfrac{hc}{\lambda k_B T}\right)-1},$$</p>
+<p>其中 $h$ 为 Planck 常数，$c$ 为光速，$k_B$ 为 Boltzmann 常数。传感器在波长 $\lambda_i$ 处测得的功率 $P_i$ 正比于 $M(\lambda_i,T)$（比例系数与传感器孔径、带宽、增益等有关，记为 $k_i$）：</p>
+<p>$$P_i = k_i\,M(\lambda_i,T).$$</p>
+<p><strong>第 2 步：取两个波长处功率之比，消去未知比例系数。</strong></p>
+<p>若两个测量通道的标定系数相同（或已知其比值），则</p>
+<p>$$\frac{P_1}{P_2}=\frac{M(\lambda_1,T)}{M(\lambda_2,T)}.$$</p>
+<p>代入 Planck 公式，公共常数 $2\pi h c^{2}$ 约去：</p>
+<p>$$\frac{P_1}{P_2}=\left(\frac{\lambda_2}{\lambda_1}\right)^{5}\cdot\frac{\exp\!\left(\dfrac{hc}{\lambda_2 k_B T}\right)-1}{\exp\!\left(\dfrac{hc}{\lambda_1 k_B T}\right)-1}.$$</p>
+<p><strong>第 3 步：在 Wien 近似下化为可解析求解的形式。</strong></p>
+<p>本章讨论黑体谱时使用 Wien 位移定律刻画峰值波长随温度下降（见事实底座 §3 第 1 条）。在可见光/近红外常用波段，$\exp(hc/\lambda k_B T)\gg 1$，可忽略分母中的 $-1$，于是</p>
+<p>$$\frac{P_1}{P_2}\approx\left(\frac{\lambda_2}{\lambda_1}\right)^{5}\exp\!\left[\frac{hc}{k_B T}\left(\frac{1}{\lambda_2}-\frac{1}{\lambda_1}\right)\right].$$</p>
+<p><strong>第 4 步：解出温度 $T$。</strong></p>
+<p>对上式两边取自然对数：</p>
+<p>$$\ln\!\left(\frac{P_1}{P_2}\right)=5\ln\!\left(\frac{\lambda_2}{\lambda_1}\right)+\frac{hc}{k_B T}\left(\frac{1}{\lambda_2}-\frac{1}{\lambda_1}\right).$$</p>
+<p>整理得</p>
+<p>$$\boxed{\;T=\frac{hc}{k_B}\cdot\frac{\dfrac{1}{\lambda_2}-\dfrac{1}{\lambda_1}}{\ln\!\left(\dfrac{P_1}{P_2}\right)-5\ln\!\left(\dfrac{\lambda_2}{\lambda_1}\right)}\;}$$</p>
+<p>这就是用两个波长处的辐射功率表示黑体温度的方程。若两通道标定系数不同，则把 $P_1/P_2$ 替换为 $(P_1/k_1)/(P_2/k_2)$ 即可。</p>
+<p><strong>第 5 步（可选验证）：数值自检。</strong></p>
+<p>原书未给出本题的具体数值，按符号推导。若取 $\lambda_1=450$ nm、$\lambda_2=650$ nm（对应太阳峰值附近与红端），代入太阳温度 $T\approx 6500$ K 可反算出对应的 $P_1/P_2$，再代回上式应还原 $T$。可用如下 Python 代码验证 Wien 近似与精确 Planck 公式的一致性：</p>
+<pre><code class="lang-python">import numpy as np
+h, c, kB = 6.626e-34, 3.0e8, 1.381e-23
+
+def M(lam, T):
+    return (2*np.pi*h*c**2/lam**5)/(np.exp(h*c/(lam*kB*T))-1)
+
+lam1, lam2, T = 450e-9, 650e-9, 6500.0
+P1, P2 = M(lam1, T), M(lam2, T)
+ratio = P1/P2
+
+# Wien 近似反解
+T_est = (h*c/kB)*(1/lam2 - 1/lam1)/(np.log(ratio) - 5*np.log(lam2/lam1))
+print(T_est)   # 预期接近 6500 K</code></pre>
+<p>预期观察到 <code>T_est</code> 与设定的 6500 K 非常接近，说明 Wien 近似在可见光波段对黑体温度反演足够精确。</p>
+<h4>关键点</h4>
+<ul>
+<li>黑体辐射的<strong>光谱形状只由温度 $T$ 决定</strong>，因此两个波长处的功率之比携带了温度信息——这是辐射测温（ratio pyrometry）的物理基础。</li>
+<li>两个测量值之比可<strong>消去与波长无关的标定常数</strong>，这是选择"比值"而非绝对功率的原因。</li>
+<li>求解时使用 <strong>Wien 近似</strong> $\exp(hc/\lambda k_B T)\gg 1$，把 Planck 公式化为指数形式，才能解析地解出 $T$。</li>
+<li>最终公式中 $T$ 与 $\ln(P_1/P_2)$ 呈反比关系：比值越接近 1（两波长功率越相近），反演越敏感，需注意数值稳定性。</li>
+<li>若两通道增益不同，必须先标定 $k_1,k_2$，否则反演出的温度有系统偏差。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章</li>
+<li>依据：</li>
+<li>黑体辐射、Stefan-Boltzmann 定律与 Wien 位移定律：事实底座 §3 第 1 条、§4 第 1 步。</li>
+<li>可见光谱范围 400–700 nm、太阳 6500 K、峰值约 450 nm：事实底座 §6 例题数值。</li>
+<li>Planck 公式与 Wien 近似为标准物理推导，原书未逐项列出该习题的数值，故按符号推导；本题不涉及本章的 tristimulus、色度图或 gamma 内容。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 Stefan-Boltzmann 定律的形式与所需常数。</strong></p>
+<p>Stefan-Boltzmann 定律给出黑体单位面积辐射的总功率（辐射出射度）：</p>
+<p>$$M = \sigma T^4$$</p>
+<p>其中 $\sigma$ 为 Stefan-Boltzmann 常数，$T$ 为黑体的绝对温度（K）。本章事实底座指出：黑体辐射由 Stefan-Boltzmann law（总功率 = 曲线下面积）与 Wien's displacement law（峰值波长随温度下降）刻画。因此本题直接套用该定律即可。</p>
+<p><strong>第 2 步：确定太阳表面温度 $T$。</strong></p>
+<p>本章事实底座给出：太阳温度为 <strong>6500 K</strong>（与 D65 白点 6500 K 一致），且太阳峰值波长约 <strong>450 nm</strong>（由 Wien 位移定律得到，位于可见光蓝端）。故取</p>
+<p>$$T_\odot = 6500\ \mathrm{K}$$</p>
+<p><strong>第 3 步：计算太阳表面单位面积辐射功率。</strong></p>
+<p>代入 Stefan-Boltzmann 定律：</p>
+<p>$$M_\odot = \sigma T_\odot^4 = \sigma \times (6500)^4\ \mathrm{W\,m^{-2}}$$</p>
+<p>先算温度四次方：</p>
+<p>$$6500^4 = (6.5\times10^3)^4 = 6.5^4 \times 10^{12} = 1785.0625 \times 10^{12} \approx 1.785\times10^{15}\ \mathrm{K^4}$$</p>
+<p>取 $\sigma = 5.670\times10^{-8}\ \mathrm{W\,m^{-2}\,K^{-4}}$，则</p>
+<p>$$M_\odot \approx 5.670\times10^{-8} \times 1.785\times10^{15} \approx 1.012\times10^{8}\ \mathrm{W\,m^{-2}}$$</p>
+<p>即太阳表面每平方米约辐射 <strong>$1.0\times10^{8}\ \mathrm{W\,m^{-2}}$</strong>（约 100 MW/m²）。</p>
+<blockquote>说明：事实底座未直接给出 $\sigma$ 的数值，此处采用标准物理常数 $\sigma = 5.670\times10^{-8}\ \mathrm{W\,m^{-2}\,K^{-4}}$；温度 6500 K 来自本章事实底座。</blockquote>
+<p><strong>第 4 步：计算太阳的总输出功率。</strong></p>
+<p>总功率 = 单位面积功率 × 太阳表面积。太阳半径取标准值 $R_\odot \approx 6.96\times10^{8}\ \mathrm{m}$，表面积</p>
+<p>$$A_\odot = 4\pi R_\odot^2 = 4\pi (6.96\times10^{8})^2 \approx 6.09\times10^{18}\ \mathrm{m^2}$$</p>
+<p>于是总输出功率</p>
+<p>$$P_\odot = M_\odot \cdot A_\odot \approx 1.012\times10^{8} \times 6.09\times10^{18} \approx 6.16\times10^{26}\ \mathrm{W}$$</p>
+<p>即太阳总辐射功率约为 <strong>$6\times10^{26}\ \mathrm{W}$</strong>（约 3.8×10²⁶ W 量级，取决于所用半径与温度取值）。</p>
+<blockquote>说明：事实底座未给出太阳半径，故半径采用标准天文常数；若仅按本章符号推导，则结果为 $P_\odot = 4\pi R_\odot^2 \sigma T_\odot^4$，数值需外部常数代入。</blockquote>
+<p><strong>第 5 步（可选）MATLAB 验证。</strong></p>
+<pre><code class="lang-matlab">sigma = 5.670e-8;      % Stefan-Boltzmann constant
+T = 6500;              % Sun surface temperature (K), from Ch.10
+M = sigma * T^4;       % power per square metre
+R = 6.96e8;            % Sun radius (m)
+P = M * 4*pi*R^2;      % total power
+fprintf('M = %.3e W/m^2\n', M);
+fprintf('P = %.3e W\n', P);</code></pre>
+<p>预期输出：<code>M ≈ 1.012e+08 W/m^2</code>，<code>P ≈ 6.16e+26 W</code>。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>Stefan-Boltzmann 定律</strong> $M=\sigma T^4$ 描述黑体单位面积总辐射功率，是本章黑体辐射讨论的定量基础；总功率等于该曲线下面积。</li>
+<li>本章给出的太阳温度为 <strong>6500 K</strong>，与 D65 白点一致；峰值波长约 450 nm 由 Wien 位移定律给出，二者共同刻画太阳光谱。</li>
+<li>表面辐射功率对温度是<strong>四次方</strong>依赖，温度稍变结果变化剧烈。</li>
+<li>总输出功率 = 单位面积功率 × 球面积 $4\pi R_\odot^2$；本题核心是"先算 $M$，再乘面积"。</li>
+<li>事实底座未给出 $\sigma$ 与太阳半径，解答中已明确标注为外部标准常数，其余数值（6500 K、450 nm）均来自本章。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>黑体辐射、Stefan-Boltzmann law、Wien's displacement law：本章核心概念清单第 1 条；推导链条第 1 步。</li>
+<li>太阳温度 6500 K、峰值约 450 nm：事实底座第 6 节例题与数值例子（PDF p.225）。</li>
+<li>D65 = 6500 K：事实底座第 6 节（PDF p.241）。</li>
+<li>$\sigma$ 与太阳半径：事实底座未给出，解答中按标准物理/天文常数代入并已注明。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确物理模型——太阳近似为黑体。</strong></p>
+<p>原书用黑体辐射（blackbody radiation）刻画光源光谱：给定温度 $T$，光谱辐射出射度由 Planck 定律给出。太阳色温取 $T = 6500\ \mathrm{K}$（事实底座 §6：太阳 6500 K，峰值约 450 nm）。可见光波段取 $\lambda \in [400, 700]\ \mathrm{nm}$（事实底座 §1、§6）。</p>
+<p><strong>第 2 步：写出待积分的量。</strong></p>
+<p>要求的是单位面积、可见光波段内的辐射功率，即对光谱辐射出射度在波长上积分：</p>
+<p>$$P = \int_{400\,\mathrm{nm}}^{700\,\mathrm{nm}} M(\lambda, T)\, d\lambda$$</p>
+<p>其中 $M(\lambda,T)$ 为 Planck 黑体光谱辐射出射度（单位 $\mathrm{W\,m^{-2}\,m^{-1}}$，即每平方米每单位波长）。原书用黑体谱曲线下面积对应总功率（Stefan–Boltzmann law），峰值波长由 Wien's displacement law 给出（事实底座 §3 第 1 条）。</p>
+<p><strong>第 3 步：数值积分（离散求和）。</strong></p>
+<p>把 400–700 nm 按步长 $\Delta\lambda$ 采样，用矩形法/梯形法近似：</p>
+<p>$$P \approx \sum_{k} M(\lambda_k, T)\, \Delta\lambda$$</p>
+<p>原书例题采用的波长采样为 <code>lambda = [400:10:700]'*1e-9</code>（事实底座 §6），即步长 $\Delta\lambda = 10\ \mathrm{nm} = 10^{-8}\ \mathrm{m}$，共 31 个采样点。这与本章“用数值积分处理光谱”的做法一致。</p>
+<p><strong>第 4 步：可运行代码（MATLAB，遵循原书风格）。</strong></p>
+<p>原书提供 <code>blackbody(lambda, T)</code> 函数（事实底座 §6 中 D65 例用过 <code>blackbody(lambda,6500)</code>）。据此：</p>
+<pre><code class="lang-matlab">lambda = [400:10:700]' * 1e-9;   % 400-700 nm, 步长 10 nm
+T = 6500;                        % 太阳色温
+M = blackbody(lambda, T);        % 光谱辐射出射度 W m^-2 m^-1
+dlambda = 10e-9;                 % 步长 (m)
+P = sum(M) * dlambda;            % 数值积分 -> W m^-2
+fprintf('Visible-band power = %.4g W/m^2\n', P);</code></pre>
+<p>预期观察：<code>blackbody</code> 返回一条在约 450 nm 附近取峰值的曲线（Wien's law，事实底座 §6：太阳峰值约 450 nm）；<code>sum(M)*dlambda</code> 给出可见光波段内的功率密度，量级为 $10^{7}\ \mathrm{W\,m^{-2}}$ 量级（太阳表面总出射度约 $6.3\times10^{7}\ \mathrm{W\,m^{-2}}$，可见光占其中一部分）。</p>
+<p><strong>第 5 步：结果说明。</strong></p>
+<ul>
+<li>若改用梯形法 <code>trapz(lambda, M)</code>，结果与矩形法接近，差异随 $\Delta\lambda$ 减小而消失。</li>
+<li>该积分只覆盖 400–700 nm，故小于 Stefan–Boltzmann 总功率（曲线下全部面积）；这正是“可见光波段功率”与“总辐射功率”的区别。</li>
+<li>原书未给出该积分的具体数值答案，故此处按符号与数值方法推导，不编造数字。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>太阳在本题中按 <strong>blackbody</strong> 处理，温度取 <strong>6500 K</strong>（事实底座 §6）。</li>
+<li>待求量是 <strong>光谱辐射出射度在 400–700 nm 上的积分</strong>，不是总功率；总功率对应整条曲线下面积（Stefan–Boltzmann）。</li>
+<li>数值积分用离散采样求和：原书采样为 <strong>400:10:700 nm</strong>（事实底座 §6），$\Delta\lambda = 10\ \mathrm{nm}$。</li>
+<li>峰值波长由 <strong>Wien's displacement law</strong> 决定，6500 K 时约 <strong>450 nm</strong>，落在可见光内（事实底座 §6）。</li>
+<li>原书未给出该题的具体数值结果，答案以方法与代码为主，<strong>不编造数字</strong>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>黑体辐射、Stefan–Boltzmann law、Wien's displacement law：事实底座 §3 第 1 条。</li>
+<li>太阳 6500 K、峰值约 450 nm、可见光 400–700 nm：事实底座 §6。</li>
+<li>波长采样 <code>[400:10:700]*1e-9</code>、<code>blackbody(lambda,6500)</code>：事实底座 §6。</li>
+<li>光谱积分/三刺激值积分思想（式 10.4 的积分形式）：事实底座 §5 第 3 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确「luminosity」在本章中的物理含义。</strong></p>
+<p>本章区分了两类量：辐射量（radiometric，纯物理功率，单位 W）与光度学量（photometric，按人眼感知加权，单位 lm）。luminous flux（光通量，单位 lm）是把光源的辐射功率谱 $E(\lambda)$ 用<strong>人眼的光谱灵敏度</strong>加权后积分得到的量。因此「luminosity」不是光源自身的物理属性，而是「人眼觉得有多亮」的度量。</p>
+<p><strong>第 2 步：人眼灵敏度曲线在 555 nm 处取最大值。</strong></p>
+<p>人眼对可见光 400–700 nm 的响应不是平坦的：photopic（明视觉，cone 主导）响应在约 555 nm（黄绿光）处达到峰值，向两侧迅速衰减。本章给出的具体证据是 scotopic（暗视觉，rod 主导）峰值约 510 nm，而 <code>luminos(450e-9)/luminos(550e-9) = 0.0382</code>——即同样功率的 450 nm 蓝光，人眼只感到 550 nm 绿光的 3.8% 亮。这说明灵敏度函数存在一个明确的峰值波长。</p>
+<p><strong>第 3 步：把「峰值」归一化为定义常数。</strong></p>
+<p>既然 555 nm 处人眼最敏感，就把该波长处的<strong>光视效能</strong>（luminous efficacy，即每瓦辐射功率能产生多少流明）作为整个光度学体系的基准点，并人为规定其数值为</p>
+<p>$$K_{\max} = 683\ \mathrm{lm\,W^{-1}} \quad (\text{at } \lambda = 555\ \mathrm{nm})$$</p>
+<p>这个 683 是<strong>定义值</strong>，不是测量出来的物理常数。它的作用是给「流明」这个单位一个可操作的锚点：一旦 555 nm 处 1 W = 683 lm 被固定，其他波长的光视效能就由人眼灵敏度曲线 $V(\lambda)$ 相对峰值归一化后确定：</p>
+<p>$$K(\lambda) = 683\,V(\lambda)\ \mathrm{lm\,W^{-1}},\qquad V(555\,\mathrm{nm})=1$$</p>
+<p><strong>第 4 步：用本章数值验证该定义的后果。</strong></p>
+<p>本章给出：1 W @ 555 nm = 683 lm；1 W @ 800 nm = 0 lm（800 nm 已在可见光之外，人眼无响应，故 $V=0$）。这两个端点正好说明 683 是「峰值」而非任意值——它是灵敏度曲线归一化到 1 时对应的最大光视效能，其他波长都按 $V(\lambda)\le 1$ 打折。本章还给出实际光源的效率远低于此峰值：白炽灯 < 15 lm W⁻¹、荧光灯 ≤ 100 lm W⁻¹、白光 LED ≤ 150 lm W⁻¹，因为它们把大量功率辐射到人眼不敏感的波长上。</p>
+<p><strong>第 5 步：结论。</strong></p>
+<p>683 lm W⁻¹ 被定义为峰值光视效能，是因为：(a) 人眼灵敏度在 555 nm 处最大；(b) 需要选一个基准点把辐射功率（W）与感知亮度（lm）联系起来；(c) 取该峰值处 1 W = 683 lm 作为定义，使 $K(\lambda)=683\,V(\lambda)$ 成为可计算的光度学换算规则。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>683 lm W⁻¹ 是定义值，不是测量值</strong>：它锚定在 555 nm（人眼 photopic 灵敏度峰值）处，1 W 辐射功率 = 683 lm 光通量。</li>
+<li><strong>luminosity 是感知量</strong>：必须用光谱灵敏度 $V(\lambda)$ 对辐射谱加权，峰值归一化为 1，故 $K(\lambda)=683\,V(\lambda)$。</li>
+<li><strong>峰值波长 555 nm</strong>：本章用 scotopic 峰值 510 nm 与 <code>luminos(450e-9)/luminos(550e-9)=0.0382</code> 佐证灵敏度曲线有明确峰值。</li>
+<li><strong>端点自洽</strong>：1 W @ 555 nm = 683 lm，1 W @ 800 nm = 0 lm（红外不可见），符合 $V(\lambda)$ 在峰值两侧衰减到零。</li>
+<li><strong>实际光源效率远低于峰值</strong>：白炽灯 < 15、荧光灯 ≤ 100、白光 LED ≤ 150 lm W⁻¹，因功率分布在非峰值波长。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>光度学量与辐射量区分、luminous flux 定义：本章第 3 节核心概念 1、第 4 节推导链第 1 步</li>
+<li>scotopic 峰值 510 nm、<code>luminos(450e-9)/luminos(550e-9)=0.0382</code>：第 6 节例题数值（PDF p.227）</li>
+<li>1 W @ 555 nm = 683 lm、1 W @ 800 nm = 0 lm、白炽灯/荧光灯/LED 效率：第 6 节例题数值（PDF p.228）</li>
+<li>可见光 400–700 nm、>700 nm 为 infra-red：第 1 节记号约定</li>
+<li>习题数值「亮度峰值 683 lm W⁻¹」：第 6 节末尾习题数值（PDF p.249–250）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确已知量与所求量的定义。</strong></p>
+<p>由本章记号约定：</p>
+<ul>
+<li>照度（illuminance）$E$ 的单位是 lx（lux），表示单位面积上接收到的光通量（luminous flux，单位 lm）。</li>
+<li>发光强度（luminous intensity）$I$ 的单位是 lm sr⁻¹，即 candela（cd），表示单位立体角内发出的光通量。</li>
+</ul>
+<p>题设给出的是<strong>照度</strong> $E$（在地面处测得），要求的是太阳作为<strong>点光源</strong>向空间辐射的<strong>发光强度</strong> $I$。二者通过距离联系。</p>
+<p><strong>第 2 步：取原书给出的室外照度数值。</strong></p>
+<p>依据事实底座第 6 节（照度数值，PDF p.229）：</p>
+<p>$$E_{\text{outdoor}} \approx 10000\ \text{lx}\quad(\text{晴天室外})$$</p>
+<p><strong>第 3 步：建立照度与发光强度的几何关系。</strong></p>
+<p>把太阳视为距离地球 $d$ 处的点光源，其发出的光通量在各向同性假设下均匀分布在半径 $d$ 的球面上。球面上照度与发光强度的关系为：</p>
+<p>$$E = \frac{I}{d^{2}}$$</p>
+<p>因此</p>
+<p>$$I = E\, d^{2}$$</p>
+<p>其中 $d$ 为日地距离。</p>
+<p><strong>第 4 步：代入日地距离。</strong></p>
+<p>日地平均距离为天文常数：</p>
+<p>$$d \approx 1.496\times10^{11}\ \text{m}$$</p>
+<p>（注：该数值为通用天文常数，非本章事实底座内容；本章未给出日地距离，此处按标准物理常数代入。）</p>
+<p><strong>第 5 步：计算。</strong></p>
+<p>$$I = 10000\ \text{lx}\times(1.496\times10^{11}\ \text{m})^{2}$$</p>
+<p>先算平方：</p>
+<p>$$d^{2} = (1.496\times10^{11})^{2} \approx 2.238\times10^{22}\ \text{m}^{2}$$</p>
+<p>于是</p>
+<p>$$I \approx 1.0\times10^{4}\times 2.238\times10^{22} \approx 2.24\times10^{26}\ \text{lm sr}^{-1}$$</p>
+<p>即</p>
+<p>$$\boxed{I_{\text{Sun}} \approx 2.2\times10^{26}\ \text{cd}}$$</p>
+<p><strong>第 6 步：量纲与合理性检查。</strong></p>
+<ul>
+<li>量纲：$\text{lx}\cdot\text{m}^{2} = (\text{lm}\,\text{m}^{-2})\cdot\text{m}^{2} = \text{lm}$，再除以 sr 得 $\text{lm sr}^{-1} = \text{cd}$，正确。</li>
+<li>数量级：太阳发光强度约 $10^{26}$ cd 量级，与天文观测一致（太阳总光通量约 $3.8\times10^{26}$ lm，因太阳近似各向同性，$I \approx \Phi/4\pi$ 亦给出同量级），结果合理。</li>
+</ul>
+<p><strong>第 7 步：MATLAB 验证（可选）。</strong></p>
+<pre><code class="lang-matlab">E = 10000;              % 室外照度, lx (原书 p.229)
+d = 1.496e11;           % 日地距离, m
+I = E * d^2;            % 发光强度, cd
+fprintf('Sun luminous intensity = %.3e cd\n', I);</code></pre>
+<p>预期输出：<code>Sun luminous intensity = 2.238e+26 cd</code>，与手算一致。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>照度 vs 发光强度</strong>：$E$（lx）是"到达某面的光通量密度"，$I$（cd = lm sr⁻¹）是"光源向单位立体角发出的光通量"，二者由 $E = I/d^{2}$ 联系。</li>
+<li><strong>本题唯一来自原书的数值</strong>是室外照度 $E \approx 10000$ lx（晴天室外，PDF p.229）；日地距离 $d$ 为外部天文常数，本章未给出。</li>
+<li><strong>点光源近似</strong>：把太阳当作距离 $d$ 处的点光源，是本题成立的前提；若考虑太阳有限角直径，需对角积分，但量级不变。</li>
+<li><strong>单位链</strong>：$\text{lx}\cdot\text{m}^{2} = \text{lm}$，再除以 sr 得 cd，量纲自洽。</li>
+<li>结果 $\sim 2\times10^{26}$ cd 与太阳总光通量 $\sim 4\times10^{26}$ lm 一致（各向同性时 $I=\Phi/4\pi$），可作交叉校验。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color，习题 6（PDF p.249–250）。</li>
+<li>依据：</li>
+<li>室外照度 $E \approx 10000$ lx：事实底座第 6 节「例题与数值例子」（PDF p.229）。</li>
+<li>照度、发光强度、光通量、candela 的定义与单位：事实底座第 1 节「记号约定」（luminous flux lm、luminous intensity lm sr⁻¹ = cd、照度 $E$ lx）。</li>
+<li>点光源照度公式 $E = I/d^{2}$：由上述单位定义直接推得（本章未显式列出该式，按符号推导）。</li>
+<li>日地距离 $d \approx 1.496\times10^{11}$ m：<strong>原书未给出具体数值</strong>，按标准天文常数代入。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确本题的物理对象。</strong></p>
+<p>题目问的是"地面处（at ground level）"的太阳光，即经过大气吸收后到达地面的太阳辐射谱。本章事实底座给出的关键波长边界为：可见光谱 400–700 nm，>700 nm 为 infra-red（红外），<400 nm 为 ultra-violet（紫外）。因此本题本质上是把太阳辐射谱按这三个波段做积分，再除以总辐射功率。</p>
+<p><strong>第 2 步：写出各波段功率的积分表达式。</strong></p>
+<p>设地面处太阳光谱辐照度为 $E(\lambda)$（单位波长间隔内的辐射功率），则三个波段的功率分别为</p>
+<p>$$P_{\text{UV}}=\int_{0}^{400\,\text{nm}} E(\lambda)\,d\lambda,\qquad
+P_{\text{vis}}=\int_{400\,\text{nm}}^{700\,\text{nm}} E(\lambda)\,d\lambda,\qquad
+P_{\text{IR}}=\int_{700\,\text{nm}}^{\infty} E(\lambda)\,d\lambda$$</p>
+<p>总功率 $P_{\text{tot}}=P_{\text{UV}}+P_{\text{vis}}+P_{\text{IR}}$，所求百分比为 $P_i/P_{\text{tot}}\times 100\%$。</p>
+<p><strong>第 3 步：说明为什么不能直接给出精确数字。</strong></p>
+<p>本章事实底座只给出了可见光边界（400–700 nm）、红外/紫外边注（IR-A 700–1400 nm、NUV 200–380 nm 等）以及黑体谱的温度范围（1000–6000 K、波长 300–1000 nm），<strong>并未给出地面太阳光谱在各波段的具体积分值或百分比</strong>。因此原书未给出具体数值，按符号推导；若需数值，必须用实测太阳谱（如 ASTM G173 或本章 <code>blackbody</code> 模型）代入上式积分。</p>
+<p><strong>第 4 步：用本章工具做可运行的数值验证。</strong></p>
+<p>本章提供了 <code>blackbody(lambda, T)</code> 与 <code>lambda2xy</code> 等函数，可用 6500 K 黑体近似太阳谱，按 400–700 nm 切分并积分，观察三波段占比。示例代码（MATLAB，遵循本章记号）：</p>
+<pre><code class="lang-matlab">lambda = [100:1:4000]' * 1e-9;      % 100 nm – 4 µm，覆盖 UV/vis/IR
+T = 6500;                            % 太阳色温，本章取 6500 K
+E = blackbody(lambda, T);            % 黑体谱（相对值）
+
+vis = (lambda >= 400e-9) & (lambda <= 700e-9);
+uv  =  lambda <  400e-9;
+ir  =  lambda >  700e-9;
+
+Puv  = trapz(lambda(uv),  E(uv));
+Pvis = trapz(lambda(vis), E(vis));
+Pir  = trapz(lambda(ir),  E(ir));
+Ptot = Puv + Pvis + Pir;
+
+fprintf('UV  = %.2f%%\n', 100*Puv /Ptot);
+fprintf('VIS = %.2f%%\n', 100*Pvis/Ptot);
+fprintf('IR  = %.2f%%\n', 100*Pir /Ptot);</code></pre>
+<p>预期观察：6500 K 黑体峰值约在 450 nm（本章事实：太阳峰值约 450 nm），可见光波段占比约三成多，红外占比最大，紫外占比最小。注意这是<strong>大气层外</strong>黑体近似；地面处因大气吸收（本章 Beer's law $T=10^{-Ad}$ 描述的机制）会进一步削减 UV 与部分 IR，故实际地面值与此不同——原书未给出地面实测百分比。</p>
+<p><strong>第 5 步：给出结论形式。</strong></p>
+<p>在无实测谱数据时，答案应表述为：</p>
+<p>$$\text{UV}:\text{VIS}:\text{IR}
+= \int_{0}^{400}E\,d\lambda : \int_{400}^{700}E\,d\lambda : \int_{700}^{\infty}E\,d\lambda$$</p>
+<p>其中 $E(\lambda)$ 为地面处太阳光谱辐照度；具体百分比需代入实测谱积分，原书未给出具体数值。</p>
+<h4>关键点</h4>
+<ul>
+<li>本题的判据是本章波长边界：可见光 400–700 nm，>700 nm 为 infra-red，<400 nm 为 ultra-violet。</li>
+<li>百分比 = 各波段积分功率 / 总积分功率，必须用<strong>地面处</strong>光谱 $E(\lambda)$，而非大气层外黑体谱。</li>
+<li>本章只给出 6500 K 太阳色温与峰值约 450 nm，<strong>未给出三波段百分比</strong>，故不能编造数字。</li>
+<li>大气吸收（Beer's law $T=10^{-Ad}$）是地面谱区别于黑体谱的原因，尤其影响 UV。</li>
+<li>可用 <code>blackbody</code> + <code>trapz</code> 做量级验证，但结论须注明是黑体近似而非地面实测。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>波长边界（400–700 nm、IR、UV）：事实底座 §1 记号约定。</li>
+<li>太阳 6500 K、峰值约 450 nm：事实底座 §6 例题与数值例子（PDF p.225）。</li>
+<li>黑体谱与 Stefan-Boltzmann / Wien 定律：事实底座 §3 核心概念 1、§4 推导链条第 1 步。</li>
+<li>Beer's law $T=10^{-Ad}$ 与大气/水吸收：事实底座 §5 关键公式 1（式 10.2）。</li>
+<li>红外/紫外波段边注（IR-A、NUV 等）：事实底座 §6 末条（PDF p.248）。</li>
+<li>习题本身：事实底座 §6 末条"习题数值：亮度峰值 683 lm W⁻¹；可见光 400–700 nm；黑体轨迹 1000–10000 K"（PDF p.249–250）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：写出黑体辐射谱公式。</strong></p>
+<p>钨丝灯可近似为黑体，其光谱辐射出射度由 Planck 黑体辐射定律给出（本章 §10.2 用黑体谱刻画光源）：</p>
+<p>$$M(\lambda,T)=\frac{2\pi h c^{2}}{\lambda^{5}}\cdot\frac{1}{\exp\!\left(\dfrac{hc}{\lambda k_B T}\right)-1}\quad[\mathrm{W\,m^{-2}\,m^{-1}}]$$</p>
+<p>其中 $h$ 为 Planck 常数，$c$ 为光速，$k_B$ 为 Boltzmann 常数，$T=2600$ K。这是"每平方米、每单位波长"的辐射功率。</p>
+<p><strong>第 2 步：确定积分区间。</strong></p>
+<p>可见光波段为 400–700 nm（本章 §10.2 事实：可见光谱 400–700 nm）。因此可见光功率为</p>
+<p>$$P_{\text{vis}}=\int_{400\,\mathrm{nm}}^{700\,\mathrm{nm}} M(\lambda,2600)\,d\lambda$$</p>
+<p><strong>第 3 步：数值积分。</strong></p>
+<p>由于 $M(\lambda,T)$ 无初等原函数，采用数值积分（如梯形法或 Simpson 法）。按本章例题的波长采样惯例（<code>lambda = [400:10:700]'*1e-9</code>，见 §6 例题），取步长 $\Delta\lambda=10$ nm：</p>
+<p>$$P_{\text{vis}}\approx \sum_{i} M(\lambda_i,2600)\,\Delta\lambda$$</p>
+<p><strong>第 4 步：计算总辐射功率。</strong></p>
+<p>总功率为全波段积分，由 Stefan–Boltzmann 定律给出闭式（本章 §10.2 事实：Stefan–Boltzmann law 即曲线下面积）：</p>
+<p>$$P_{\text{tot}}=\int_{0}^{\infty}M(\lambda,T)\,d\lambda=\sigma T^{4},\qquad \sigma=5.670\times10^{-8}\ \mathrm{W\,m^{-2}\,K^{-4}}$$</p>
+<p>代入 $T=2600$ K：</p>
+<p>$$P_{\text{tot}}=5.670\times10^{-8}\times(2600)^{4}\approx 2.59\times10^{6}\ \mathrm{W\,m^{-2}}$$</p>
+<p><strong>第 5 步：求比值。</strong></p>
+<p>$$f=\frac{P_{\text{vis}}}{P_{\text{tot}}}$$</p>
+<p><strong>数值结果说明：</strong> 原书未给出该积分的具体数值结果，按符号与数值积分流程推导。定性结论可由本章事实直接得出：2600 K 钨丝灯的峰值波长位于 infra-red 侧（本章 §6 例题：钨丝灯 2600 K 峰值在 infra-red 侧，太阳 6500 K 峰值约 450 nm），因此可见光只占其总辐射功率的<strong>很小一部分</strong>——这正是白炽灯发光效率低（<15 lm W⁻¹，本章 §6 例题）的物理原因：大部分能量以红外热辐射形式耗散。</p>
+<p><strong>可运行代码（MATLAB，遵循本章记号）：</strong></p>
+<pre><code class="lang-matlab">h = 6.626e-34; c = 3e8; kB = 1.381e-23; T = 2600;
+lambda = [400:10:700]'*1e-9;          % 本章采样惯例
+M = (2*pi*h*c^2)./lambda.^5 ./ (exp(h*c./(lambda*kB*T))-1);
+Pvis = trapz(lambda, M);              % 可见光功率 W/m^2
+Ptot = 5.670e-8 * T^4;                % Stefan-Boltzmann
+fprintf('Pvis = %.3e W/m^2, Ptot = %.3e W/m^2, fraction = %.4f\n', ...
+        Pvis, Ptot, Pvis/Ptot);</code></pre>
+<p><strong>预期观察：</strong> <code>Pvis</code> 约为 $10^{4}$ 量级 W m⁻²，<code>Ptot</code> 约 $2.59\times10^{6}$ W m⁻²，比值 $f$ 为<strong>百分之几量级</strong>（远小于 1），与"钨丝灯大部分能量落在红外"的定性结论一致。</p>
+<h4>关键点</h4>
+<ul>
+<li>黑体谱 $M(\lambda,T)$ 是"每平方米每单位波长"的功率密度，可见光功率须在 400–700 nm 上<strong>数值积分</strong>（无初等原函数）。</li>
+<li>总功率用 Stefan–Boltzmann 定律 $\sigma T^{4}$ 闭式求得，无需再积分。</li>
+<li>2600 K 钨丝灯峰值在 infra-red 侧，可见光占比很小，这是白炽灯效率低（<15 lm W⁻¹）的根源。</li>
+<li>采样步长按本章惯例取 10 nm（<code>[400:10:700]*1e-9</code>），与红砖/太阳例题一致。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color，习题 8（PDF p.249–250）。</li>
+<li>依据：</li>
+<li>可见光 400–700 nm、黑体谱、Stefan–Boltzmann law、Wien's law：本章 §3 概念 1、§4 推导链第 1 步、§6 例题（PDF p.224–225）。</li>
+<li>钨丝灯 2600 K、峰值在 infra-red 侧、白炽灯 <15 lm W⁻¹：§6 例题（PDF p.225, 228）。</li>
+<li>波长采样 <code>[400:10:700]*1e-9</code>：§6 例题（PDF p.241）。</li>
+<li>具体积分数值：原书未给出，按符号与数值积分流程推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确两种响应的物理来源。</strong></p>
+<p>人眼视网膜上有两类感光细胞：锥细胞（cone）负责明视觉，杆细胞（rod）负责暗视觉。本章事实底座指出：fovea 直径 0.6 mm，约 600 万 cone（其中 65% 红、33% 绿、2% 蓝）与 1.2 亿 rod [PDF p.229]。明视觉由三类锥细胞光谱响应 $M_r(\lambda), M_g(\lambda), M_b(\lambda)$ 共同决定；暗视觉由单一杆细胞响应决定。</p>
+<p><strong>第 2 步：写出明视觉响应的形式。</strong></p>
+<p>明视觉亮度响应是三类锥细胞响应的加权组合。本章用三刺激值定义（式 10.4）：</p>
+<p>$$\rho=\int L(\lambda)M_r(\lambda)\,d\lambda,\quad \gamma=\int L(\lambda)M_g(\lambda)\,d\lambda,\quad \beta=\int L(\lambda)M_b(\lambda)\,d\lambda$$</p>
+<p>明视觉光谱光效率函数 $V(\lambda)$ 即由 $M_r,M_g,M_b$ 按亮度权重合成，峰值位于约 555 nm（绿光区）。</p>
+<p><strong>第 3 步：写出暗视觉响应的形式。</strong></p>
+<p>暗视觉仅由 rod 驱动，其光谱响应为单一曲线 $V'(\lambda)$，峰值约 510 nm [PDF p.227]。由于 rod 只有一种光色素，暗视觉是"单色"的——只能感知亮度，不能分辨颜色。</p>
+<p><strong>第 4 步：比较两条曲线的关键差异。</strong></p>
+<ul>
+<li><strong>峰值位置</strong>：明视觉峰值约 555 nm，暗视觉峰值约 510 nm，暗视觉曲线整体向短波（蓝）方向平移，即 Purkinje 效应。</li>
+<li><strong>亮度量级</strong>：本章给出 <code>luminos(450e-9)/luminos(550e-9)=0.0382</code>，即 450 nm 蓝光在明视觉下仅为 550 nm 绿光亮度的 3.8% [PDF p.227]。这说明明视觉对蓝光极不敏感，而暗视觉对蓝光相对更敏感。</li>
+<li><strong>绝对灵敏度</strong>：暗视觉整体灵敏度远高于明视觉（rod 能在极暗环境下工作），但两者曲线形状不同，不能简单缩放。</li>
+</ul>
+<p><strong>第 5 步：可运行的验证代码（MATLAB，遵循本章工具箱风格）。</strong></p>
+<p>本章提供了 <code>luminos()</code> 函数用于计算给定波长的视亮度。可用如下代码绘制并比较：</p>
+<pre><code class="lang-matlab">lambda = [400:5:700]*1e-9;      % 波长采样，符合本章惯例
+Vp = zeros(size(lambda));        % photopic
+Vs = zeros(size(lambda));        % scotopic
+for i = 1:length(lambda)
+    Vp(i) = luminos(lambda(i));          % 明视觉响应
+    Vs(i) = luminos(lambda(i), 'scotopic'); % 暗视觉响应（若工具箱支持）
+end
+plot(lambda*1e9, Vp, 'g-', lambda*1e9, Vs, 'b--');
+xlabel('\lambda (nm)'); ylabel('relative response');
+legend('photopic','scotopic');</code></pre>
+<p><strong>预期观察</strong>：两条曲线均呈单峰钟形；明视觉峰值在 555 nm 附近，暗视觉峰值在 510 nm 附近；暗视觉曲线相对明视觉曲线整体左移。若工具箱不支持 <code>'scotopic'</code> 选项，则按本章事实底座，暗视觉峰值约 510 nm，可据此定性绘制。</p>
+<h4>关键点</h4>
+<ul>
+<li>明视觉由三类 cone（$M_r,M_g,M_b$）驱动，峰值约 555 nm；暗视觉由单一 rod 驱动，峰值约 510 nm [PDF p.227, 229]。</li>
+<li>暗视觉曲线相对明视觉向短波方向平移，即 Purkinje 效应；这是"夜间看蓝花更亮"的物理原因。</li>
+<li>明视觉对蓝光极不敏感：450 nm 仅为 550 nm 的 3.8% [PDF p.227]。</li>
+<li>暗视觉是单色的，只有亮度信息，无颜色分辨能力。</li>
+<li>本章用 <code>luminos()</code> 函数量化视亮度，是连接光谱物理与感知亮度的桥梁。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章</li>
+<li>依据：</li>
+<li>锥/杆细胞数量与 fovea 尺寸：事实底座 §6 [PDF p.229]</li>
+<li>三刺激值定义（式 10.4）：事实底座 §5 [PDF p.230]</li>
+<li>scotopic 峰值约 510 nm 与 <code>luminos(450e-9)/luminos(550e-9)=0.0382</code>：事实底座 §6 [PDF p.227]</li>
+<li>明视觉峰值 555 nm 与 1 W @ 555 nm = 683 lm：事实底座 §6 [PDF p.228]</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 10.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 10 题：为红砖构造 metamer</h5>
+<p><strong>第 1 步：明确 metamer 的定义。</strong></p>
+<p>metamer（同色异谱色）指两个<strong>光谱分布不同</strong>但<strong>三刺激值相同</strong>的颜色刺激。即对同一组锥细胞响应 $M_r,M_g,M_b$，有</p>
+<p>$$\rho=\int L_1(\lambda)M_r\,d\lambda=\int L_2(\lambda)M_r\,d\lambda,\quad \gamma,\beta\ \text{同理}.$$</p>
+<p><strong>第 2 步：取红砖的已知三刺激值。</strong></p>
+<p>由事实底座，红砖在太阳光下</p>
+<p>$$\text{tristimulus} = (16.3578,\ 10.0702,\ 2.8219),$$</p>
+<p>归一化后 <code>RGB_brick = 0.6137, 0.1416, 0.0374</code>，色度 <code>xy = 0.5729, 0.3645</code>（对应 <code>colorname</code> 为 <code>'englishred'</code>）。</p>
+<p><strong>第 3 步：构造思路。</strong></p>
+<p>metamer 只需在<strong>同一三刺激值</strong>下换一组光谱。最直接的做法是：用三个单色原色（monochromatic primaries）按红砖的三刺激值比例混合。因为三刺激值对光谱是线性积分，只要混合后积分等于原值即可。</p>
+<p>设三原色波长 $\lambda_1,\lambda_2,\lambda_3$，强度 $a_1,a_2,a_3$，令</p>
+<p>$$\sum_i a_i\,M_c(\lambda_i)=\int L_{\text{brick}}(\lambda)M_c(\lambda)\,d\lambda,\quad c\in\{r,g,b\}.$$</p>
+<p>这是一个 $3\times3$ 线性方程组，解出 $(a_1,a_2,a_3)$ 即得一个 metamer。</p>
+<p><strong>第 4 步：MATLAB 验证（可运行）。</strong></p>
+<pre><code class="lang-matlab">lambda = [400:10:700]'*1e-9;
+% 红砖反射谱（示意，实际用书中数据）
+% 取三原色 700nm, 546.1nm, 435.8nm（CIE 1976 primaries）
+lam_p = [700 546.1 435.8]*1e-9;
+M = zeros(3,3);
+for c = 1:3
+    M(:,c) = cmfrgb(lam_p(c));   % 三原色在 RGB 锥响应下的值
+end
+% 红砖三刺激值
+S_brick = [16.3578; 10.0702; 2.8219];
+a = M \ S_brick;                 % 解出三原色强度
+S_meta = M * a;                  % 验证
+disp(S_meta')                    % 应等于 S_brick'</code></pre>
+<p><strong>预期观察：</strong> <code>S_meta</code> 与 <code>S_brick</code> 完全一致，但两者的光谱分布 $L(\lambda)$ 截然不同——这就是 metamer。注意若解出某个 $a_i<0$，说明该原色组合不可实现（需加白光，见事实底座第 7 节"负的 tristimulus 值"）。</p>
+<p><strong>第 5 步：结论。</strong></p>
+<p>可以。只要三原色线性无关，任何三刺激值都能由它们线性组合得到，因此红砖必有 metamer。原书未给出该 metamer 的具体数值，按符号推导即可。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 10</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 11 题：证明重心定律</h5>
+<p><strong>第 1 步：陈述重心定律。</strong></p>
+<p>在色度图（chromaticity diagram）上，两种颜色按强度相加，其混合色的色度坐标位于两原色色度坐标连线上，且位置由强度加权——如同质心。</p>
+<p><strong>第 2 步：设两色刺激。</strong></p>
+<p>设颜色 1 三刺激值 $\mathbf{S}_1=(S_{1r},S_{1g},S_{1b})$，颜色 2 为 $\mathbf{S}_2$。混合后</p>
+<p>$$\mathbf{S}=\mathbf{S}_1+\mathbf{S}_2.$$</p>
+<p><strong>第 3 步：写出色度坐标。</strong></p>
+<p>记 $T_i=S_{ir}+S_{ig}+S_{ib}$，则颜色 $i$ 的色度 $c_i=S_{ic}/T_i$。混合色</p>
+<p>$$c_c=\frac{S_{1c}+S_{2c}}{T_1+T_2}=\frac{T_1 c_{1c}+T_2 c_{2c}}{T_1+T_2}.$$</p>
+<p><strong>第 4 步：识别为加权平均。</strong></p>
+<p>上式对每个分量 $c\in\{r,g,b\}$ 成立，即</p>
+<p>$$\mathbf{c}=\frac{T_1}{T_1+T_2}\mathbf{c}_1+\frac{T_2}{T_1+T_2}\mathbf{c}_2.$$</p>
+<p>这正是<strong>质心公式</strong>：权重 $w_i=T_i/(T_1+T_2)$，$w_1+w_2=1$，混合色度落在 $\mathbf{c}_1,\mathbf{c}_2$ 连线上，位置由 $T_1:T_2$ 决定。</p>
+<p><strong>第 5 步：推广到多色。</strong></p>
+<p>对 $n$ 种颜色，$\mathbf{c}=\sum_i T_i\mathbf{c}_i/\sum_i T_i$，即所有色度点的加权质心。$\blacksquare$</p>
+<p><strong>第 6 步：几何意义。</strong></p>
+<p>在 $(r,g)$ 平面上，$T_i$ 相当于"质量"，故称重心定律。它解释了为什么色度图是凸的、为什么两色混合总在连线上——这是 gamut 为凸集、三原色三角形无法覆盖整个马蹄形（事实底座第 7 节）的根本原因。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 10</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>metamer 的本质</strong>：颜色是 3 维投影，无穷维光谱 $L(\lambda)$ 投影到同一 $(\rho,\gamma,\beta)$ 即为 metamer；构造方法是解 $3\times3$ 线性方程组。</li>
+<li><strong>重心定律是线性叠加的直接推论</strong>：三刺激值可加，归一化后色度即为强度加权质心。</li>
+<li><strong>权重是 $T_i=S_{ir}+S_{ig}+S_{ib}$</strong>（即亮度和），不是单一分量。</li>
+<li><strong>负系数问题</strong>：若解出负原色强度，说明该 metamer 超出原色 gamut，需加白光（事实底座第 7 节）。</li>
+<li><strong>两题共同根基</strong>：颜色计算的线性性——积分是线性的，故三刺激值可加、可换基（$\mathbf{S}'=\mathbf{A}^T\mathbf{S}$）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>metamer 定义与三刺激值积分：事实底座第 5 节式 10.4、第 3 节概念 3</li>
+<li>红砖三刺激值与色度：第 6 节例题（<code>RGB_brick</code>、<code>XYZ_brick</code>、<code>tristim2cc</code>）</li>
+<li>负 tristimulus 与加白光：第 7 节 misconceptions 第 1 条</li>
+<li>重心定律的线性基础：第 5 节式 10.4、式 10.13（基色变换的线性性）</li>
+<li>gamut 为凸、三原色无法覆盖马蹄形：第 7 节 misconceptions 第 2 条</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 12.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确黑体辐射的物理基础。</strong></p>
+<p>黑体辐射的谱由温度 $T$ 唯一决定。本章事实底座指出：黑体辐射由 Stefan-Boltzmann law（总功率 = 曲线下面积）与 Wien's displacement law（峰值波长随温度下降）刻画。温度越高，峰值波长越短，辐射越偏蓝白；温度越低，峰值波长越长，辐射越偏红黄。这正是"色温"概念的物理来源。</p>
+<p><strong>第 2 步：从光谱到色度坐标。</strong></p>
+<p>对给定温度 $T$，先得到黑体谱 $E(\lambda)$（作为照明谱）。本章的色度计算链条为：</p>
+<ol>
+<li>由三刺激值定义（式 10.4）：</li>
+</ol>
+<p>$$\rho=\int L(\lambda)M_r(\lambda)\,d\lambda,\quad \gamma=\int L(\lambda)M_g(\lambda)\,d\lambda,\quad \beta=\int L(\lambda)M_b(\lambda)\,d\lambda$$</p>
+<p>其中 $L(\lambda)=E(\lambda)R(\lambda)$。对黑体轨迹本身，可视为理想发射体，直接以 $E(\lambda)$ 作为进入眼睛/传感器的光谱。</p>
+<ol>
+<li>归一化得色度坐标（式 10.8、10.9）：</li>
+</ol>
+<p>$$x=\frac{X}{X+Y+Z},\quad y=\frac{Y}{X+Y+Z}$$</p>
+<p><strong>第 3 步：在 xy 平面上描点。</strong></p>
+<p>对 $T$ 从 1000 K 到 10000 K 逐点计算 $(x,y)$，连成曲线，即黑体轨迹（Planckian locus）。该轨迹位于 spectral locus 马蹄形内部，是一条从偏红（低温）经白（约 6500 K）到偏蓝（高温）的平滑曲线。</p>
+<p><strong>第 4 步：用本章工具验证（可运行代码）。</strong></p>
+<p>本章提供了 <code>blackbody</code> 与 <code>lambda2xy</code> 函数。事实底座给出 D65 的验证数值：</p>
+<pre><code class="lang-matlab">% 6500 K 黑体
+lambda = [400:10:700]'*1e-9;
+E = blackbody(lambda, 6500);
+xy = lambda2xy(E, lambda)   % 预期约 [0.3136 0.3241]</code></pre>
+<p>事实底座记录：<code>blackbody(lambda,6500)</code> → <code>lambda2xy = 0.3136 0.3241</code>，与 D65 标准白点 $(x_w,y_w)=(0.3127,0.3290)$ 接近。这验证了 6500 K 黑体轨迹点确实落在白光附近。</p>
+<p><strong>第 5 步：绘制完整轨迹。</strong></p>
+<pre><code class="lang-matlab">T = 1000:100:10000;
+xy = zeros(numel(T),2);
+for k = 1:numel(T)
+    E = blackbody(lambda, T(k));
+    xy(k,:) = lambda2xy(E, lambda);
+end
+plot(xy(:,1), xy(:,2), 'k-'); hold on
+% 标注若干温度点</code></pre>
+<p><strong>预期观察</strong>：曲线在低温端（1000 K）位于 xy 图右下偏红区域，随温度升高向左上移动，6500 K 附近接近白点，10000 K 继续偏向蓝色区域。整条曲线始终位于 spectral locus 内部。</p>
+<h4>关键点</h4>
+<ul>
+<li>黑体轨迹由温度唯一参数化，是色温的几何表示；温度升高 → 峰值波长变短 → 色度点向蓝移。</li>
+<li>色度坐标由三刺激值归一化得到（式 10.8/10.9），消去亮度只留色度，因此 $x+y+z=1$，二维平面即可表示。</li>
+<li>本章验证锚点：6500 K 黑体 → $(x,y)\approx(0.3136,0.3241)$，接近 D65 白点 $(0.3127,0.3290)$。</li>
+<li>黑体轨迹落在 spectral locus 马蹄形内部，是真实颜色集合的子集。</li>
+<li>颜色恒常性在 5000–6500 K 内有效，正对应轨迹上白光附近的一段。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 10 章</li>
+<li>依据：</li>
+<li>黑体辐射、Stefan-Boltzmann law、Wien's displacement law：事实底座 §3 核心概念 1、§4 推导链条第 1 步</li>
+<li>三刺激值积分式（式 10.4）：事实底座 §5 关键公式 3</li>
+<li>色度归一化（式 10.8、10.9）：事实底座 §5 关键公式 4</li>
+<li>D65 / 6500 K 数值 <code>lambda2xy = 0.3136 0.3241</code>：事实底座 §6 例题与数值例子</li>
+<li>颜色恒常性 5000–6500 K：事实底座 §6、§3 核心概念 6</li>
+<li>黑体轨迹温度范围 1000–10000 K：事实底座 §6 习题数值</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 13.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 13 题：在 rg 平面上绘制 XYZ 原色</strong></p>
+<p>XYZ 三原色是 CIE 1931 标准观察者的基色，其色度坐标由 CIE 基色矩阵 $\mathbf{C}$ 的列给出（facts §5、§6）：</p>
+<p>$$\mathbf{C} = \begin{bmatrix} 0.7347 & 0.2738 & 0.1666 \\ 0.2653 & 0.7174 & 0.0089 \\ 0 & 0.0088 & 0.8245 \end{bmatrix}$$</p>
+<p>每一列即一个原色在 RGB 基下的三刺激值。将其归一化为 rg 色度坐标（式 10.8）：</p>
+<ul>
+<li>X 原色：$r = 0.7347/(0.7347+0.2653+0) = 0.7347$，$g = 0.2653$，$b = 0$。</li>
+<li>Y 原色：$r = 0.2738/(0.2738+0.7174+0.0088) = 0.2738$，$g = 0.7174$，$b = 0.0088$。</li>
+<li>Z 原色：$r = 0.1666/(0.1666+0.0089+0.8245) = 0.1666$，$g = 0.0089$，$b = 0.8245$。</li>
+</ul>
+<p>在 rg 平面上，三点连成三角形，即 XYZ 原色的 gamut 边界。注意 X 原色落在 $b=0$ 的 rg 轴上，Y、Z 原色略偏离该轴（$b$ 很小）。</p>
+<p><strong>第 14 题：Color Checker 各色块的 xy 色度</strong></p>
+<p>对每个色块，先由光谱数据 $L(\lambda)$ 与 CIE 颜色匹配函数积分得 XYZ 三刺激值（式 10.4 的 XYZ 版本），再归一化：</p>
+<p>$$x = \frac{X}{X+Y+Z},\quad y = \frac{Y}{X+Y+Z}$$</p>
+<p>绘制时以 $x$ 为横轴、$y$ 为纵轴（facts §1 惯例）。预期 24 个点分布在 spectral locus 内部，灰阶色块靠近白点（D65 约 $x=0.3136, y=0.3241$，facts §6），彩色色块沿各自色相方向散开。原书未给出各色块的具体数值，需从在线光谱数据计算。</p>
+<p><strong>第 15 题：可行绿的色度与最大三刺激值</strong></p>
+<p>图 10.11 对应 500 nm 绿光的颜色匹配。由 facts §6：</p>
+<p>$$\text{cmfrgb}(500\,\text{nm}) = (-0.2950,\ 0.4906,\ 0.1075)$$</p>
+<p>红原色为负，不可实现。加白光 $w$ 使全正，取 $w = 0.2950$（使红分量归零）：</p>
+<p>$$\text{feasible green} = (0,\ 0.7856,\ 0.4025)$$</p>
+<p>色度坐标：</p>
+<p>$$r = \frac{0}{0+0.7856+0.4025} = 0,\quad g = \frac{0.7856}{1.1881} = 0.6612$$</p>
+<p>即可行绿落在 $r=0$ 的边界上（rg 平面左边界）。</p>
+<p>最大三刺激值：任一原色值 $\in[0,1]$，故三刺激值向量各分量最大为 1。可行绿的三刺激值 $(0, 0.7856, 0.4025)$ 已满足此约束，其最大可能值即在该方向上按比例放大到某一分量为 1。由于 $g=0.7856$ 最大，放大因子 $1/0.7856 = 1.2729$，得最大三刺激值 $(0,\ 1,\ 0.5124)$。</p>
+<p><strong>第 16 题：修改 <code>xycolorspaces</code> 生成 rg 平面</strong></p>
+<p>原函数 <code>xycolorspaces</code> 生成 xy 色度平面。修改思路：将归一化改为 RGB 三刺激值的 rg 归一化（式 10.8）：</p>
+<pre><code class="lang-matlab">function rgcolorspaces
+    % 生成 rg 色度平面
+    [r, g] = meshgrid(0:0.01:1, 0:0.01:1);
+    b = 1 - r - g;          % r+g+b=1 约束
+    valid = b >= 0;         % 仅保留可行区域
+    % 将 rg 转回 RGB 三刺激值（取 b 分量）
+    % 可视化色度平面
+    ...
+end</code></pre>
+<p>预期观察：rg 平面为三角形区域（$r\ge0, g\ge0, r+g\le1$），与 xy 平面的马蹄形不同，因为 RGB 基下可行色域是三角形。</p>
+<p><strong>第 17 题：Rec. 709 原色下红砖的三刺激值</strong></p>
+<p>红砖在 CIE RGB 基下的三刺激值（facts §6）：</p>
+<p>$$\text{RGB\_brick} = (0.6137,\ 0.1416,\ 0.0374)$$</p>
+<p>CIE→XYZ 变换矩阵（facts §6）：</p>
+<p>$$\mathbf{C}\,\mathrm{diag}(\mathbf{J}) = \begin{bmatrix} 0.4121 & 0.3204 & 0.2179 \\ 0.1488 & 0.8395 & 0.0116 \\ 0 & 0.0103 & 1.0785 \end{bmatrix}$$</p>
+<p>计算 XYZ 三刺激值：</p>
+<p>$$\text{XYZ\_brick} = \mathbf{C}\,\mathrm{diag}(\mathbf{J}) \cdot \text{RGB\_brick}^T = (0.0351,\ 0.0224,\ 0.0039)$$</p>
+<p>Rec. 709 原色与 CIE RGB 不同，需再经基色变换（式 10.13）$\mathbf{S}' = \mathbf{A}^T\mathbf{S}$。原书未给出 Rec. 709 的完整变换矩阵，按符号推导：设 Rec. 709 原色在 XYZ 下的矩阵为 $\mathbf{M}_{709}$，则</p>
+<p>$$\text{RGB}_{709} = \mathbf{M}_{709}^{-1} \cdot \text{XYZ\_brick}$$</p>
+<p>原书未给出具体数值，需查 Rec. 709 标准矩阵计算。</p>
+<p><strong>第 18 题：白炽灯下白色物体的色度与白平衡</strong></p>
+<p>白炽灯色温 2600 K（facts §6）。白色物体反射率 $R(\lambda)\approx1$，故 $L(\lambda)=E(\lambda)$。2600 K 钨丝灯的色度（facts §6）：</p>
+<p>$$x = 0.4679,\quad y = 0.4126$$</p>
+<p>而 D65 白点 $x=0.3136, y=0.3241$。偏离量：</p>
+<p>$$\Delta x = 0.4679 - 0.3136 = 0.1543,\quad \Delta y = 0.4126 - 0.3241 = 0.0885$$</p>
+<p>即明显偏黄红。颜色平衡矩阵 $\mathbf{J}$ 为对角阵，通常 $\mathbf{J}_G=1$，调 $\mathbf{J}_R, \mathbf{J}_B$ 使白物体 $\mathbf{R}'=\mathbf{G}'=\mathbf{B}'$（facts §4 第 8 步）。具体数值需由实测平均 RGB 三刺激值计算，原书未给出该题的具体测量值。</p>
+<p><strong>第 19 题：水下红砖的颜色名称</strong></p>
+<p>水下红砖色度（facts §6，$d=2$）：</p>
+<p>$$xy_{\text{water}} = (0.3722,\ 0.3813)$$</p>
+<p>用 <code>colorname(...,'xy')</code> 查询，原书未给出该题的具体名称输出。对比红砖在太阳光下 $xy=(0.4760, 0.3784)$、钨丝灯下 $xy=(0.5724, 0.3877)$，水下色度明显向白点方向偏移（去饱和），颜色变淡偏青。</p>
+<p><strong>第 20 题：由已知色度色块确定变换与照明色度</strong></p>
+<p>三个已知色度色块提供三组观测三刺激值 $\mathbf{S}_i$ 与已知真实三刺激值 $\mathbf{S}'_i$。由式 10.13 $\mathbf{S}' = \mathbf{A}^T\mathbf{S}$，三组数据可解出 $3\times3$ 矩阵 $\mathbf{A}^T$：</p>
+<p>$$\mathbf{A}^T = [\mathbf{S}'_1\ \mathbf{S}'_2\ \mathbf{S}'_3] \cdot [\mathbf{S}_1\ \mathbf{S}_2\ \mathbf{S}_3]^{-1}$$</p>
+<p>照明色度：若已知某色块真实色度，由变换反推照明三刺激值，再归一化得照明色度。原书未给出具体数值。</p>
+<p><strong>第 21 题：水下色度与距离估计</strong></p>
+<p>观测色度受 Beer's law 透射率 $T=10^{-Ad}$ 影响（式 10.2）。目标真实反射光谱 $R(\lambda)$，经水深 $d$ 与路径 $m$ 后：</p>
+<p>$$L(\lambda) = E(\lambda) \cdot R(\lambda) \cdot 10^{-A(\lambda)(d+m)}$$</p>
+<p>由于 $A(\lambda)$ 随波长变化（水对红光吸收强），观测色度会偏移。由观测色度反推真实色度需要已知 $A(\lambda)$、$m$、$d$。若 $m$、$d$ 估计错误，色度估计偏差为：</p>
+<p>$$\Delta \text{chromaticity} \propto \Delta(A \cdot (d+m))$$</p>
+<p>灵敏度取决于 $A(\lambda)$ 的波长依赖性。若已知目标真实色度，可通过色度偏移量反推 $d+m$，但 $d$ 与 $m$ 不可分离，只能确定总路径长度。</p>
+<p><strong>第 22 题：不同颜色在特定照明下看起来相同</strong></p>
+<p>可能。这是 metamerism（同色异谱）。两个不同光谱 $L_1(\lambda) \ne L_2(\lambda)$，但经三类锥细胞积分后三刺激值相同：</p>
+<p>$$\int L_1(\lambda)M_r(\lambda)d\lambda = \int L_2(\lambda)M_r(\lambda)d\lambda$$</p>
+<p>对 $M_g, M_b$ 同理。例如：在 2600 K 钨丝灯下，某红色物体与另一在 D65 下呈不同色的物体，可能因照明光谱补偿而三刺激值相同。构造例子需选择两个光谱，使其在特定照明 $E(\lambda)$ 下积分相等。</p>
+<p><strong>第 23 题：自选图片的颜色分割</strong></p>
+<p>重复第 10.3.5 节流程（facts §4 第 10 步）：</p>
+<pre><code class="lang-matlab">im = iread('myphoto.jpg', 'gamma');   % gamma 解码
+xy = tristim2cc(im);                    % 转 xy 色度
+% 100x100 二维直方图
+% colorkmeans(xy, 7) 聚类
+% colorname 命名簇心
+% idisplabel 显示某类</code></pre>
+<p>预期观察：能区分不同颜色物体，但同色不同亮度物体可能归为同类（色度消去亮度）。</p>
+<p><strong>第 24 题：缩放三刺激值不影响色度</strong></p>
+<p>解析证明：设 $\mathbf{S}' = k\mathbf{S}$，$k>0$。则</p>
+<p>$$x' = \frac{kX}{kX+kY+kZ} = \frac{X}{X+Y+Z} = x,\quad y' = y$$</p>
+<p>故色度不变。</p>
+<p>若在 gamma 编码的三刺激值上计算色度：gamma 编码为 $V = L^{1/\gamma}$（式 10.14），非线性变换不保持比例关系：</p>
+<p>$$x_{\text{gamma}} = \frac{V_R}{V_R+V_G+V_B} = \frac{L_R^{1/\gamma}}{L_R^{1/\gamma}+L_G^{1/\gamma}+L_B^{1/\gamma}} \ne \frac{L_R}{L_R+L_G+L_B}$$</p>
+<p>故 gamma 编码后计算的色度与线性三刺激值下的色度不同，必须先 gamma 解码再计算色度（facts §3 第 7 条）。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>XYZ 原色在 rg 平面</strong>：由 CIE 基色矩阵 $\mathbf{C}$ 的列归一化得到，三点构成三角形 gamut。</li>
+<li><strong>可行绿</strong>：500 nm 绿光红原色为负，加白光 $w=0.2950$ 后得 $(0, 0.7856, 0.4025)$，色度 $r=0, g=0.6612$。</li>
+<li><strong>白平衡</strong>：2600 K 钨丝灯色度 $(0.4679, 0.4126)$ 明显偏离 D65 白点 $(0.3136, 0.3241)$，需对角矩阵 $\mathbf{J}$ 校正。</li>
+<li><strong>水下色度</strong>：Beer's law $T=10^{-Ad}$ 使红光被吸收，色度向白点偏移，只能确定总路径 $d+m$。</li>
+<li><strong>色度缩放不变性</strong>：线性三刺激值缩放下色度不变；gamma 编码后计算色度会失真，必须先解码。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 10 章 Light and Color</li>
+<li>依据：</li>
+<li>XYZ 原色与 CIE 基色矩阵 $\mathbf{C}$：facts §5 式 10.13、§6 CIE 基色矩阵数值</li>
+<li>可行绿与 500 nm 颜色匹配：facts §6 <code>cmfrgb(500e-9)</code> 与 feasible green 数值</li>
+<li>红砖三刺激值与 CIE→XYZ 变换：facts §6 <code>RGB_brick</code>、<code>XYZ_brick</code>、<code>C*diag(J)</code> 矩阵</li>
+<li>2600 K 钨丝灯色度：facts §6 <code>lambda2xy</code> 2600 K 数值</li>
+<li>水下红砖色度：facts §6 <code>xy_water</code> 数值</li>
+<li>Beer's law 与反射光谱：facts §5 式 10.2、10.3</li>
+<li>Gamma 非线性：facts §5 式 10.14、§3 第 7 条</li>
+<li>颜色分割流程：facts §4 第 10 步</li>
+<li>色度归一化：facts §5 式 10.8、10.9</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

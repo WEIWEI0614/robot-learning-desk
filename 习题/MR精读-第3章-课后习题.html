@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 3 章「Rigid-Body Motions」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 3 章「Rigid-Body Motions」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章约定：</p>
+<ul>
+<li><code>{s}</code> 是 fixed frame / space frame，固定在空间中。</li>
+<li><code>{b}</code> 是 body frame，但它不是动力学中随刚体一起旋转的非惯性运动 frame，而是<strong>瞬时与运动刚体固连 frame 重合的静止 frame</strong>。</li>
+</ul>
+<p>因此，<code>{b}</code> 的“body”含义是：在某一瞬时，它与刚体固连坐标系重合，用来描述刚体当前姿态；但本书把它当作 stationary/inertial frame 来处理。也就是说，<code>{b}</code> 不是一个随时间连续旋转的非惯性参考系，而是在每个瞬时选取的、与刚体当前姿态重合的静止参考系。</p>
+<p>刚体位姿写作</p>
+<p>\[</p>
+<p>(R,p),\qquad R=[\hat{x}_b\ \hat{y}_b\ \hat{z}_b]\in SO(3),\quad p\in\mathbb{R}^3,</p>
+<p>\]</p>
+<p>齐次变换为</p>
+<p>\[</p>
+<p>T=\begin{bmatrix}R&p\\0&1\end{bmatrix}\in SE(3).</p>
+<p>\]</p>
+<p>如果把 <code>{b}</code> 误解为随刚体旋转的非惯性运动 frame，就会把本章的 twist</p>
+<p>\[</p>
+<p>V=S\dot{\theta}=(\omega,v)</p>
+<p>\]</p>
+<p>误解释为“在旋转非惯性系中测得的量”，从而混淆空间速度与物体速度的变换关系；也会把 wrench</p>
+<p>\[</p>
+<p>F=(m,f)</p>
+<p>\]</p>
+<p>误认为是在非惯性系中定义的力旋量。本章的事实底座明确要求：所有 frames 都是 stationary, inertial frames，因此 twist 与 wrench 的代数变换必须按静止 frame 之间的坐标变换理解，而不是按动力学非惯性系理解。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章定义：</p>
+<p>\[</p>
+<p>SO(3)=\{R\in\mathbb{R}^{3\times 3}\mid R^T R=I,\ \det R=1\}.</p>
+<p>\]</p>
+<p>类似地，</p>
+<p>\[</p>
+<p>SO(2)=\{R\in\mathbb{R}^{2\times 2}\mid R^T R=I,\ \det R=1\}.</p>
+<p>\]</p>
+<p>仅有</p>
+<p>\[</p>
+<p>R^T R=I</p>
+<p>\]</p>
+<p>时，矩阵的列向量是单位正交列。对 <code>3×3</code> 矩阵取行列式：</p>
+<p>\[</p>
+<p>\det(R^T R)=\det(I)=1.</p>
+<p>\]</p>
+<p>又因为</p>
+<p>\[</p>
+<p>\det(R^T R)=(\det R)^2,</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>(\det R)^2=1,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\det R=\pm 1.</p>
+<p>\]</p>
+<p>因此，<code>R^T R=I</code> 只保证 <code>\det R=1</code> 或 <code>\det R=-1</code>。其中 <code>\det R=1</code> 对应右手系，<code>\det R=-1</code> 对应左手系。本章要求所有 frames 都是右手系，满足</p>
+<p>\[</p>
+<p>\hat{x}\times\hat{y}=\hat{z},</p>
+<p>\]</p>
+<p>所以必须额外加上</p>
+<p>\[</p>
+<p>\det R=1</p>
+<p>\]</p>
+<p>来排除左手系。</p>
+<p>加上 <code>\det R=1</code> 后，连续独立变量数目不改变。因为 <code>\det R=\pm 1</code> 是一个离散的二选一条件；在已经满足 <code>R^T R=I</code> 的连通分支中，<code>\det R</code> 的符号不能连续变化。<code>\det R=1</code> 只是从两个分支中选出一个分支，并不额外减少连续自由度。因此 <code>SO(3)</code> 仍然是三维的。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章给出：</p>
+<ul>
+<li>绕 fixed-frame 轴旋转：</li>
+</ul>
+<p>\[</p>
+<p>R_{sb'}=R R_{sb}.</p>
+<p>\]</p>
+<ul>
+<li>绕 body-frame 轴旋转：</li>
+</ul>
+<p>\[</p>
+<p>R_{sb''}=R_{sb} R.</p>
+<p>\]</p>
+<p>解释如下。</p>
+<p><code>R_{sb}</code> 的列向量是 <code>{b}</code> 的三个单位轴在 <code>{s}</code> 中的表示：</p>
+<p>\[</p>
+<p>R_{sb}=[\hat{x}_b\ \hat{y}_b\ \hat{z}_b].</p>
+<p>\]</p>
+<p>若绕 fixed-frame 轴旋转 <code>{b}</code>，则旋转作用在 <code>{s}</code> 中表达的所有 body 轴上。于是新的 body 轴为</p>
+<p>\[</p>
+<p>\hat{x}_{b'}=R\hat{x}_b,\quad</p>
+<p>\hat{y}_{b'}=R\hat{y}_b,\quad</p>
+<p>\hat{z}_{b'}=R\hat{z}_b.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>R_{sb'}=[R\hat{x}_b\ R\hat{y}_b\ R\hat{z}_b]</p>
+<p>=R[\hat{x}_b\ \hat{y}_b\ \hat{z}_b]</p>
+<p>=R R_{sb}.</p>
+<p>\]</p>
+<p>所以是左乘。</p>
+<p>若绕 body-frame 轴旋转 <code>{b}</code>，则旋转轴是在 <code>{b}</code> 自身坐标中表达的。此时旋转矩阵 <code>R</code> 作用在 body frame 的局部坐标上，等价于在 <code>R_{sb}</code> 的右侧相乘：</p>
+<p>\[</p>
+<p>R_{sb''}=R_{sb} R.</p>
+<p>\]</p>
+<p>因此，fixed-frame 旋转对应左乘，body-frame 旋转对应右乘。二者一般不可交换：</p>
+<p>\[</p>
+<p>R R_{sb}\neq R_{sb} R.</p>
+<p>\]</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><code>[\hat{\omega}]</code> 是单位轴 <code>\hat{\omega}</code> 对应的 skew-symmetric matrix，满足</p>
+<p>\[</p>
+<p>[\omega]x=\omega\times x.</p>
+<p>\]</p>
+<p>当 <code>\omega=\hat{\omega}</code> 为单位向量时，<code>[\hat{\omega}]</code> 满足</p>
+<p>\[</p>
+<p>[\hat{\omega}]^T=-[\hat{\omega}].</p>
+<p>\]</p>
+<p>它把叉乘运算写成矩阵乘法。</p>
+<p>Rodrigues 公式为</p>
+<p>\[</p>
+<p>\operatorname{Rot}(\hat{\omega},\theta)</p>
+<p>=e^{[\hat{\omega}]\theta}</p>
+<p>=I+\sin\theta[\hat{\omega}]</p>
+<p>+(1-\cos\theta)[\hat{\omega}]^2.</p>
+<p>\]</p>
+<p>因为</p>
+<p>\[</p>
+<p>\sin(-\theta)=-\sin\theta,\qquad</p>
+<p>1-\cos(-\theta)=1-\cos\theta,</p>
+<p>\]</p>
+<p>并且</p>
+<p>\[</p>
+<p>[-\hat{\omega}]=-[\hat{\omega}],</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>\operatorname{Rot}(-\hat{\omega},-\theta)</p>
+<p>=I+\sin(-\theta)[-\hat{\omega}]</p>
+<p>+(1-\cos(-\theta))[-\hat{\omega}]^2.</p>
+<p>\]</p>
+<p>计算：</p>
+<p>\[</p>
+<p>\sin(-\theta)[-\hat{\omega}]</p>
+<p>=(-\sin\theta)(-[\hat{\omega}])</p>
+<p>=\sin\theta[\hat{\omega}],</p>
+<p>\]</p>
+<p>而</p>
+<p>\[</p>
+<p>[-\hat{\omega}]^2</p>
+<p>=(-[\hat{\omega}])^2</p>
+<p>=[\hat{\omega}]^2.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\operatorname{Rot}(-\hat{\omega},-\theta)</p>
+<p>=I+\sin\theta[\hat{\omega}]</p>
+<p>+(1-\cos\theta)[\hat{\omega}]^2</p>
+<p>=\operatorname{Rot}(\hat{\omega},\theta).</p>
+<p>\]</p>
+<p>这表示绕轴 <code>\hat{\omega}</code> 转 <code>\theta</code>，等价于绕相反轴 <code>-\hat{\omega}</code> 转 <code>-\theta</code>。</p>
+<p>若 <code>\theta=0</code>，则</p>
+<p>\[</p>
+<p>\sin 0=0,\qquad 1-\cos 0=0,</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>\operatorname{Rot}(\hat{\omega},0)=I.</p>
+<p>\]</p>
+<p>即不旋转时得到单位矩阵。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>在平面中，screw axis 写作</p>
+<p>\[</p>
+<p>S=(\omega,v_x,v_y).</p>
+<p>\]</p>
+<p>其中 <code>\omega</code> 是角速度分量，<code>(v_x,v_y)</code> 是线速度分量。对于平面刚体运动，twist 为</p>
+<p>\[</p>
+<p>V=S\dot{\theta}.</p>
+<p>\]</p>
+<p>它表示沿 screw axis <code>S</code> 以角速度 <code>\dot{\theta}</code> 运动时的空间速度。</p>
+<p><code>S\theta</code> 是 exponential coordinates。它表示绕 screw axis <code>S</code> 转过角度 <code>\theta</code> 的有限位移参数。沿 <code>S</code> 以速度 <code>\dot{\theta}</code> 运动单位时间，等价于绕 <code>S</code> 转 <code>\theta</code>。因此</p>
+<p>\[</p>
+<p>V=S\dot{\theta}</p>
+<p>\]</p>
+<p>是瞬时速度，而</p>
+<p>\[</p>
+<p>S\theta</p>
+<p>\]</p>
+<p>是有限位移的指数坐标。</p>
+<p>本例中</p>
+<p>\[</p>
+<p>S=(1,2,0),\qquad \theta=\frac{\pi}{2}.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>S\theta</p>
+<p>=</p>
+<p>\left(1\cdot\frac{\pi}{2},\ 2\cdot\frac{\pi}{2},\ 0\cdot\frac{\pi}{2}\right)</p>
+<p>=</p>
+<p>\left(\frac{\pi}{2},\pi,0\right).</p>
+<p>\]</p>
+<p>下面用 Python 验证：</p>
+<pre><code class="lang-python">import math
+
+S = (1, 2, 0)
+theta = math.pi / 2
+
+S_theta = tuple(s * theta for s in S)
+print(S_theta)
+print(S_theta[0] == math.pi / 2)
+print(S_theta[1] == math.pi)
+print(S_theta[2] == 0)</code></pre>
+<p>预期观察：</p>
+<pre><code class="lang-text">(1.5707963267948966, 3.141592653589793, 0.0)
+True
+True
+True</code></pre>
+<p>即</p>
+<p>\[</p>
+<p>S\theta=(\pi/2,\pi,0).</p>
+<p>\]</p>
+<p>本例中</p>
+<p>\[</p>
+<p>\beta=90^\circ=\frac{\pi}{2}.</p>
+<p>\]</p>
+<p>而</p>
+<p>\[</p>
+<p>\theta=\frac{\pi}{2}.</p>
+<p>\]</p>
+<p>因此二者一致。<code>\beta</code> 是 screw coordinates 中给出的旋转角，<code>\theta</code> 是沿 screw axis 走的指数坐标角度；在这个例子里它们都等于 <code>90^\circ</code>，即 <code>\pi/2</code>。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

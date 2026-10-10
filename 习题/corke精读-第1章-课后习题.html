@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 1 章「Introduction」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 1 章「Introduction」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本书采用的机器人定义是唯一判据：</p>
+<p>$$
+\text{robot} = \text{a goal oriented machine that can sense, plan and act}
+$$</p>
+<p>关键在于是否具备<strong>自主的 sense → plan → act</strong> 闭环。</p>
+<p><strong>(a) Unimate —— 是 robot。</strong></p>
+<p>它是 manufacturing robot 的典型代表：固定基座、在局部工作单元内重复执行任务，具备感知（proprioceptive 反馈如关节角）、规划（按程序决定动作序列）与执行（驱动关节）。原书将其作为首台工业机器人实例（1961 年安装）。</p>
+<p><strong>(b) Tesla 的 radio-controlled boat —— 不是 robot。</strong></p>
+<p>原书明确称其为 teleautomaton，属于 tele-robot 范畴：由人远程操控，控制回路中"plan"由人完成，不满足自主 sense-plan-act。原书原文指出 "according to the definition above these are not robots but they were an important precursor"。</p>
+<p><strong>(c) Titanic 残骸勘测 ROV —— 不是 robot。</strong></p>
+<p>ROV 是 remotely operated vehicle，由操作员通过缆线远程操控，同样属于 tele-robot。原书用它作为 tele-robot 至今仍关键的例证，但按定义不满足自主性。</p>
+<p><strong>(d) 自动驾驶乘用车（车道保持 + 人控速）—— 不是 robot（至少不是完全自主 robot）。</strong></p>
+<p>这是 <strong>shared control</strong> 的典型：计算机与人协同完成控制功能，人仍参与"plan/act"环节。原书将 shared control 与 autonomous 明确区分，因此该车不满足完全自主的 sense-plan-act。</p>
+<p><strong>结论</strong>：只有 (a) 属于本书定义的 robot；(b)(c) 是 tele-robot（重要 precursor），(d) 是 shared control 系统。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(a) 传感器二分。</strong></p>
+<ul>
+<li><strong>proprioceptive</strong>：测量机器人<strong>自身状态</strong>。原书例：关节角、轮转数、电机电流。</li>
+<li><strong>exteroceptive</strong>：测量<strong>世界相对机器人</strong>的量。原书例：真空吸尘机器人的接触开关、GPS 接收机、罗盘、主动脉冲测距传感器、相机。</li>
+</ul>
+<p><strong>(b) camera 是 passive sensor。</strong></p>
+<p>camera 捕获场景<strong>反射的能量模式</strong>，本身不向环境发射能量，因此是被动传感器。相对的<strong>主动传感器</strong>发射 acoustic / optical / radio 脉冲，并测量回波时间（time-of-flight）来推断距离。</p>
+<p><strong>(c) 单目相机的限制与替代。</strong></p>
+<p>原书指出："An important limitation of a single camera is that the 3-dimensional structure must be inferred from the 2-dimensional image"。即 2D 图像丢失了深度信息，必须靠算法推断。</p>
+<p>替代方案是 <strong>stereo vision</strong>（两台或更多相机）。实例是 <strong>Mars rover</strong>：其桅杆上装有两台相机提供立体视觉。</p>
+<p><strong>(d) machine vision 定义。</strong></p>
+<p>本书 Part IV 将 machine vision 定义为：</p>
+<p>$$
+\text{machine vision} = \text{extraction of numerical features from images to provide input for control of a robot}
+$$</p>
+<p>它是 computer vision 的<strong>子集</strong>，目标是<strong>为机器人控制提供数值特征输入</strong>，而非图像增强或供人类观赏。这一界定把 Part IV 的范围与一般图像处理/计算机视觉区分开。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(a) 相对位姿记号与位姿矩阵。</strong></p>
+<p>frame $\{B\}$ 相对参考系 $\{A\}$ 的位姿记作：</p>
+<p>$$
+{}^A\xi_B
+$$</p>
+<p>位姿矩阵的分块形式为：</p>
+<p>$$
+\mathbf{T}=\begin{bmatrix}\mathbf{R}&\mathbf{p}\\ \mathbf{0}&1\end{bmatrix}\in SE(3),\qquad \mathbf{R}\in SO(3)
+$$</p>
+<p>其中 $\mathbf{R}$ 是旋转部分，$\mathbf{p}$ 是平移部分。</p>
+<p><strong>(b) 齐次扩展。</strong></p>
+<p>空间点向量为 $\mathbf{p}=[x\ y\ z]^T$，其齐次扩展为：</p>
+<p>$$
+\tilde{\mathbf{p}}=[x\ y\ z\ 1]^T
+$$</p>
+<p><strong>(c) 指数映射与反对称算子。</strong></p>
+<p>旋转向量（轴角）到旋转矩阵的指数映射为：</p>
+<p>$$
+\mathbf{R}=\exp\!\big([\mathbf{S}(\hat{\boldsymbol\theta})\theta]_\times\big)
+$$</p>
+<p>反对称算子 $\mathbf{S}(\mathbf{x})$ 或 $[\mathbf{x}]_\times$ 满足关键性质：</p>
+<p>$$
+[\mathbf{x}]_\times\,\mathbf{y}=\mathbf{x}\times\mathbf{y}
+$$</p>
+<p>即用反对称矩阵左乘向量等价于两向量的叉积。</p>
+<p><strong>(d) 符号复用的原因。</strong></p>
+<p>原书明确说明："there are just not enough good symbols to go around, so it is unavoidable that some symbols have different meanings in different parts of the book"。因此读者<strong>不能假设全书同一符号恒同义</strong>，必须结合上下文（所在 Part / 章节）判断符号含义。这是本章符号约定中一条重要的阅读提示。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(a) 五个 Part 与章节范围。</strong></p>
+<p>依据本章 §1.1.6 Outline：</p>
+<ul>
+<li><strong>Part I Foundations</strong>：Chap. 2–3（位姿表示；时间与运动）</li>
+<li><strong>Part II Mobile robots</strong>：Chap. 4–6</li>
+<li><strong>Part III Arm robots</strong>：Chap. 7–9</li>
+<li><strong>Part IV Machine vision</strong>：Chap. 10–14</li>
+<li><strong>Part V Vision-based control</strong>：Chap. 15–16</li>
+</ul>
+<p><strong>(b) 唯一 mandatory 章节。</strong></p>
+<p><strong>Chap. 2（Representing Position and Orientation）</strong> 是全书唯一强制材料。其主题是位姿的表示——包括矩阵表示、旋转的三种表示（RPY/欧拉角、旋转向量、单位四元数）以及齐次变换。本章定义的 pose 概念与 ${}^A\xi_B$ 记号在第 2 章获得具体实现。</p>
+<p><strong>(c) 主题归类。</strong></p>
+<ul>
+<li>位姿的矩阵表示 → <strong>第 2 章</strong>（Part I）</li>
+<li>SLAM → <strong>第 6 章</strong>（Part II，与第 5 章导航/路径规划相邻）</li>
+<li>Jacobian 与奇异位形 → <strong>第 8 章</strong>（Part III；第 7 章讲正/逆运动学，第 8 章讲雅可比、奇异位形、灵巧度、零空间、resolved-rate）</li>
+<li>IBVS / PBVS 经典视觉伺服 → <strong>第 15 章</strong>（Part V）</li>
+<li>图像特征提取（blob/line/point）→ <strong>第 13 章</strong>（Part IV）</li>
+</ul>
+<p><strong>(d) 移动机器人导航与定位的阅读路径。</strong></p>
+<p>应阅读 <strong>Part II（Chap. 4–6）</strong>：Chap. 4 运动模型（独轮车/车辆/四旋翼、欠驱动与非完整约束），Chap. 5 导航与路径规划，Chap. 6 定位、dead-reckoning 与 SLAM。</p>
+<p>可以跳过其他 Part 的原因：原书明确指出 <strong>Chap. 2 是唯一 mandatory 材料，其余各 Part 可 standalone 阅读</strong>。因此读者只需先掌握第 2 章的位姿表示，即可直接进入 Part II，而不必线性读完 Part III–V。这正是本章"地图"功能的价值——支持按需跳读。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>(a) 复现轨迹代码片段。</strong></p>
+<p>原书代码（照抄）：</p>
+<pre><code class="lang-matlab">>> Ts = ctraj(T1, T2, t);
+>> p = transl(Ts);
+>> plot(t, p);</code></pre>
+<p>各命令作用：</p>
+<ul>
+<li><code>Ts = ctraj(T1, T2, t)</code>：调用 <code>ctraj</code> 生成从位姿 <code>T1</code> 到位姿 <code>T2</code> 的<strong>笛卡尔轨迹</strong>，<code>t</code> 为时间向量，返回轨迹上位姿序列 <code>Ts</code>。</li>
+<li><code>p = transl(Ts)</code>：用 <code>transl</code> 从位姿序列 <code>Ts</code> 中<strong>提取平移分量</strong>，得到位置序列 <code>p</code>。</li>
+<li><code>plot(t, p)</code>：以时间 <code>t</code> 为横轴、位置 <code>p</code> 为纵轴<strong>绘制位置随时间变化曲线</strong>。</li>
+</ul>
+<p><strong>(b) 工具箱与许可证。</strong></p>
+<p>依赖 <strong>Robotics Toolbox (RTB)</strong>（本章同时介绍 <strong>Machine Vision Toolbox, MVTB</strong>）。二者均为开源，许可证为 <strong>GNU LGPL</strong>。</p>
+<p><strong>(c) 预期观察。</strong></p>
+<p><code>plot(t, p)</code> 预期显示位置分量随时间变化的曲线（笛卡尔轨迹的平移部分）。<strong>原书未给出具体数值结果</strong>——该代码片段在事实底座中"无数值结果"，因此不能编造具体坐标值。读者应亲手运行以观察曲线形状。</p>
+<p><strong>(d) <code>a = 2 + 2</code> 的响应与教学理念。</strong></p>
+<p>响应为：</p>
+<pre><code>a =
+     4</code></pre>
+<p>这段代码传达的理念是：本书"就是一个很大的 MATLAB script"，<strong>代码是一等公民</strong>，嵌入正文而非附录；读者应亲手运行命令（"the best way to learn is by doing"、"an invitation to tinker"），而非把本书当作冻结的 API 参考手册。原书反复强调 "This book is not a manual"。</p>
+<p><strong>(e) 网页代码量与函数索引页码。</strong></p>
+<p>原书网页提供<strong>超过 1600 行</strong> MATLAB 命令；函数索引位于<strong>第 554 页</strong>。</p>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

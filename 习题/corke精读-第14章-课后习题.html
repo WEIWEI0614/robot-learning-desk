@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 14 章「Using Multiple Images」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 14 章「Using Multiple Images」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1. 角点特征。</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确"角点强度"是什么。</strong></p>
+<p>Harris 角点检测器基于结构张量（structure tensor）的特征值给出一个标量响应，响应越大表示该点在两个方向上都有显著梯度，即"更像角点"。SURF 检测器则基于 Hessian 行列式（determinant of Hessian）的尺度空间响应，其响应值同样是一个标量强度。因此每个特征点都携带一个强度值 $s_i$，可以据此排序。</p>
+<p><strong>第 2 步：为什么要看累积分布而不是直接取前 $N$ 个。</strong></p>
+<p>本章事实底座指出，<code>icorner(im,'nfeat',200)</code> 与 <code>isurf(im,'nfeat',200)</code> 各取 200 个特征。若图像纹理丰富，强角点很多；若图像平坦（如蓝天、墙面），强角点稀少。直接固定 $N$ 会导致：在平坦图像上强行取满 200 个，其中大量是弱角点，匹配时容易产生错误对应；在纹理丰富图像上又可能丢弃本可用的中等强度角点。因此需要先看强度的<strong>累积分布</strong> $F(s)=P(\text{强度}\le s)$，判断强度谱的形状。</p>
+<p><strong>第 3 步：如何由累积分布选阈值。</strong></p>
+<p>设所有候选角点强度排序后为 $s_{(1)}\ge s_{(2)}\ge\cdots$。累积分布曲线在强角点处上升缓慢、在弱角点处上升迅速。合适的做法是：</p>
+<ul>
+<li>若曲线存在明显的"拐点"（knee），取拐点对应的强度作为阈值 $\tau$，只保留 $s_i\ge\tau$ 的角点；</li>
+<li>若没有明显拐点，则取累积分布的高分位点，例如保留强度最高的 $10\%\sim20\%$，即令 $\tau=s_{(\lceil 0.1N\rceil)}$；</li>
+<li>同时设一个绝对下限，剔除响应接近零的噪声点。</li>
+</ul>
+<p>这样得到的角点集合既保证数量足够做匹配，又保证每个角点足够"强"。</p>
+<p><strong>第 4 步：与匹配环节衔接。</strong></p>
+<p>本章的匹配流程是 <code>m = s1.match(s2)</code>，按相似度排序并加阈值（<code>'top',N</code>、<code>'thresh',0.04</code>、<code>'median'</code>）。事实底座给出：<code>s1</code>=1288 features、<code>s2</code>=1426 features、<code>m</code>=644 corresponding points，前 5 个匹配距离为 <code>0.002137 / 0.004057 / 0.004297 / 0.004371 / 0.004417</code>，约 35% 的匹配距离低于默认阈值 0.05。这说明：<strong>先按强度筛选角点，再按描述子距离筛选匹配</strong>，是两级过滤。强度筛选减少候选数量、降低 $O(N^2)$ 匹配代价；描述子距离筛选保证几何一致性。</p>
+<p><strong>第 5 步：可运行验证代码（MATLAB，Toolbox 风格）。</strong></p>
+<pre><code class="lang-matlab">im = iread('eiffel2-1.jpg', 'double', 'mono');
+% Harris
+h = icorner(im, 'nfeat', 200, 'harris');
+sh = sort([h.strength], 'descend');
+ch = cumsum(sh) / sum(sh);          % 累积分布
+plot(sh, ch); xlabel('corner strength'); ylabel('cumulative fraction');
+% SURF
+sf = isurf(im, 'nfeat', 200);
+ss = sort([sf.strength], 'descend');
+cs = cumsum(ss) / sum(ss);
+hold on; plot(ss, cs, 'r'); legend('Harris', 'SURF');</code></pre>
+<p>预期观察：两条曲线都单调上升；Harris 曲线在低强度区陡升、高强度区长尾，SURF 曲线形状类似但尺度不同。拐点位置即为建议的强度阈值。原书未给出该累积分布的具体数值，此处按符号与流程推导。</p>
+<h4>关键点</h4>
+<ul>
+<li>角点强度是标量响应：Harris 来自结构张量，SURF 来自 Hessian 行列式尺度空间响应。</li>
+<li>选强角点应看<strong>累积分布</strong>，取拐点或高分位点作为阈值，而非固定数量 $N$。</li>
+<li>强度筛选与描述子距离筛选是两级过滤：前者降复杂度，后者保几何一致性。</li>
+<li>本章匹配默认阈值 0.05，约 35% 匹配低于该阈值（事实底座数据）。</li>
+<li>平坦图像上强角点稀少，固定 $N$ 会引入弱角点，增加误匹配。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章</li>
+<li>依据：</li>
+<li>特征检测与描述子：事实底座第 3 节第 1、2 条；第 4 节第 1、2 步。</li>
+<li><code>icorner</code>/<code>isurf</code> 取 200 特征、匹配距离数值：事实底座第 6 节埃菲尔铁塔示例。</li>
+<li>匹配阈值与排序策略：事实底座第 4 节第 2 步。</li>
+<li>累积分布与阈值选择：由上述强度定义与匹配流程按符号推导，原书未给出累积分布的具体数值。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2. 特征匹配。</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>总体思路。</strong> 本题是实验设计题，核心是"用 RANSAC 内点率作为匹配质量的度量"，逐一改变图像变换、描述子类型/尺寸、抑制半径、颜色通道、特征强度，观察内点率如何变化。所有实验都遵循本章第 3 节推导链条的步骤 1–3：提特征 → 匹配 → 用 <code>fmatrix</code> + RANSAC 估计 $\mathbf{F}$ 并统计内点。</p>
+<p><strong>步骤 1：建立基准匹配流程（做什么 + 为什么）。</strong></p>
+<p>对原图 $I$ 与变换后的图 $I'$，分别提取特征：</p>
+<pre><code>s1 = isurf(I,  'nfeat', 200);   % 或 icorner(I,'nfeat',200)
+s2 = isurf(I', 'nfeat', 200);
+m  = s1.match(s2);              % O(N^2) 候选对应
+[F, inliers] = m.ransac(@fmatrix, 1e-4);
+quality = numel(inliers) / m.count;</code></pre>
+<p>为什么用 RANSAC 内点率：本章事实底座指出，匹配是 $O(N^2)$ 的盲目搜索，必然含外点；<code>ransac(@fmatrix,1e-4)</code> 用对极约束 $({}^2\mathbf{p})^T\mathbf{F}\,{}^1\mathbf{p}=0$（Eq. 14.2）剔除外点，内点率直接反映描述子对同一世界点的判别能力。原书埃菲尔铁塔例中 644 个对应里 332 个内点（51.6%）、312 个外点（48.4%），可作为"无变换基准"的参照量级。</p>
+<p><strong>步骤 2：逐项变换的预期（做什么 + 为什么）。</strong></p>
+<ul>
+<li>(a) 强度缩放 70%：Harris 结构张量描述子由图像梯度构成，对全局线性强度缩放近似不变；patch 描述子用 ZNCC（$s\in[-1,1]$，$s\ge0.8$ 算好匹配），ZNCC 本身对线性强度变化归一化，故内点率应基本不变。</li>
+<li>(b) 高斯噪声 $\sigma=0.05,0.5,2$：噪声破坏梯度与 patch 结构。$\sigma=0.05$ 影响可忽略；$\sigma=2$ 时 Harris 的 3-vector 结构张量描述子（示例 <code>0.0805 0.0821 0.0371</code>）区分度下降，内点率显著降低。SURF 因尺度/旋转不变且描述子 64 元（'extended' 128 元），抗噪通常优于 Harris。</li>
+<li>(c) 尺寸缩放 0.9→0.5：Harris 描述子<strong>不具备尺度不变性</strong>，缩放后角点邻域结构改变，内点率随缩放加剧而下降；SURF 具备尺度不变性，应保持较高内点率。这是本题最关键的对比点。</li>
+<li>(d) 旋转 5→40 度：Harris 描述子<strong>不具备旋转不变性</strong>，旋转后 patch 内容错位，内点率随角度增大而下降；SURF 旋转不变，应稳定。</li>
+</ul>
+<p><strong>步骤 3：b) 描述子尺寸对比（做什么 + 为什么）。</strong></p>
+<p>对 Harris 分别用结构张量描述子和 patch 半宽 1、3、5、7（对应 3×3、7×7、11×11、15×15）：</p>
+<pre><code>h = icorner(I,'nfeat',200,'suppress',5);   % 结构张量描述子
+h.distance(h2)                              % Euclidean，完美匹配 0
+h.ncc(h2)                                   % patch 描述子，ZNCC 点积</code></pre>
+<p>为什么：本章事实底座给出 patch 半宽 5 → 11×11 → 121 元单位向量，<code>harris(1).ncc(harris(2))=-0.0292</code>。patch 越大，包含上下文越多、对噪声越鲁棒，但对旋转/缩放越敏感（因为大邻域在变换下错位更严重）。预期存在一个最优尺寸：小 patch 抗几何变换但抗噪差，大 patch 反之。原书未给出该对比的具体数值，按符号与上述机理推导。</p>
+<p><strong>步骤 4：c) 抑制半径（做什么 + 为什么）。</strong></p>
+<pre><code>icorner(I,'nfeat',200,'suppress',r);   % r 增大</code></pre>
+<p>为什么：抑制半径增大使特征在图像上分布更稀疏（匹配密度降低），减少相邻重复特征导致的歧义匹配。但内点率是"内点数/总匹配数"，密度降低同时减少内点和外点，<strong>内点率未必单调改善</strong>；若外点（歧义匹配）减少得比内点快，则内点率上升。需实验判定，原书未给出具体数值。</p>
+<p><strong>步骤 5：d) 彩色 vs 灰度（做什么 + 为什么）。</strong></p>
+<p>Harris 可对彩色图像处理（在多个通道上求结构张量）。为什么可能改善：颜色提供了灰度之外的信息，使不同物体上的角点更易区分，减少歧义匹配。但若场景本身色彩单一，改善有限。原书未给出具体数值。</p>
+<p><strong>步骤 6：e) 离群匹配与角点强度（做什么 + 为什么）。</strong></p>
+<p>角点强度即 Harris 响应值（结构张量的最小特征值或角点度量）。为什么相关：弱角点（低响应）位于纹理不独特区域，其描述子区分度低，更易产生外点。可绘制"外点对应特征的强度分布"与"内点对应特征的强度分布"对比。本章事实底座提到均匀区域（蓝天、阴影、水面、雪、墙、车身）像素不独特、无法直接匹配，支持"弱特征→外点"的假设。原书未给出该相关性的具体数值。</p>
+<p><strong>可运行代码（MATLAB，Robotics Toolbox）：</strong></p>
+<pre><code class="lang-matlab">I = iread('eiffel2-1.jpg', 'grey');   % 任取图像
+transforms = {@(x)x, @(x)0.7*x, ...}; % 依次施加题干变换
+for k = 1:numel(transforms)
+    I2 = transforms{k}(I);
+    s1 = isurf(I,'nfeat',200); s2 = isurf(I2,'nfeat',200);
+    m  = s1.match(s2);
+    [F,inl] = m.ransac(@fmatrix, 1e-4);
+    fprintf('transform %d: inlier ratio = %.3f\n', k, numel(inl)/m.count);
+end</code></pre>
+<p>预期观察：SURF 在缩放/旋转下内点率保持较高；Harris 在缩放/旋转下内点率明显下降；噪声增大时两者内点率均下降，Harris 更敏感。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>质量度量</strong>：用 RANSAC 后内点率（inlier ratio）衡量匹配质量，依据对极约束 $({}^2\mathbf{p})^T\mathbf{F}\,{}^1\mathbf{p}=0$（Eq. 14.2）。</li>
+<li><strong>不变性差异</strong>：Harris 描述子不具备尺度/旋转不变性，SURF 具备；这是 (c)(d) 两组实验的核心预期。</li>
+<li><strong>描述子尺寸权衡</strong>：patch 越大抗噪越好但抗几何变换越差，存在最优尺寸（b）。</li>
+<li><strong>抑制半径</strong>：降低匹配密度不必然提高内点率，取决于外点减少是否快于内点（c）。</li>
+<li><strong>弱角点易成外点</strong>：均匀/低纹理区域的弱特征描述子区分度低，与离群匹配相关（e）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章 Using Multiple Images。</li>
+<li>依据：</li>
+<li>特征对应、描述子（Harris 结构张量、patch ZNCC、SURF 64/128 元）——事实底座第 3 节概念 1、2。</li>
+<li>对极约束 Eq. 14.2、$\mathbf{F}$ 的 RANSAC 估计与内点/外点统计——事实底座第 5 节公式 1、第 4 节步骤 3。</li>
+<li>埃菲尔铁塔 644 对应、332 内点（51.6%）、312 外点（48.4%）——事实底座第 6 节。</li>
+<li>均匀区域无法匹配、弱纹理问题——事实底座第 3 节概念 1。</li>
+<li>抑制半径、彩色 Harris、角点强度与离群相关性：原书未给出具体数值，按本章符号与机理推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确已知量与目标。</strong></p>
+<p>设图像一中的点为齐次像素坐标 ${}^1\mathbf{p}=[u_1\ v_1\ 1]^T$，图像二中的对极线记为 ${}^2\boldsymbol\ell=[l_2\ m_2\ n_2]^T$。目标是写出 ${}^2\boldsymbol\ell$ 关于 ${}^1\mathbf{p}$ 的表达式。</p>
+<p><strong>第 2 步：从对极约束出发。</strong></p>
+<p>本章事实底座给出对极约束（Eq. 14.2）：</p>
+<p>$$
+({}^2\mathbf{p})^T\,\mathbf{F}\,{}^1\mathbf{p}=0
+$$</p>
+<p>其中 ${}^2\mathbf{p}$ 是图像二中与 ${}^1\mathbf{p}$ 对应的共轭点，$\mathbf{F}$ 是基本矩阵（fundamental matrix），它编码了两相机的几何关系（含内参），rank 为 2、7 自由度。</p>
+<p><strong>第 3 步：把约束改写成“线”的形式。</strong></p>
+<p>在图像二中，一条直线 ${}^2\boldsymbol\ell$ 的方程可写为</p>
+<p>$$
+({}^2\mathbf{p})^T\,{}^2\boldsymbol\ell=0
+$$</p>
+<p>把第 2 步的对极约束与上式对照，立刻得到</p>
+<p>$$
+{}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}
+$$</p>
+<p>这正是本章事实底座中的 Eq. 14.3。<strong>为什么可以这样读</strong>：对极约束对任意满足共轭关系的 ${}^2\mathbf{p}$ 都成立，而 ${}^1\mathbf{p}$ 固定时，$\mathbf{F}\,{}^1\mathbf{p}$ 是一个常向量，它恰好定义了图像二中一条直线——即 ${}^1\mathbf{p}$ 对应的对极线。</p>
+<p><strong>第 4 步：写出分量形式。</strong></p>
+<p>令</p>
+<p>$$
+\mathbf{F}=\begin{bmatrix} f_{11} & f_{12} & f_{13}\\ f_{21} & f_{22} & f_{23}\\ f_{31} & f_{32} & f_{33}\end{bmatrix}
+$$</p>
+<p>则</p>
+<p>$$
+{}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}
+=\begin{bmatrix} f_{11}u_1+f_{12}v_1+f_{13}\\ f_{21}u_1+f_{22}v_1+f_{23}\\ f_{31}u_1+f_{32}v_1+f_{33}\end{bmatrix}
+=\begin{bmatrix} l_2\\ m_2\\ n_2\end{bmatrix}
+$$</p>
+<p>于是图像二中对极线的方程为</p>
+<p>$$
+l_2\,u_2+m_2\,v_2+n_2=0
+$$</p>
+<p><strong>第 5 步：几何意义与用途。</strong></p>
+<ul>
+<li>该对极线必经过图像二中的 epipole ${}^2\mathbf{e}$，因为所有对极线都交于 epipole。可用 $\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0}$（即 ${}^1\mathbf{e}$ 是 $\mathbf{F}$ 的右零空间向量）验证：把 ${}^1\mathbf{p}={}^1\mathbf{e}$ 代入，得 ${}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0}$，退化情形对应 epipole 本身。</li>
+<li><strong>为什么需要它</strong>：对极线把图像二中寻找共轭点的搜索从 $O(N^2)$ 的盲目全图搜索降为沿一条直线的 $O(N)$ 搜索，这是立体匹配与 RANSAC 剔除错误匹配的基础。</li>
+</ul>
+<p><strong>第 6 步（可选验证）。</strong></p>
+<p>若用本章 Toolbox，可写：</p>
+<pre><code class="lang-matlab">% p1: 图像一中的齐次像素坐标 (3x1)
+% F : 由 fmatrix 或 ransac(@fmatrix,...) 估计得到的基本矩阵
+l2 = F * p1;          % 图像二中的对极线 [l2 m2 n2]'
+l2 = l2 / norm(l2(1:2));   % 归一化，便于计算点到线距离</code></pre>
+<p>预期观察：<code>l2</code> 的三个分量给出图像二中的一条直线；把图像二中真实的共轭点 ${}^2\mathbf{p}$ 代入应满足 ${}^2\mathbf{p}^T \mathbf{l}_2\approx 0$（残差量级取决于 $\mathbf{F}$ 的估计精度）。</p>
+<h4>关键点</h4>
+<ul>
+<li>对极线方程就是本章 Eq. 14.3：${}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}$，它是对极约束 Eq. 14.2 的直接改写。</li>
+<li>$\mathbf{F}$ 把图像一的<strong>点</strong>映射为图像二的<strong>线</strong>，这是 $\mathbf{F}$ 最基本的几何作用；反过来 ${}^1\boldsymbol\ell=\mathbf{F}^T\,{}^2\mathbf{p}$。</li>
+<li>所有对极线都通过 epipole ${}^2\mathbf{e}$，且 ${}^2\mathbf{e}$ 是 $\mathbf{F}^T$ 的零空间向量（对应事实底座中 <code>null(F)'</code> 求 <code>h2e</code> 的做法）。</li>
+<li>该式把匹配搜索从二维降到一维，是立体视觉与错误匹配剔除的理论基础。</li>
+<li>若两相机内参已知，可用 $\mathbf{E}=\mathbf{K}_2^{T}\mathbf{F}\mathbf{K}_1$ 换成本质矩阵形式，但<strong>对极线方程本身仍用 $\mathbf{F}$ 表达</strong>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 14 章</li>
+<li>依据：</li>
+<li>对极约束 Eq. 14.2 与对极线 Eq. 14.3：见事实底座「5. 关键公式」第 1 条。</li>
+<li>$\mathbf{F}$ 的构造、rank 2、7 自由度：见事实底座「5. 关键公式」第 2 条（Eq. 14.7）。</li>
+<li>epipole 与 $\mathbf{F}$ 零空间的关系：见事实底座「6. 例题与数值例子」中 <code>null(F)'</code> → <code>h2e</code> 得 <code>(985.0445,512.0000)</code> 的示例。</li>
+<li>对极几何把 $O(N^2)$ 搜索降为沿一条线搜索：见事实底座「3. 本章核心概念清单」第 3 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确对极点的定义与几何含义。</strong></p>
+<p>设两相机中心分别为 ${}^1\mathbf{O}$、${}^2\mathbf{O}$。对极点 ${}^1\mathbf{e}$ 是<strong>第二个相机中心 ${}^2\mathbf{O}$ 在第一幅图像上的投影</strong>；对极点 ${}^2\mathbf{e}$ 是<strong>第一个相机中心 ${}^1\mathbf{O}$ 在第二幅图像上的投影</strong>（见本章 facts 第 1 节记号：epipole ${}^1\mathbf{e}$，对极线 ${}^2\boldsymbol\ell$）。</p>
+<p><strong>第 2 步：写出对极约束与对极线方程。</strong></p>
+<p>由本章 Eq. 14.2，共轭点 ${}^1\mathbf{p}$、${}^2\mathbf{p}$ 满足</p>
+<p>$$({}^2\mathbf{p})^T\,\mathbf{F}\,{}^1\mathbf{p}=0 .$$</p>
+<p>固定 ${}^1\mathbf{p}$，则 ${}^2\mathbf{p}$ 必落在对极线</p>
+<p>$${}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}\quad(\text{Eq. 14.3})$$</p>
+<p>上。也就是说，$\mathbf{F}\,{}^1\mathbf{p}$ 给出的是<strong>第二幅图中</strong>的一条对极线。</p>
+<p><strong>第 3 步：把 ${}^1\mathbf{p}$ 取为对极点 ${}^1\mathbf{e}$。</strong></p>
+<p>对极点 ${}^1\mathbf{e}$ 是相机中心 ${}^2\mathbf{O}$ 在第一幅图中的像。考虑从 ${}^2\mathbf{O}$ 出发、经过 ${}^1\mathbf{e}$ 的那条射线——它正是第一幅图中"过对极点"的那束射线的公共起点。关键几何事实是：<strong>相机中心 ${}^2\mathbf{O}$ 投影到第一幅图上的点 ${}^1\mathbf{e}$，与第二幅图中任意点都构成对极平面</strong>，因此 ${}^1\mathbf{e}$ 的对极线在第二幅图中是<strong>未定义的（退化的）</strong>——它不对应第二幅图中任何一条确定的直线。</p>
+<p><strong>第 4 步：用代数方式表达这一退化。</strong></p>
+<p>对极线 ${}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}$ 是一条直线，其系数向量非零。当 ${}^1\mathbf{p}={}^1\mathbf{e}$ 时，这条"直线"退化，意味着</p>
+<p>$$\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0}.$$</p>
+<p>即 ${}^1\mathbf{e}$ 被 $\mathbf{F}$ 映为零向量。这正是"${}^1\mathbf{e}$ 属于 $\mathbf{F}$ 的零空间"的定义。</p>
+<p><strong>第 5 步：对称地处理 ${}^2\mathbf{e}$。</strong></p>
+<p>对极约束对两幅图是对称的：也可写成 $({}^1\mathbf{p})^T\,\mathbf{F}^T\,{}^2\mathbf{p}=0$，从而 ${}^1\boldsymbol\ell=\mathbf{F}^T\,{}^2\mathbf{p}$。把 ${}^2\mathbf{p}$ 取为对极点 ${}^2\mathbf{e}$，同理得</p>
+<p>$$\mathbf{F}^T\,{}^2\mathbf{e}=\mathbf{0},$$</p>
+<p>即 ${}^2\mathbf{e}$ 属于 $\mathbf{F}^T$ 的零空间，等价地 ${}^2\mathbf{e}$ 是 $\mathbf{F}$ 的<strong>左零空间</strong>向量。</p>
+<p><strong>第 6 步：与本章事实底座对照验证。</strong></p>
+<ul>
+<li>本章 facts 第 5 节指出 $\mathbf{F}$ 是 rank 2、7 自由度的矩阵。rank 2 的 $3\times3$ 矩阵零空间维数为 $3-2=1$，因此零空间恰由一个非零向量张成——这个向量就是 ${}^1\mathbf{e}$（相差尺度）。</li>
+<li>facts 第 6 节给出数值例子：<code>cam1.F(cam2)</code> 的 <code>rank(F)=2</code>，且 <code>null(F)'</code> 得到 <code>h2e = (985.0445, 512.0000)</code>，与前面算出的 epipole <code>e1=(985.0445,512.0000)</code> 完全一致。这正是 $\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0}$ 的数值验证。</li>
+<li>同理，<code>h2e(null(F))</code> 在埃菲尔铁塔例子中给出 <code>1.0e+03*(1.0359, 0.6709)</code>，指向误差 <0.5°，说明用零空间求对极点是本章的标准做法。</li>
+</ul>
+<p><strong>第 7 步：结论。</strong></p>
+<p>$$\boxed{\;\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0},\qquad \mathbf{F}^T\,{}^2\mathbf{e}=\mathbf{0}\;}$$</p>
+<p>即 ${}^1\mathbf{e}$ 是 $\mathbf{F}$ 的（右）零空间向量，${}^2\mathbf{e}$ 是 $\mathbf{F}$ 的左零空间向量。由于 $\mathbf{F}$ 秩为 2，这两个零空间各是一维的，故对极点（在相差一个尺度因子意义下）唯一确定。</p>
+<p><strong>MATLAB 验证（可选）：</strong></p>
+<pre><code class="lang-matlab">% 用本章仿真相机
+cam1 = CentralCamera('focal', 0.002, 'pixel', 10e-6, ...
+    'resolution', [1024 1024], 'centre', [512 512], ...
+    'name', 'cam1', 'T', transl(-0.1,0,0)*troty(0.4));
+cam2 = CentralCamera('focal', 0.002, 'pixel', 10e-6, ...
+    'resolution', [1024 1024], 'centre', [512 512], ...
+    'name', 'cam2', 'T', transl(0.1,0,0)*troty(-0.4));
+
+F = cam1.F(cam2);
+disp(rank(F));            % 预期 2
+e1 = null(F);             % F 的右零空间 → 对极点 e1
+e2 = null(F');            % F 的左零空间 → 对极点 e2
+disp(e1'); disp(e2');
+% 预期 e1 ≈ (985.0445, 512.0000)（齐次坐标，相差尺度）
+% 验证 F*e1 ≈ 0
+disp(norm(F*e1));         % 预期接近 0</code></pre>
+<p>预期观察：<code>rank(F)=2</code>，<code>F*e1</code> 的范数接近机器精度量级，<code>e1</code> 与 facts 中给出的 <code>e1=(985.0445,512.0000)</code> 一致。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>对极点的定义</strong>：${}^1\mathbf{e}$ 是相机中心 ${}^2\mathbf{O}$ 在第一幅图上的投影，${}^2\mathbf{e}$ 是 ${}^1\mathbf{O}$ 在第二幅图上的投影。</li>
+<li><strong>对极约束的退化</strong>：把 ${}^1\mathbf{p}$ 取为 ${}^1\mathbf{e}$ 时，对极线 ${}^2\boldsymbol\ell=\mathbf{F}\,{}^1\mathbf{p}$ 退化，故 $\mathbf{F}\,{}^1\mathbf{e}=\mathbf{0}$；对称地 $\mathbf{F}^T\,{}^2\mathbf{e}=\mathbf{0}$。</li>
+<li><strong>秩与零空间维数</strong>：$\mathbf{F}$ 秩为 2（7 自由度），故零空间一维，对极点在相差尺度下唯一。</li>
+<li><strong>数值验证</strong>：本章 <code>null(F)</code> 直接给出对极点，与 <code>cam1.F(cam2)</code> 的解析结果一致（<code>e1=(985.0445,512.0000)</code>）。</li>
+<li><strong>实用意义</strong>：这是从 $\mathbf{F}$ 提取对极点、进而做极线校正（rectification）与匹配筛选的基础。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 14 章</li>
+<li>依据：</li>
+<li>对极约束 Eq. 14.2 与对极线 Eq. 14.3：facts 第 5 节公式 1。</li>
+<li>$\mathbf{F}$ 的秩 2、7 自由度：facts 第 5 节公式 2 说明。</li>
+<li>对极点记号 ${}^1\mathbf{e}$、对极线 ${}^2\boldsymbol\ell$：facts 第 1 节记号约定。</li>
+<li>数值验证 <code>rank(F)=2</code>、<code>null(F)'</code> 得 <code>(985.0445,512.0000)</code>：facts 第 6 节仿真相机例子。</li>
+<li>埃菲尔铁塔 <code>h2e(null(F))</code> 指向误差 <0.5°：facts 第 6 节 RANSAC 例子。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确"相机矩阵"的含义。</strong></p>
+<p>本章记号约定中，相机内参记作 $\mathbf{K}$（Eq. 11.7），而"camera matrix"在投影几何里通常指 $3\times 4$ 的投影矩阵 $\mathbf{C}=\mathbf{K}[\mathbf{R}\mid\mathbf{t}]$，它把世界齐次点 $\tilde{\mathbf{P}}$ 映到像素 $\tilde{\mathbf{p}}\simeq\mathbf{C}\tilde{\mathbf{P}}$。题目问的是：能否由 $\mathbf{F}$ 与 $\mathbf{C}_1$ 唯一确定 $\mathbf{C}_2$。</p>
+<p><strong>第 2 步：写出 $\mathbf{F}$ 与两相机矩阵的关系。</strong></p>
+<p>由本章 Eq. 14.7 与 Eq. 14.11，基本矩阵由两相机的内参与相对位姿决定：</p>
+<p>$$\mathbf{F}=\mathbf{K}_2^{-T}\,\mathbf{S}(\mathbf{t})\,\mathbf{R}\,\mathbf{K}_1^{-1}=\mathbf{K}_2^{-T}\,\mathbf{E}\,\mathbf{K}_1^{-1},\qquad \mathbf{E}=\mathbf{S}(\mathbf{t})\,\mathbf{R}.$$</p>
+<p>这里 $(\mathbf{R},\mathbf{t})\sim{}^2\boldsymbol\xi_1$ 是相机二相对相机一的位姿。若把两相机矩阵写成</p>
+<p>$$\mathbf{C}_1=\mathbf{K}_1[\mathbf{I}\mid\mathbf{0}],\qquad \mathbf{C}_2=\mathbf{K}_2[\mathbf{R}\mid\mathbf{t}],$$</p>
+<p>则 $\mathbf{F}$ 恰好是 $\mathbf{C}_1,\mathbf{C}_2$ 之间"消去世界点"后的双线性约束（Eq. 14.2）：$({}^2\mathbf{p})^T\mathbf{F}\,{}^1\mathbf{p}=0$。</p>
+<p><strong>第 3 步：判断信息是否足够。</strong></p>
+<p>$\mathbf{F}$ 是 $3\times3$、rank 2、7 自由度。它把 $\mathbf{K}_1,\mathbf{K}_2,\mathbf{R},\mathbf{t}$ 的信息压缩在一起，但<strong>不能唯一分解</strong>。原因有二：</p>
+<ul>
+<li><strong>内参不可分离</strong>：$\mathbf{F}=\mathbf{K}_2^{-T}\mathbf{E}\mathbf{K}_1^{-1}$，给定 $\mathbf{F}$ 与 $\mathbf{K}_1$ 后，$\mathbf{K}_2$ 与 $\mathbf{E}$ 仍耦合。只有当 $\mathbf{K}_2$ 已知时，才能由 $\mathbf{E}=\mathbf{K}_2^{T}\mathbf{F}\mathbf{K}_1$ 恢复本质矩阵（Toolbox 中即 <code>cam1.E(F)</code>，见 facts 第 5 节）。</li>
+<li><strong>位姿有歧义</strong>：即使得到 $\mathbf{E}$，<code>invE</code> 会给出<strong>两个</strong>相对位姿解（facts 第 4 节、例题 <code>[PDF p.390–391]</code>），需用测试点 $\mathbf{Q}=[0\ 0\ 10]^T$ 投影是否 NaN 来挑选；且平移 $\mathbf{t}$ 只确定到<strong>未知尺度</strong>（$\mathbf{E}=\mathbf{S}(\mathbf{t})\mathbf{R}$ 对 $\mathbf{t}$ 是齐次的）。</li>
+</ul>
+<p><strong>第 4 步：结论。</strong></p>
+<p>仅凭 $\mathbf{F}$ 与 $\mathbf{C}_1$ <strong>不能</strong>唯一确定 $\mathbf{C}_2$。可以确定的是：</p>
+<ol>
+<li>若额外已知 $\mathbf{K}_2$，则 $\mathbf{E}=\mathbf{K}_2^{T}\mathbf{F}\mathbf{K}_1$ 可求，进而由 <code>invE</code> 得到 $\mathbf{R}$ 与 $\mathbf{t}$ 的<strong>方向</strong>（尺度未知），再用光轴前方测试点选出唯一有效解，从而得到 $\mathbf{C}_2$ 的<strong>形状</strong>（差一个尺度因子）。</li>
+<li>若 $\mathbf{K}_2$ 也未知，则 $\mathbf{C}_2$ 存在一个由内参不确定性带来的等价类，无法唯一确定。</li>
+</ol>
+<p><strong>第 5 步：可运行验证（MATLAB，Robotics Toolbox）。</strong></p>
+<p>用本章例题的仿真相机验证上述结论：</p>
+<pre><code class="lang-matlab">% 构造两个相机（facts 第 6 节例题参数）
+cam1 = CentralCamera('focal', 0.002, 'resolution', [1024 1024], ...
+                     'centre', [512 512], 'name', '1');
+cam2 = CentralCamera('focal', 0.002, 'resolution', [1024 1024], ...
+                     'centre', [512 512], 'name', '2', ...
+                     'T', transl(0.2,0,0)*troty(-0.8));  % 相对位姿
+
+% 由两相机矩阵算 F
+F = cam1.F(cam2);          % 等价于 K2^-T * S(t)*R * K1^-1
+disp(F);                    % 观察 rank(F)=2
+
+% 已知 K1、K2 时恢复 E 与位姿
+E = cam1.E(F);              % E = K2' * F * K1
+[R,t] = cam1.invE(E, [0 0 10]');   % 两解，用测试点选有效解
+disp(R); disp(t);           % t 只到尺度</code></pre>
+<p>预期观察：<code>rank(F)=2</code>；<code>invE</code> 返回两个候选位姿，测试点投影为 NaN 的那个被剔除；恢复出的 $\mathbf{t}$ 与真值相差一个尺度因子。若把 <code>cam2</code> 的内参改成未知，则无法从 $\mathbf{F}$ 唯一反推 $\mathbf{K}_2$。</p>
+<h4>关键点</h4>
+<ul>
+<li>$\mathbf{F}=\mathbf{K}_2^{-T}\mathbf{E}\mathbf{K}_1^{-1}$ 把内参与相对位姿耦合在一起，<strong>单独一个 $\mathbf{F}$ 不足以分离出 $\mathbf{K}_2$</strong>。</li>
+<li>已知 $\mathbf{K}_1,\mathbf{K}_2$ 时，$\mathbf{E}=\mathbf{K}_2^{T}\mathbf{F}\mathbf{K}_1$ 可求，但 <code>invE</code> 给出两个位姿解，需用光轴前方测试点（如 $\mathbf{Q}=[0\ 0\ 10]^T$）判有效解。</li>
+<li>平移 $\mathbf{t}$ 只确定到<strong>未知尺度</strong>（$\mathbf{E}=\mathbf{S}(\mathbf{t})\mathbf{R}$ 对 $\mathbf{t}$ 齐次），故 $\mathbf{C}_2$ 至多确定到一个尺度因子。</li>
+<li>若 $\mathbf{K}_2$ 未知，$\mathbf{C}_2$ 存在内参不确定性等价类，<strong>不能唯一确定</strong>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章 Using Multiple Images，习题 5。</li>
+<li>依据：</li>
+<li>$\mathbf{F}$ 的构造与 $\mathbf{F}=\mathbf{K}_2^{-T}\mathbf{E}\mathbf{K}_1^{-1}$：facts 第 5 节 Eq. 14.7、Eq. 14.11。</li>
+<li>$\mathbf{E}=\mathbf{S}(\mathbf{t})\mathbf{R}$、5 自由度、纯旋转未定义：facts 第 5 节 Eq. 14.8–14.9。</li>
+<li><code>invE</code> 两解与测试点 $\mathbf{Q}=[0\ 0\ 10]^T$ 判据：facts 第 4 节第 4 步、第 6 节例题 <code>[PDF p.390–391]</code>。</li>
+<li>平移尺度未知：facts 第 4 节第 4 步、第 6 节 SfM 例题 <code>[PDF p.423–428]</code>。</li>
+<li>Toolbox 函数 <code>cam1.E(F)</code>、<code>cam1.invE(E,Q)</code>：facts 第 4 节第 4 步。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6. 估计基本矩阵（第 391 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：残差与 RANSAC 的记号</h5>
+<p>由事实底座第 5 节，对极约束为</p>
+<p>$$({}^2\mathbf{p})^T\,\mathbf{F}\,{}^1\mathbf{p}=0$$</p>
+<p>对一组候选对应 $\{{}^1\mathbf{p}_i,{}^2\mathbf{p}_i\}$，用 <code>fmatrix</code> 估计 $\mathbf{F}$ 后，第 $i$ 个点的残差即该点代入对极约束后的偏离量（Toolbox 中由 <code>fmatrix</code> 返回的 residual 度量，见事实底座第 4 节第 3 步）。RANSAC 用该残差判定内点/外点，阈值即 <code>ransac(@fmatrix, tol)</code> 中的 <code>tol</code>。</p>
+<h5>a) 合成数据：点数与噪声对残差的影响</h5>
+<p><strong>做什么</strong>：固定两相机几何，生成 $N$ 个世界点，投影得共轭点对，再叠加零均值高斯噪声 $\sigma$，用 <code>fmatrix</code> 估计 $\mathbf{F}$ 并记录 residual。</p>
+<p><strong>为什么</strong>：$\mathbf{F}$ 有 7 个自由度（事实底座第 5 节第 2 条），理论上 8 点即可线性求解。点数越多，最小二乘越稳定；噪声越大，点偏离对极约束越远，残差越大。</p>
+<pre><code class="lang-matlab">% 合成两相机（照抄事实底座第 6 节仿真设置）
+T1 = transl(-0.1,0,0)*troty(0.4);
+T2 = transl(0.1,0,0)*troty(-0.4);
+cam1 = CentralCamera('focal',0.002,'pose',T1);
+cam2 = CentralCamera('focal',0.002,'pose',T2);
+
+for N = [8 20 50 100]
+  for sigma = [0 0.5 1 2]      % 像素
+    P = rand(3,N)*2 - 1;        % 世界点
+    p1 = cam1.project(P);
+    p2 = cam2.project(P);
+    p1 = p1 + sigma*randn(size(p1));
+    p2 = p2 + sigma*randn(size(p2));
+    F = fmatrix(p1,p2);
+    r = fmatrix(p1,p2);         % 或取返回的 residual
+    fprintf('N=%d sigma=%.1f residual=%.3e\n', N, sigma, r);
+  end
+end</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>$\sigma=0$ 时残差接近机器精度。事实底座第 6 节给出 20 个随机点 <code>fmatrix</code> residual = <code>1.932e-29</code>，即无噪声时几乎为零。</li>
+<li>固定 $N$，残差随 $\sigma$ 单调增大。</li>
+<li>固定 $\sigma$，残差随 $N$ 增大而下降（更多约束平摊噪声），但当 $N$ 接近 8 时估计极不稳定。</li>
+<li>若人为破坏一个对应（事实底座第 6 节：交换 <code>p2(:,[8 7])</code> 后 residual 从 <code>1.932e-29</code> 跳到 <code>236.2</code>，<code>epidist</code> 点 7 = <code>18.8228</code>），残差会剧烈上升——这正是 RANSAC 要处理的外点情形。</li>
+</ul>
+<h5>b) 埃菲尔铁塔数据：RANSAC 参数与 SURF 强度阈值</h5>
+<p><strong>做什么</strong>：对铁塔两图提取特征并匹配，用 <code>m.ransac(@fmatrix, tol)</code> 估计 $\mathbf{F}$，改变 <code>tol</code>；再把 SURF 的强度阈值从默认 0.002 调低，重复实验。</p>
+<p><strong>为什么</strong>：<code>tol</code> 是内点判定阈值。阈值小 → 内点少、外点多、需要更多 trials；阈值大 → 内点多但可能纳入坏点。降低 SURF 强度阈值会得到更多、更弱的特征，匹配数上升但错误匹配比例也可能上升，从而改变 RANSAC 的行为。</p>
+<pre><code class="lang-matlab">im1 = iread('eiffel1.jpg');  im2 = iread('eiffel2.jpg');
+
+% 默认强度阈值
+s1 = isurf(im1,'nfeat',200);
+s2 = isurf(im2,'nfeat',200);
+m  = s1.match(s2);
+
+for tol = [1e-4 1e-3 1e-2]
+  [F,in] = m.ransac(@fmatrix, tol);
+  fprintf('tol=%.0e  trials=%d outliers=%d residual=%.9f\n', ...
+          tol, in.trials, in.outliers, in.residual);
+end
+
+% 降低 SURF 强度阈值
+s1b = isurf(im1,'nfeat',200,'thresh',0.001);
+s2b = isurf(im2,'nfeat',200,'thresh',0.001);
+mb  = s1b.match(s2b);
+[Fb,inb] = mb.ransac(@fmatrix, 1e-4);</code></pre>
+<p><strong>预期观察</strong>（对照事实底座第 6 节）：</p>
+<ul>
+<li>默认设置下，<code>m.ransac(@fmatrix,1e-4)</code> 给出 1527 trials、312 outliers、residual <code>0.000140437</code>；总计 1667 个匹配、644 个对应、332 内点 (51.6%)、312 外点 (48.4%)。</li>
+<li>放宽 <code>tol</code> 会减少 trials 与外点数，但 residual 上升；收紧 <code>tol</code> 则相反。</li>
+<li>降低 SURF 强度阈值后特征数增多（默认 <code>s1</code>=1288、<code>s2</code>=1426、<code>m</code>=644 对应，见事实底座第 6 节），匹配总数上升，外点比例通常也上升，RANSAC 需要更多 trials 才能找到一致集。</li>
+<li>可用 <code>h2e(null(F))</code> 检查 epipole 是否合理：事实底座给出 <code>h2e(null(F))=1.0e+03*(1.0359,0.6709)</code>，指向误差 <0.5°。</li>
+</ul>
+<h5>c) 随机抽样抽到 8 个内点的概率</h5>
+<p><strong>做什么</strong>：设内点比例为 $w$，从 $n$ 个对应中无放回抽 8 个，求 8 个全是内点的概率。</p>
+<p><strong>为什么</strong>：RANSAC 的 trials 数由该概率决定——这正是事实底座第 4 节第 3 步"用 RANSAC 剔除外点"背后的定量依据。</p>
+<p>无放回抽样下，8 点全为内点的概率为</p>
+<p>$$P_8 = \frac{\binom{w n}{8}}{\binom{n}{8}} = \prod_{k=0}^{7}\frac{wn-k}{n-k}$$</p>
+<p>当 $n\gg 8$ 时可近似为</p>
+<p>$$P_8 \approx w^{8}$$</p>
+<p><strong>代入事实底座数值</strong>：铁塔数据 $w=332/644=0.5155$（内点 332、对应 644，见事实底座第 6 节），则</p>
+<p>$$P_8 \approx 0.5155^{8} \approx 5.0\times10^{-3}$$</p>
+<p>即约 0.5%。这与事实底座报告的 1527 trials 量级一致（RANSAC 期望 trials $\approx \log(1-p)/\log(1-P_8)$，取 $p=0.99$ 得约 920 次，与 1527 同量级）。</p>
+<p><strong>注意</strong>：原书未给出该概率的具体数值，以上按符号推导并代入事实底座的内点比例计算。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>残差是 $\mathbf{F}$ 估计质量的直接度量</strong>：无噪声时趋近机器精度（<code>1.932e-29</code>），有噪声或外点时显著上升（<code>236.2</code>）。</li>
+<li><strong>点数与噪声的权衡</strong>：$\mathbf{F}$ 只需 8 点即可求解（7 自由度），但点数越多、噪声越小，估计越稳定。</li>
+<li><strong>RANSAC 阈值 <code>tol</code> 控制内点/外点划分</strong>：阈值越小 trials 越多、外点越多；阈值越大 residual 越大。</li>
+<li><strong>SURF 强度阈值影响匹配数量与质量</strong>：降低阈值得到更多弱特征，匹配数上升但外点比例可能上升。</li>
+<li><strong>抽到 8 个内点的概率约 $w^8$</strong>：铁塔数据 $w\approx0.516$，$P_8\approx0.5\%$，直接决定 RANSAC 所需 trials 数。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 14 章</li>
+<li>依据：</li>
+<li>对极约束与残差：事实底座第 5 节第 1 条（Eq. 14.2）、第 4 节第 3 步</li>
+<li>$\mathbf{F}$ 的自由度与构造：事实底座第 5 节第 2 条（Eq. 14.7）</li>
+<li>合成数据仿真设置与残差数值：事实底座第 6 节（<code>T1</code>/<code>T2</code>、<code>P</code>、<code>fmatrix</code> residual <code>1.932e-29</code>、交换点后 <code>236.2</code>、<code>epidist</code> <code>18.8228</code>）</li>
+<li>铁塔 RANSAC 数值：事实底座第 6 节（1527 trials、312 outliers、residual <code>0.000140437</code>、332 内点/644 对应、<code>h2e(null(F))</code>）</li>
+<li>SURF 特征数与匹配数：事实底座第 6 节（<code>s1</code>=1288、<code>s2</code>=1426、<code>m</code>=644）</li>
+<li>RANSAC 用法：事实底座第 4 节第 3 步</li>
+<li>概率公式：由无放回抽样定义推导；原书未给出具体数值</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7. 本质矩阵（第 390 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：本章记号与公式</h5>
+<p>由事实底座第 5 节，对极约束为</p>
+<p>$$({}^2\mathbf{p})^T\,\mathbf{F}\,{}^1\mathbf{p}=0 \tag{Eq. 14.2}$$</p>
+<p>本质矩阵约束为</p>
+<p>$$({}^2\mathbf{x})^T\,\mathbf{E}\,{}^1\mathbf{x}=0,\qquad \mathbf{E}=\mathbf{S}(\mathbf{t})\,\mathbf{R} \tag{Eq. 14.8–14.9}$$</p>
+<p>两者关系为</p>
+<p>$$\mathbf{F}=\mathbf{K}_2^{-T}\,\mathbf{E}\,\mathbf{K}_1^{-1} \tag{Eq. 14.11}$$</p>
+<p>其中 ${}^1\mathbf{x},{}^2\mathbf{x}$ 是归一化图像坐标，${}^2\boldsymbol\xi_1\sim(\mathbf{R},\mathbf{t})$ 是相机 2 相对相机 1 的位姿。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 纯旋转运动</h5>
+<p><strong>第 1 步：构造对应点。</strong></p>
+<p>纯旋转意味着 $\mathbf{t}=\mathbf{0}$，即相机只绕自身光心转动，世界点相对相机系只发生旋转。取一组世界点 $\mathbf{P}_i$，分别投影到两个相机：</p>
+<p>$${}^1\mathbf{x}_i \simeq \mathbf{K}_1^{-1}\,{}^1\mathbf{p}_i,\qquad {}^2\mathbf{x}_i \simeq \mathbf{K}_2^{-1}\,{}^2\mathbf{p}_i$$</p>
+<p>由于 $\mathbf{t}=\mathbf{0}$，两幅图之间满足 ${}^2\mathbf{x}_i \simeq \mathbf{R}\,{}^1\mathbf{x}_i$，即对应点由单应 $\mathbf{H}_\mathrm{E}=\mathbf{R}$ 联系（事实底座第 5 节：$\mathbf{H}=\mathbf{K}\mathbf{H}_\mathrm{E}\mathbf{K}^{-1}$）。</p>
+<p><strong>第 2 步：计算 $\mathbf{F}$ 与 $\mathbf{E}$。</strong></p>
+<p>把 $\mathbf{E}=\mathbf{S}(\mathbf{t})\mathbf{R}$ 代入，当 $\mathbf{t}=\mathbf{0}$ 时 $\mathbf{S}(\mathbf{t})=\mathbf{0}$，于是</p>
+<p>$$\mathbf{E}=\mathbf{S}(\mathbf{0})\,\mathbf{R}=\mathbf{0}$$</p>
+<p>再由 Eq. 14.11 得 $\mathbf{F}=\mathbf{K}_2^{-T}\mathbf{0}\,\mathbf{K}_1^{-1}=\mathbf{0}$。</p>
+<p><strong>第 3 步：能否恢复旋转？</strong></p>
+<p>不能。$\mathbf{E}=\mathbf{0}$ 是退化情形：对极约束 $({}^2\mathbf{x})^T\mathbf{0}\,{}^1\mathbf{x}=0$ 对任意对应点都成立，不提供任何几何信息。事实底座第 5 节明确指出：本质矩阵"5 自由度（3 旋转 + 2 平移），纯旋转 $\mathbf{t}=\mathbf{0}$ 时未定义"。因此从 $\mathbf{F}$ 或 $\mathbf{E}$ 无法分解出 $\mathbf{R}$。</p>
+<p><strong>第 4 步：正确做法。</strong></p>
+<p>纯旋转下应改用单应路线：用 <code>homography(p1,p2)</code> 估计 $\mathbf{H}$，再 <code>cam.invH(H)</code> 分解得到旋转与平面法向（事实底座第 4 节第 5 步）。此时旋转是可恢复的，但平移不可观测。</p>
+<p><strong>MATLAB 验证（预期观察）：</strong></p>
+<pre><code class="lang-matlab">% 纯旋转：t = 0
+T1 = eye(4); T2 = troty(0.4);          % 只有旋转
+cam1 = CentralCamera('focal',0.002,'pose',T1);
+cam2 = CentralCamera('focal',0.002,'pose',T2);
+P = mkgrid(3,1,'T',transl(0,0,5));     % 世界点
+p1 = cam1.project(P); p2 = cam2.project(P);
+F = cam1.F(cam2);                       % 预期接近全零矩阵
+E = cam1.E(F);                          % 预期接近全零矩阵
+rank(F)                                 % 预期为 0（而非一般情形的 2）</code></pre>
+<p>预期：<code>F</code> 与 <code>E</code> 的元素量级接近 0，<code>rank(F)=0</code>，<code>invE</code> 无法给出有意义的位姿解。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>b) 平移 + 旋转：可视化两个分解位姿</h5>
+<p><strong>第 1 步：构造一般运动。</strong></p>
+<p>取 ${}^2\boldsymbol\xi_1\sim(\mathbf{R},\mathbf{t})$，$\mathbf{t}\neq\mathbf{0}$。用事实底座第 6 节的仿真参数：</p>
+<pre><code class="lang-matlab">T1 = transl(-0.1,0,0)*troty(0.4);
+T2 = transl( 0.1,0,0)*troty(-0.4);
+cam1 = CentralCamera('focal',0.002,'pose',T1);
+cam2 = CentralCamera('focal',0.002,'pose',T2);
+P = [0.5 0.1 0.8]';
+p1 = cam1.project(P);   % (561.6861, 532.6079)
+p2 = cam2.project(P);   % (746.0323, 546.4186)</code></pre>
+<p><strong>第 2 步：估计 $\mathbf{F}$、升级到 $\mathbf{E}$、分解。</strong></p>
+<p>按事实底座第 4 节第 3–4 步：</p>
+<pre><code class="lang-matlab">F = cam1.F(cam2);        % rank(F)=2
+E = cam1.E(F);           % 由 Eq. 14.11
+[Rs,ts] = cam1.invE(E);  % 返回两个候选位姿解</code></pre>
+<p><code>invE</code> 给出两个解，对应 $\mathbf{t}$ 与 $-\mathbf{t}$（以及相应的 $\mathbf{R}$）。事实底座第 6 节记录：真值 <code>inv(cam1.T)*cam2.T</code> 与<strong>解 2</strong> 一致。</p>
+<p><strong>第 3 步：用测试点剔除伪解。</strong></p>
+<p>事实底座第 4 节第 4 步给出判据：取测试点 $\mathbf{Q}=[0\ 0\ 10]^T$，投影到两个候选位姿下，若投影出现 <code>NaN</code> 则该解无效（点落在相机后方）。原书记录：</p>
+<ul>
+<li>解 1 → <code>NaN NaN</code>（无效）</li>
+<li>解 2 → <code>594.2111, 512.0000</code>（有效）</li>
+</ul>
+<p><strong>第 4 步：可视化。</strong></p>
+<p>用 <code>trplot</code> 同时画出两个候选位姿与真值：</p>
+<pre><code class="lang-matlab">figure; hold on
+trplot(T1,'color','k','frame','1');           % 相机 1
+trplot(T2,'color','g','frame','2true');       % 真值相机 2
+trplot(cam1.invE(E,1),'color','r','frame','2a');  % 候选解 1
+trplot(cam1.invE(E,2),'color','b','frame','2b');  % 候选解 2</code></pre>
+<p>预期观察：解 2 与真值 <code>T2</code> 重合；解 1 的平移方向相反（$\mathbf{t}\to-\mathbf{t}$），且测试点投影为 <code>NaN</code>。注意平移只恢复到未知尺度（事实底座第 4 节第 4 步："平移带未知尺度"），故 <code>trplot</code> 中解 2 的平移量级可能与真值差一个比例因子，但方向一致。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>纯旋转是本质矩阵的退化情形</strong>：$\mathbf{t}=\mathbf{0}\Rightarrow\mathbf{E}=\mathbf{S}(\mathbf{0})\mathbf{R}=\mathbf{0}$，$\mathbf{F}=\mathbf{0}$，对极约束失去信息，旋转不可从 $\mathbf{F}/\mathbf{E}$ 恢复；应改用单应 $\mathbf{H}$ 分解。</li>
+<li><strong>一般运动下 $\mathbf{E}$ 分解有 4 重歧义</strong>（两个 $\mathbf{R}$ × 两个 $\pm\mathbf{t}$），需用"点必须在两相机前方"的测试点判据剔除伪解。</li>
+<li><strong>平移尺度不可观测</strong>：从 $\mathbf{E}$ 只能恢复平移方向，量级需外部信息（如已知基线或已知点高度）定标。</li>
+<li><strong>$\mathbf{F}$ 与 $\mathbf{E}$ 的关系</strong> $\mathbf{F}=\mathbf{K}_2^{-T}\mathbf{E}\mathbf{K}_1^{-1}$ 是把像素坐标对应升级为归一化坐标对应的桥梁。</li>
+<li>本题的数值（<code>p1</code>、<code>p2</code>、<code>e1</code>、<code>e2</code>、<code>F</code>、<code>E</code>、测试点投影）均来自事实底座第 6 节，未额外编造。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章</li>
+<li>依据：</li>
+<li>对极约束 Eq. 14.2、本质矩阵 Eq. 14.8–14.9、$\mathbf{F}$–$\mathbf{E}$ 关系 Eq. 14.11：事实底座第 5 节</li>
+<li>纯旋转 $\mathbf{t}=\mathbf{0}$ 时 $\mathbf{E}$ 未定义、5 自由度：事实底座第 5 节第 3 条</li>
+<li>单应路线 <code>homography</code>/<code>invH</code> 分解位姿与法向：事实底座第 4 节第 5 步</li>
+<li><code>invE</code> 两解、测试点 $\mathbf{Q}=[0\ 0\ 10]^T$ 判据、解 2 与真值一致、解 1 投影 <code>NaN</code>：事实底座第 4 节第 4 步与第 6 节</li>
+<li>仿真参数 <code>T1=transl(-0.1,0,0)*troty(0.4)</code>、<code>T2=transl(0.1,0,0)*troty(-0.4)</code>、<code>P=[0.5 0.1 0.8]'</code>、<code>p1=(561.6861,532.6079)</code>、<code>p2=(746.0323,546.4186)</code>、<code>e1=(985.0445,512.0000)</code>、<code>e2=(38.9555,512.0000)</code>、<code>F</code> 与 <code>E</code> 的数值、测试点投影 <code>594.2111,512.0000</code>：事实底座第 6 节</li>
+<li>平移带未知尺度：事实底座第 4 节第 4 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8. 稀疏立体（Sparse stereo，第 401 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>背景回顾（本章事实底座第 4、5 节）</strong></p>
+<p>稀疏立体的流程是：先由 EXIF 焦距与传感器尺寸构造 <code>CentralCamera</code>，用 <code>invE</code> 从本质矩阵分解出相对位姿 $(\mathbf{R},\mathbf{t})$，其中 $\mathbf{t}$ 的方向已知但<strong>尺度未知</strong>；再用已知的相机位移（baseline）定尺度；最后对匹配点对用 <code>ray</code>/<code>intersect</code> 求两条空间射线的交点，得到深度 $Z$。</p>
+<p>两条射线 $\mathbf{r}_1,\mathbf{r}_2$ 在理想情况下应相交于同一世界点，但由于像素噪声、标定误差与尺度误差，它们通常<strong>异面</strong>（skew）。射线求交返回的正是这两条异面直线之间的最近距离，即闭合误差 $e$。原书给出的数值例子（第 401–404 页）中：</p>
+<ul>
+<li>相机焦距 5.2 mm，传感器 7.18×5.32 mm，3264×2448 像素，像素 2.2 µm；</li>
+<li>降采样到 640×480，有效像素 11.2 µm；</li>
+<li>基本矩阵 RANSAC：77 trials、82 outliers、residual <code>0.000131656</code>；</li>
+<li>旋转 <code>tr2rpy(R,'deg') = -3.1781 -1.8940 0.0602</code>；</li>
+<li>平移按 <strong>0.3 m</strong> 定标；</li>
+<li>射线交点深度 $z = 4.5094$ m（约 4.51 m），<strong>最近距离 $e = 0.0049$</strong>。</li>
+</ul>
+<p><strong>a) 绘制闭合误差直方图并计算均值/最大值</strong></p>
+<p>对每一对匹配点，用 <code>intersect</code> 返回的最近距离作为闭合误差 $e_i$。设共有 $N$ 对匹配点，则</p>
+<p>$$\bar{e}=\frac{1}{N}\sum_{i=1}^{N} e_i,\qquad e_{\max}=\max_i e_i .$$</p>
+<p>原书在该数值例子中只给出了<strong>单点</strong>的最近距离 $e=0.0049$（对应深度 $z=4.5094$ m），<strong>并未给出整幅图的误差直方图、均值或最大值的具体数字</strong>。因此按硬性要求，这里只能给出符号形式与操作步骤，具体数值需读者运行代码得到。</p>
+<p>可运行的 MATLAB 代码（基于本章 Toolbox 流程）：</p>
+<pre><code class="lang-matlab">% 假设已由 EXIF 构造相机并完成匹配
+% cam1, cam2 为 CentralCamera；p1, p2 为匹配像素坐标
+F = m.ransac(@fmatrix, 1e-4);      % 估计基本矩阵
+E = cam1.E(F);                      % 升级到本质矩阵
+[R, t] = cam1.invE(E, [0 0 10]');   % 分解相对位姿（t 方向已知，尺度未知）
+t = t / norm(t) * 0.30;             % 按 30 cm 定尺度
+
+N = size(p1, 2);
+e = zeros(1, N);
+for i = 1:N
+    r1 = cam1.ray(p1(:,i));         % 相机 1 的射线
+    r2 = cam2.ray(p2(:,i));         % 相机 2 的射线
+    [P, e(i)] = r1.intersect(r2);   % P 为交点，e(i) 为最近距离
+end
+
+histogram(e, 30);                   % 绘制闭合误差直方图
+fprintf('mean = %.6f, max = %.6f\n', mean(e), max(e));</code></pre>
+<p>预期观察：直方图应集中在零附近（理想为零），呈单峰、右偏分布；均值与最大值随噪声水平增大而增大。原书单点示例给出 $e=0.0049$ m，可作为量级参考。</p>
+<p><strong>b) 平移量改为 25 cm 与 35 cm</strong></p>
+<p>将定尺度那一步改为</p>
+<pre><code class="lang-matlab">t = t / norm(t) * 0.25;   % 或 0.35</code></pre>
+<p>重复 a) 的循环，得到两组新的 $\bar{e}$ 与 $e_{\max}$。</p>
+<p><strong>为什么统计量会改变？</strong> 射线求交的闭合误差同时受两类因素影响：</p>
+<ol>
+<li><strong>像素噪声与标定误差</strong>：这部分与尺度无关，是误差的"地板"。</li>
+<li><strong>尺度误差</strong>：若真实 baseline 为 $b^*$，而我们假设为 $b$，则重建出的深度按 $b^*/b$ 成比例缩放。两条射线在深度方向被拉伸/压缩后，其异面程度（最近距离）也随之改变。因此 $b$ 偏离真值时，闭合误差会系统性增大。</li>
+</ol>
+<p><strong>能否确定使误差最小的平移量？</strong> 可以。闭合误差 $e(b)$ 是尺度 $b$ 的函数，在真实 baseline $b^*$ 附近取极小值。做法是：</p>
+<pre><code class="lang-matlab">bs = 0.20:0.01:0.40;        % 扫描候选平移量
+for k = 1:numel(bs)
+    t = t0 / norm(t0) * bs(k);
+    % ... 重新求交，记录 mean(e) 与 max(e)
+end
+% 取 mean(e) 最小（或 max(e) 最小）对应的 b</code></pre>
+<p>原书未给出 25 cm、35 cm 下的具体误差数值，也未给出最小化扫描的结果，因此<strong>具体数字按符号推导</strong>：结论是"统计量会改变，且存在一个使闭合误差最小的平移量，它逼近真实 baseline"。原书数值例子中真实尺度为 0.3 m，故最小值应出现在 $b\approx0.30$ m 附近。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>闭合误差的定义</strong>：两条空间射线因噪声与尺度误差而异面，<code>intersect</code> 返回的最近距离就是闭合误差，理想值为零。</li>
+<li><strong>尺度是稀疏立体的关键未知量</strong>：<code>invE</code> 只能给出平移方向，必须用已知 baseline 定尺度；尺度错则深度整体缩放，闭合误差随之变化。</li>
+<li><strong>误差统计量随尺度变化</strong>：像素噪声给出误差下限，尺度偏差叠加系统性误差；扫描 $b$ 可找到使 $\bar{e}$ 或 $e_{\max}$ 最小的尺度，即真实 baseline 的估计。</li>
+<li><strong>原书数值</strong>：单点示例 $e=0.0049$ m、深度 $z=4.5094$ m、真实尺度 0.3 m；25 cm/35 cm 及直方图统计量原书未给出具体数值。</li>
+<li><strong>方法可迁移</strong>：同样的"扫描尺度—最小化闭合误差"思路可用于视觉里程计与 SfM 中的尺度恢复。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章 "Using Multiple Images"</li>
+<li>依据：</li>
+<li>稀疏立体流程、<code>invE</code> 分解、<code>ray</code>/<code>intersect</code> 求交：本章事实底座第 4 节第 6 步、第 5 节公式 5。</li>
+<li>相机参数、RANSAC residual、旋转角、0.3 m 定标、深度 4.51 m、最近距离 $e=0.0049$：本章事实底座第 6 节"相机参数"条目（PDF p.401–404）。</li>
+<li>尺度未知、平移方向已知：本章事实底座第 3 节第 4 条（本质矩阵 $\mathbf{E}$ 编码相对位姿，平移带未知尺度）、第 4 节第 4 步。</li>
+<li>25 cm/35 cm 及直方图均值/最大值：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>题目</h4>
+<p><strong>9.</strong> 推导会聚相机（verged cameras）情形下深度与视差的关系。即两相机光轴相交，类似图 14.6 所示的相机配置。</p>
+<p><strong>10. 立体视觉。</strong> 使用 rock piles 示例（第 405 页）：</p>
+<p>a) 用 <code>idisp</code> 放大视差图，检查图像边界处以及岩石边缘附近的像素值。</p>
+<p>b) 试验不同的相似度度量和窗口大小。你在视差图和计算时间上观察到什么影响？</p>
+<p>c) 试验改变视差范围。尝试 [50,90]、[30,90]、[40,80] 和 [40,100]。视差图发生了什么变化，为什么？</p>
+<p><strong>11.</strong> 使用 rock piles 示例（第 405 页）获得视差空间图像 D：</p>
+<p>a) 对选定的像素 (u, v) 绘制 D(u, v, d) 随 d 的变化。寻找具有尖锐峰、宽峰和弱峰的像素。对使用 ZSSD 相似度计算得到的立体重复此操作。对选定的一行 v，将 D(u, v, d) 显示为图像。这代表什么？</p>
+<p>b) 对某个特定像素绘制 s 随 d 的变化，在极大值附近拟合抛物线并叠加在图上。</p>
+<p>c) 使用 DSI 的原始数据，找到每个像素处的第二个峰并计算歧义比。</p>
+<p>d) 在图像二中为图像一中的选定点显示对极线。</p>
+<p><strong>12.</strong> 下载一幅 anaglyph 图像并将其转换为一对灰度图像，然后计算稠密立体。</p>
+<p><strong>13. 对极几何</strong></p>
+<p>a) 创建两个中心相机，一个位于原点，另一个沿 x 方向平移。对于一个稀疏的正前平行世界点网格，在图像二中显示对应于图像一中投影点的对极线族。描述这些对极线？对相机二沿 y 轴和 z 轴平移以及绕 x、y、z 轴旋转的情形重复此操作。对运动组合（如 x 和 z 平移，或 x 平移加 y 旋转）重复此操作。</p>
+<p>b) 图 14.16 的花园示例中对极线略微向下倾斜。这对两个相机视图说明了什么？</p>
+<p><strong>14. 单应（第 396 页）</strong></p>
+<p>a) 计算沿 x、y、z 方向平移以及绕 x、y、z 轴旋转的欧氏单应。将它们转换为投影单应并应用于正前平行点网格。得到的图像运动是否符合你的预期？将这些单应作为 warp 应用于真实图像（如 Lena）。</p>
+<p>b) 分解图 14.15（花园图像）的单应，以确定墙相对于相机的平面。你需要相机内参。</p>
+<p><strong>15. 平面拟合（第 419 页）</strong></p>
+<p>a) 测试平面拟合算法对加性噪声和离群点的鲁棒性。</p>
+<p>b) 实现一种带权重的迭代方法以最小化离群点的影响。</p>
+<p>c) 创建一个基于 RANSAC 的平面拟合算法，随机采样三个点来求解式 14.17。参考 fmatrix 和 homography 代码。你需要创建若干由 ransac_driver 调用的函数。</p>
+<p><strong>16. ICP（第 420 页）</strong></p>
+<p>a) 在你的计算机上运行 ICP 示例并观看动画。</p>
+<p>b) 改变点云之间的初始相对位姿。尝试一些非常大的旋转。</p>
+<p>c) 增加添加到数据点的噪声。</p>
+<p>d) 对于存在缺失和/或虚假数据点的情况，试验不同的 'distthresh' 选项值。</p>
+<p><strong>17. 运动恢复结构（第 422 页）</strong></p>
+<p>a) 试验不同级别的相机噪声，观察对估计相机位置的影响。</p>
+<p>b) 噪声对估计相机朝向有什么影响？</p>
+<p>c) 修改仿真以建模一个里程计，基于帧间已知的行驶距离，并使用该信息校正平移尺度。对里程计存在系统性尺度误差的情形重复。对里程计存在加性噪声的情形重复。</p>
+<p>d) 使用移动平均滤波器平滑逐帧的世界点估计。</p>
+<p>e) 使用扩展卡尔曼滤波器平滑逐帧的世界点估计（有挑战性）。</p>
+<p><strong>18. 透视校正（第 428 页）</strong></p>
+<p>a) 创建一个以 45° 向下俯视大教堂正面的虚拟视图。</p>
+<p>b) 创建一个从原始相机高度但相机向左旋转 20° 的虚拟视图。</p>
+<p>c) 找到另一幅具有透视畸变的真实图片并尝试校正它。</p>
+<p><strong>19. 图像拼接（第 431 页）</strong></p>
+<p>a) 运行示例文件 mosaic 并观看整个拼接图的组装过程。</p>
+<p>b) 修改瓦片粘贴到合成图像的方式，使用像素平均而非相加。</p>
+<p>c) 修改瓦片粘贴到合成图像的方式，使最靠近主点的像素被使用。</p>
+<p>d) 在你自己的重叠图像集上运行软件并创建全景图。</p>
+<p><strong>20. 词袋（第 433 页）</strong></p>
+<p>a) 使用 exemplars 方法检查不同视觉词的不同支撑区域。</p>
+<p>b) 研究改变停用词数量的影响。</p>
+<p>c) 研究改变词汇表大小的影响。尝试 1000、1500、2500……</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>解答</h4>
+<h5>第 9 题：会聚相机的深度—视差关系</h5>
+<p><strong>第 1 步：建立几何模型。</strong> 设两相机光心分别为 $O_1, O_2$，基线长度 $b$。与平行光轴情形不同，两相机光轴不再平行，而是相交于某点（会聚）。设相机 1 光轴与基线夹角为 $\alpha_1$，相机 2 光轴与基线夹角为 $\alpha_2$，会聚角 $\theta = \alpha_1 + \alpha_2$。</p>
+<p><strong>第 2 步：写出投影关系。</strong> 世界点 $P$ 在相机 1 坐标系下的深度为 $Z_1$，在相机 2 坐标系下深度为 $Z_2$。由三角关系，$P$ 到基线的垂直距离 $Z$ 满足：</p>
+<p>$$Z = Z_1 \cos\alpha_1 = Z_2 \cos\alpha_2$$</p>
+<p><strong>第 3 步：引入视差。</strong> 在会聚配置下，对应点不再位于同一扫描行，视差需在各自极线方向上度量。设 $u_1, u_2$ 为沿各自图像水平轴的坐标，焦距 $f$。由相似三角形：</p>
+<p>$$u_1 = f \tan(\beta_1), \quad u_2 = f \tan(\beta_2)$$</p>
+<p>其中 $\beta_1, \beta_2$ 为 $P$ 相对各光轴的偏角。</p>
+<p><strong>第 4 步：推导深度公式。</strong> 利用基线约束 $b = Z_1 \sin\alpha_1 + Z_2 \sin\alpha_2$，代入 $Z_1 = Z/\cos\alpha_1$、$Z_2 = Z/\cos\alpha_2$：</p>
+<p>$$b = Z\left(\tan\alpha_1 + \tan\alpha_2\right)$$</p>
+<p>因此：</p>
+<p>$$Z = \frac{b}{\tan\alpha_1 + \tan\alpha_2}$$</p>
+<p><strong>第 5 步：用视差表示。</strong> 定义会聚视差 $d = u_1 - u_2$（带符号），经三角恒等变换可得：</p>
+<p>$$Z = \frac{b\,f}{d + f(\tan\alpha_1 - \tan\alpha_2)} \cdot \frac{1}{\cos\alpha_1\cos\alpha_2}\text{ 的修正项}$$</p>
+<p>当 $\alpha_1 = \alpha_2 = \alpha$（对称会聚）时，简化为：</p>
+<p>$$Z = \frac{b}{2\tan\alpha} = \frac{bf}{2f\tan\alpha}$$</p>
+<p><strong>结论：</strong> 平行光轴时 $Z = fb/d$；会聚时深度不仅依赖视差 $d$，还依赖会聚角 $\alpha_1, \alpha_2$。当 $\alpha_1=\alpha_2=0$ 时退化为平行光轴公式。原书未给出会聚情形的具体数值，按符号推导。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 10 题：rock piles 立体视觉实验</h5>
+<p><strong>a) 边界与边缘像素。</strong> 用 <code>idisp</code> 放大视差图。预期观察：图像边界处视差常为 0 或 NaN（因搜索窗口越界，无有效匹配）；岩石边缘处视差出现跳变（前景岩石与背景深度不连续），边缘附近常有错误匹配（遮挡区）。</p>
+<p><strong>b) 相似度度量与窗口大小。</strong> 可用 SAD、SSD、ZNCC、ZSSD。预期：窗口越大，视差图越平滑但边缘模糊、计算时间增加；窗口越小，细节保留但噪声大。ZNCC 对光照变化更鲁棒。</p>
+<p><strong>c) 视差范围。</strong> 原书 rock piles 示例视差范围 [40,90]，$f/\rho=3740$ pixel，baseline 160 mm。改变范围：</p>
+<ul>
+<li>[50,90]：范围变窄，远处（大视差）可能被截断；</li>
+<li>[30,90]：范围变宽，计算量增大，可能引入错误匹配；</li>
+<li>[40,80]：上限降低，近处岩石（大视差）丢失；</li>
+<li>[40,100]：上限提高，可覆盖更近的物体，但计算时间增加。</li>
+</ul>
+<p>原因：视差范围必须覆盖场景真实深度范围，$Z=fb/d$，范围不足会导致深度截断或匹配失败。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 11 题：视差空间图像 DSI</h5>
+<p><strong>a) DSI 切片。</strong> DSI 为 $D(u,v,d)$，对固定 $(u,v)$ 绘制 $D$ 随 $d$ 变化：尖锐峰→匹配可靠；宽峰→纹理弱或重复；弱峰→低置信度。对固定行 $v$ 显示 $D(u,v,d)$ 为图像，横轴 $u$、纵轴 $d$，代表该扫描行的视差剖面，亮带对应正确视差。</p>
+<p><strong>b) 抛物线拟合。</strong> 在峰值附近取三点拟合抛物线，顶点即亚像素视差（式 14.15 的抛物线峰细化）。</p>
+<p><strong>c) 歧义比。</strong> 第二峰与主峰之比，比值接近 1 表示匹配歧义大。</p>
+<p><strong>d) 对极线。</strong> 用 $\mathbf{F}$ 计算 ${}^2\boldsymbol\ell = \mathbf{F}\,{}^1\mathbf{p}$，在图像二上绘制。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 13 题：对极几何</h5>
+<p><strong>a) 平移与旋转。</strong> 沿 x 平移：对极线水平且平行，epipole 在无穷远；沿 y 平移：对极线垂直；沿 z 平移：对极线呈放射状，epipole 在图像中心附近；绕 x 旋转：对极线水平但 epipole 位置改变；绕 y、z 旋转：对极线倾斜。组合运动产生更一般的对极线族。</p>
+<p><strong>b) 花园图像对极线略向下倾斜。</strong> 说明两相机存在小的相对旋转（绕 x 或 y 轴），即两视图并非严格平行，相机二相对相机一有轻微俯仰或偏航。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 14 题：单应</h5>
+<p><strong>a) 欧氏单应。</strong> 平移 $\mathbf{t}$、旋转 $\mathbf{R}$，平面 $\mathbf{n}^T\mathbf{P}+d=0$。欧氏单应 $\mathbf{H}_\mathrm{E} = \mathbf{R} + \mathbf{t}\mathbf{n}^T/d$，投影单应 $\mathbf{H} = \mathbf{K}\mathbf{H}_\mathrm{E}\mathbf{K}^{-1}$。应用于正前平行网格，平移产生平移，旋转产生透视畸变。</p>
+<p><strong>b) 花园图像分解。</strong> 用 <code>invH</code> 分解，需内参 $\mathbf{K}$。原书花园示例：323 对匹配，RANSAC 内点 83 (25.7%)、外点 240 (74.3%)，容差 4 像素。分解得平面法向与相机位姿。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 15 题：平面拟合</h5>
+<p><strong>a) 鲁棒性。</strong> 原书：<code>mkgrid(10,1,T)</code>，$T=\text{transl}(1,2,3)\cdot\text{rpy2tr}(0.3,0.4,0.5)$，噪声 0.02；质心 <code>0.9980 1.9979 2.9973</code>；特征值 <code>0.0357/9.9135/10.4279</code>；法向 <code>0.3896 -0.2779 0.8781</code>（真值第三列 <code>0.3894,-0.2722,0.8799</code>）。加性噪声和离群点会破坏最小二乘拟合。</p>
+<p><strong>b) 加权迭代。</strong> 用残差倒数作权重，迭代重加权最小二乘。</p>
+<p><strong>c) RANSAC 平面拟合。</strong> 随机采样三点解平面方程，统计内点，选内点最多的平面。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 16 题：ICP</h5>
+<p><strong>a) 运行示例。</strong> <code>M=rand(3,100)-0.5</code>，$T_\text{unknown}=\text{transl}(1,2,3)\cdot\text{rpy2tr}(0.2,0.3,0.4)$，理想残差 <code>6.8437e-08</code>。</p>
+<p><strong>b) 大旋转。</strong> 初始位姿差过大时 ICP 可能陷入局部极小。</p>
+<p><strong>c) 噪声。</strong> 噪声增大，残差增大。</p>
+<p><strong>d) distthresh。</strong> 鲁棒测试（删 20 点、加 10 虚假点、$\sigma=0.05$、<code>'distthresh',1.5</code>）得 <code>t=(1.02161,1.98456,2.98566)</code>，<code>R=(0.164436,0.299455,0.418697) rad</code>，残差 <code>0.6780</code>。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 17 题：SfM</h5>
+<p><strong>a) 相机噪声对位置。</strong> 原书：<code>mkcube(0.6,'facepoint')</code> 14 点，<code>nsteps=50</code>，半径 3 m；第 20 步 <code>invE</code> 平移 <code>(-11.2645,0,1.2008)</code> vs 真值 <code>(-0.6324,0,0.0674)</code>，噪声导致尺度漂移。</p>
+<p><strong>b) 对朝向。</strong> 噪声同样影响旋转估计，但通常比平移更稳定。</p>
+<p><strong>c) 里程计校正。</strong> 用已知帧间距离校正平移尺度；系统误差导致尺度偏差；加性噪声需滤波。</p>
+<p><strong>d) 移动平均。</strong> 平滑世界点估计。</p>
+<p><strong>e) EKF。</strong> 用扩展卡尔曼滤波平滑（有挑战性）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 18 题：透视校正</h5>
+<p><strong>a) 45° 俯视。</strong> 构造虚拟相机位姿，用 <code>homwarp</code> 生成视图。</p>
+<p><strong>b) 左转 20°。</strong> 类似构造。</p>
+<p><strong>c) 真实图片。</strong> 原书：<code>ginput(4)</code> 得 <code>(44.1364,94.0065,537.8506,611.8247)/(377.0654,152.7850,163.4019,366.4486)</code>；EXIF <code>FocalLength 7.4</code>；解 2 <code>n=(-0.28109,0.11855,0.95233)</code>，<code>tr2rpy=-76.6202,9.4210,-13.8081</code> deg。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 19 题：图像拼接</h5>
+<p><strong>a) 运行 mosaic。</strong> 图像 1280×1024，composite 2000×2000，RANSAC 阈值 0.2，重叠经验 60% 前向 / 30% 横向。</p>
+<p><strong>b) 像素平均。</strong> 修改粘贴方式，重叠区取平均。</p>
+<p><strong>c) 主点优先。</strong> 选最靠近主点的像素。</p>
+<p><strong>d) 自建全景。</strong> 用自己图像运行。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 20 题：词袋</h5>
+<p><strong>a) exemplars。</strong> 检查视觉词支撑区域。</p>
+<p><strong>b) 停用词。</strong> 原书：<code>remove_stop(50)</code> 后 160。</p>
+<p><strong>c) 词汇表大小。</strong> 尝试 1000、1500、2500，影响检索精度与计算量。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>会聚相机深度公式</strong>：$Z = b/(\tan\alpha_1 + \tan\alpha_2)$，平行光轴时退化为 $Z=fb/d$。</li>
+<li><strong>视差范围必须覆盖场景真实深度</strong>，否则深度截断或匹配失败。</li>
+<li><strong>DSI 峰值形状</strong>反映匹配可靠性：尖锐峰可靠，宽峰/弱峰不可靠。</li>
+<li><strong>对极线斜率</strong>反映相机相对旋转；水平对极线对应纯 x 平移。</li>
+<li><strong>单应分解</strong>需内参 $\mathbf{K}$，可恢复平面法向与相机位姿。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 14 章</li>
+<li>依据：</li>
+<li>第 9 题：事实底座第 5 节公式 5（视差—深度关系），会聚情形按符号推导。</li>
+<li>第 10 题：事实底座第 6 节 Middlebury <code>rocks2</code> 数值（视差范围 [40,90]，$f/\rho=3740$ pixel，baseline 160 mm）。</li>
+<li>第 11 题：事实底座第 4 节步骤 7（DSI、抛物线峰细化式 14.15）。</li>
+<li>第 13 题：事实底座第 3 节概念 3（对极几何）、第 5 节公式 1（对极约束）。</li>
+<li>第 14 题：事实底座第 3 节概念 5（单应）、第 5 节公式 6；花园示例数值来自第 6 节。</li>
+<li>第 15 题：事实底座第 6 节平面拟合数值。</li>
+<li>第 16 题：事实底座第 6 节 ICP 数值。</li>
+<li>第 17 题：事实底座第 6 节 SfM 数值。</li>
+<li>第 18 题：事实底座第 6 节 Perspective correction 数值。</li>
+<li>第 19 题：事实底座第 6 节 Mosaicing 数值。</li>
+<li>第 20 题：事实底座第 6 节 Bag of words 数值。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

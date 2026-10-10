@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>RL 基础四篇 · 精读与互动课件 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">RL 基础四篇<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<h2>RL 基础四篇 · 原文 + 互动课件</h2>
+<p class="lede">
+「RL 基础：从策略梯度到信赖域」簇的四篇论文——<b>TRPO / A3C / DDPG / LMPC</b>——
+每篇给出可核验的公开原文链接，并配一节 OpenMAIC 互动课件。精读时请以原文 PDF 的
+<b>实验数字与公式</b>为准。
+</p>
+
+<div class="note key">
+<b>为什么按这个顺序读：</b>TRPO 解决步长与单调改进的冲突 → A3C 用异步并行破样本相关性 →
+DDPG 把 DQN 的离散动作推广到连续 → MPC 跳出策略学习、直接在线规划。
+四篇构成一条清晰的「怎么把 RL 用在连续控制上」的路线。
+</div>
+
+
+
+<h3 class="sec">一、四篇原文</h3>
+<div class="cards">
+<a class="card" href="https://arxiv.org/abs/1502.05477" target="_blank" rel="noopener"><div class="ct">📘 信赖域策略优化（TRPO）</div><div class="cm">Schulman et al. 2015 ｜ arXiv:1502.05477 ｜ 含附录 A–F</div></a>
+<a class="card" href="https://arxiv.org/abs/1602.01783" target="_blank" rel="noopener"><div class="ct">📘 深度强化学习的异步方法（A3C）</div><div class="cm">Mnih et al. 2016 ｜ arXiv:1602.01783 ｜ 含 Atari 57 游戏分数表</div></a>
+<a class="card" href="https://arxiv.org/abs/1509.02971" target="_blank" rel="noopener"><div class="ct">📘 深度强化学习中的连续控制（DDPG）</div><div class="cm">Lillicrap et al. 2015 ｜ arXiv:1509.02971 ｜ 含完整超参数表</div></a>
+<a class="card" href="https://doi.org/10.15607/rss.2018.xiv.010" target="_blank" rel="noopener"><div class="ct">📘 学习型模型预测控制（MPC 簇）</div><div class="cm">同族 MPC 路线 ｜ 本簇第四篇未核验到公开原文</div></a>
+</div>
+<h3 class="sec">二、互动课件</h3>
+<div class="cards">
+<a class="card" href="../课件/RL基础四部曲-TRPO-A3C-DDPG-LMPC.html" target="_blank">
+<div class="ct">📘 RL 基础四部曲（OpenMAIC 互动课堂）</div>
+<div class="cm">离线单文件 HTML ｜ 22 个场景 ｜ 断网可用</div></a>
+</div>
+<p class="sub" style="margin-top:10px">
+课件由 OpenMAIC 依据四篇的<b>事实底座</b>生成，覆盖：共同问题 → TRPO 单调改进界 →
+A3C 异步并行 → DDPG 连续动作 → MPC 在线规划 → 演进链专题 → 阶段测验。
+生成时零图片零视频，产物可反复复用、复习零成本。
+</p>
+
+<h3 class="sec">二、原文索引</h3>
+<table class="tbl"><thead><tr><th>#</th><th>key</th><th>中文标题</th><th>原文</th></tr></thead><tbody>
+<tr><td>1</td><td><code>trpo-2015</code></td><td>信赖域策略优化</td><td><a href="https://arxiv.org/abs/1502.05477" target="_blank" rel="noopener">arXiv</a></td></tr>
+<tr><td>2</td><td><code>a3c-2016</code></td><td>深度强化学习的异步方法</td><td><a href="https://arxiv.org/abs/1602.01783" target="_blank" rel="noopener">arXiv</a></td></tr>
+<tr><td>3</td><td><code>ddpg-2015</code></td><td>连续控制（DDPG）</td><td><a href="https://arxiv.org/abs/1509.02971" target="_blank" rel="noopener">arXiv</a></td></tr>
+<tr><td>4</td><td><code>mpc-2020</code></td><td>四旋翼学习型 MPC</td><td>未核验到公开原文</td></tr>
+</tbody></table>
+
+<div class="note">
+<b>读完必须能回答</b>（簇级自测）：<br>
+① 为什么 TRPO 要加 KL 约束而不能直接调大学习率；<br>
+② A3C 的异步设计解决了什么同步并行的问题；<br>
+③ DDPG 相比 DQN 改了什么（确定性策略 + 策略梯度 + 目标值平滑）；<br>
+④ MPC 属于 model-based 还是 model-free，它和前三篇的关系。
+</div>
+
+<p class="sub" style="margin-top:20px">
+<a href="map.html">← 回到知识地图</a>　·　
+<a href="../pages/papermap.html">论文地图</a>　·　
+<a href="../pages/lessons.html">AI 课件总览</a>
+</p>
+
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 7 章「Kinematics of Closed」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 7 章「Kinematics of Closed」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>closed chain 是含一个或多个 loop 的运动链；parallel mechanism 是固定平台与动平台由多条腿连接的闭链，腿通常是开链，也可本身是闭链。</p>
+<p>对 parallel mechanism，若给定动平台位形 \(T_{sb}\)，即给定 \(p\) 与 \(R\)，则每条腿的向量回路为</p>
+<p>\[</p>
+<p>d_i=p+Rb_i-a_i,</p>
+<p>\]</p>
+<p>其中 \(a_i\) 是 \(\{s\}\) 坐标下从 \(\{s\}\) 原点到固定平台关节 \(A_i\) 的向量，\(b_i\) 是 \(\{b\}\) 坐标下从 \(\{b\}\) 原点到动平台关节 \(B_i\) 的向量。注意 \(b_i\) 必须先用 \(R_{sb}\) 转到 \(\{s\}\) 坐标，不能直接写成 \(p+b_i-a_i\)。</p>
+<p>于是腿长为</p>
+<p>\[</p>
+<p>s_i=\|d_i\|=\sqrt{d_i^Td_i}.</p>
+<p>\]</p>
+<p>因此 inverse kinematics 只需逐腿计算 \(d_i\) 与 \(s_i\)，通常较直接。</p>
+<p>反过来，forward kinematics 是给定腿长 \(s_i\)，求满足</p>
+<p>\[</p>
+<p>s_i^2=(p+Rb_i-a_i)^T(p+Rb_i-a_i)</p>
+<p>\]</p>
+<p>的 \(p,R\)。这是多个非线性约束方程，可能无解或多解。例如 3×RPR 最多 6 个 FK 解，一般 6-6 Stewart-Gough platform 最多 40 个解。因此并联机构通常 IK 较直接、FK 复杂。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>一般三腿并联机构的 loop closure 为</p>
+<p>\[</p>
+<p>T_{sb}=T_1(\theta)=T_2(\phi)=T_3(\psi),</p>
+<p>\]</p>
+<p>等价于</p>
+<p>\[</p>
+<p>T_1(\theta)=T_2(\phi),\qquad T_2(\phi)=T_3(\psi).</p>
+<p>\]</p>
+<p>每个矩阵等式表面上有 12 个标量方程，但旋转部分满足 \(R^TR=I\)，只贡献 3 个独立约束，加上平移部分 3 个独立约束，共 6 个独立约束。因此每个矩阵等式可化为 6 个独立约束。</p>
+<p>对 loop closure 求时间导数，可写为</p>
+<p>\[</p>
+<p>J_1\dot\theta=J_2\dot\phi=J_3\dot\psi.</p>
+<p>\]</p>
+<p>把关节坐标分为 actuated joints \(q_a\) 与 passive joints \(q_p\)，重排得到</p>
+<p>\[</p>
+<p>H(q)\dot q=</p>
+<p>\begin{bmatrix}H_a(q)&H_p(q)\end{bmatrix}</p>
+<p>\begin{bmatrix}\dot q_a\\ \dot q_p\end{bmatrix}=0,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>H_a\dot q_a+H_p\dot q_p=0.</p>
+<p>\]</p>
+<p>若 \(H_p\) 可逆，则 passive joint 速度可消去：</p>
+<p>\[</p>
+<p>\dot q_p=-H_p^{-1}H_a\dot q_a.</p>
+<p>\]</p>
+<p>若 \(H_p\) 不可逆，即 \(\operatorname{rank}H_p<p\)，则对应 actuator singularity，不能这样直接求 \(\dot q_p\)。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>闭链微分约束为</p>
+<p>\[</p>
+<p>H_a\dot q_a+H_p\dot q_p=0.</p>
+<p>\]</p>
+<p>若 \(H_p\) 可逆，则</p>
+<p>\[</p>
+<p>\dot q_p=-H_p^{-1}H_a\dot q_a.</p>
+<p>\]</p>
+<p>取任一条腿 \(i\)，其 differential forward kinematics 为</p>
+<p>\[</p>
+<p>V_s=J_i\dot q_i.</p>
+<p>\]</p>
+<p>把该腿的关节速度按 actuated/passive 分块：</p>
+<p>\[</p>
+<p>\dot q_i=</p>
+<p>\begin{bmatrix}\dot q_{i,a}\\ \dot q_{i,p}\end{bmatrix},</p>
+<p>\qquad</p>
+<p>J_i=</p>
+<p>\begin{bmatrix}J_{i,a}&J_{i,p}\end{bmatrix}.</p>
+<p>\]</p>
+<p>于是</p>
+<p>\[</p>
+<p>V_s=J_{i,a}\dot q_{i,a}+J_{i,p}\dot q_{i,p}.</p>
+<p>\]</p>
+<p>注意 \(\dot q_{i,a}\) 是整体 actuated joint 速度 \(\dot q_a\) 中属于该腿的部分，\(\dot q_{i,p}\) 是整体 passive joint 速度 \(\dot q_p\) 中属于该腿的部分。利用</p>
+<p>\[</p>
+<p>\dot q_p=-H_p^{-1}H_a\dot q_a,</p>
+<p>\]</p>
+<p>可把 \(\dot q_{i,p}\) 用 \(\dot q_a\) 表示。代回得</p>
+<p>\[</p>
+<p>V_s=J_{i,a}\dot q_{i,a}+J_{i,p}\bigl(-H_p^{-1}H_a\dot q_a\bigr)_{i}.</p>
+<p>\]</p>
+<p>把所有项整理成对整体 \(\dot q_a\) 的线性映射，即</p>
+<p>\[</p>
+<p>V_s=J_a(q)\dot q_a.</p>
+<p>\]</p>
+<p>其中 \(J_a(q)\) 由两部分组成：一部分来自该腿对 actuated joints 的 \(J_{i,a}\)，另一部分来自该腿对 passive joints 的 \(J_{i,p}\) 与约束消去矩阵 \(-H_p^{-1}H_a\) 的乘积。因此 \(J_a(q)\) 依赖机构位形 \(q\)，并且只在 \(H_p\) 可逆时可直接构造。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>三类奇异定义如下。</p>
+<ol>
+<li>configuration space singularity：</li>
+</ol>
+<p>\[</p>
+<p>\operatorname{rank}H<p.</p>
+<p>\]</p>
+<p>它与 actuation 选择无关，也与 end-effector frame 放置无关。它反映的是闭链约束本身在 configuration space 中出现退化。</p>
+<ol>
+<li>actuator singularity：</li>
+</ol>
+<p>\[</p>
+<p>\operatorname{rank}H_p<p.</p>
+<p>\]</p>
+<p>它取决于哪些关节被 actuated，因为 \(H_p\) 是按 actuated/passive 分块后得到的。若 \(\operatorname{rank}H<p\)，则 \(H_p\) 也奇异；反之不成立。也就是说 configuration space singularity 一定导致 actuator singularity，但 actuator singularity 不一定意味着 configuration space singularity。</p>
+<ol>
+<li>end-effector singularity：</li>
+</ol>
+<p>它是 \(f(q_a)=T_{sb}\) 的 Jacobian 秩缺。它取决于 end-effector frame 的放置，但不取决于 actuation 选择。</p>
+<p>configuration space singularity 可视为所有可能 actuated joint 组合下 actuator singularities 的交集，因为 \(\operatorname{rank}H<p\) 意味着无论怎样把关节分成 actuated 与 passive，对应的 \(H_p\) 都会奇异；而某个 actuator singularity 只说明在当前 actuation 选择下 \(H_p\) 奇异，换一组 actuated joints 后可能不再奇异。因此 configuration space singularity 是与 actuation 无关的、更本质的约束退化。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>下面代码用一组对称的 \(a_i,b_i\) 构造平面 3×RPR 的腿长约束，并数值观察对称位形附近的 FK 多解与不可预测旋转。该组 \(a_i,b_i\) 是用于验证本章概念的示例，不是原书给出的具体数值。</p>
+<pre><code class="lang-python">import numpy as np
+from scipy.optimize import fsolve
+
+# 示例：固定平台三个关节 A_i 在半径 1 的圆上，间隔 120 度
+a = []
+for k in range(3):
+    ang = 2*np.pi*k/3
+    a.append(np.array([np.cos(ang), np.sin(ang)]))
+a = np.array(a)
+
+# 示例：动平台三个关节 B_i 在 body frame 中半径 0.5 的圆上，间隔 120 度
+b = []
+for k in range(3):
+    ang = 2*np.pi*k/3
+    b.append(np.array([0.5*np.cos(ang), 0.5*np.sin(ang)]))
+b = np.array(b)
+
+def leg_sq(p, phi, i):
+    R = np.array([[np.cos(phi), -np.sin(phi)],
+                  [np.sin(phi),  np.cos(phi)]])
+    d = p + R @ b[i] - a[i]
+    return d @ d
+
+def fk_residual(x, s):
+    p = x[:2]
+    phi = x[2]
+    return np.array([leg_sq(p, phi, i) - s[i]**2 for i in range(3)])
+
+# 对称位形：p=0, phi=0，此时三条腿长度相同
+p0 = np.array([0.0, 0.0])
+phi0 = 0.0
+s0 = np.array([leg_sq(p0, phi0, i) for i in range(3)])
+print("symmetric leg squared lengths:", s0)
+
+# 从对称位形出发，稍微伸长所有腿
+eps = 1e-3
+s_plus = s0 + eps
+
+# 用两个不同初值求 FK，观察是否得到不同分支
+x1 = fsolve(fk_residual, np.array([0.0, 0.0,  0.1]), args=(s_plus,), full_output=True)
+x2 = fsolve(fk_residual, np.array([0.0, 0.0, -0.1]), args=(s_plus,), full_output=True)
+
+print("solution branch 1: p=", x1[0][:2], "phi=", x1[0][2], "res=", x1[1]["fvec"])
+print("solution branch 2: p=", x2[0][:2], "phi=", x2[0][2], "res=", x2[1]["fvec"])</code></pre>
+<p>预期观察：在对称位形 \(p=0,\phi=0\) 处，三条腿长度相同且尽可能短。当所有腿长同时增加一个小量 \(\varepsilon\) 时，从不同初值出发会收敛到不同的 \(\phi\) 分支，例如一个分支 \(\phi>0\)，另一个分支 \(\phi<0\)。这说明从该对称位形伸长腿时，平台可能顺时针或逆时针旋转，无法由腿长唯一预测。该现象与本章事实底座中“3×RPR 在 singular configuration 中每条腿长度相同且尽可能短；从该对称位形伸长腿时，平台可能顺时针或逆时针旋转，无法预测”一致。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

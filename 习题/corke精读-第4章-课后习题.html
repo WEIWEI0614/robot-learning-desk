@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 4 章「Mobile Robot Vehicles」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 4 章「Mobile Robot Vehicles」课后习题</h1>
+<p>原书课后习题 8 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：Ackerman 转向几何</h5>
+<p>Ackerman 转向的核心是：转弯时四个车轮的轴线应交于同一点（瞬时转动中心），因此内、外前轮的转向角不同。设轴距为 $L$，轮距为 $W=1.5\ \mathrm{m}$，转弯半径 $R$ 指<strong>后轴中心到瞬时转动中心</strong>的距离（沿后轴方向量取）。</p>
+<p>由几何关系，内轮（靠近转弯中心一侧）转向角 $\gamma_i$ 与外轮转向角 $\gamma_o$ 满足：</p>
+<p>$$\tan\gamma_i = \frac{L}{R - W/2}, \qquad \tan\gamma_o = \frac{L}{R + W/2}$$</p>
+<p><strong>为什么这样写</strong>：内轮离转动中心更近，同样的轴距 $L$ 对应更大的转角；外轮离中心更远，转角更小。两者之差即为 Ackerman 差角。</p>
+<p>$$\Delta\gamma = \gamma_i - \gamma_o = \arctan\!\frac{L}{R - W/2} - \arctan\!\frac{L}{R + W/2}$$</p>
+<h5>a) 计算转向角差</h5>
+<p>代入 $L=2\ \mathrm{m}$，$W=1.5\ \mathrm{m}$，即 $W/2=0.75\ \mathrm{m}$。</p>
+<p><strong>$R=10\ \mathrm{m}$：</strong></p>
+<p>$$\gamma_i = \arctan\frac{2}{10-0.75}=\arctan\frac{2}{9.25}=\arctan(0.21622)=12.20^\circ$$</p>
+<p>$$\gamma_o = \arctan\frac{2}{10+0.75}=\arctan\frac{2}{10.75}=\arctan(0.18605)=10.54^\circ$$</p>
+<p>$$\Delta\gamma = 12.20^\circ - 10.54^\circ = 1.66^\circ$$</p>
+<p><strong>$R=50\ \mathrm{m}$：</strong></p>
+<p>$$\gamma_i = \arctan\frac{2}{49.25}=\arctan(0.040609)=2.326^\circ$$</p>
+<p>$$\gamma_o = \arctan\frac{2}{50.75}=\arctan(0.039409)=2.257^\circ$$</p>
+<p>$$\Delta\gamma = 2.326^\circ - 2.257^\circ = 0.069^\circ \approx 0.07^\circ$$</p>
+<p><strong>$R=100\ \mathrm{m}$：</strong></p>
+<p>$$\gamma_i = \arctan\frac{2}{99.25}=\arctan(0.020151)=1.1546^\circ$$</p>
+<p>$$\gamma_o = \arctan\frac{2}{100.75}=\arctan(0.019851)=1.1374^\circ$$</p>
+<p>$$\Delta\gamma = 1.1546^\circ - 1.1374^\circ = 0.0172^\circ \approx 0.02^\circ$$</p>
+<p><strong>小结（a）：</strong></p>
+<table>
+<tr><th>$R$ (m)</th><th>$\gamma_i$</th><th>$\gamma_o$</th><th>$\Delta\gamma$</th></tr>
+<tr><td>10</td><td>12.20°</td><td>10.54°</td><td><strong>1.66°</strong></td></tr>
+<tr><td>50</td><td>2.33°</td><td>2.26°</td><td><strong>0.07°</strong></td></tr>
+<tr><td>100</td><td>1.15°</td><td>1.14°</td><td><strong>0.02°</strong></td></tr>
+</table>
+<p>可见转弯半径越大，Ackerman 差角越小，趋于零。</p>
+<h5>b) 后轮转速差</h5>
+<p>后轮为固定轮（不转向），但左右后轮在同一时间内走过的弧长不同：外侧后轮走外圈，内侧后轮走内圈。设后轮半径（滚动半径）为 $r$，车辆前进速度为 $v$。</p>
+<p><strong>关键关系</strong>：后轴中心沿半径 $R$ 的圆弧运动，速度为 $v$，故角速度</p>
+<p>$$\dot{\theta} = \frac{v}{R}$$</p>
+<p>左、右后轮分别沿半径 $R \pm W/2$ 的圆弧运动（符号取决于转弯方向，取绝对值即可），其线速度分别为：</p>
+<p>$$v_{L,R} = \dot{\theta}\left(R \pm \frac{W}{2}\right) = v\left(1 \pm \frac{W}{2R}\right)$$</p>
+<p>后轮转速（角速度）$\omega = v_{\text{wheel}}/r$，故左右后轮转速之差为：</p>
+<p>$$\Delta\omega = \frac{v}{r}\cdot\frac{W}{R}$$</p>
+<p>注意：<strong>转速差与后轮半径 $r$ 有关</strong>。原书事实底座中<strong>未给出后轮半径 $r$ 的具体数值</strong>，因此这里按符号推导；若取典型值 $r=0.3\ \mathrm{m}$ 可算出数值，但该数值并非来自原书，故以下给出符号表达式并说明。</p>
+<p>先换算车速：</p>
+<p>$$v = 80\ \mathrm{km\,h^{-1}} = \frac{80}{3.6}\ \mathrm{m\,s^{-1}} = 22.22\ \mathrm{m\,s^{-1}}$$</p>
+<p>转速差公式：</p>
+<p>$$\Delta\omega = \frac{v\,W}{r\,R}$$</p>
+<p><strong>$R=10\ \mathrm{m}$：</strong></p>
+<p>$$\Delta\omega = \frac{22.22 \times 1.5}{r \times 10} = \frac{3.333}{r}\ \mathrm{rad\,s^{-1}}$$</p>
+<p><strong>$R=50\ \mathrm{m}$：</strong></p>
+<p>$$\Delta\omega = \frac{22.22 \times 1.5}{r \times 50} = \frac{0.6667}{r}\ \mathrm{rad\,s^{-1}}$$</p>
+<p><strong>$R=100\ \mathrm{m}$：</strong></p>
+<p>$$\Delta\omega = \frac{22.22 \times 1.5}{r \times 100} = \frac{0.3333}{r}\ \mathrm{rad\,s^{-1}}$$</p>
+<p><strong>小结（b）</strong>（以符号 $r$ 表示后轮滚动半径）：</p>
+<table>
+<tr><th>$R$ (m)</th><th>$\Delta\omega$ (rad/s)</th></tr>
+<tr><td>10</td><td>$3.333/r$</td></tr>
+<tr><td>50</td><td>$0.667/r$</td></tr>
+<tr><td>100</td><td>$0.333/r$</td></tr>
+</table>
+<p>若取 $r=0.3\ \mathrm{m}$（仅为示例，非原书数据），则对应约为 $11.1$、$2.22$、$1.11\ \mathrm{rad\,s^{-1}}$。<strong>原书未给出后轮半径的具体数值，故严格答案应保留 $r$ 为符号。</strong></p>
+<h4>关键点</h4>
+<ul>
+<li><strong>Ackerman 差角公式</strong>：$\Delta\gamma = \arctan\frac{L}{R-W/2} - \arctan\frac{L}{R+W/2}$，内轮转角恒大于外轮；$R$ 越大差角越小，$R\to\infty$ 时差角趋于零（直线行驶）。</li>
+<li><strong>后轮转速差</strong>：$\Delta\omega = \dfrac{v\,W}{r\,R}$，与车速 $v$ 和轮距 $W$ 成正比，与转弯半径 $R$ 和后轮半径 $r$ 成反比。转弯越急（$R$ 小），内外后轮转速差越大。</li>
+<li><strong>b) 小题必须注意</strong>：原书事实底座未给出后轮半径 $r$，因此数值答案只能以 $r$ 为参数给出；若强行给数值需额外假设，属于超出原书数据。</li>
+<li><strong>bicycle model 与 Ackerman 的区别</strong>：本题的 Ackerman 差角是四轮车左右转向角的差异，而本章的 bicycle model 是把四轮简化为两轮的运动学模型（原书明确指出 "Often incorrectly called the Ackerman model"），两者不可混淆。</li>
+<li><strong>单位一致性</strong>：车速需从 $\mathrm{km\,h^{-1}}$ 换算为 $\mathrm{m\,s^{-1}}$（除以 3.6），角度可用度或弧度，但同一公式内需统一。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章 "Mobile Robot Vehicles"</li>
+<li>依据：</li>
+<li>Ackerman 转向几何与差角公式：本章事实底座第 6 节 "例题与数值例子" 中 Exercise 1（$L=2\ \mathrm{m}$，轮距 $1.5\ \mathrm{m}$，曲线半径 $10,50,100\ \mathrm{m}$，车速 $80\ \mathrm{km\,h^{-1}}$ 求后轮转速差），对应 PDF p.85。</li>
+<li>bicycle model 与 Ackerman 的区分：事实底座第 7 节 misconceptions 第一条（"bicycle model 常被误称为 Ackerman model"，PDF p.68）。</li>
+<li>后轮半径 $r$ 未在事实底座中出现，故 b) 小题按符号推导，符合硬性要求第 1 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确几何与记号</h5>
+<p>设后轮间距（轮距）为 $W$，后轮半径为 $r$。左右后轮分别记为 $L$、$R$，其角旋转速率（角速度）为 $\dot{\phi}_L$、$\dot{\phi}_R$（单位 rad/s）。车辆沿曲线行驶时，左右后轮走过的弧长不同，因而角速度不同。</p>
+<p>由本章 bicycle model 的几何关系，转弯半径 $R_1$ 与转向角 $\gamma$ 满足</p>
+<p>$$R_1=\frac{L}{\tan\gamma}$$</p>
+<p>其中 $L$ 为轴距。转向角速率即 $\dot{\theta}$，由 $\dot{\theta}=v/R_1$ 给出。</p>
+<h5>第 2 步：由左右后轮角速度求线速度</h5>
+<p>后轮线速度与角速度的关系为</p>
+<p>$$v_L=r\dot{\phi}_L,\qquad v_R=r\dot{\phi}_R$$</p>
+<p>车辆中心（后轴中点）的线速度是两者平均：</p>
+<p>$$v=\frac{v_L+v_R}{2}=\frac{r}{2}\left(\dot{\phi}_L+\dot{\phi}_R\right)$$</p>
+<h5>第 3 步：由左右轮速度差求转向角速率</h5>
+<p>左右后轮在同一时间内的弧长差对应绕瞬时转动中心的转角。设后轴中点到瞬时转动中心的距离为 $R_1$，则</p>
+<p>$$v_R-v_L=\dot{\theta}\,W$$</p>
+<p>（外侧轮比内侧轮多走的线速度等于角速度乘以轮距 $W$。）</p>
+<p>于是</p>
+<p>$$\dot{\theta}=\frac{v_R-v_L}{W}=\frac{r\left(\dot{\phi}_R-\dot{\phi}_L\right)}{W}$$</p>
+<p>这就是用两个后轮角旋转速率表示的转向角速率表达式。</p>
+<h5>第 4 步：与 bicycle model 的一致性检验</h5>
+<p>把 $v$ 与 $\dot{\theta}$ 联立，可得等效转弯半径</p>
+<p>$$R_1=\frac{v}{\dot{\theta}}=\frac{\dfrac{r}{2}\left(\dot{\phi}_L+\dot{\phi}_R\right)}{\dfrac{r}{W}\left(\dot{\phi}_R-\dot{\phi}_L\right)}=\frac{W}{2}\cdot\frac{\dot{\phi}_L+\dot{\phi}_R}{\dot{\phi}_R-\dot{\phi}_L}$$</p>
+<p>当 $\dot{\phi}_L=\dot{\phi}_R$ 时 $\dot{\theta}=0$，即直线行驶，与 bicycle model 一致。</p>
+<h5>第 5 步：轮半径误差的影响</h5>
+<p>设真实轮半径为 $r$，但控制器/里程计使用的是标称值 $\hat{r}=r+\delta r$。则计算出的转向角速率为</p>
+<p>$$\hat{\theta}=\frac{\hat{r}\left(\dot{\phi}_R-\dot{\phi}_L\right)}{W}$$</p>
+<p>相对误差为</p>
+<p>$$\frac{\hat{\theta}-\dot{\theta}}{\dot{\theta}}=\frac{\delta r}{r}$$</p>
+<p>即<strong>轮半径误差按比例直接传递到转向角速率估计上</strong>。若左右轮半径不等（$r_L\ne r_R$），则即使 $\dot{\phi}_L=\dot{\phi}_R$，车辆实际也会走曲线，而里程计却认为在走直线——这是差速驱动机器人航向漂移的主要来源之一。</p>
+<h5>第 6 步：车体宽度误差的影响</h5>
+<p>设真实轮距为 $W$，标称值为 $\hat{W}=W+\delta W$。则</p>
+<p>$$\hat{\theta}=\frac{r\left(\dot{\phi}_R-\dot{\phi}_L\right)}{\hat{W}}$$</p>
+<p>相对误差为</p>
+<p>$$\frac{\hat{\theta}-\dot{\theta}}{\dot{\theta}}=-\frac{\delta W}{W}$$</p>
+<p>即<strong>轮距误差按反比传递到转向角速率估计上</strong>：轮距被高估时，转向角速率被低估，反之亦然。</p>
+<h5>第 7 步：综合结论</h5>
+<p>$$\dot{\theta}=\frac{r\left(\dot{\phi}_R-\dot{\phi}_L\right)}{W}$$</p>
+<p>对 $r$ 与 $W$ 分别求偏导可得灵敏度：</p>
+<p>$$\frac{\partial\dot{\theta}}{\partial r}=\frac{\dot{\phi}_R-\dot{\phi}_L}{W},\qquad \frac{\partial\dot{\theta}}{\partial W}=-\frac{r\left(\dot{\phi}_R-\dot{\phi}_L\right)}{W^2}$$</p>
+<p>两者都正比于轮速差 $\dot{\phi}_R-\dot{\phi}_L$。因此<strong>直线行驶时（轮速差为零）轮半径与轮距误差对转向角速率无影响；转弯越急，误差影响越大</strong>。这解释了为何差速驱动机器人在长距离直线行驶后航向仍可能漂移——只要存在微小轮速差或轮径不对称，误差就会被累积。</p>
+<blockquote>原书未给出具体数值，按符号推导。</blockquote>
+<h4>关键点</h4>
+<ul>
+<li>转向角速率由左右后轮线速度差除以轮距得到：$\dot{\theta}=(v_R-v_L)/W$，代入 $v=r\dot{\phi}$ 得 $\dot{\theta}=r(\dot{\phi}_R-\dot{\phi}_L)/W$。</li>
+<li>轮半径误差按比例 $+1$ 传递，轮距误差按比例 $-1$ 传递到转向角速率估计。</li>
+<li>两种误差的影响都正比于轮速差，直线行驶时为零，转弯时被放大。</li>
+<li>左右轮半径不等会造成系统性航向漂移，是差速驱动里程计误差的主要来源。</li>
+<li>该式与本章 bicycle model 的 $\dot{\theta}=v\tan\gamma/L$ 在几何上等价，只是用轮速而非转向角表达。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 4 章</li>
+<li>依据：</li>
+<li>转向角速率与转弯半径关系 $\dot{\theta}=v/R_1$、$R_1=L/\tan\gamma$：facts 第 1 节记号表与第 4 节推导链条第 2 步（Eq. 4.2）。</li>
+<li>差速驱动左右轮速度差与转向角速率关系：本章 Ackermann 转向差角例题（Exercise 1，PDF p.85）中"车速 $80\ \mathrm{km\,h^{-1}}$ 时求后轮转速差"所依据的同一几何关系。</li>
+<li>轮半径/轮距误差对里程计的影响：本章关于 bicycle model 与 Ackermann 转向的讨论（PDF p.68），以及"bicycle model 常被误称为 Ackerman model"的说明。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确 $\ominus$ 算子的定义</h5>
+<p>本章事实底座「记号约定」表中给出：</p>
+<blockquote>角度差算子 $\ominus$，工具箱函数 <code>angdiff</code> 返回 $[-\pi,\pi)$</blockquote>
+<p>即 $\ominus$ 是定义在圆周 $S$ 上的二元运算，用于计算两个角度之差并归一化到半开区间 $[-\pi,\pi)$。设 $a,b\in S$，则</p>
+<p>$$
+a\ominus b \;=\; \operatorname{wrap}(a-b)\;\in\;[-\pi,\pi)
+$$</p>
+<p>其中 $\operatorname{wrap}(\cdot)$ 把任意实数映射到 $[-\pi,\pi)$。之所以需要这个算子，是因为 $\theta\in S$，直接相减会得到 $[-2\pi,2\pi)$ 内的值，无法正确反映"最短角度差"。</p>
+<h5>第 2 步：实现 wrap 函数</h5>
+<p>最直接的实现是"减去 $2\pi$ 的整数倍"：</p>
+<p>$$
+\operatorname{wrap}(x) = x - 2\pi\left\lfloor\frac{x+\pi}{2\pi}\right\rfloor
+$$</p>
+<p>验证边界：$x=\pi$ 时，$\lfloor 2\pi/2\pi\rfloor=1$，得 $\pi-2\pi=-\pi$，落在 $[-\pi,\pi)$ 内；$x=-\pi$ 时，$\lfloor 0\rfloor=0$，得 $-\pi$，同样落在区间内。符合"返回 $[-\pi,\pi)$"的约定。</p>
+<h5>第 3 步：实现 $\ominus$ 算子</h5>
+<pre><code class="lang-python">import numpy as np
+
+def wrap(x):
+    """把角度归一化到 [-pi, pi)"""
+    return x - 2*np.pi*np.floor((x + np.pi) / (2*np.pi))
+
+def ominus(a, b):
+    """角度差算子 a ⊖ b，返回 [-pi, pi)"""
+    return wrap(a - b)</code></pre>
+<h5>第 4 步：与 <code>angdiff</code> 对照</h5>
+<p>Corke 工具箱中 <code>angdiff</code> 的典型实现（与本章约定一致）为：</p>
+<pre><code class="lang-python">def angdiff(a, b):
+    """返回 a - b 归一化到 [-pi, pi)"""
+    d = a - b
+    return (d + np.pi) % (2*np.pi) - np.pi</code></pre>
+<p>注意 <code>(d + pi) % (2*pi) - pi</code> 与第 2 步的 <code>floor</code> 写法在数学上等价：两者都把结果压到 $[-\pi,\pi)$。因此应有</p>
+<p>$$
+a\ominus b \;=\; \texttt{angdiff}(a,b)
+$$</p>
+<h5>第 5 步：数值验证</h5>
+<p>取若干典型角度对进行测试：</p>
+<pre><code class="lang-python">tests = [
+    (0.1, 0.0),
+    (np.pi - 0.01, -np.pi + 0.01),   # 跨越 ±pi 边界
+    (3*np.pi/2, 0.0),                # 应返回 -pi/2
+    (-3*np.pi/2, 0.0),               # 应返回 pi/2
+    (0.0, np.pi),                    # 边界
+]
+
+for a, b in tests:
+    r1 = ominus(a, b)
+    r2 = angdiff(a, b)
+    print(f"a={a:+.4f}, b={b:+.4f} -> ⊖={r1:+.4f}, angdiff={r2:+.4f}, "
+          f"一致={np.isclose(r1, r2)}")</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>所有测试对中 <code>ominus</code> 与 <code>angdiff</code> 输出一致（<code>np.isclose</code> 为 <code>True</code>）。</li>
+<li>当 $a=\pi-0.01,\ b=-\pi+0.01$ 时，直接相减得 $2\pi-0.02\approx 6.26$，但 $\ominus$ 应返回 $-0.02$（即跨越 $\pm\pi$ 边界后的最短角差）。</li>
+<li>当 $a=3\pi/2,\ b=0$ 时，$\ominus$ 返回 $-\pi/2$ 而非 $3\pi/2$，体现"归一化到 $[-\pi,\pi)$"。</li>
+<li>当 $a=0,\ b=\pi$ 时，返回 $-\pi$（而非 $+\pi$），验证半开区间约定。</li>
+</ul>
+<h5>第 6 步：为什么这个算子在本章重要</h5>
+<p>本章的多个控制器都依赖角度差：</p>
+<ul>
+<li><strong>Move to a point</strong>：$\gamma=k_\theta\,\mathrm{angdiff}(\theta^*,\theta)$，其中 $\theta^*=\mathrm{atan2}(y^*-y,x^*-x)$。</li>
+<li><strong>Follow a line</strong>：角度误差 $\mathrm{angdiff}(\mathrm{atan2}(-a,-b),\theta)$ 用于 P 控制使车体系平行于线。</li>
+<li><strong>Move to a pose</strong>：极坐标变量 $\alpha,\beta$ 的闭环稳定性分析依赖角度差在 $S$ 上的正确取值。</li>
+</ul>
+<p>若直接用 $a-b$ 而不归一化，当角度跨越 $\pm\pi$ 时控制器会产生错误的转向指令（例如本应小幅左转却大幅右转），这正是 Brockett 定理背景下 non-holonomic 系统姿态控制必须谨慎处理角度拓扑的原因。</p>
+<h4>关键点</h4>
+<ul>
+<li>$\ominus$ 是定义在 $S$ 上的角度差算子，输出严格落在 $[-\pi,\pi)$，与工具箱 <code>angdiff</code> 等价。</li>
+<li>实现核心是 <code>wrap</code>：用 <code>floor</code> 或 <code>%</code> 把任意实数映射到 $[-\pi,\pi)$，两种写法数学等价。</li>
+<li>边界行为必须验证：$a-b=\pi$ 时返回 $-\pi$（半开区间），跨越 $\pm\pi$ 时返回最短角差。</li>
+<li>本章所有涉及角度误差的控制器（point、line、pose）都依赖该算子，否则在 $\pm\pi$ 附近会产生错误转向。</li>
+<li>该算子的必要性根源在于 $\theta\in S$，而 $S$ 不是 $\mathbb{R}$ 的线性子空间，直接相减不保持拓扑。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章</li>
+<li>依据：</li>
+<li>$\ominus$ 定义与 <code>angdiff</code> 返回区间：事实底座「1. 记号约定」角度差算子条目。</li>
+<li>Move to a point 中的 $\mathrm{angdiff}(\theta^*,\theta)$：事实底座「4. 推导链条」第 4 步。</li>
+<li>Follow a line 中的角度误差：事实底座「4. 推导链条」第 5 步。</li>
+<li>Move to a pose 中 $\alpha,\beta$ 与稳定性：事实底座「4. 推导链条」第 7 步。</li>
+<li>Brockett 定理与角度拓扑：事实底座「3. 本章核心概念清单」第 5 条、「7. 与常见困惑的对照」。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题要求对本章 §4.2.1「Move to a point」控制律进行仿真，并把位姿的三个分量 $x(t)$、$y(t)$、$\theta(t)$ 分别对时间 $t$ 作图，以观察闭环收敛过程。</p>
+<p><strong>第 1 步：写出被控对象模型。</strong></p>
+<p>采用本章的 bicycle 运动学模型（Eq. 4.2）：</p>
+<p>$$
+\begin{bmatrix}\dot{x}\\\dot{y}\\\dot{\theta}\end{bmatrix}
+=\begin{bmatrix}\cos\theta&0\\\sin\theta&0\\0&\frac{\tan\gamma}{L}\end{bmatrix}
+\begin{bmatrix}v\\\gamma\end{bmatrix}
+$$</p>
+<p>其中 $\mathbf{q}=(x,y,\theta)\in\mathcal{C}$ 为广义坐标，$v$ 为后轮速度，$\gamma$ 为前轮转向角，$L$ 为轴距。</p>
+<p><strong>第 2 步：写出「Move to a point」控制律。</strong></p>
+<p>设目标点为 $(x^*,y^*)$。先由几何关系算出期望航向</p>
+<p>$$
+\theta^*=\mathrm{atan2}(y^*-y,\;x^*-x),
+$$</p>
+<p>再令</p>
+<p>$$
+v=k_v\sqrt{(x^*-x)^2+(y^*-y)^2},\qquad
+\gamma=k_\theta\,\mathrm{angdiff}(\theta^*,\theta),
+$$</p>
+<p>其中 $\mathrm{angdiff}(\cdot,\cdot)$ 返回 $[-\pi,\pi)$ 内的角度差（本章角度差算子 $\ominus$ 的工具箱实现），$k_v,k_\theta$ 为正增益。<strong>为什么这样设计</strong>：$v$ 与到目标的距离成正比，距离越远开得越快、接近目标时自动减速；$\gamma$ 与航向误差成正比，使车头始终转向目标点。二者合起来构成一个「朝目标点开」的 P 控制器。</p>
+<p><strong>第 3 步：闭环行为分析（用于解释曲线形状）。</strong></p>
+<p>把控制律代入 Eq. 4.2，闭环系统在目标点处渐近稳定。直观上：</p>
+<ul>
+<li>$t=0$ 时，$v$ 最大（距离最大），$\gamma$ 由初始航向误差决定；</li>
+<li>随着车接近目标，$\sqrt{(x^*-x)^2+(y^*-y)^2}\to 0$，故 $v\to 0$；</li>
+<li>同时 $\theta^*\to\theta$，故 $\gamma\to 0$。</li>
+</ul>
+<p>因此三条曲线应表现为：$x(t),y(t)$ 单调（或近单调）趋近目标值 $x^*,y^*$ 并最终水平；$\theta(t)$ 从初始值 $\theta_0$ 平滑过渡到 $\theta^*=\mathrm{atan2}(y^*-y,x^*-x)$ 的终值并稳定。</p>
+<p><strong>第 4 步：用原书例题的数值做仿真。</strong></p>
+<p>原书该节例题给出：目标 <code>xg = [5 5]</code>，初始位姿 <code>x0 = [8 5 pi/2]</code>，Simulink 模型 <code>sl_drivepoint</code>（PDF p.71–72）。即</p>
+<p>$$
+(x_0,y_0,\theta_0)=(8,5,\pi/2),\qquad (x^*,y^*)=(5,5).
+$$</p>
+<p>初始时车在目标正右方 3 m 处，车头朝 $+y$ 方向（$\theta_0=\pi/2$）。期望航向为</p>
+<p>$$
+\theta^*=\mathrm{atan2}(5-5,\;5-8)=\mathrm{atan2}(0,-3)=\pi,
+$$</p>
+<p>故初始航向误差为 $\mathrm{angdiff}(\pi,\pi/2)=\pi/2$，车需要先左转再直行接近目标。</p>
+<p><strong>第 5 步：可运行代码（MATLAB，与工具箱记号一致）。</strong></p>
+<p>原书未给出 $k_v,k_\theta,L$ 的具体数值，下面取一组典型值演示；读者可替换为书中模型参数。</p>
+<pre><code class="lang-matlab">% 参数（原书未给出具体数值，此处取典型值）
+kv = 0.5; kth = 1.5; L = 1;
+xg = [5 5];                 % 目标点
+q  = [8 5 pi/2]';           % 初始位姿 [x y theta]
+dt = 0.05; T = 20;
+t = 0:dt:T; X = zeros(3,numel(t));
+
+for k = 1:numel(t)
+    X(:,k) = q;
+    dx = xg(1)-q(1); dy = xg(2)-q(2);
+    v  = kv*sqrt(dx^2+dy^2);
+    thstar = atan2(dy,dx);
+    gamma  = kth*angdiff(thstar,q(3));   % angdiff 返回 [-pi,pi)
+    q = q + dt*[v*cos(q(3)); v*sin(q(3)); v*tan(gamma)/L];
+end
+
+figure;
+subplot(3,1,1); plot(t,X(1,:)); ylabel('x'); grid on
+subplot(3,1,2); plot(t,X(2,:)); ylabel('y'); grid on
+subplot(3,1,3); plot(t,X(3,:)); ylabel('\theta'); xlabel('t'); grid on</code></pre>
+<p><strong>预期观察</strong>：$x(t)$ 从 8 单调下降到 5；$y(t)$ 从 5 先略变（因车先转向）再回到 5；$\theta(t)$ 从 $\pi/2$ 平滑上升到 $\pi$ 并保持。三条曲线最终都趋于常数，说明闭环收敛到目标点。</p>
+<h4>关键点</h4>
+<ul>
+<li>「Move to a point」的控制律是 $v=k_v\cdot(\text{到目标距离})$、$\gamma=k_\theta\,\mathrm{angdiff}(\theta^*,\theta)$，其中 $\theta^*=\mathrm{atan2}(y^*-y,x^*-x)$；本质是「朝目标点开」的 P 控制。</li>
+<li>被控对象是 bicycle 运动学模型（Eq. 4.2），状态为 $\mathbf{q}=(x,y,\theta)$，输入为 $(v,\gamma)$。</li>
+<li>曲线形状的物理含义：$v$ 随距离衰减 ⇒ $x,y$ 平滑趋近目标；$\gamma$ 随航向误差衰减 ⇒ $\theta$ 平滑趋近 $\theta^*$。</li>
+<li>该控制律只保证「到达点」，不控制到达时的航向；若要控制位姿需用 §4.2.4 的极坐标 pose 控制律 $v=k_\rho\rho,\ \gamma=k_\alpha\alpha+k_\beta\beta$。</li>
+<li>原书未给出 $k_v,k_\theta,L$ 的具体数值，仿真时按符号推导并自选典型增益即可。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章</li>
+<li>依据：</li>
+<li>bicycle 运动学模型 Eq. 4.2 与 non-holonomic 约束：事实底座 §5 关键公式 1、2；§4 推导链条第 2、3 步</li>
+<li>「Move to a point」控制律 $v=k_v\sqrt{(x^*-x)^2+(y^*-y)^2}$、$\gamma=k_\theta\,\mathrm{angdiff}(\theta^*,\theta)$、$\theta^*=\mathrm{atan2}(y^*-y,x^*-x)$：事实底座 §4 推导链条第 4 步</li>
+<li>角度差算子 $\ominus$ 与 <code>angdiff</code> 返回 $[-\pi,\pi)$：事实底座 §1 记号约定</li>
+<li>例题数值 <code>xg = [5 5]</code>、<code>x0 = [8 5 pi/2]</code>、模型 <code>sl_drivepoint</code>：事实底座 §6 例题与数值例子</li>
+<li>pose 控制律对比：事实底座 §5 关键公式 3；§4 推导链条第 7 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：pure pursuit 的控制结构</h5>
+<p>由事实底座第 4 节第 6 步，pure pursuit 的控制律为：</p>
+<ul>
+<li>目标沿路径移动，产生跟随误差 $e = d^* - d$（$d^*$ 为期望跟随距离，$d$ 为实际距离）；</li>
+<li>速度环：<strong>PI 控制</strong> $v = k_{v,p}\,e + k_{v,i}\int e\,dt$；</li>
+<li>转向环：P 控制 $\gamma = k_\theta\,\mathrm{angdiff}(\theta^*,\theta)$，其中 $\theta^* = \mathrm{atan2}(y^*-y,\ x^*-x)$ 为目标相对车体系的角度。</li>
+</ul>
+<p>原书模型为 <code>sl_pursuit</code>，目标沿单位圆以 $0.1\ \mathrm{Hz}$ 运动，机器人从原点出发（PDF p.74–75）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 积分增益为零；再把频率降到 0.01 rev s⁻¹</h5>
+<p><strong>做什么</strong>：把速度环的积分增益 $k_{v,i}$ 置零，速度控制退化为纯 P 控制 $v = k_{v,p}\,e$。</p>
+<p><strong>为什么</strong>：P 控制对<strong>常值扰动</strong>（如目标以恒定速度前进时产生的稳态跟随误差）无法消除，会留下稳态误差。因此机器人会稳定在一个<strong>恒定的跟随距离偏差</strong>上——它仍然跟着目标走，但 $d$ 永远不等于 $d^*$，而是停在某个 $e_{ss}\neq 0$ 处。这正是引入积分项的理由：积分项累积误差，最终把稳态误差压到零。</p>
+<p><strong>再把频率降到 0.01 rev s⁻¹</strong>：目标沿圆周的线速度降为原来的 $1/10$。此时目标运动极慢，P 控制所需的稳态速度 $v = k_{v,p}\,e_{ss}$ 也相应很小，于是稳态误差 $e_{ss}$ 变得很小，肉眼几乎看不出偏差；机器人会以很慢的速度平滑地跟在目标后面。<strong>结论</strong>：稳态误差随目标速度减小而减小，但只要有常值速度需求，纯 P 控制下 $e_{ss}$ 就不为零（除非 $k_{v,p}\to\infty$）。</p>
+<blockquote>原书未给出 $k_{v,p},k_{v,i}$ 的具体数值，以上为按符号推导的定性结论。</blockquote>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>b) 积分置零后，给控制器输出加一个常数</h5>
+<p><strong>做什么</strong>：在速度指令上叠加一个常值 $v_0$：$v = k_{v,p}\,e + v_0$。</p>
+<p><strong>为什么</strong>：积分项的作用是"自动学习"消除稳态误差所需的常值偏置。若人为把这个偏置直接加进去，就能在不用积分的情况下消除稳态误差。</p>
+<p><strong>该常数取什么值</strong>：应等于<strong>目标沿路径运动的标称速度</strong>（即机器人为了跟上目标所需的稳态前进速度）。对本题的单位圆目标，若目标以角频率 $\Omega$ 沿半径 $r$ 的圆运动，则其线速度为 $v_{\text{target}} = \Omega r$；机器人稳态时应以同样的速度前进，故</p>
+<p>$$v_0 = v_{\text{target}} = \Omega\, r .$$</p>
+<p>对原书 $0.1\ \mathrm{Hz}$ 的单位圆（$r=1$），$\Omega = 2\pi\times 0.1 = 0.2\pi\ \mathrm{rad\,s^{-1}}$，故 $v_0 = 0.2\pi \approx 0.628\ \mathrm{m\,s^{-1}}$。此时 $e_{ss}\to 0$，机器人精确保持期望跟随距离。</p>
+<blockquote>单位圆半径 $r=1$ 来自原书"目标沿单位圆运动"的描述；$0.1\ \mathrm{Hz}$ 来自事实底座第 6 节。</blockquote>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>c) 修改为跟踪 slalom 路线</h5>
+<p><strong>做什么</strong>：把目标路径从圆改为蛇形曲线，例如</p>
+<p>$$y(x) = A\sin(kx),\qquad A>0,\ k>0 .$$</p>
+<p><strong>为什么</strong>：pure pursuit 的转向环只依赖目标当前点相对车体的角度 $\theta^*$，与路径的解析形式无关，因此<strong>无需改动控制器</strong>，只需改动目标点的生成方式。</p>
+<p><strong>实现要点</strong>（MATLAB 伪代码，基于 <code>sl_pursuit</code> 结构）：</p>
+<pre><code class="lang-matlab">% 目标沿 slalom 曲线运动
+A = 1; k = 0.5;          % 幅值与波数（示例值，原书未给定）
+t = 0:0.05:60;
+xstar = t;               % 沿 x 前进
+ystar = A*sin(k*t);
+% 每个仿真步把 (xstar,ystar) 送入 pure pursuit 控制器</code></pre>
+<p>预期观察：机器人以 P 转向 + PI 速度跟踪该曲线；由于转向环是纯 P，在曲线曲率较大处会出现<strong>横向跟踪滞后</strong>（cutting corners），增大 $k_\theta$ 可减小滞后但可能引起振荡。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>d) 修改为跟踪沿直线来回运动的目标</h5>
+<p><strong>做什么</strong>：让目标点沿一条直线做往复运动，例如</p>
+<p>$$x^*(t) = x_0 + B\sin(\omega t),\qquad y^*(t) = y_0 .$$</p>
+<p><strong>为什么</strong>：目标会<strong>反向</strong>运动，此时目标相对车体的角度 $\theta^*$ 可能突然跳到接近 $\pm\pi$，pure pursuit 的 P 转向环会要求机器人掉头。若机器人是 car-like（非完整约束，见事实底座第 5 节第 2 条），它<strong>不能原地掉头</strong>，必须走路径（如三点掉头）才能反向，因此会出现明显的绕行/回旋行为。</p>
+<p><strong>实现要点</strong>：</p>
+<pre><code class="lang-matlab">B = 5; w = 0.2;          % 幅值与角频率（示例值）
+xstar = 5 + B*sin(w*t);
+ystar = 3*ones(size(t));</code></pre>
+<p>预期观察：目标反向时，机器人先减速、转向，再沿新方向加速跟上；若 $k_\theta$ 过大，转向指令会饱和，机器人可能绕大圈。可适当降低 $k_{v,p}$ 让机器人在反向时减速，改善跟踪。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>积分项的作用是消除常值速度需求引起的稳态误差</strong>；置零后 P 控制必然留下稳态跟随误差，误差随目标速度减小而减小。</li>
+<li><strong>用常值前馈替代积分</strong>：$v_0$ 应取目标的标称线速度（本题单位圆 $0.1\ \mathrm{Hz}$ 时为 $0.2\pi\ \mathrm{m\,s^{-1}}$），可无积分地消除稳态误差。</li>
+<li><strong>pure pursuit 的转向环与路径解析形式无关</strong>，只依赖目标点相对车体的角度 $\theta^*=\mathrm{atan2}(y^*-y,x^*-x)$，因此换路径只需换目标点生成器。</li>
+<li><strong>car-like 车辆受 non-holonomic 约束</strong> $\dot{x}\sin\theta-\dot{y}\cos\theta=0$，不能原地掉头或横移，目标反向时必须走路径，这是 d) 中出现绕行行为的根本原因。</li>
+<li>纯 P 转向在曲率大处会 cutting corners，增大 $k_\theta$ 可减小滞后但可能振荡。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章 Mobile Robot Vehicles</li>
+<li>依据：</li>
+<li>pure pursuit 控制结构（PI 速度 + P 转向、$\theta^*=\mathrm{atan2}$）来自事实底座第 4 节第 6 步；</li>
+<li>单位圆目标、$0.1\ \mathrm{Hz}$、模型 <code>sl_pursuit</code>、机器人从原点出发来自事实底座第 6 节；</li>
+<li>non-holonomic 约束 $\dot{x}\sin\theta-\dot{y}\cos\theta=0$ 及"不能原地掉头、必须走路径"来自事实底座第 5 节第 2 条与第 7 节 misconceptions；</li>
+<li>bicycle 运动学模型（Eq. 4.2）来自事实底座第 5 节第 1 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6. 移动到位姿（Moving to a pose，第 75 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>题目</h4>
+<p><strong>6. 移动到位姿（Moving to a pose，第 75 页）</strong></p>
+<p>a) 用不同的初始朝向重做该例题。</p>
+<p>b) 实现一个平行泊车（parallel parking）机动。所得到的路径实用吗？</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>解答</h4>
+<h5>背景：pose 控制律回顾</h5>
+<p>原书例题（PDF p.77）给定目标位姿 <code>xg = [5 5 pi/2]</code>，初始位姿 <code>x0 = [8 5 pi/2]</code>，模型 <code>sl_drivepose</code>。其控制律基于极坐标误差变量 $(\rho,\alpha,\beta)$：</p>
+<ul>
+<li>$\rho$：车辆到目标的距离；</li>
+<li>$\beta$：目标相对<strong>世界系</strong>的角度；</li>
+<li>$\alpha$：目标相对<strong>车体系</strong>的角度，满足 $\alpha = \beta - \theta$（经 <code>angdiff</code> 归一化到 $[-\pi,\pi)$）。</li>
+</ul>
+<p>控制律为</p>
+<p>$$v = k_\rho\,\rho,\qquad \gamma = k_\alpha\,\alpha + k_\beta\,\beta.$$</p>
+<p>当目标位于车后（$\alpha \notin (-\pi/2,\ \pi/2]$）时，令 $v \to -v$、$\gamma \to -\gamma$ 实现倒车。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 用不同的初始朝向重做例题</h5>
+<p><strong>做什么</strong>：保持目标 <code>xg = [5 5 pi/2]</code> 不变，改变初始朝向 $\theta_0$，观察轨迹与收敛性。</p>
+<p><strong>为什么</strong>：pose 控制律的稳定性依赖于初始误差 $(\rho,\alpha,\beta)$ 落在收敛域内。改变 $\theta_0$ 会改变 $\alpha$ 的初值，从而检验控制律对初始朝向的鲁棒性，并触发"倒车分支"。</p>
+<p><strong>分步推导</strong>：</p>
+<ol>
+<li>目标位姿固定：$x^*=5,\ y^*=5,\ \theta^*=\pi/2$。</li>
+<li>初始位置固定：$x_0=8,\ y_0=5$，故 $\rho_0 = \sqrt{(5-8)^2+(5-5)^2}=3$。</li>
+<li>目标相对世界系角度：$\beta_0 = \mathrm{atan2}(y^*-y_0,\ x^*-x_0) = \mathrm{atan2}(0,-3)=\pi$。</li>
+<li>目标相对车体系角度：$\alpha_0 = \mathrm{angdiff}(\beta_0,\ \theta_0)$。</li>
+</ol>
+<ul>
+<li>若 $\theta_0 = \pi/2$（原例题）：$\alpha_0 = \mathrm{angdiff}(\pi,\pi/2)=\pi/2$，处于边界，车辆前进并转向。</li>
+<li>若 $\theta_0 = 0$（车头朝 $+x$，目标在正后方）：$\alpha_0 = \mathrm{angdiff}(\pi,0)=\pi$，即 $\alpha_0 \notin (-\pi/2,\pi/2]$，触发<strong>倒车分支</strong>：$v<0,\ \gamma$ 取反，车辆后退并调整朝向。</li>
+<li>若 $\theta_0 = -\pi/2$（车头朝 $-y$）：$\alpha_0 = \mathrm{angdiff}(\pi,-\pi/2) = -\pi/2$，同样处于边界，车辆前进转向。</li>
+</ul>
+<ol>
+<li>闭环收敛条件（原书结论）：在满足一定增益条件下，$(\rho,\alpha,\beta)\to(0,0,0)$。因此只要初始误差不落在奇异点（$\rho=0$ 或 $\alpha$ 恰为 $\pm\pi/2$ 的退化情形），不同初始朝向最终都收敛到同一目标位姿，但<strong>路径形状不同</strong>：前进分支与倒车分支的轨迹互为镜像。</li>
+</ol>
+<p><strong>预期观察</strong>：在 Simulink 模型 <code>sl_drivepose</code> 中把 <code>x0</code> 的第三个分量改为 $0$ 或 $-\pi/2$，可见车辆先倒车/大角度转向再驶向目标，最终位姿一致。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>b) 平行泊车机动</h5>
+<p><strong>做什么</strong>：构造一个"先驶过车位、再倒车入位"的两段式机动，用 pose 控制器依次跟踪两个中间位姿。</p>
+<p><strong>为什么</strong>：汽车是 non-holonomic 的（约束 $\dot{x}\sin\theta-\dot{y}\cos\theta=0$ 不可积分），不能直接横移。平行泊车正是通过"前进—倒车—转向"的<strong>机动（manoeuvre）</strong>把车辆从车道位姿搬到车位位姿，原书反复强调欠驱动车辆"must follow some path"。</p>
+<p><strong>分步推导</strong>：</p>
+<ol>
+<li><strong>定义位姿</strong>（沿用原例题的坐标风格，数值为示意，原书未给出具体泊车数值）：</li>
+</ol>
+<ul>
+<li>起始车道位姿：$\mathbf{q}_0=(x_0,y_0,\theta_0)$，车头沿车道方向；</li>
+<li>中间位姿：$\mathbf{q}_1$，位于车位前方、略偏外侧，朝向与车位平行；</li>
+<li>目标车位位姿：$\mathbf{q}^*=(x^*,y^*,\theta^*)$，$\theta^*$ 与车道平行。</li>
+</ul>
+<ol>
+<li><strong>第一段</strong>：用 pose 控制器从 $\mathbf{q}_0$ 驶向 $\mathbf{q}_1$（前进），使车辆与车位对齐并停在前方。</li>
+</ol>
+<ol>
+<li><strong>第二段</strong>：从 $\mathbf{q}_1$ 倒车驶向 $\mathbf{q}^*$。由于目标在车后，$\alpha \notin (-\pi/2,\pi/2]$，控制律自动进入倒车分支 $v<0$，车辆后退并转向进入车位。</li>
+</ol>
+<ol>
+<li><strong>路径实用性分析</strong>：</li>
+</ol>
+<ul>
+<li>该路径<strong>可行</strong>：两段均为合法的 bicycle 运动学轨迹，满足 non-holonomic 约束。</li>
+<li>但<strong>是否实用</strong>取决于：中间位姿 $\mathbf{q}_1$ 的选取、增益 $k_\rho,k_\alpha,k_\beta$ 的整定、以及车位尺寸。若 $\mathbf{q}_1$ 离车位过近，倒车段曲率过大，可能超出最小转弯半径 $R_1=L/\tan\gamma_{\max}$；若过远，则路径冗长。</li>
+<li>原书未给出具体泊车数值，按符号推导：实用路径应使两段的转向角 $\gamma$ 始终满足 $|\gamma|\le\gamma_{\max}$，且 $\rho$ 单调减小、无反复振荡。</li>
+</ul>
+<p><strong>可运行代码（MATLAB，基于原书工具箱）</strong>：</p>
+<pre><code class="lang-matlab">% 平行泊车：两段 pose 控制
+L = 2;                      % 轴距（原书 Exercise 1 数值）
+% 起始车道位姿
+x0 = [0 0 0];
+% 中间位姿（车位前方）
+x1 = [5 0 0];
+% 目标车位位姿
+xg = [5 -2.5 0];
+
+% 第一段：驶向中间位姿
+mdl = 'sl_drivepose';
+% 在 Simulink 中设置 x0 与 xg，运行 sim(mdl)
+% 第二段：从中间位姿倒车入位
+% 将 x0 改为 x1，xg 改为 xg，再次运行</code></pre>
+<p><strong>预期观察</strong>：第一段车辆前进至车位前方；第二段车辆倒车、转向进入车位，最终位姿收敛到 $\mathbf{q}^*$。若把 $\mathbf{q}_1$ 沿车道方向前移，倒车段更平缓，路径更实用。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>pose 控制律</strong> $v=k_\rho\rho,\ \gamma=k_\alpha\alpha+k_\beta\beta$ 是本题核心；$\alpha\notin(-\pi/2,\pi/2]$ 时自动切换为倒车分支。</li>
+<li><strong>改变初始朝向</strong>只改变轨迹形状，不改变收敛目标；但可能触发前进/倒车两种分支。</li>
+<li><strong>平行泊车是 non-holonomic 机动的典型例子</strong>：不能横移，必须用"前进+倒车"两段路径实现。</li>
+<li><strong>路径实用性</strong>取决于中间位姿选取与增益整定，需满足最小转弯半径约束 $R_1=L/\tan\gamma$。</li>
+<li>原书未给出泊车的具体数值，所有数值均按符号推导或沿用 Exercise 1 的 $L=2\ \mathrm{m}$。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章 Mobile Robot Vehicles</li>
+<li>依据：</li>
+<li>pose 控制律与极坐标变量 $(\rho,\alpha,\beta)$：facts 第 4 节第 7 步、第 5 节公式 3；</li>
+<li>倒车分支（$\alpha\notin(-\pi/2,\pi/2]$ 时 $v,\gamma$ 取反）：facts 第 4 节第 7 步；</li>
+<li>non-holonomic 约束与"必须走路径"：facts 第 3 节第 4 条、第 7 节 misconceptions；</li>
+<li>例题数值 <code>xg=[5 5 pi/2]</code>、<code>x0=[8 5 pi/2]</code>、模型 <code>sl_drivepose</code>：facts 第 6 节；</li>
+<li>轴距 $L=2\ \mathrm{m}$：facts 第 6 节 Exercise 1；</li>
+<li>转弯半径 $R_1=L/\tan\gamma$：facts 第 1 节记号表。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确本题在章节中的定位</h5>
+<p>本题属于第 4 章「Mobile Robot Vehicles」的动手实践类习题。本章的核心是建立 car-like 车辆的<strong>自行车模型（bicycle model）</strong>，其运动学为 Eq. 4.2：</p>
+<p>$$
+\begin{bmatrix}\dot{x}\\\dot{y}\\\dot{\theta}\end{bmatrix}
+=\begin{bmatrix}\cos\theta&0\\\sin\theta&0\\0&\frac{\tan\gamma}{L}\end{bmatrix}
+\begin{bmatrix}v\\\gamma\end{bmatrix}
+$$</p>
+<p>其中 $v$ 是后轮速度，$\gamma$ 是前轮转向角，$L$ 是轴距。本题要求把这两个控制输入 $(v,\gamma)$ 通过 GUI 暴露给用户，从而构成一个"驾驶模拟器"。</p>
+<p><strong>为什么这样做是合理的</strong>：本章所有 car 控制器（move to a point、follow a line、pure pursuit、move to a pose）本质上都是在自动生成 $(v,\gamma)$ 这两个量。本题把自动生成换成人工输入，让读者直观感受 $(v,\gamma)$ 如何驱动车辆位姿 $\mathbf{q}=(x,y,\theta)$ 演化。</p>
+<h5>第 2 步：确定被控对象模型</h5>
+<p>被控对象就是 Eq. 4.2 的 bicycle 模型。注意：</p>
+<ul>
+<li>该模型是 <strong>kinematic</strong> 模型，只描述速度，不涉及力/力矩（与 quadrotor 的 dynamic 模型相对）。</li>
+<li>该模型受 <strong>non-holonomic 约束</strong>：</li>
+</ul>
+<p>$$
+\dot{x}\sin\theta-\dot{y}\cos\theta=0
+$$</p>
+<p>即车体系 $y$ 方向速度恒为零。<strong>为什么重要</strong>：这意味着模拟器中车辆不能横移，用户只能通过"前进/后退 + 转向"来改变位姿——这正是真实汽车的行为，也是本题作为"驾驶模拟器"的意义所在。</p>
+<ul>
+<li>转向几何由 $R_1=L/\tan\gamma$ 给出，$\dot{\theta}=v/R_1$。</li>
+</ul>
+<h5>第 3 步：GUI 设计</h5>
+<p>需要两个用户输入：</p>
+<ol>
+<li><strong>速度控制</strong>：滑块（slider），映射到 $v$，建议范围 $v\in[-v_{\max},+v_{\max}]$，负值表示倒车。</li>
+<li><strong>方向盘</strong>：滑块或旋钮，映射到 $\gamma$，范围 $\gamma\in[-\gamma_{\max},+\gamma_{\max}]$，受物理转向限制约束。</li>
+</ol>
+<p><strong>为什么用滑块而非文本框</strong>：滑块天然连续、有界，符合驾驶输入的物理直觉；且 MATLAB 的 <code>uicontrol</code> 可直接回调。</p>
+<h5>第 4 步：可运行代码（MATLAB）</h5>
+<pre><code class="lang-matlab">function drive_sim
+    % 车辆参数（原书未给出具体数值，此处取典型值）
+    L = 2.0;            % 轴距 [m]
+    vmax = 5.0;         % 最大速度 [m/s]
+    gmax = deg2rad(30); % 最大转向角 [rad]
+
+    % 初始位姿 q = (x, y, theta)
+    q = [0; 0; 0];
+
+    % 创建图形窗口与控件
+    f = figure('Name','Simple Driving Simulator', ...
+               'Position',[100 100 700 500]);
+    ax = axes('Parent',f,'Position',[0.1 0.35 0.85 0.6]);
+    axis(ax,'equal'); grid(ax,'on');
+    xlabel(ax,'x [m]'); ylabel(ax,'y [m]');
+    xlim(ax,[-20 20]); ylim(ax,[-20 20]);
+
+    uicontrol('Style','text','Parent',f, ...
+        'Position',[50 60 120 20],'String','Velocity v');
+    sV = uicontrol('Style','slider','Parent',f, ...
+        'Position',[50 30 250 25], ...
+        'Min',-vmax,'Max',vmax,'Value',0);
+
+    uicontrol('Style','text','Parent',f, ...
+        'Position',[380 60 120 20],'String','Steering \gamma');
+    sG = uicontrol('Style','slider','Parent',f, ...
+        'Position',[380 30 250 25], ...
+        'Min',-gmax,'Max',gmax,'Value',0);
+
+    % 车辆图形（三角形表示朝向）
+    hBody = patch(ax,'XData',0,'YData',0,'FaceColor','b');
+
+    % 主循环
+    dt = 0.05;
+    while ishandle(f)
+        v = get(sV,'Value');
+        g = get(sG,'Value');
+
+        % Bicycle model, Eq. 4.2
+        xdot = v*cos(q(3));
+        ydot = v*sin(q(3));
+        tdot = v/L*tan(g);
+
+        q = q + dt*[xdot; ydot; tdot];
+
+        % 更新车辆三角形
+        set(hBody, ...
+            'XData', q(1) + [0.8 -0.4 -0.4]*cos(q(3)) ...
+                          - [0 0.4 -0.4]*sin(q(3)), ...
+            'YData', q(2) + [0.8 -0.4 -0.4]*sin(q(3)) ...
+                          + [0 0.4 -0.4]*cos(q(3)));
+        drawnow;
+        pause(dt);
+    end
+end</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>拖动速度滑块，车辆沿当前朝向 $\theta$ 前进或后退。</li>
+<li>拖动方向盘滑块，$\dot{\theta}=v\tan\gamma/L$ 使车辆转弯；当 $v=0$ 时转向不改变朝向（与真实汽车一致）。</li>
+<li>车辆<strong>无法横移</strong>——这正是 non-holonomic 约束 $\dot{x}\sin\theta-\dot{y}\cos\theta=0$ 的直接体现。</li>
+<li>若把 $\gamma$ 设为最大、$v$ 设为最大，可观察到最小转弯半径 $R_1=L/\tan\gamma_{\max}$。</li>
+</ul>
+<h5>第 5 步：替代方案（游戏方向盘 + 踏板）</h5>
+<p>若使用游戏方向盘/踏板，可用 MATLAB 的 <code>vrjoystick</code> 或 <code>daq</code> 读取 HID 输入，把轴值映射到 $(v,\gamma)$，其余逻辑同上。<strong>为什么可行</strong>：本题只要求把 $(v,\gamma)$ 作为输入，输入设备的具体形式不影响被控对象模型。</p>
+<h4>关键点</h4>
+<ul>
+<li>本题的被控对象是 <strong>bicycle model（Eq. 4.2）</strong>，控制输入恰为 $(v,\gamma)$，与本章所有 car 控制器一致。</li>
+<li>该模型是 <strong>kinematic</strong> 模型，且受 <strong>non-holonomic 约束</strong> $\dot{x}\sin\theta-\dot{y}\cos\theta=0$，因此模拟器中车辆不能横移。</li>
+<li>转向角 $\gamma$ 只在 $v\neq 0$ 时改变朝向，因为 $\dot{\theta}=v\tan\gamma/L$——这是真实汽车的行为。</li>
+<li>原书未给出本题的具体数值（$L$、$v_{\max}$、$\gamma_{\max}$），代码中取典型值仅为可运行示例。</li>
+<li>本题是"人工生成 $(v,\gamma)$"，与本章 move to a point / follow a line / pure pursuit / move to a pose 的"自动生成 $(v,\gamma)$"形成对照，便于理解控制器的作用。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 4 章 Mobile Robot Vehicles，习题 7。</li>
+<li>依据：</li>
+<li>Bicycle 运动学模型 Eq. 4.2 与变量 $v,\gamma,L$：facts 第 1 节「记号约定」、第 5 节「关键公式 1」、第 4 节「推导链条 2」。</li>
+<li>Non-holonomic 约束 $\dot{x}\sin\theta-\dot{y}\cos\theta=0$：facts 第 1 节、第 5 节「关键公式 2」、第 7 节 misconceptions。</li>
+<li>kinematic vs dynamic 模型区分：facts 第 3 节「核心概念 7」。</li>
+<li>转弯半径 $R_1=L/\tan\gamma$：facts 第 1 节「自行车模型变量」。</li>
+<li>本章 car 控制器（move to a point / follow a line / pure pursuit / move to a pose）均以 $(v,\gamma)$ 为控制输入：facts 第 4 节「推导链条 4–7」。</li>
+<li>具体数值（$L$、$v_{\max}$、$\gamma_{\max}$）：原书未给出，代码中为可运行示例所取的典型值。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8. 四旋翼（第 78 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题以仿真实验为主，核心是四旋翼的<strong>嵌套控制结构</strong>（内环姿态 PD、外环位置 P、高度 PD + 重力前馈）。下面按小题给出做法与预期现象，并给出关键推导。</p>
+<p><strong>c) 推导式 4.13（重力前馈）</strong></p>
+<p>四旋翼悬停时，四个旋翼的总推力必须恰好抵消重力。由事实底座，单个旋翼推力 $T_i = b\,\omega_i^2$，总推力 $T=\sum_{i=1}^{4}T_i$。悬停时要求 $T=mg$。若四个旋翼转速相同 $\omega_i=\omega_{\text{ff}}$，则</p>
+<p>$$T = 4b\,\omega_{\text{ff}}^2 = mg \;\Longrightarrow\; \omega_{\text{ff}}^2=\frac{mg}{4b} \;\Longrightarrow\; \omega_{\text{ff}}=\sqrt{\frac{mg}{4b}}$$</p>
+<p>这正是式 4.13。它的作用是：高度控制器只需输出对悬停平衡点的<strong>修正量</strong>，而不必靠积分项去"摸索"抵消重力，从而加快响应、减小稳态误差。</p>
+<p><strong>a) 阻尼增益减到零</strong></p>
+<p>内环姿态 PD 为 $\boldsymbol{\tau}=K_{\tau,p}\,\mathbf{e}_\theta - K_{\tau,d}\,\boldsymbol{\omega}$（符号按事实底座控制增益约定）。把 $K_{\tau,d}\to 0$ 后，姿态环变成纯 P 控制，系统阻尼消失，姿态角会出现<strong>持续振荡甚至发散</strong>（欠阻尼/临界失稳）。预期现象：滚转/俯仰角高频振荡，位置随之抖动，仿真可能数值发散。</p>
+<p><strong>b) 去掉重力前馈</strong></p>
+<p>去掉式 4.13 后，高度环必须靠反馈自行补上 $mg$ 的缺口。若仅用高增益 P，会存在稳态误差（推力不足以完全抵消重力，飞行器缓慢下沉）；改用 PI 控制器，积分项会逐步累积直到补足重力，最终能稳定高度，但<strong>响应变慢、超调增大</strong>。这正说明前馈（模型信息）与反馈（误差修正）的分工。</p>
+<p><strong>d) 非零滚转/俯仰时的垂直推力补偿</strong></p>
+<p>由平动动力学 $\dot{\mathbf{v}}=-g\hat{\mathbf{z}}+\frac{1}{m}\mathbf{R}\,T\,\hat{\mathbf{z}}$，推力沿机体 $z$ 轴。当存在滚转 $\theta_r$、俯仰 $\theta_p$ 时，推力在世界系竖直方向的分量为 $T\cos\theta_r\cos\theta_p$（小角近似下约 $T(1-\tfrac{\theta_r^2+\theta_p^2}{2})$）。因此竖直方向有效推力被"打折"，飞行器下沉。补偿方法是把期望总推力除以该投影因子：</p>
+<p>$$T_{\text{cmd}}=\frac{T_{\text{desired}}}{\cos\theta_r\cos\theta_p}$$</p>
+<p>即姿态倾斜越大，越要增大总推力，才能维持相同的竖直分量。</p>
+<p><strong>e) 倒飞</strong></p>
+<p>倒飞意味着机体 $z$ 轴朝上，等价于滚转或俯仰角接近 $\pi$。此时推力方向反转，需要负的总推力（或等价地让旋翼反转）。在仿真中可把初始姿态设为 $\theta_r=\pi$，并相应调整姿态环的期望角与推力符号。预期现象：若不做符号处理，飞行器会朝地面加速。</p>
+<p><strong>f) 弹道运动</strong></p>
+<p>以 45° 倾角起飞：设定初始俯仰角 $\theta_p=45^\circ$，给一个短时推力脉冲使飞行器获得斜向初速度；随后令 $T=0$（所有 $\omega_i=0$）。此后只受重力，做抛物线运动：$x(t)=x_0+v_{x0}t,\; z(t)=z_0+v_{z0}t-\tfrac12 gt^2$。预期现象：一条标准抛物线轨迹。</p>
+<p><strong>g) 平滑着陆</strong></p>
+<p>用一条从当前高度到地面高度的平滑轨迹（如 <code>mstraj</code> 或五次多项式），让高度环跟踪该轨迹下降，同时保持水平位置不变、姿态归零。关键是下降速度在触地时趋于零，避免冲击。</p>
+<p><strong>h) 桶滚（barrel roll）</strong></p>
+<p>沿机体 $x$ 方向水平飞行，同时让滚转角 $\theta_r$ 从 0 平滑增加到 $2\pi$。由于滚转不改变推力在竖直方向的平均分量（$\cos\theta_r$ 在整周上均值为零附近波动），需要 d) 中的补偿来维持高度。预期现象：飞行器绕前进轴翻滚一周，轨迹近似直线。</p>
+<p><strong>i) 翻转（flip）</strong></p>
+<p>与桶滚类似，但改变的是俯仰角 $\theta_p$ 从 0 到 $2\pi$。俯仰翻转会显著改变推力方向，飞行器先抬头、倒飞、再恢复。需要较大的推力补偿和快速的姿态环响应。</p>
+<p><strong>j) 添加四个旋翼</strong></p>
+<p>把转子数从 4 增到 8，需重写力/力矩分配矩阵 $\mathbf{A}$（式 4.9 的推广）：$\begin{bmatrix}T&\boldsymbol{\tau}\end{bmatrix}^T=\mathbf{A}\,\boldsymbol{\omega}^2$，其中 $\boldsymbol{\omega}^2$ 为 8 维。求逆时 $\mathbf{A}$ 变为 $4\times 8$，需用伪逆 $\boldsymbol{\omega}^2=\mathbf{A}^{+}\begin{bmatrix}T&\boldsymbol{\tau}\end{bmatrix}^T$。冗余执行器可用于容错或降低单 rotor 负载。</p>
+<p><strong>k) 用 <code>mstraj</code> 生成轨迹并跟踪</strong></p>
+<p>用 <code>mstraj</code> 对十个途经点 $(X_i,Y_i,Z_i,\theta_y)$ 做平滑插值，得到期望位姿序列。修改图 4.17 控制器：外环位置 P 的参考由固定目标改为时变轨迹点，速度前馈取轨迹导数。预期现象：飞行器平滑穿过所有途经点，偏航角同步跟踪 $\theta_y$。</p>
+<p><strong>l) 操纵杆控制</strong></p>
+<p>用 MATLAB GUI（如 <code>uicontrol</code> 滑块或 <code>joymex</code>/<code>vrjoystick</code>）读取操纵杆的俯仰、滚转、偏航、油门四个通道，映射为期望姿态角与总推力，送入内环姿态 PD 与高度环。预期现象：可用操纵杆实时"驾驶"仿真四旋翼。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>式 4.13 的本质</strong>：$\omega_{\text{ff}}=\sqrt{mg/(4b)}$ 是悬停平衡转速，作为重力前馈，让反馈只需修正误差。</li>
+<li><strong>阻尼增益不可为零</strong>：姿态环是二阶系统，$K_{\tau,d}=0$ 会失去阻尼导致振荡/发散。</li>
+<li><strong>前馈 vs 反馈</strong>：去掉重力前馈后，纯 P 有稳态误差，PI 能消除但变慢——体现模型前馈的价值。</li>
+<li><strong>倾斜补偿</strong>：非零滚转/俯仰使竖直推力按 $\cos\theta_r\cos\theta_p$ 衰减，需除以该因子补偿。</li>
+<li><strong>机动仿真</strong>：桶滚/翻转/弹道都是对姿态角或推力的开环编排，配合 d) 的补偿才能保持期望轨迹。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 4 章</li>
+<li>依据：</li>
+<li>式 4.13 与重力前馈：事实底座 §5 关键公式第 6 条、§4 推导链条第 9 步</li>
+<li>转子推力 $T_i=b\omega_i^2$、平动动力学、Euler 方程：事实底座 §5 第 4、5 条，§4 第 8 步</li>
+<li>力/力矩分配 $\begin{bmatrix}T&\boldsymbol{\tau}\end{bmatrix}^T=\mathbf{A}\boldsymbol{\omega}^2$ 及求逆：事实底座 §4 第 8 步（Eq. 4.9、4.10）</li>
+<li>嵌套控制（内环姿态 PD、外环位置 P、高度 PD + 重力前馈）：事实底座 §3 第 8 条、§4 第 9 步</li>
+<li>控制增益记号 $K_{\tau,p},K_{\tau,d},K_{p,p},K_{p,d}$：事实底座 §1 记号表</li>
+<li>仿真模型 <code>sl_quadrotor</code>、<code>mdl_quadrotor</code>、<code>mstraj</code>：事实底座 §6 例题与数值例子</li>
+<li>原书未给出各小题的具体增益数值与轨迹参数，按符号推导与仿真实验说明。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

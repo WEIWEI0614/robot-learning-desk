@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 5 章「Velocity Kinematics and」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 5 章「Velocity Kinematics and」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章定义：</p>
+<p>\[</p>
+<p>V_s=J_s(\theta)\dot\theta,\qquad V_b=J_b(\theta)\dot\theta,</p>
+<p>\]</p>
+<p>其中 \(V_s=(\omega_s,v_s)\) 是空间 twist，\(V_b=(\omega_b,v_b)\) 是体 twist，均采用角速度在前、线速度在后的约定。</p>
+<p>零位关节螺旋轴 \(S_i\) 是第 4 章在 \(\theta=0\) 时定义的关节轴螺旋，它固定在空间坐标系 \(\{\mathrm{s}\}\) 中，不随当前构型变化。而 space Jacobian 的第 \(i\) 列是“当前构型下，关节 \(i\) 的单位关节速率对末端空间 twist 的贡献”，其表达式为</p>
+<p>\[</p>
+<p>J_{s1}=S_1,</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_{si}(\theta)=\mathrm{Ad}_{e^{[S_1]\theta_1}\cdots e^{[S_{i-1}]\theta_{i-1}}}(S_i),</p>
+<p>\qquad i=2,\dots,n.</p>
+<p>\]</p>
+<p>因此，只有当 \(i=1\) 时 \(J_{s1}=S_1\)。对于 \(i\ge2\)，前面的关节 \(1,\dots,i-1\) 已经运动，它们把关节轴 \(i\) 从零位位置“搬运”到了当前构型，所以必须用 adjoint 作用后才能得到当前空间系下的关节螺旋。因此通常</p>
+<p>\[</p>
+<p>J_{si}(\theta)\ne S_i.</p>
+<p>\]</p>
+<p>依赖关系方面：</p>
+<ul>
+<li>\(J_{si}\) 对 \(i\ge2\) 依赖前面的关节变量 \(\theta_1,\dots,\theta_{i-1}\)；</li>
+<li>\(J_{bi}\) 对 \(i\le n-1\) 依赖后面的关节变量 \(\theta_{i+1},\dots,\theta_n\)。</li>
+</ul>
+<p>体 Jacobian 的对应公式为</p>
+<p>\[</p>
+<p>J_{bn}=B_n,</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_{bi}(\theta)=\mathrm{Ad}_{e^{-[B_n]\theta_n}\cdots e^{-[B_{i+1}]\theta_{i+1}}}(B_i),</p>
+<p>\qquad i=n-1,\dots,1.</p>
+<p>\]</p>
+<p>直观上，空间系看“前面关节移动了当前轴”，体系看“后面关节移动了当前轴”。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章给出的转换关系为</p>
+<p>\[</p>
+<p>J_b(\theta)=[\mathrm{Ad}_{T_{bs}}]J_s(\theta),</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_s(\theta)=[\mathrm{Ad}_{T_{sb}}]J_b(\theta).</p>
+<p>\]</p>
+<p>其中 \(T_{sb}\in SE(3)\) 是从体坐标系 \(\{\mathrm{b}\}\) 到空间坐标系 \(\{\mathrm{s}\}\) 的构型变换，\(T_{bs}=T_{sb}^{-1}\)。\(\mathrm{Ad}_T\) 是 twist 的 adjoint 变换，\([\mathrm{Ad}_T]\) 是其矩阵形式。</p>
+<p>二者数值通常不同。原因是 \(J_s\) 把关节速率映射为空间 twist \(V_s\)，而 \(J_b\) 把同一关节速率映射为体 twist \(V_b\)。空间 twist 与体 twist 满足</p>
+<p>\[</p>
+<p>V_s=\mathrm{Ad}_{T_{sb}}(V_b),\qquad</p>
+<p>V_b=\mathrm{Ad}_{T_{bs}}(V_s).</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>V_s=J_s\dot\theta,\qquad</p>
+<p>V_b=J_b\dot\theta,</p>
+<p>\]</p>
+<p>并且</p>
+<p>\[</p>
+<p>J_s=[\mathrm{Ad}_{T_{sb}}]J_b,\qquad</p>
+<p>J_b=[\mathrm{Ad}_{T_{bs}}]J_s.</p>
+<p>\]</p>
+<p>由于 \(\mathrm{Ad}_T\) 是 \(SE(3)\) 上的可逆线性变换，其矩阵 \([\mathrm{Ad}_T]\) 满秩，所以左乘或右乘它不改变矩阵的 rank。因此本章明确指出：</p>
+<p>\[</p>
+<p>\operatorname{rank}J_s(\theta)=\operatorname{rank}J_b(\theta)</p>
+<p>\]</p>
+<p>始终成立。</p>
+<p>但“同 rank”不等于“同数值”。例如同一个末端 twist，在空间系和体系下的六个分量一般不同；同理，同一个关节速率对应的 \(J_s\dot\theta\) 与 \(J_b\dot\theta\) 是同一个物理 twist 的两种坐标表示，而不是两个相同的六维向量。因此不能把 \(J_s\) 和 \(J_b\) 混同。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>设末端 wrench 为</p>
+<p>\[</p>
+<p>F=(m,f)\in\mathbb{R}^6,</p>
+<p>\]</p>
+<p>其中 \(m\) 是力矩，\(f\) 是力，采用力矩在前、力在后的约定。关节力矩/力向量为</p>
+<p>\[</p>
+<p>\tau\in\mathbb{R}^n.</p>
+<p>\]</p>
+<p>末端 twist 为</p>
+<p>\[</p>
+<p>V=J(\theta)\dot\theta.</p>
+<p>\]</p>
+<p>本章的功率守恒关系为</p>
+<p>\[</p>
+<p>F^T V=\tau^T\dot\theta.</p>
+<p>\]</p>
+<p>将 \(V=J(\theta)\dot\theta\) 代入：</p>
+<p>\[</p>
+<p>F^T V</p>
+<p>=</p>
+<p>F^T J(\theta)\dot\theta.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>F^T J(\theta)\dot\theta</p>
+<p>=</p>
+<p>\tau^T\dot\theta.</p>
+<p>\]</p>
+<p>由于该式对任意关节速率 \(\dot\theta\in\mathbb{R}^n\) 都成立，所以</p>
+<p>\[</p>
+<p>F^T J(\theta)=\tau^T.</p>
+<p>\]</p>
+<p>两边转置，得</p>
+<p>\[</p>
+<p>J^T(\theta)F=\tau,</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\tau=J^T(\theta)F.</p>
+<p>\]</p>
+<p>这就是本章的静力映射。</p>
+<p>不能一般地写成</p>
+<p>\[</p>
+<p>F=J^{-T}\tau</p>
+<p>\]</p>
+<p>的原因是：\(J(\theta)\in\mathbb{R}^{m\times n}\) 通常不是方阵，也不一定满秩。只有当 \(J\) 是方阵且满秩时，才可以由</p>
+<p>\[</p>
+<p>\tau=J^T F</p>
+<p>\]</p>
+<p>两边左乘 \(J^{-T}\) 得到</p>
+<p>\[</p>
+<p>F=J^{-T}\tau.</p>
+<p>\]</p>
+<p>例如 2R planar chain 在非奇异构型下 \(J\) 是 \(2\times2\) 方阵，才可写</p>
+<p>\[</p>
+<p>f_{\mathrm{tip}}=J^{-T}(\theta)\tau.</p>
+<p>\]</p>
+<p>一般情况下，本章只保证</p>
+<p>\[</p>
+<p>\tau=J^T(\theta)F,</p>
+<p>\]</p>
+<p>而不是反过来求 \(F\)。在奇异或非方阵情形，\(J^{-T}\) 可能不存在，或者即使存在也不能唯一确定末端 wrench。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>对</p>
+<p>\[</p>
+<p>x_1=L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2)</p>
+<p>\]</p>
+<p>分别求偏导：</p>
+<p>\[</p>
+<p>\frac{\partial x_1}{\partial\theta_1}</p>
+<p>=</p>
+<p>-L_1\sin\theta_1-L_2\sin(\theta_1+\theta_2),</p>
+<p>\]</p>
+<p>\[</p>
+<p>\frac{\partial x_1}{\partial\theta_2}</p>
+<p>=</p>
+<p>-L_2\sin(\theta_1+\theta_2).</p>
+<p>\]</p>
+<p>对</p>
+<p>\[</p>
+<p>x_2=L_1\sin\theta_1+L_2\sin(\theta_1+\theta_2)</p>
+<p>\]</p>
+<p>求偏导：</p>
+<p>\[</p>
+<p>\frac{\partial x_2}{\partial\theta_1}</p>
+<p>=</p>
+<p>L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2),</p>
+<p>\]</p>
+<p>\[</p>
+<p>\frac{\partial x_2}{\partial\theta_2}</p>
+<p>=</p>
+<p>L_2\cos(\theta_1+\theta_2).</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\begin{bmatrix}\dot x_1\\\dot x_2\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>-L_1\sin\theta_1-L_2\sin(\theta_1+\theta_2)</p>
+<p>&</p>
+<p>-L_2\sin(\theta_1+\theta_2)\\</p>
+<p>L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2)</p>
+<p>&</p>
+<p>L_2\cos(\theta_1+\theta_2)</p>
+<p>\end{bmatrix}</p>
+<p>\begin{bmatrix}\dot\theta_1\\\dot\theta_2\end{bmatrix}.</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>J(\theta)=</p>
+<p>\begin{bmatrix}</p>
+<p>-L_1\sin\theta_1-L_2\sin(\theta_1+\theta_2)</p>
+<p>&</p>
+<p>-L_2\sin(\theta_1+\theta_2)\\</p>
+<p>L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2)</p>
+<p>&</p>
+<p>L_2\cos(\theta_1+\theta_2)</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>取 \(L_1=L_2=1\)，\(\theta_1=0\)，\(\theta_2=\pi/4\)。则</p>
+<p>\[</p>
+<p>\sin\theta_1=0,\qquad \cos\theta_1=1,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\sin(\theta_1+\theta_2)=\sin(\pi/4)=\frac{\sqrt2}{2}\approx0.707,</p>
+<p>\]</p>
+<p>\[</p>
+<p>\cos(\theta_1+\theta_2)=\cos(\pi/4)=\frac{\sqrt2}{2}\approx0.707.</p>
+<p>\]</p>
+<p>代入：</p>
+<p>\[</p>
+<p>J_{11}</p>
+<p>=</p>
+<p>-1\cdot0-1\cdot0.707</p>
+<p>=</p>
+<p>-0.707\approx-0.71,</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_{12}</p>
+<p>=</p>
+<p>-1\cdot0.707</p>
+<p>=</p>
+<p>-0.707\approx-0.71,</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_{21}</p>
+<p>=</p>
+<p>1\cdot1+1\cdot0.707</p>
+<p>=</p>
+<p>1.707\approx1.71,</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_{22}</p>
+<p>=</p>
+<p>1\cdot0.707</p>
+<p>=</p>
+<p>0.707\approx0.71.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>J_{\pi/4}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>-0.71&-0.71\\</p>
+<p>1.71&0.71</p>
+<p>\end{bmatrix},</p>
+<p>\]</p>
+<p>与本章数值例子一致。</p>
+<p>当 \(\theta_2=0^\circ\) 或 \(180^\circ\) 时，第二列与第一列共线。具体看：</p>
+<p>\[</p>
+<p>J_1=</p>
+<p>\begin{bmatrix}</p>
+<p>-L_1\sin\theta_1-L_2\sin(\theta_1+\theta_2)\\</p>
+<p>L_1\cos\theta_1+L_2\cos(\theta_1+\theta_2)</p>
+<p>\end{bmatrix},</p>
+<p>\]</p>
+<p>\[</p>
+<p>J_2=</p>
+<p>\begin{bmatrix}</p>
+<p>-L_2\sin(\theta_1+\theta_2)\\</p>
+<p>L_2\cos(\theta_1+\theta_2)</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>当 \(\theta_2=0\) 时，</p>
+<p>\[</p>
+<p>\sin(\theta_1+\theta_2)=\sin\theta_1,\qquad</p>
+<p>\cos(\theta_1+\theta_2)=\cos\theta_1,</p>
+<p>\]</p>
+<p>于是</p>
+<p>\[</p>
+<p>J_1=</p>
+<p>\begin{bmatrix}</p>
+<p>-(L_1+L_2)\sin\theta_1\\</p>
+<p>(L_1+L_2)\cos\theta_1</p>
+<p>\end{bmatrix},</p>
+<p>\qquad</p>
+<p>J_2=</p>
+<p>\begin{bmatrix}</p>
+<p>-L_2\sin\theta_1\\</p>
+<p>L_2\cos\theta_1</p>
+<p>\end{bmatrix},</p>
+<p>\]</p>
+<p>二者共线。当 \(\theta_2=180^\circ\) 时，</p>
+<p>\[</p>
+<p>\sin(\theta_1+\pi)=-\sin\theta_1,\qquad</p>
+<p>\cos(\theta_1+\pi)=-\cos\theta_1,</p>
+<p>\]</p>
+<p>同样可得 \(J_1\) 与 \(J_2\) 共线。因此 \(J(\theta)\) 列线性相关，rank 下降，构型奇异。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>在 2R planar chain 中，末端速度映射为</p>
+<p>\[</p>
+<p>\dot x=J(\theta)\dot\theta.</p>
+<p>\]</p>
+<p>若关节速度满足单位圆</p>
+<p>\[</p>
+<p>\|\dot\theta\|^2=\dot\theta^T\dot\theta=1,</p>
+<p>\]</p>
+<p>则末端速度集合为</p>
+<p>\[</p>
+<p>\dot x^T(JJ^T)^{-1}\dot x=1,</p>
+<p>\]</p>
+<p>这是一个椭圆，即 manipulability ellipsoid。其主轴半长是 \(JJ^T\) 的特征值平方根。</p>
+<p>静力关系为</p>
+<p>\[</p>
+<p>\tau=J^T f_{\mathrm{tip}}.</p>
+<p>\]</p>
+<p>若关节力矩满足单位圆</p>
+<p>\[</p>
+<p>\|\tau\|^2=\tau^T\tau=1,</p>
+<p>\]</p>
+<p>则末端力集合为</p>
+<p>\[</p>
+<p>f_{\mathrm{tip}}^T(JJ^T)f_{\mathrm{tip}}=1,</p>
+<p>\]</p>
+<p>即 force ellipsoid。其主轴半长是 \((JJ^T)^{-1}\) 的特征值平方根，也就是 \(JJ^T\) 特征值的负平方根。</p>
+<p>下面给出可运行代码：</p>
+<pre><code class="lang-python">import numpy as np
+
+J = np.array([
+    [-0.71, -0.71],
+    [ 1.71,  0.71]
+])
+
+# manipulability ellipsoid: JJ^T
+A = J @ J.T
+eigvals_A, eigvecs_A = np.linalg.eigh(A)
+semi_axes_manip = np.sqrt(eigvals_A)
+
+# force ellipsoid: (JJ^T)^{-1}
+B = np.linalg.inv(A)
+eigvals_B, eigvecs_B = np.linalg.eigh(B)
+semi_axes_force = np.sqrt(eigvals_B)
+
+print("JJ^T eigenvalues:", eigvals_A)
+print("manipulability semi-axes:", semi_axes_manip)
+print("manipulability principal directions:\n", eigvecs_A)
+
+print("(JJ^T)^{-1} eigenvalues:", eigvals_B)
+print("force semi-axes:", semi_axes_force)
+print("force principal directions:\n", eigvecs_B)
+
+print("product of corresponding semi-axes:",
+      semi_axes_manip * semi_axes_force)</code></pre>
+<p>预期观察：</p>
+<ul>
+<li>\(JJ^T\) 与 \((JJ^T)^{-1}\) 的特征向量相同，因此 manipulability ellipsoid 与 force ellipsoid 的主轴方向一致。</li>
+<li>若 \(JJ^T\) 的特征值为 \(\lambda_1,\lambda_2\)，则 manipulability 半长为 \(\sqrt{\lambda_1},\sqrt{\lambda_2}\)，force 半长为 \(1/\sqrt{\lambda_1},1/\sqrt{\lambda_2}\)。因此对应半长乘积为 1。</li>
+<li>也就是说，某个方向若 manipulability 半长较大，则该方向 force 半长较小；反之亦然。这正体现了“容易动则难施力”的速度—静力对偶。</li>
+</ul>
+<p>在奇异构型下，例如 2R planar chain 的 \(\theta_2=0^\circ\) 或 \(180^\circ\)，\(J\) 的列线性相关，rank 下降。此时 \(JJ^T\) 至少有一个特征值趋于 0：</p>
+<ul>
+<li>manipulability ellipsoid 在该特征值对应的方向上坍缩，整体退化为线段，面积趋于 0；</li>
+<li>force ellipsoid 在与该线段正交的方向上变为无限长，面积趋于无穷，假设关节能承受负载。</li>
+</ul>
+<p>因此，奇异时不是两个 ellipsoid 同时消失，而是 manipulability ellipsoid 坍缩、force ellipsoid 在正交方向发散。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

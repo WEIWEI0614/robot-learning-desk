@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 9 章「Dynamics and Control」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 9 章「Dynamics and Control」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解题目要求</h5>
+<p>本题要求我们复现原书 PDF 第 194 页的代码，用 <code>p560.gravload</code> 计算 Puma 560 机械臂在<strong>静止</strong>（$\dot{\mathbf{q}}=\mathbf{0}$，$\ddot{\mathbf{q}}=\mathbf{0}$）时，关节 2 和关节 3 为抵抗重力所需的关节力矩，并把它画成构型的函数。随后调用 <code>p560.payload</code> 加入末端负载，再重复一次。</p>
+<p><strong>为什么</strong>：由逆动力学母式 Eq. 9.1</p>
+<p>$$\boldsymbol\tau = \mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{F}\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q})$$</p>
+<p>当 $\dot{\mathbf{q}}=\ddot{\mathbf{q}}=\mathbf{0}$ 时，只剩 $\boldsymbol\tau=\mathbf{G}(\mathbf{q})$。这正是 <code>gravload</code> 的物理含义——它等价于 <code>rne(q, qz, qz)</code> 的输出（事实底座 §6 已验证：<code>Q = p560.rne(qn, qz, qz)</code> 与 <code>gravload(qn)</code> 数值一致）。</p>
+<h5>第 2 步：扫描关节 2、3 的构型空间</h5>
+<p>Puma 560 的重力载荷主要由关节 2、3 承担（事实底座 §6：关节 2 重力矩约 $\pm40$ N·m，关节 3 约 $\pm10$ N·m，见 Fig. 9.1）。我们固定其余关节，让 $q_2,q_3$ 在范围内扫描：</p>
+<pre><code class="lang-matlab">mdl_puma560                     % 载入 p560 模型
+qn = p560.qn;                   % 名义构型
+qz = p560.qz;                   % 零角
+
+q2 = linspace(-pi, pi, 50);
+q3 = linspace(-pi, pi, 50);
+[Q2, Q3] = meshgrid(q2, q3);
+G2 = zeros(size(Q2));
+G3 = zeros(size(Q2));
+
+for i = 1:numel(Q2)
+    q = qn;                     % 以 qn 为基准
+    q(2) = Q2(i);
+    q(3) = Q3(i);
+    g = p560.gravload(q);       % 返回 1x6 重力矩向量
+    G2(i) = g(2);
+    G3(i) = g(3);
+end
+
+figure;
+subplot(1,2,1); surf(Q2, Q3, G2); xlabel('q_2'); ylabel('q_3'); zlabel('\tau_2 (N\cdot m)');
+subplot(1,2,2); surf(Q2, Q3, G3); xlabel('q_2'); ylabel('q_3'); zlabel('\tau_3 (N\cdot m)');</code></pre>
+<p><strong>预期观察</strong>：$\tau_2$ 随 $q_2$ 呈正弦状变化，幅值约 $\pm40$ N·m；$\tau_3$ 幅值约 $\pm10$ N·m。这与事实底座 §6 中 <code>gravload(qs) = [-0.0000, 46.0069, 8.7722, ...]</code>（水平伸展，$q_2$ 力矩最大）和 <code>gravload(qr) = [0, -0.7752, 0.2489, ...]</code>（竖直向上，力矩接近零）一致。</p>
+<h5>第 3 步：加入负载后重复</h5>
+<pre><code class="lang-matlab">p560.payload(2.5, [0, 0, 0.1]);   % 2.5 kg 负载，质心偏置 [0,0,0.1] m
+
+G2p = zeros(size(Q2));
+G3p = zeros(size(Q2));
+for i = 1:numel(Q2)
+    q = qn; q(2) = Q2(i); q(3) = Q3(i);
+    g = p560.gravload(q);
+    G2p(i) = g(2);
+    G3p(i) = g(3);
+end
+
+figure;
+subplot(1,2,1); surf(Q2, Q3, G2p - G2); xlabel('q_2'); ylabel('q_3'); zlabel('\Delta\tau_2');
+subplot(1,2,2); surf(Q2, Q3, G3p - G3); xlabel('q_2'); ylabel('q_3'); zlabel('\Delta\tau_3');</code></pre>
+<p><strong>预期观察</strong>：负载使 $\tau_2,\tau_3$ 的幅值整体增大，且增量随构型变化——因为负载对关节的等效力臂是 $\mathbf{q}$ 的函数。事实底座 §6 给出 <code>p560.gravload(qn) ./ gravload = [0.3737, 1.5222, 2.5416, 18.7826, 86.8056, NaN]</code>，说明负载对远端关节（4、5）影响远大于近端关节，因为远端关节的力臂更短、原本的重力矩更小。</p>
+<h5>第 4 步：物理溯源</h5>
+<p>由 Eq. 9.1，重力项 $\mathbf{G}(\mathbf{q})$ 是构型的函数，其来源是各连杆质心在重力场中的势能 $V=\sum_j m_j \mathbf{g}^\top \mathbf{r}_j(\mathbf{q})$，对 $q_i$ 求偏导即得 $\tau_i = \partial V/\partial q_i$。加入负载相当于修改末端连杆的惯性参数（质量 $m$、质心 $\mathbf{r}$），因此 $\mathbf{G}$ 的构型依赖关系不变，只是幅值被放大。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong><code>gravload</code> = <code>rne(q, qz, qz)</code></strong>：静止时逆动力学只剩重力项 $\mathbf{G}(\mathbf{q})$，这是本章所有力矩分析的基线扰动。</li>
+<li><strong>重力矩是构型的强函数</strong>：关节 2 在水平伸展时力矩最大（约 46 N·m），竖直向上时接近零（约 $-0.78$ N·m），这解释了为何电机力矩容量必须按最坏构型设计。</li>
+<li><strong>负载改变惯性参数</strong>：<code>payload(m, r)</code> 修改末端连杆的 $m$ 与 $\mathbf{r}$，从而改变 $\mathbf{G}$ 的幅值；对远端关节影响比例更大（<code>gravload</code> 比值可达 86 倍）。</li>
+<li><strong>重力前馈的必要性</strong>：由于 $\mathbf{G}$ 可计算且主导，工业控制器常用重力前馈补偿，否则纯反馈在零误差时输出零力矩，无法抵抗重力（事实底座 §3 第 7 条）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>逆动力学母式 Eq. 9.1 与重力项 $\mathbf{G}(\mathbf{q})$ 的定义：事实底座 §3 第 1、3 条，§5 公式 1</li>
+<li><code>gravload</code> 与 <code>rne</code> 的等价性、数值例子：事实底座 §6（<code>Q = p560.rne(qn, qz, qz)</code>、<code>gravload(qn)</code>、<code>gravload(qs)</code>、<code>gravload(qr)</code>）</li>
+<li>关节 2、3 重力矩幅值 $\pm40$、$\pm10$ N·m：事实底座 §6（Fig. 9.1）</li>
+<li><code>payload</code> 用法与负载对惯量/重力矩的影响：事实底座 §6（<code>p560.payload(2.5, [0, 0, 0.1])</code>、<code>gravload</code> 比值）</li>
+<li>重力前馈与"零误差⇒零需求"缺陷：事实底座 §3 第 7 条，§4 第 8 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确题目要考察的对象。</strong></p>
+<p>本题要求观察的是惯量矩阵 $\mathbf{M}(\mathbf{q})$ 中与关节 1、关节 2 相关的对角元 $M_{11}$、$M_{22}$ 随负载（payload）的变化。依据本章事实底座，惯量矩阵对角元表示"各关节感受到的惯量"，非对角元表示关节间耦合。负载会改变连杆的惯性参数（质量 $m_j$、质心 $\mathbf{r}_j$、二阶矩），从而改变 $\mathbf{M}$。</p>
+<p><strong>第 2 步：复现第 195 页的基线代码。</strong></p>
+<p>原书第 195 页用 <code>p560.inertia(qn)</code> 计算标称构型 $q_n$ 下的惯量矩阵，得到对角元：</p>
+<p>$$M_{11}=3.6594,\quad M_{22}=4.4137,\quad M_{33}=0.9378,\quad M_{44}=0.1925,\quad M_{55}=0.1713,\quad M_{66}=0.1941$$</p>
+<p>并给出 $M_{12}=-0.4044$，以及 $\max(M_{11})/\min(M_{11})=2.1558$（说明 $M_{11}$ 随构型变化超过 2 倍）。</p>
+<p><strong>第 3 步：加入负载并重新计算。</strong></p>
+<p>原书第 197–198 页给出负载实验：<code>p560.payload(2.5, [0, 0, 0.1])</code>，即在末端附加质量 2.5 kg、质心偏移 $[0,0,0.1]$。运行后观察：</p>
+<ul>
+<li>肘关节（joint 3）惯量增大 <strong>66%</strong>；</li>
+<li>关节 6 不受影响（负载直接挂在末端，对远端关节的转动惯量贡献最小）；</li>
+<li>重力矩比值 <code>p560.gravload(qn) ./ gravload = [0.3737, 1.5222, 2.5416, 18.7826, 86.8056, NaN]</code>，说明负载对靠近末端的关节重力矩影响呈放大趋势。</li>
+</ul>
+<p><strong>第 4 步：可运行代码（MATLAB，Robotics Toolbox）。</strong></p>
+<p>依据原书 API，可写：</p>
+<pre><code class="lang-matlab">mdl_puma560;                 % 载入 p560 模型
+qn = p560.qn;                % 标称构型
+
+% 无负载基线
+M0 = p560.inertia(qn);
+fprintf('无负载: M11=%.4f, M22=%.4f\n', M0(1,1), M0(2,2));
+
+% 施加负载
+p560.payload(2.5, [0, 0, 0.1]);
+M1 = p560.inertia(qn);
+fprintf('有负载: M11=%.4f, M22=%.4f\n', M1(1,1), M1(2,2));
+
+% 关节 1、2 惯量变化率
+fprintf('M11 变化率 = %.4f\n', M1(1,1)/M0(1,1));
+fprintf('M22 变化率 = %.4f\n', M1(2,2)/M0(2,2));</code></pre>
+<p><strong>第 5 步：预期观察结果。</strong></p>
+<ul>
+<li>$M_{11}$、$M_{22}$ 在加负载后都会增大，因为负载质量被折算进各关节的等效惯量；</li>
+<li>但增大幅度不同：越靠近基座的关节（joint 1）由于负载位于其转动轴远端，惯量增量相对其自身惯量较小；越靠近末端的关节（joint 2、3）增量占比更大；</li>
+<li>原书明确给出 joint 3 惯量增大 66%，joint 6 不受影响，可作为对照；</li>
+<li>若把负载质心沿 $z$ 方向偏移（如 $[0,0,0.1]$），还会改变非对角元 $M_{12}$ 等耦合项。</li>
+</ul>
+<p><strong>第 6 步：物理意义。</strong></p>
+<p>负载改变了连杆的 10 个惯性参数，进而改变 $\mathbf{M}(\mathbf{q})$。这正是本章强调"负载（改惯性参数）"是逆动力学方程中不可忽略的一项的原因，也是基于模型控制（torque feedforward / computed torque）必须在线辨识或估计负载参数的理由。</p>
+<h4>关键点</h4>
+<ul>
+<li>惯量矩阵对角元 $M_{jj}$ 是"关节 $j$ 感受到的惯量"，负载会使其增大，且越靠近末端的关节增幅占比越大。</li>
+<li>原书数值：标称构型下 $M_{11}=3.6594$、$M_{22}=4.4137$；加 2.5 kg 负载后 joint 3 惯量增大 66%，joint 6 不受影响。</li>
+<li>负载通过改变连杆惯性参数（质量、质心、二阶矩）进入 $\mathbf{M}(\mathbf{q})$，同时影响重力矩 $\mathbf{G}(\mathbf{q})$。</li>
+<li>验证方法：<code>p560.payload(...)</code> 后调用 <code>p560.inertia(qn)</code>，比较加负载前后的对角元。</li>
+<li>该实验说明为何独立关节控制在高负载下性能下降，以及为何需要基于模型的控制。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章</li>
+<li>依据：</li>
+<li>惯量矩阵定义与对角元含义：事实底座第 3 节第 4 条、第 4 节第 4 步</li>
+<li><code>p560.inertia(qn)</code> 数值：事实底座第 6 节（PDF p.195–196）</li>
+<li>负载实验 <code>p560.payload(2.5, [0, 0, 0.1])</code>、joint 3 增大 66%、joint 6 不受影响、重力矩比值：事实底座第 6 节（PDF p.197–198）</li>
+<li>负载改变惯性参数：事实底座第 4 节第 4 步</li>
+<li>基于模型控制动机：事实底座第 3 节第 8 条、第 4 节第 9 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确图 9.2c 画的是什么</h5>
+<p>依据本章事实底座，Fig. 9.1 给出的是关节 2 重力矩约 $\pm 40$ N·m、关节 3 重力矩约 $\pm 10$ N·m 随构型变化的曲线；而 Fig. 9.2 对应的是<strong>重力载荷随关节角变化</strong>的曲线族（<code>gravload</code> 扫描）。图 9.2c 即在该扫描基础上，把关节角从某个范围扫过，画出某一关节（典型为关节 2 或关节 3）的重力矩曲线。</p>
+<p>因此本题要做的操作是：</p>
+<ol>
+<li>用 <code>p560.gravload(q)</code> 在关节角扫描范围内计算重力矩；</li>
+<li>画出曲线（复现 Fig. 9.2c）；</li>
+<li>调用 <code>p560.payload(...)</code> 加入负载；</li>
+<li>重新计算 <code>gravload</code>，与无负载曲线对比。</li>
+</ol>
+<h5>第 2 步：复现无负载曲线</h5>
+<p>由事实底座，标称构型 $q_n$ 处：</p>
+<pre><code>gravload(qn) = [-0.0000, 31.6399, 6.0351, 0.0000, 0.0283, 0]</code></pre>
+<p>水平伸展构型 $q_s$ 处：</p>
+<pre><code>gravload(qs) = [-0.0000, 46.0069, 8.7722, 0.0000, 0.0283, 0]</code></pre>
+<p>竖直向上构型 $q_r$ 处：</p>
+<pre><code>gravload(qr) = [0, -0.7752, 0.2489, 0, 0, 0]</code></pre>
+<p>可见关节 2 的重力矩在水平伸展时最大（约 46 N·m），在竖直向上时接近零甚至变号（约 $-0.78$ N·m）。这正是 Fig. 9.2c 曲线的形状来源：<strong>重力矩随构型呈正弦型变化，水平时最大、竖直时最小</strong>。</p>
+<h5>第 3 步：加入负载</h5>
+<p>由事实底座，负载操作为：</p>
+<pre><code class="lang-matlab">p560.payload(2.5, [0, 0, 0.1]);</code></pre>
+<p>即在末端附加质量 2.5 kg、质心偏置 $[0,0,0.1]$ m 的负载。加入后：</p>
+<ul>
+<li>肘关节（关节 3）惯量增大 <strong>66%</strong>；</li>
+<li>关节 6 不受影响（负载在腕部之外，对末端旋转关节不产生重力矩变化）；</li>
+<li>重力矩比值：</li>
+</ul>
+<pre><code>p560.gravload(qn) ./ gravload = [0.3737, 1.5222, 2.5416, 18.7826, 86.8056, NaN]</code></pre>
+<p>注意关节 6 的比值为 <code>NaN</code>，因为无负载时该关节重力矩为 0，除零得到 NaN。</p>
+<h5>第 4 步：可运行代码与预期观察</h5>
+<pre><code class="lang-matlab">% 复现 Fig. 9.2c：扫描关节 2 角度，画关节 2、3 重力矩
+mdl_puma560;
+q = qn;
+q2 = linspace(-pi, pi, 100);
+G2 = zeros(size(q2)); G3 = zeros(size(q2));
+for k = 1:length(q2)
+    q(2) = q2(k);
+    g = p560.gravload(q);
+    G2(k) = g(2); G3(k) = g(3);
+end
+figure; plot(q2, G2, q2, G3); grid on;
+legend('joint 2','joint 3'); xlabel('q_2 (rad)'); ylabel('\tau_g (N\cdot m)');
+
+% 加入负载后重画
+p560.payload(2.5, [0, 0, 0.1]);
+G2p = zeros(size(q2)); G3p = zeros(size(q2));
+for k = 1:length(q2)
+    q(2) = q2(k);
+    g = p560.gravload(q);
+    G2p(k) = g(2); G3p(k) = g(3);
+end
+hold on; plot(q2, G2p, '--', q2, G3p, '--');</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>无负载时关节 2 曲线幅值约 $\pm 40$ N·m，关节 3 约 $\pm 10$ N·m（与 Fig. 9.1 一致）；</li>
+<li>加负载后曲线<strong>整体上移/幅值增大</strong>，关节 2 峰值从约 46 N·m 增大（比值 1.52），关节 3 增大更显著（比值 2.54）；</li>
+<li>曲线形状（正弦型）不变，只是幅值被负载放大——因为负载只改变惯性参数，不改变重力矩对构型的依赖形式。</li>
+</ul>
+<h5>第 5 步：结论</h5>
+<p>加入负载后，重力矩曲线形状不变，但幅值按 <code>gravload(qn)./gravload</code> 给出的比例放大，其中<strong>越靠近末端的关节放大越明显</strong>（关节 3 放大 2.54 倍，关节 5 放大 86.8 倍）。这说明负载对远端关节的重力补偿需求影响最大，是前馈设计中必须考虑的因素。</p>
+<h4>关键点</h4>
+<ul>
+<li>图 9.2c 本质是 <code>gravload</code> 随构型扫描的曲线，重力矩随构型呈正弦型变化，水平最大、竖直最小。</li>
+<li>负载通过 <code>p560.payload(m, r)</code> 加入，只改变惯性参数，不改变重力矩的构型依赖形式。</li>
+<li>负载对远端关节影响远大于近端关节：关节 3 惯量增大 66%，关节 5 重力矩放大 86.8 倍。</li>
+<li>关节 6 比值为 NaN，因为无负载时其重力矩为零，除零无意义。</li>
+<li>重力矩是主导扰动，负载会显著改变前馈力矩需求，是 torque feedforward 设计的关键输入。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>Fig. 9.1 关节 2/3 重力矩 $\pm 40$ / $\pm 10$ N·m：事实底座 §6 例题</li>
+<li><code>gravload(qn)</code>、<code>gravload(qs)</code>、<code>gravload(qr)</code> 数值：事实底座 §6 例题</li>
+<li><code>p560.payload(2.5, [0,0,0.1])</code>、肘关节惯量增大 66%、比值 <code>[0.3737, 1.5222, 2.5416, 18.7826, 86.8056, NaN]</code>：事实底座 §6 例题</li>
+<li>重力项 $\mathbf{G}(\mathbf{q})$ 为主导扰动、前馈设计：事实底座 §3 核心概念 3、§4 推导链条 4</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确"该惯量"指什么。</strong></p>
+<p>本题承接本章关于惯量矩阵 $\mathbf{M}(\mathbf{q})$ 的讨论。$\mathbf{M}(\mathbf{q})$ 是位形 $\mathbf{q}$ 的函数，其对角元 $M_{jj}$ 表示第 $j$ 关节"感受到"的等效惯量。题目问的是：当关节角在可达范围内变化时，这个惯量变化多少倍——即求 $\max M_{jj}(\mathbf{q}) / \min M_{jj}(\mathbf{q})$。</p>
+<p><strong>第 2 步：定位原书给出的数值。</strong></p>
+<p>事实底座中给出了 Puma 560 在标称位形 $\mathbf{q}_n$ 处的惯量矩阵对角元：</p>
+<pre><code>M = p560.inertia(qn)</code></pre>
+<p>对角元为</p>
+<p>$$M_{11}=3.6594,\quad M_{22}=4.4137,\quad M_{33}=0.9378,\quad M_{44}=0.1925,\quad M_{55}=0.1713,\quad M_{66}=0.1941$$</p>
+<p><strong>第 3 步：识别题目真正关心的关节。</strong></p>
+<p>原书在讨论惯量随位形变化时，重点考察的是<strong>关节 1</strong>（肩部旋转关节）的惯量 $M_{11}$，因为该关节的惯量随手臂伸展/收拢变化最剧烈。事实底座明确给出：</p>
+<p>$$\texttt{max(M11(:))/min(M11(:)) = 2.1558}$$</p>
+<p><strong>第 4 步：给出答案。</strong></p>
+<p>因此，关节 1 的惯量在其关节角范围内变化约 <strong>2.1558 倍</strong>（即最大值约为最小值的 2.16 倍）。</p>
+<p><strong>第 5 步：物理解释（为什么会有这个变化）。</strong></p>
+<p>$M_{11}$ 是绕关节 1 轴线的转动惯量。当手臂完全伸展（远离关节 1 轴线）时，各连杆质量对轴线的距离最大，$M_{11}$ 最大；当手臂收拢（靠近轴线）时，$M_{11}$ 最小。由于 $M_{11}$ 是各连杆质量乘以到轴线距离平方的求和，距离变化导致惯量呈平方级变化，故出现约 2 倍以上的差异。</p>
+<p><strong>第 6 步：可运行验证（MATLAB，基于 Corke 工具箱）。</strong></p>
+<pre><code class="lang-matlab">% 需要 Robotics Toolbox for MATLAB
+mdl_puma560;              % 载入 Puma 560 模型 p560
+
+% 在关节 1 的角范围内扫描，其余关节固定在标称位形
+q = qn;
+M11 = [];
+for q1 = linspace(-pi, pi, 200)
+    q(1) = q1;
+    M = p560.inertia(q);
+    M11(end+1) = M(1,1);
+end
+
+ratio = max(M11)/min(M11);
+fprintf('M11 变化倍数 = %.4f\n', ratio);</code></pre>
+<p><strong>预期观察</strong>：<code>ratio</code> 约为 <code>2.1558</code>，与事实底座一致。若同时扫描其他关节，会发现 $M_{22},M_{33}$ 等也有变化，但关节 1 的变化最具代表性。</p>
+<h4>关键点</h4>
+<ul>
+<li>惯量矩阵 $\mathbf{M}(\mathbf{q})$ 是<strong>位形相关</strong>的，不是常数；对角元 $M_{jj}$ 是第 $j$ 关节的等效惯量。</li>
+<li>本题答案是 <strong>2.1558 倍</strong>（关节 1 的 $M_{11}$ 在关节角范围内的最大/最小之比）。</li>
+<li>变化的物理根源：连杆质量到关节轴线的距离随位形改变，而惯量正比于距离平方。</li>
+<li>这一变化正是<strong>独立关节控制会失败</strong>的原因之一：控制器增益若按某一惯量整定，在惯量变化 2 倍以上时动态响应会显著改变。</li>
+<li>对比：负载会使肘关节惯量增大 66%（事实底座），说明惯量对负载同样敏感。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>惯量矩阵定义与对角元含义：事实底座 §3 核心概念 4、§5 公式 1（Eq. 9.1）</li>
+<li>数值 <code>max(M11(:))/min(M11(:)) = 2.1558</code>：事实底座 §6 例题与数值例子（PDF p.195–196）</li>
+<li>标称位形对角元数值：同上（PDF p.195–196）</li>
+<li>负载使肘关节惯量增大 66%：事实底座 §6（PDF p.197–198）</li>
+<li>独立关节控制因耦合/惯量变化而受限：事实底座 §3 核心概念 4、§4 推导链条第 4 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：写出惯量矩阵的来源。</strong></p>
+<p>本章逆动力学母式（Eq. 9.1）为</p>
+<p>$$\boldsymbol\tau = \mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{F}\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q})$$</p>
+<p>其中 $\mathbf{M}(\mathbf{q})$ 是 $N\times N$ 的关节空间惯量矩阵，$\mathbf{q}\in\mathbb{R}^N$ 为关节角向量。要问"为什么对称"，必须回到它的物理来源，而不是从方程本身看。</p>
+<p><strong>第 2 步：从动能出发定义 $\mathbf{M}(\mathbf{q})$。</strong></p>
+<p>机械臂的动能可写成关节速度的二次型：</p>
+<p>$$T = \tfrac{1}{2}\,\dot{\mathbf{q}}^{\mathsf{T}}\,\mathbf{M}(\mathbf{q})\,\dot{\mathbf{q}}$$</p>
+<p>这是本章拉格朗日建模的出发点：把每个连杆的平动动能 $\tfrac12 m_j \mathbf{v}_j^{\mathsf{T}}\mathbf{v}_j$ 与转动动能 $\tfrac12 \boldsymbol\omega_j^{\mathsf{T}}\mathbf{J}_j\boldsymbol\omega_j$ 用雅可比映射到关节速度 $\dot{\mathbf{q}}$ 上，累加后即得上式。因此 $\mathbf{M}(\mathbf{q})$ 是"关节速度空间中的广义惯量"。</p>
+<p><strong>第 3 步：关键论证——动能是标量，二次型系数必对称。</strong></p>
+<p>$T$ 是标量（能量），与求和次序无关。把二次型展开：</p>
+<p>$$T = \tfrac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N} M_{ij}(\mathbf{q})\,\dot q_i\,\dot q_j$$</p>
+<p>对调哑标 $i\leftrightarrow j$：</p>
+<p>$$T = \tfrac{1}{2}\sum_{i}\sum_{j} M_{ji}(\mathbf{q})\,\dot q_j\,\dot q_i = \tfrac{1}{2}\sum_{i}\sum_{j} M_{ji}(\mathbf{q})\,\dot q_i\,\dot q_j$$</p>
+<p>两式对<strong>任意</strong> $\dot{\mathbf{q}}$ 都相等，故 $M_{ij}(\mathbf{q}) = M_{ji}(\mathbf{q})$，即</p>
+<p>$$\mathbf{M}(\mathbf{q}) = \mathbf{M}^{\mathsf{T}}(\mathbf{q})$$</p>
+<p><strong>第 4 步：物理解释（为什么"应该"对称）。</strong></p>
+<p>$M_{ij}$ 的物理含义是：关节 $j$ 的加速度在关节 $i$ 上诱导的惯性力矩（或等价地，关节 $j$ 单位角加速度所对应的关节 $i$ 的广义惯量）。对称性 $M_{ij}=M_{ji}$ 说明"关节 $i$ 与关节 $j$ 之间的惯性耦合是相互的"——关节 $j$ 运动对关节 $i$ 的惯性影响，与关节 $i$ 运动对关节 $j$ 的惯性影响，在能量意义上是同一件事。这正对应牛顿第三定律在广义坐标下的体现。</p>
+<p><strong>第 5 步：与本章数值例子对照（验证）。</strong></p>
+<p>事实底座给出 <code>M = p560.inertia(qn)</code> 的对角元为 3.6594, 4.4137, 0.9378, 0.1925, 0.1713, 0.1941，非对角元 $M_{12}=-0.4044$。原书只列出上三角元素，正是因为下三角由对称性 $M_{21}=M_{12}$ 自动确定，无需重复给出。这从数值上印证了结论。</p>
+<p><strong>第 6 步：补充——对称性不意味着对角或常值。</strong></p>
+<p>$\mathbf{M}(\mathbf{q})$ 是对称的，但<strong>不是</strong>对角的（非对角元代表关节间惯性耦合），也<strong>不是</strong>常值（它是构型 $\mathbf{q}$ 的函数，如 <code>max(M11(:))/min(M11(:)) = 2.1558</code> 所示，关节 1 的等效惯量随构型变化超过 2 倍）。对称性只保证 $\mathbf{M}=\mathbf{M}^{\mathsf{T}}$，不保证其他性质。</p>
+<h4>关键点</h4>
+<ul>
+<li>$\mathbf{M}(\mathbf{q})$ 由动能二次型 $T=\tfrac12\dot{\mathbf{q}}^{\mathsf{T}}\mathbf{M}\dot{\mathbf{q}}$ 定义；$T$ 是标量，交换求和指标即得 $M_{ij}=M_{ji}$。</li>
+<li>物理含义：关节 $i$、$j$ 之间的惯性耦合是<strong>相互的</strong>，对应牛顿第三定律。</li>
+<li>对称 $\neq$ 对角 $\neq$ 常值：非对角元表示耦合，$\mathbf{M}$ 仍是 $\mathbf{q}$ 的函数。</li>
+<li>数值印证：原书 <code>p560.inertia</code> 只列上三角（如 $M_{12}=-0.4044$），下三角由对称性确定。</li>
+<li>该性质是后续动态灵巧度椭球 $\mathbf{M}_x=\mathbf{J}\mathbf{M}^{-1}\mathbf{M}^{-T}\mathbf{J}^{\mathsf{T}}$ 与正向动力学 $\ddot{\mathbf{q}}=\mathbf{M}^{-1}(\cdots)$ 能良好定义的基础（对称正定 ⇒ 可逆）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>逆动力学母式 Eq. 9.1 与动能二次型定义：事实底座 §3 核心概念 1、§4 推导链条第 1 步、§5 关键公式 1。</li>
+<li>惯量矩阵对角/非对角含义与构型依赖：事实底座 §3 核心概念 4、§6 例题 <code>M = p560.inertia(qn)</code> 数值。</li>
+<li>动态灵巧度椭球 $\mathbf{M}_x$：事实底座 §5 关键公式 4。</li>
+<li>正向动力学 $\ddot{\mathbf{q}}=\mathbf{M}^{-1}(\cdots)$：事实底座 §4 推导链条第 6 步、§5 关键公式（Eq. 9.6 相关）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解物理图像——为什么手臂运动会推动基座</h5>
+<p>本章事实底座指出，<code>rne</code> 在重力置零、关节静止时输出全零，但当关节运动时（例如关节 1 以 1 rad/s 运动、零加速度、无重力）输出非零力矩：</p>
+<pre><code>[-24.8240, 0.6280, -0.3607, -0.0003, -0.0000, 0]</code></pre>
+<p>这些力矩是<strong>关节电机为驱动连杆所施加的</strong>。根据牛顿第三定律，连杆对电机/基座施加大小相等、方向相反的力旋量。当基座固定在地面时，这个力旋量被地面反力抵消；当基座放在无摩擦气垫上时，没有外力抵消，基座就会运动。</p>
+<p><strong>做什么</strong>：把机械臂的逆动力学与基座的刚体平动/转动动力学耦合起来。</p>
+<p><strong>为什么</strong>：本章 Eq. 9.1 描述的是基座固定时的关节力矩；要研究基座运动，必须把基座自由度加入广义坐标。</p>
+<h5>第 2 步：建立耦合动力学模型</h5>
+<p>设基座位姿为 $\mathbf{q}_b = [x, y, \theta]^T$（平面三自由度），机械臂关节角为 $\mathbf{q}_a \in \mathbb{R}^6$。完整广义坐标为：</p>
+<p>$$
+\mathbf{q} = \begin{bmatrix} \mathbf{q}_b \\ \mathbf{q}_a \end{bmatrix}
+$$</p>
+<p>总动能 = 基座动能 + 机械臂动能。机械臂各连杆的绝对速度 = 基座速度 + 关节运动引起的相对速度。由拉格朗日法可得：</p>
+<p>$$
+\mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{F}\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q}) = \boldsymbol{\tau}
+$$</p>
+<p>其中 $\boldsymbol{\tau} = [\mathbf{0}_{3\times1}; \boldsymbol{\tau}_a]$——基座方向无外力（无摩擦桌面），关节方向有力矩 $\boldsymbol{\tau}_a$。</p>
+<p><strong>关键</strong>：基座方向的方程给出</p>
+<p>$$
+[\mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q})]_{1:3} = \mathbf{0}
+$$</p>
+<p>这就是基座运动的驱动力来源——手臂运动通过惯量矩阵 $\mathbf{M}$ 和速度耦合项 $\mathbf{C}$ 耦合到基座。</p>
+<h5>第 3 步：动量守恒视角</h5>
+<p>无外力时，系统总动量守恒。初始静止 ⇒ 总动量为零：</p>
+<p>$$
+\mathbf{P} = \sum_i m_i \mathbf{v}_i = \mathbf{0}, \qquad \mathbf{L} = \sum_i (\mathbf{r}_i \times m_i \mathbf{v}_i + \mathbf{J}_i \boldsymbol{\omega}_i) = \mathbf{0}
+$$</p>
+<p>手臂运动改变各连杆速度分布，为保持总动量为零，基座必须反向运动。这就是"平移和旋转"的来源：手臂的直线运动引起基座平移，手臂的旋转运动引起基座旋转。</p>
+<h5>第 4 步：可运行仿真代码（MATLAB，基于 Corke 工具箱）</h5>
+<pre><code class="lang-matlab">% 基座滑动 + 机械臂耦合仿真
+mdl_puma560;
+p560.gravity = [0; 0; 0];   % 无重力（气垫桌面）
+q0 = qn; qd0 = qz;
+mb = 50; Ib = 5;            % 基座质量与转动惯量（假设值）
+
+% 状态: [xb, yb, thb, qb_dot(3), q(6), qd(6)]
+x0 = [0;0;0; zeros(3,1); q0'; qd0'];
+
+% 用 ode45 积分（需自写 coupled_dynamics）
+% 核心: 用 p560.rne 计算关节所需力矩 tau_a
+%       用 tau_a 反作用到基座: F_base = -J_base' * tau_a
+%       基座: mb*xdd = F_base(1:2), Ib*thdd = F_base(3)
+
+[t, x] = ode45(@(t,x) coupled_dynamics(t, x, p560, mb, Ib), [0 5], x0);
+
+% 预期观察:
+% - 基座 x, y, theta 随时间变化（平移 + 旋转）
+% - 手臂运动停止后，基座以恒定速度漂移（动量守恒）</code></pre>
+<p><strong>预期观察</strong>：手臂运动期间基座平移并旋转；手臂停止后基座<strong>不会自动停下</strong>，而是以恒定速度继续漂移——因为无摩擦、无外力，总动量守恒。</p>
+<h5>第 5 步：能否让基座从一处移到另一处并停下？</h5>
+<p><strong>能</strong>。思路是设计手臂运动使系统总动量在运动前后均为零，且基座产生净位移。</p>
+<p>具体策略：</p>
+<ol>
+<li><strong>加速阶段</strong>：手臂向一个方向摆动，基座反向移动。</li>
+<li><strong>减速阶段</strong>：手臂反向摆动，基座减速。</li>
+<li><strong>停止条件</strong>：手臂回到某个构型，使总动量为零，基座恰好停在目标位置。</li>
+</ol>
+<p>这类似于"猫翻身"问题——通过内部形状变化改变整体位姿。数学上，基座位移为：</p>
+<p>$$
+\Delta \mathbf{q}_b = \int_0^T \dot{\mathbf{q}}_b \, dt
+$$</p>
+<p>由动量守恒 $\mathbf{P} = \mathbf{0}$ 可解出 $\dot{\mathbf{q}}_b$ 作为 $\dot{\mathbf{q}}_a$ 的函数，再对时间积分。通过选择合适的关节轨迹 $\mathbf{q}_a(t)$，可使 $\Delta \mathbf{q}_b$ 达到目标值且 $\dot{\mathbf{q}}_b(T) = \mathbf{0}$。</p>
+<p><strong>注意</strong>：原书未给出具体数值（基座质量、目标位置等），以上为按符号推导的定性方案。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>反作用力旋量</strong>：手臂运动时关节力矩通过基座反作用，基座固定时被地面抵消，基座自由时驱动基座运动。</li>
+<li><strong>动量守恒</strong>：无外力时系统总动量守恒，手臂运动必然引起基座反向运动（平移 + 旋转）。</li>
+<li><strong>耦合动力学</strong>：完整模型需将基座自由度加入广义坐标，惯量矩阵 $\mathbf{M}$ 和速度耦合项 $\mathbf{C}$ 是耦合通道。</li>
+<li><strong>停止条件</strong>：手臂停止后基座不会自动停下（无摩擦），需主动设计手臂轨迹使总动量为零。</li>
+<li><strong>与本章联系</strong>：本题是 Eq. 9.1 逆动力学在浮动基座场景的推广，<code>rne</code> 输出的关节力矩正是反作用力的来源。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control，习题 6（page 198）</li>
+<li>依据：</li>
+<li>基座力旋量概念：事实底座 §6 例题 <code>[Q,g] = p560.rne(qn, qz, qz)</code> → <code>g' = [0, -0.0000, 230.0445, -48.4024, -31.6399, -0.0000]</code>，<code>sum([p560.links.m]) = 23.4500</code> kg <code>[PDF p.198]</code></li>
+<li>逆动力学母式：事实底座 §5 公式 1（Eq. 9.1）</li>
+<li>关节运动产生非零力矩：事实底座 §6 例题 <code>[-24.8240, 0.6280, -0.3607, -0.0003, -0.0000, 0]</code> <code>[PDF p.192]</code></li>
+<li>重力置零后 <code>rne</code> 输出全零：事实底座 §6 例题 <code>[PDF p.192]</code></li>
+<li>惯量矩阵与速度耦合：事实底座 §3 概念 4、§6 例题 <code>M = p560.inertia(qn)</code>、<code>C = p560.coriolis(qn, qd)</code> <code>[PDF p.195–197]</code></li>
+<li>基座质量与目标位置：原书未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确两个椭球的定义与来源。</strong></p>
+<p>本题涉及两个不同的椭球，必须区分清楚：</p>
+<ul>
+<li><strong>速度椭球</strong>（第 8.1.4 节）：由机械臂雅可比 $\mathbf{J}$ 构造。给定关节速度范数约束 $\|\dot{\mathbf{q}}\|\le 1$，末端速度 $\mathbf{v}=\mathbf{J}\dot{\mathbf{q}}$ 的像构成一个椭球，其形状由 $\mathbf{J}\mathbf{J}^T$ 的特征值决定。它刻画的是<strong>运动学</strong>意义下"末端在各方向能跑多快"。</li>
+</ul>
+<ul>
+<li><strong>可操作度椭球</strong>（本章）：由动态灵巧度矩阵构造。本章事实底座给出的动态灵巧度椭球为</li>
+</ul>
+<p>$$\mathbf{M}_x = \mathbf{J}\,\mathbf{M}^{-1}\mathbf{M}^{-T}\,\mathbf{J}^T$$</p>
+<p>其中 $\mathbf{M}(\mathbf{q})$ 是惯量矩阵。它刻画的是<strong>动力学</strong>意义下"给定关节力矩，末端在各方向能产生多大加速度"。</p>
+<p><strong>第 2 步：为什么两者形式相似但物理含义不同。</strong></p>
+<p>速度椭球只用到 $\mathbf{J}$；动态灵巧度椭球在 $\mathbf{J}$ 两侧夹了 $\mathbf{M}^{-1}$。原因是：关节力矩 $\boldsymbol\tau$ 与关节加速度的关系为 $\boldsymbol\tau=\mathbf{M}\ddot{\mathbf{q}}+\cdots$，即 $\ddot{\mathbf{q}}\approx\mathbf{M}^{-1}\boldsymbol\tau$。当把"单位关节力矩"映射到末端加速度时，惯量矩阵 $\mathbf{M}$ 起了各向异性的加权作用——惯量大的方向更难加速。因此 $\mathbf{M}_x$ 是"力矩→末端加速度"的椭球，而速度椭球是"关节速度→末端速度"的椭球。</p>
+<p><strong>第 3 步：叠加显示的做法。</strong></p>
+<p>在机器人图形上叠加椭球，需要：</p>
+<ol>
+<li>选定构型 $\mathbf{q}$（例如 <code>qn</code>），计算 $\mathbf{J}$ 与 $\mathbf{M}$；</li>
+<li>计算 $\mathbf{M}_x$，对其做特征分解，得到三个主轴方向与半轴长度 $\sqrt{\text{eig}(\mathbf{M}_x)}$；</li>
+<li>以末端执行器位置为椭球中心，用特征向量构造旋转矩阵，按半轴长度画椭球；</li>
+<li>同理对速度椭球用 $\mathbf{J}\mathbf{J}^T$ 的特征分解画第二个椭球，用不同颜色区分。</li>
+</ol>
+<p><strong>第 4 步：数值对照（来自事实底座）。</strong></p>
+<p>在构型 <code>qn</code> 下，事实底座给出</p>
+<p>$$\sqrt{\text{eig}(\mathbf{M}_x)} = [0.4412,\ 0.1039,\ 0.1677],\qquad \min/\max = 0.2355$$</p>
+<p>而 Asada 度量 <code>p560.maniplty(qn,'asada') = 0.2094</code>。</p>
+<p>注意：事实底座<strong>未给出</strong>同一构型下速度椭球的特征值数值，因此两者的定量对比"原书未给出具体数值，按符号推导"。可以定性地说：速度椭球只反映 $\mathbf{J}$ 的奇异结构，动态灵巧度椭球额外被 $\mathbf{M}^{-1}$ 调制，故两者的主轴方向与轴长比一般不同；只有在惯量矩阵近似各向同性（$\mathbf{M}\approx m\mathbf{I}$）时，两者形状才趋于一致。</p>
+<p><strong>第 5 步：可运行验证代码（MATLAB，Peter Corke 工具箱）。</strong></p>
+<pre><code class="lang-matlab">% 构型
+qn = [0, pi/4, pi, 0, pi/4, 0];   % 示例构型，可按需替换
+p560.plot(qn);
+
+% 动态灵巧度椭球
+J  = p560.jacob0(qn);
+M  = p560.inertia(qn);
+Mx = J * inv(M) * inv(M)' * J';
+[Vx, Dx] = eig(Mx);
+sx = sqrt(diag(Dx));              % 半轴长度
+
+% 速度椭球
+Mv = J * J';
+[Vv, Dv] = eig(Mv);
+sv = sqrt(diag(Dv));
+
+disp('动态灵巧度半轴:'); disp(sx');
+disp('速度椭球半轴:');   disp(sv');
+disp('Asada 度量:');     disp(p560.maniplty(qn,'asada'));</code></pre>
+<p><strong>预期观察</strong>：<code>sx</code> 的三个半轴与事实底座给出的 $[0.4412,0.1039,0.1677]$ 量级一致（具体值随构型变化）；<code>sv</code> 与 <code>sx</code> 的主轴方向通常不重合，轴长比也不同，直观说明"运动学灵巧"与"动力学灵巧"不是一回事。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>速度椭球</strong>由 $\mathbf{J}\mathbf{J}^T$ 决定，是纯运动学量；<strong>动态灵巧度椭球</strong>由 $\mathbf{M}_x=\mathbf{J}\mathbf{M}^{-1}\mathbf{M}^{-T}\mathbf{J}^T$ 决定，额外含惯量矩阵 $\mathbf{M}$，是动力学量。</li>
+<li>两者形式相似（都是 $\mathbf{J}$ 与某矩阵的乘积），但物理含义不同：前者是"关节速度→末端速度"，后者是"关节力矩→末端加速度"。</li>
+<li>惯量矩阵 $\mathbf{M}$ 的各向异性使动态椭球相对速度椭球发生形变；只有 $\mathbf{M}$ 近似各向同性时两者才接近。</li>
+<li>事实底座给出 <code>qn</code> 下 $\sqrt{\text{eig}(\mathbf{M}_x)}=[0.4412,0.1039,0.1677]$、$\min/\max=0.2355$、Asada 度量 $0.2094$；速度椭球的具体数值原书未给出。</li>
+<li>叠加显示时以末端位置为中心，用特征向量定方向、半轴长度定大小。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>动态灵巧度椭球公式 $\mathbf{M}_x=\mathbf{J}\mathbf{M}^{-1}\mathbf{M}^{-T}\mathbf{J}^T$：事实底座第 5 节关键公式第 4 条。</li>
+<li>数值 $\sqrt{\text{eig}(\mathbf{M}_x)}=[0.4412,0.1039,0.1677]$、$\min/\max=0.2355$、<code>maniplty(qn,'asada')=0.2094</code>：事实底座第 6 节例题与数值例子。</li>
+<li>速度椭球属第 8.1.4 节（运动学灵巧度），本章仅作对比引用，事实底座第 0 节明确其依赖关系。</li>
+<li>惯量矩阵 $\mathbf{M}(\mathbf{q})$ 的物理意义：事实底座第 3 节核心概念第 4 条、第 4 节推导链条第 4 步。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8. 独立关节控制（第 204 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 增益与需求信号的影响</strong></p>
+<p>速度环的被控对象为电机动力学 Eq. 9.7：</p>
+<p>$$J_m\dot{\omega} = \tau_m - B\omega - \tau_c,\qquad \tau_m = K_m i_a,\quad i_a = K_a u.$$</p>
+<p>以电流源驱动时，控制量直接是力矩，速度环开环为一阶惯性环节。P 控制取 $K_v=1$ 时原书认为"满意"；增大 $K_v$ 加快响应但降低阻尼裕度，减小 $K_v$ 则稳态误差增大。加入积分后取 $K_v=1,\ K_i=10$，把系统从 Type 0 提升为 Type 1，从而在常值扰动（如重力矩、库仑摩擦）下消除稳态速度误差。</p>
+<p>需求信号形状与幅值：阶跃需求激励全部频段，容易暴露超调；LSPB（线性段加抛物线过渡）需求同时给出连续的速度与加速度，能显著减小跟踪误差与力矩尖峰。幅值越大，所需力矩越大，越容易触及 $\tau_{max}$ 而饱和（见 d）。原书未给出 $K_v,K_i$ 的完整扫描数值，按符号推导。</p>
+<p><strong>b) 根轨迹分析</strong></p>
+<p>速度环开环传递函数（电流源、忽略库仑摩擦）为</p>
+<p>$$L(s) = \frac{K_v K_m K_a}{J_m s + B}.$$</p>
+<p>比例情形：闭环特征方程为 $J_m s + B + K_v K_m K_a = 0$，根为 $s = -(B+K_vK_mK_a)/J_m$，始终位于左半平面，故<strong>任意 $K_v>0$ 都稳定</strong>，不存在有限的最大允许增益；实际限制来自采样延迟与未建模动态（原书取 1 ms 延迟），延迟会在高频引入相位滞后，从而给出实际可用的增益上限。</p>
+<p>PI 情形：$C(s)=K_v + K_i/s$，开环</p>
+<p>$$L(s) = \frac{(K_v s + K_i)K_mK_a}{s(J_m s + B)}.$$</p>
+<p>特征方程 $J_m s^2 + (B+K_vK_mK_a)s + K_iK_mK_a = 0$。由 Routh 判据，稳定条件为</p>
+<p>$$B + K_vK_mK_a > 0,\qquad K_iK_mK_a > 0,$$</p>
+<p>即 $K_v>0,\ K_i>0$ 时闭环稳定；同样地，实际最大增益由延迟与饱和决定。原书未给出根轨迹的具体数值，按符号推导。</p>
+<p><strong>c) 电压源驱动与反电动势</strong></p>
+<p>电流源假设 $i_a = K_a u$ 不再成立。电压源下电枢回路为</p>
+<p>$$u = R_a i_a + L_a \frac{di_a}{dt} + V_b,\qquad V_b = K_m\omega,$$</p>
+<p>其中 $R_a = 1.6\ \Omega$，$L_a = 1\ \text{mH}$。电气时间常数 $L_a/R_a = 0.625\ \text{ms}$，与 1 ms 采样延迟同量级，不可忽略。反电动势 $V_b=K_m\omega$ 构成速度负反馈，等效地增大了粘性阻尼，使速度环阻尼变好但稳态增益下降。修改后的 <code>vloop</code> 需把电机模型从"纯力矩源"改为"电压—电流—力矩"三级串联，并在反馈中显式加入 $K_m\omega$ 项。</p>
+<p><strong>d) 积分饱和</strong></p>
+<p>当需求速度很大时，$\tau_m$ 触及 $\tau_{max}$ 饱和，电机实际速度跟不上需求，误差 $e=\omega^*-\omega$ 长时间为正，积分器持续累加：</p>
+<p>$$\int_0^t e\,d\tau \to \text{很大}.$$</p>
+<p>当电机终于接近设定点时，积分器已储存了过大数值，输出力矩反向过冲，产生大超调与长恢复时间，这就是 integral windup。对策：</p>
+<ul>
+<li><strong>积分限幅</strong>：把积分器状态钳位在 $[I_{min},I_{max}]$；</li>
+<li><strong>条件积分</strong>：仅当 $|\omega^*-\omega|<\epsilon$（接近设定点）时才允许积分作用；</li>
+<li><strong>反计算（back-calculation）</strong>：用饱和前后控制量之差反馈回积分器。</li>
+</ul>
+<p>可在 Simulink 中给积分器加 Saturation 模块或使用带 anti-windup 端口的 PID 模块验证。</p>
+<p><strong>e) Simulink 模型</strong></p>
+<p>按原书结构：每个关节一个 <code>vloop</code>（内环速度 PI）套一个 <code>ploop</code>（外环位置 P，$K_p=40$），位置环输出速度需求给速度环，速度环输出力矩需求给电机模型，电机模型经减速比 $G$ 驱动连杆。Puma 各关节电机参数（$J_m,B_m,T_c,G$ 等）取自 Corke and Armstrong-Hélouvry (1995)，原书未在本题中列出具体数值。可用 <code>p560</code> 模型提供的 <code>links(j).dyn</code> 参数（如关节 1：$J_m=0.000200$，$B_m=0.001480$，$T_c=0.395000(+)/-0.435000(-)$，$G=-62.611100$；关节 2：$J_m=0.000200$，$B_m=0.000817$，$T_c=0.126000(+)/-0.071000(-)$，$G=107.815000$）作为起点。</p>
+<h4>关键点</h4>
+<ul>
+<li>速度环 P 控制在电流源下<strong>无条件稳定</strong>，实际增益上限由采样延迟与未建模动态决定；PI 把 Type 0 提升为 Type 1，消除常值扰动下的稳态误差。</li>
+<li>电压源驱动必须显式建模电枢电感 $L_a$、电阻 $R_a$ 与反电动势 $V_b=K_m\omega$；本题 $L_a/R_a=0.625$ ms 与 1 ms 延迟同量级，不可忽略。</li>
+<li>积分饱和的根源是饱和期间误差持续累积；限幅、条件积分、反计算是三种标准对策。</li>
+<li>独立关节控制忽略 $\mathbf{M}$ 的非对角元与 $\mathbf{C}$，构型相关耦合只能靠反馈抑制，这正是后续 torque feedforward / computed torque 要解决的问题。</li>
+<li>减速比 $G$ 把连杆侧惯量与摩擦折算到电机侧时分别按 $1/G^2$ 与 $1/G$ 缩小，是电机选型与速度环设计的核心。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 9 章 Dynamics and Control</li>
+<li>依据：</li>
+<li>电机动力学 Eq. 9.7、$i_a=K_a u$、$\tau_m=K_m i_a$：事实底座第 5 节公式 3</li>
+<li>速度环 $K_v=1$、PI 时 $K_v=1,K_i=10$、$\omega_{max}=\tau_{max}/B$、1 ms 延迟、20 N·m 扰动：事实底座第 6 节"速度环"条目</li>
+<li>位置环 $K_p=40$、LSPB 需求：事实底座第 6 节"位置环 LSPB"条目</li>
+<li>减速比对扰动与惯量/摩擦的缩放：事实底座第 6 节"前馈力矩零阶保持 20 Hz；减速器"条目</li>
+<li>反电动势 $V_b=K_m\omega$：事实底座第 5 节公式 6</li>
+<li>电机阻抗 1 mH、1.6 Ω：题干本身</li>
+<li>Puma 关节 1、2 的 <code>dyn</code> 参数：事实底座第 6 节对应条目</li>
+<li>独立关节控制、Type 0/1、integral windup：事实底座第 3 节概念 7</li>
+<li>基于模型控制与耦合误差：事实底座第 3 节概念 8、第 4 节步骤 9</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 9 题：单位等价性</h5>
+<p><strong>做什么</strong>：把 N·m·A$^{-1}$ 用 SI 基本单位展开，再把 V·s·rad$^{-1}$ 用 SI 基本单位展开，比较两者。</p>
+<p><strong>为什么</strong>：力矩常数与反电动势常数在 SI 中数值相等（这是电机机电能量转换互易性的体现），单位也必须一致。</p>
+<p><strong>推导</strong>：</p>
+<p>力矩的单位是 N·m，而 $1\ \text{N} = 1\ \text{kg}\cdot\text{m}\cdot\text{s}^{-2}$，故</p>
+<p>$$[\tau] = \text{kg}\cdot\text{m}^2\cdot\text{s}^{-2}$$</p>
+<p>电流单位 A，所以</p>
+<p>$$[K_m] = \frac{\text{N}\cdot\text{m}}{\text{A}} = \frac{\text{kg}\cdot\text{m}^2\cdot\text{s}^{-2}}{\text{A}}$$</p>
+<p>再看反电动势常数。电压 $V$ 满足 $1\ \text{V} = 1\ \text{J}/\text{C} = 1\ \text{kg}\cdot\text{m}^2\cdot\text{s}^{-2}/\text{A}\cdot\text{s} = \text{kg}\cdot\text{m}^2\cdot\text{s}^{-3}\cdot\text{A}^{-1}$。于是</p>
+<p>$$[K_b] = \frac{\text{V}\cdot\text{s}}{\text{rad}} = \frac{\text{kg}\cdot\text{m}^2\cdot\text{s}^{-3}\cdot\text{A}^{-1}\cdot\text{s}}{1} = \text{kg}\cdot\text{m}^2\cdot\text{s}^{-2}\cdot\text{A}^{-1}$$</p>
+<p>（rad 是无量纲的，可略去。）两者完全相同：</p>
+<p>$$\frac{\text{N}\cdot\text{m}}{\text{A}} = \frac{\text{kg}\cdot\text{m}^2}{\text{s}^2\cdot\text{A}} = \frac{\text{V}\cdot\text{s}}{\text{rad}}$$</p>
+<p><strong>结论</strong>：单位等价，故 $K_m$（力矩常数）与反电动势常数在数值上相等，这正是本章 Eq. 9.7 中 $\tau_m = K_m i_a$ 与 $V_b = K_m\omega$ 使用同一符号 $K_m$ 的依据。</p>
+<h5>第 10 题：基于模型控制的仿真</h5>
+<p><strong>a) 跟踪误差对比</strong></p>
+<p>两种控制律来自本章事实底座第 5 节：</p>
+<ul>
+<li>torque feedforward：$\boldsymbol\tau = \mathbf{D}(\mathbf{q}^*,\dot{\mathbf{q}}^*,\ddot{\mathbf{q}}^*) + \mathbf{K}_p\mathbf{e} + \mathbf{K}_v\dot{\mathbf{e}}$，误差动力学 Eq. 9.11 为 $\ddot{\mathbf{e}} + \mathbf{K}_v\dot{\mathbf{e}} + \mathbf{K}_p\mathbf{e} = \mathbf{0}$，但其中含构型相关的耦合项，误差依赖构型。</li>
+<li>computed torque：$\boldsymbol\tau = \mathbf{D}(\mathbf{q},\dot{\mathbf{q}},\ddot{\mathbf{q}}^* + \mathbf{K}_v\dot{\mathbf{e}} + \mathbf{K}_p\mathbf{e})$，误差动力学 Eq. 9.12 为 $\ddot{\mathbf{e}} + \mathbf{K}_v\dot{\mathbf{e}} + \mathbf{K}_p\mathbf{e} = \mathbf{0}$，完全解耦、与构型无关。</li>
+</ul>
+<p>可运行代码（MATLAB，基于 Corke 工具箱）：</p>
+<pre><code class="lang-matlab">mdl_puma560;
+Tfb = 0.001;                 % 采样率
+Kp = 100; Kv = 20;           % 增益
+q0 = qz; qf = qr;
+[t,qd,qdd] = jtraj(q0, qf, 5/Tfb);
+
+% torque feedforward
+sl_ff;                       % 打开对应 Simulink 模型
+sim('sl_ff');
+% 记录 q 与 qd 的差，画 e = qd - q
+
+% computed torque
+sl_ctc;
+sim('sl_ctc');</code></pre>
+<p><strong>预期观察</strong>：computed torque 的跟踪误差显著小于 torque feedforward，且不随构型变化；torque feedforward 的误差随构型变化（因为 Eq. 9.11 含耦合项）。减小 $T_{fb}$ 会减小离散化误差，从而减小跟踪误差。</p>
+<p><strong>b) 降低前馈力矩计算速率</strong></p>
+<p>把前馈力矩的零阶保持频率从 20 Hz 进一步降低（事实底座第 6 节给出前馈力矩零阶保持 20 Hz 的设定）。<strong>预期观察</strong>：前馈力矩更新变慢，跟踪误差增大，尤其在高加速度段；computed torque 因反馈项仍以 $T_{fb}$ 更新，受影响相对较小。</p>
+<p><strong>c) 模型误差（perturb 10%）</strong></p>
+<pre><code class="lang-matlab">p560_pert = p560.perturb(0.1);   % 惯性参数 ±10%</code></pre>
+<p>修改 Simulink 模型，使 RNE 模块使用 <code>p560_pert</code>，而被控对象仍为 <code>p560</code>。<strong>预期观察</strong>：两种方法的误差都增大；computed torque 因反馈项仍能部分补偿模型误差，但 Eq. 9.12 的解耦性被破坏，误差不再与构型无关；torque feedforward 的误差进一步恶化。这验证了事实底座第 3 节第 8 条：基于模型控制依赖模型精度。</p>
+<h5>第 11 题：柔性传动</h5>
+<p><strong>a) 不同刚度与控制参数</strong></p>
+<p>柔性传动在电机与负载间等效为弱阻尼弹簧（事实底座第 4 节第 10 步）。<strong>预期观察</strong>：刚度越低，超调越大、耦合负误差越明显（<code>sl_flex</code> 演示）。增大 $K_p$、$K_v$ 可改善，但过高会激发柔性模态。</p>
+<p><strong>b) 消除电机无限刚性假设</strong></p>
+<p>把电机位置替换为嵌套控制环，该环受弹性元件扰动力矩。即电机侧不再是理想位置源，而是受 $J_m\dot{\omega} = \tau_m - B\omega - \tau_c$（Eq. 9.7）与弹性力矩共同作用。整定内环 PI（$K_v=1, K_i=10$，事实底座第 6 节）使速度环带宽足够高，再整定外环位置 P（$K_p=40$）。</p>
+<p><strong>c) 接触力 ≤ 5 N</strong></p>
+<p>引入刚性物体，用位置控制使机械臂运动到接触点，然后切换到力控制或阻抗控制，把接触力限制在 5 N。可用本章的力矩前馈思想：$\boldsymbol\tau = \mathbf{D}(\cdot) + \mathbf{K}_p\mathbf{e} + \mathbf{K}_v\dot{\mathbf{e}}$，其中 $\mathbf{e}$ 由力误差生成。</p>
+<h4>关键点</h4>
+<ul>
+<li>力矩常数与反电动势常数在 SI 中单位等价，故数值相等，这是 Eq. 9.7 中两者共用 $K_m$ 的依据。</li>
+<li>torque feedforward 的误差动力学 Eq. 9.11 含构型相关耦合项；computed torque 的 Eq. 9.12 完全解耦、与构型无关。</li>
+<li>前馈力矩更新速率降低会增大跟踪误差，尤其在高加速度段。</li>
+<li>模型误差（perturb 10%）会破坏 computed torque 的解耦性，使误差重新依赖构型。</li>
+<li>柔性传动引入弱阻尼弹簧，需嵌套控制环整定；接触力控制需从位置控制切换到力/阻抗控制。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 9 章</li>
+<li>依据：</li>
+<li>第 9 题：事实底座第 5 节 Eq. 9.7（$\tau_m = K_m i_a$，$V_b = K_m\omega$）；第 1 节记号约定（$K_m$、$K_a$）。</li>
+<li>第 10 题 a)：事实底座第 5 节 Eq. 9.11、Eq. 9.12；第 4 节第 9 步。</li>
+<li>第 10 题 b)：事实底座第 6 节（前馈力矩零阶保持 20 Hz）。</li>
+<li>第 10 题 c)：事实底座第 6 节（模型参数扰动 ±10%）；第 3 节第 8 条。</li>
+<li>第 11 题 a)：事实底座第 4 节第 10 步（柔性传动，<code>sl_flex</code>）。</li>
+<li>第 11 题 b)：事实底座第 5 节 Eq. 9.7；第 6 节（$K_v=1, K_i=10$）。</li>
+<li>第 11 题 c)：事实底座第 6 节（接触力 ≤ 5 N）；第 5 节 Eq. 9.11。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

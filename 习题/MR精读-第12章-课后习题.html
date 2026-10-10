@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 12 章「Grasping and Manipulation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 12 章「Grasping and Manipulation」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. Twist 与 wrench 的表示</strong></p>
+<p>本章所有 twists 与 wrenches 均表达在 space frame。三维空间中：</p>
+<p>\[</p>
+<p>V=(\omega,v)\in\mathbb{R}^6,\qquad F=(m,f)\in\mathbb{R}^6</p>
+<p>\]</p>
+<p>其中 \(\omega\) 为 angular velocity，\(v\) 为 linear velocity；\(m\) 为 moment，\(f\) 为 force。</p>
+<p>平面情形下：</p>
+<p>\[</p>
+<p>V=(\omega_z,v_x,v_y),\qquad F=(m_z,f_x,f_y)</p>
+<p>\]</p>
+<p><strong>2. 接触 wrench</strong></p>
+<p>单位法向力对应的 spatial contact wrench 为</p>
+<p>\[</p>
+<p>F=([p_A]\hat{n},\hat{n})=(p_A\times \hat{n},\hat{n})</p>
+<p>\]</p>
+<p>其中 \([p]\) 为 skew-symmetric matrix。注意这里用的是 body A 上的接触点 \(p_A\)。</p>
+<p><strong>3. 法线方向约定与不等式符号</strong></p>
+<p>本章约定 \(\hat{n}\) 的正方向<strong>指向 body A 内部</strong>。在这个约定下，两体相互不可穿透要求</p>
+<p>\[</p>
+<p>F^T(V_A-V_B)\ge 0</p>
+<p>\]</p>
+<p>若把 \(\hat{n}\) 反向，则 \(F\) 整体变号，不等式方向也随之翻转，contact label（R/S/B）的分类会全部出错。因此法线方向不能随意反。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 三个接触标签</strong></p>
+<p>本章接触标签为：</p>
+<ul>
+<li><strong>R</strong> = rolling / sticking；</li>
+<li><strong>S</strong> = sliding；</li>
+<li><strong>B</strong> = breaking free。</li>
+</ul>
+<p>contact mode 是各接触标签的 concatenation，例如 RR、SB、BS、BB、RRR、SlR 等。</p>
+<p><strong>2. Impenetrability 与 active constraint</strong></p>
+<p>对每个接触，</p>
+<p>\[</p>
+<p>F^T(V_A-V_B)\ge 0</p>
+<p>\]</p>
+<p>当</p>
+<p>\[</p>
+<p>F^T(V_A-V_B)=0</p>
+<p>\]</p>
+<p>时，该约束为 active constraint。</p>
+<p>进一步分类：</p>
+<ul>
+<li>若 active 且 \(\dot p_A=\dot p_B\)，则为 rolling/sticking（R）；</li>
+<li>若 active 但不 rolling，则为 sliding（S）；</li>
+<li>若严格不等式成立，则为 breaking free（B）。</li>
+</ul>
+<p><strong>3. 说法判断</strong></p>
+<p>该说法<strong>不正确</strong>。本章的 rolling contact 定义为两体在接触点相对速度为零，即</p>
+<p>\[</p>
+<p>\dot p_A=v_A+[\omega_A]p_A=v_B+[\omega_B]p_B=\dot p_B</p>
+<p>\]</p>
+<p>这包含了 sticking（相对静止、无相对旋转）的情形。把 rolling 只理解成“轮子滚动”会漏掉 sticking，从而误判 contact label。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 计算接触 wrench</strong></p>
+<p>由</p>
+<p>\[</p>
+<p>F=([p_A]\hat{n},\hat{n})=(p_A\times \hat{n},\hat{n})</p>
+<p>\]</p>
+<p>代入 \(p_A=[1\ 2\ 0]^T\)，\(\hat{n}=[0\ 1\ 0]^T\)：</p>
+<p>\[</p>
+<p>p_A\times \hat{n}=</p>
+<p>\begin{vmatrix}</p>
+<p>\mathbf{i} & \mathbf{j} & \mathbf{k}\\</p>
+<p>1 & 2 & 0\\</p>
+<p>0 & 1 & 0</p>
+<p>\end{vmatrix}</p>
+<p>=(0,\ 0,\ 1)</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>F=[0\ 0\ 1\ 0\ 1\ 0]^T</p>
+<p>\]</p>
+<p>即 moment 部分为 \((0,0,1)\)，force 部分为 \((0,1,0)\)。</p>
+<p><strong>2. Roll-slide 条件</strong></p>
+<p>active constraint 要求 \(F^T(V_A-V_B)=0\)。将 \(F=(0,0,1,0,1,0)\) 与 \(V_A-V_B=(\omega_{Ax}-\omega_{Bx},\omega_{Ay}-\omega_{By},\omega_{Az}-\omega_{Bz},v_{Ax}-v_{Bx},v_{Ay}-v_{By},v_{Az}-v_{Bz})\) 做内积：</p>
+<p>\[</p>
+<p>(\omega_{Az}-\omega_{Bz})+(v_{Ay}-v_{By})=0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>\omega_{Az}-\omega_{Bz}+v_{Ay}-v_{By}=0</p>
+<p>\]</p>
+<p>这就是 roll-slide 条件。</p>
+<p><strong>3. B 静止且 A 限制在 \(z=0\) 平面</strong></p>
+<p>B 静止意味着 \(V_B=0\)。A 限制在 \(z=0\) 平面，则</p>
+<p>\[</p>
+<p>V_A=[0\ 0\ \omega_{Az}\ v_{Ax}\ v_{Ay}\ 0]^T</p>
+<p>\]</p>
+<p>代入 roll-slide 条件：</p>
+<p>\[</p>
+<p>\omega_{Az}+v_{Ay}=0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>v_{Ay}+\omega_{Az}=0</p>
+<p>\]</p>
+<p>Rolling 条件还需 \(\dot p_A=\dot p_B=0\)。由 Example 12.2 的 rolling 条件 (12.10)–(12.12)，在平面限制下化为：</p>
+<p>\[</p>
+<p>v_{Ax}-2\omega_{Az}=0,\qquad v_{Ay}+\omega_{Az}=0</p>
+<p>\]</p>
+<p>其中第二式与 roll-slide 条件一致，第一式是额外的 rolling 约束。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 半空间约束</strong></p>
+<p>平面 twist 写为 \(V=(\omega_z,v_x,v_y)\)。对每个接触 \(F_i=(m_z,f_x,f_y)\)，约束为</p>
+<p>\[</p>
+<p>F_i^T V\ge 0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>m_z\omega_z+f_x v_x+f_y v_y\ge 0</p>
+<p>\]</p>
+<p>代入：</p>
+<ul>
+<li>\(F_1=(-2,0,1)\)：</li>
+</ul>
+<p>\[</p>
+<p>-2\omega_{Az}+v_{Ay}\ge 0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>v_{Ay}-2\omega_{Az}\ge 0</p>
+<p>\]</p>
+<ul>
+<li>\(F_2=(1,-1,0)\)：</li>
+</ul>
+<p>\[</p>
+<p>\omega_{Az}-v_{Ax}\ge 0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>-v_{Ax}+\omega_{Az}\ge 0</p>
+<p>\]</p>
+<ul>
+<li>\(F_3=(1,1,0)\)：</li>
+</ul>
+<p>\[</p>
+<p>\omega_{Az}+v_{Ax}\ge 0</p>
+<p>\]</p>
+<p>即</p>
+<p>\[</p>
+<p>v_{Ax}+\omega_{Az}\ge 0</p>
+<p>\]</p>
+<p><strong>2. 是否正张成 \(R^3\)</strong></p>
+<p>三个向量 \(F_1,F_2,F_3\) 位于 \(R^3\) 中。要正张成 \(R^3\)，需要它们线性无关且原点位于其凸包内部（等价地，存在正系数组合为零）。</p>
+<p>先看线性无关性。设</p>
+<p>\[</p>
+<p>\alpha_1 F_1+\alpha_2 F_2+\alpha_3 F_3=0</p>
+<p>\]</p>
+<p>分量形式：</p>
+<p>\[</p>
+<p>-2\alpha_1+\alpha_2+\alpha_3=0</p>
+<p>\]</p>
+<p>\[</p>
+<p>-\alpha_2+\alpha_3=0</p>
+<p>\]</p>
+<p>\[</p>
+<p>\alpha_1=0</p>
+<p>\]</p>
+<p>由第三式 \(\alpha_1=0\)，第二式 \(\alpha_2=\alpha_3\)，第一式 \(0+\alpha_2+\alpha_3=2\alpha_2=0\)，故 \(\alpha_2=\alpha_3=0\)。所以三向量线性无关。</p>
+<p>再看是否存在正系数组合为零。由上面可知唯一线性组合为零的系数全为零，因此不存在非零正组合为零。这意味着原点不在三向量凸包内部，三向量不能正张成 \(R^3\)。</p>
+<p>因此这三个 wrenches <strong>不构成</strong>平面 first-order form closure。</p>
+<p><strong>3. 平面 form closure 的最少接触数</strong></p>
+<p>平面 first-order form closure 要求 contact wrenches 正张成 \(R^3\)。\(R^n\) 可由 \(n+1\) 个向量正张成但不少于此，故平面 \(n=3\) 至少需要 \(3+1=4\) 个点接触。本题只有 3 个接触，数量上也不足。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 静止时 RR 不可行</strong></p>
+<p>静止时 block 需平衡重力，所需 wrench 为</p>
+<p>\[</p>
+<p>F_{\text{ext}}=(0,0,mg)</p>
+<p>\]</p>
+<p>RR 模式要求存在非负系数 \(k_1,k_2,k_3\ge 0\) 使得</p>
+<p>\[</p>
+<p>k_1F_1+k_2F_2+k_3F_3=(0,0,mg)</p>
+<p>\]</p>
+<p>但根据 Example 12.9，\((0,0,mg)\) 不在由 \(F_1,F_2,F_3\) 正张成的 composite wrench cone 中，因此 RR 不可行。</p>
+<p><strong>2. fingers 以 \(2g\) 向左加速时 RR 可行</strong></p>
+<p>若 fingers 以 \(2g\) 向左加速，block 受到惯性力。方程 (12.33) 为</p>
+<p>\[</p>
+<p>k_1F_1+k_2F_2+k_3F_3+(0,0,-mg)=(0,ma_x,0)</p>
+<p>\]</p>
+<p>当 \(a_x=-2g\) 时，右边为 \((0,-2mg,0)\)，故</p>
+<p>\[</p>
+<p>k_1F_1+k_2F_2+k_3F_3=(0,-2mg,mg)</p>
+<p>\]</p>
+<p>该总 wrench 落在 composite wrench cone 内，因此存在非负 \(k_i\)，RR 可行。非负 \(k_i\) 要求</p>
+<p>\[</p>
+<p>-5g\le a_x\le -g</p>
+<p>\]</p>
+<p>\(a_x=-2g\) 满足此范围。</p>
+<p><strong>3. 可运行代码与预期观察</strong></p>
+<pre><code class="lang-python">import numpy as np
+from scipy.optimize import linprog
+
+# 基接触 wrenches (m_z, f_x, f_y)
+F1 = np.array([-4, -1,  1]) / np.sqrt(2)
+F2 = np.array([-2,  1,  1]) / np.sqrt(2)
+F3 = np.array([ 1, -1,  0])
+
+# 列向量构成矩阵 A，求 k >= 0 使 A k = target
+A = np.column_stack([F1, F2, F3])
+
+def in_cone(target, A):
+    # 变量 k1,k2,k3 >= 0，约束 A k = target
+    # linprog 默认最小化，目标设为零向量即可
+    c = np.zeros(A.shape[1])
+    res = linprog(c, A_eq=A, b_eq=target,
+                  bounds=[(0, None)]*A.shape[1],
+                  method='highs')
+    return res.success, res.x if res.success else None
+
+mg = 1.0  # 归一化，取 mg = 1
+
+# 静止所需 wrench
+target_static = np.array([0, 0, mg])
+ok_static, k_static = in_cone(target_static, A)
+print("static (0,0,mg) in cone?", ok_static)
+if ok_static:
+    print("k =", k_static)
+
+# 2g 向左加速所需总 wrench
+target_acc = np.array([0, -2*mg, mg])
+ok_acc, k_acc = in_cone(target_acc, A)
+print("accelerating (0,-2mg,mg) in cone?", ok_acc)
+if ok_acc:
+    print("k =", k_acc)</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><code>static (0,0,mg) in cone?</code> 输出 <code>False</code>，说明静止 RR 不可行。</li>
+<li><code>accelerating (0,-2mg,mg) in cone?</code> 输出 <code>True</code>，并给出一组非负 \(k_1,k_2,k_3\)，说明以 \(2g\) 向左加速时 RR 可行。</li>
+</ul>
+<p>这验证了 dynamic grasp 不是静力平衡：静止时不可行的接触模式，在惯性力作用下可能变为可行。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

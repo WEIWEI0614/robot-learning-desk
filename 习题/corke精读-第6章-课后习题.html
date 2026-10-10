@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 6 章「Localization」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 6 章「Localization」课后习题</h1>
+<p>原书课后习题 8 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：确认原书给出的历史数值。</strong></p>
+<p>本章事实底座（第 6 节，PDF p.108）明确记载：1714 年英国颁布《Longitude Act》，设立悬赏 <strong>£20000</strong>。这是本题唯一可用的原始数字，其余一切只能由它出发。</p>
+<p><strong>第 2 步：理解"今天的货币价值"意味着什么。</strong></p>
+<p>题目问的是把 1714 年的 £20000 折算成当代购买力。这属于历史货币换算问题，需要 1714→今天的通胀/购买力指数。<strong>本章事实底座并未给出任何汇率、通胀率或折算系数</strong>，因此不能编造一个具体金额。</p>
+<p><strong>第 3 步：给出可复现的换算方法（而非编造数字）。</strong></p>
+<p>设 1714 年的名义金额为 $M_{1714} = £20000$。若采用消费者价格指数（CPI）或零售价格指数（RPI）折算，则</p>
+<p>$$
+M_{\text{today}} = M_{1714}\times \frac{\text{CPI}_{\text{today}}}{\text{CPI}_{1714}}
+$$</p>
+<p>其中比值 $\text{CPI}_{\text{today}}/\text{CPI}_{1714}$ 需查英国长期历史价格指数序列（如 MeasuringWorth 或英国国家统计局的历史 RPI 序列）。由于该比值不在本章事实底座内，<strong>原书未给出具体数值，按符号推导</strong>：答案应表述为"£20000 按历史价格指数折算后的等值金额"，并注明所用指数与年份。</p>
+<p><strong>第 4 步：说明为何原书把它作为习题。</strong></p>
+<p>本章用经度奖作为"外部观测修正航位推算"的历史引子（第 4 节推导链条第 1 步）。该题是<strong>开放式历史/数量级估算题</strong>，考查读者是否理解：18 世纪为"定位"这一问题愿意付出的经济代价之大，从而体会定位在航海与机器人学中的核心地位。原书并未在正文中给出折算后的数字，因此本题的正确答案是"给出换算路径 + 说明数据来源"，而不是一个凭空写出的金额。</p>
+<p><strong>第 5 步（可选）MATLAB/Python 验证。</strong></p>
+<p>若读者查到历史价格指数序列，可用如下代码做线性折算：</p>
+<pre><code class="lang-python"># 需自行填入查到的历史价格指数（本章未给出）
+M_1714 = 20000          # 1714 年 Longitude Prize，来自 PDF p.108
+CPI_1714 = None         # 原书未给出，需查历史 RPI/CPI 序列
+CPI_today = None        # 原书未给出，需查当代指数
+if CPI_1714 and CPI_today:
+    M_today = M_1714 * CPI_today / CPI_1714
+    print(f"£{M_today:,.0f} in today's currency")
+else:
+    print("原书未给出具体数值，按符号推导")</code></pre>
+<p>预期观察：只有当填入真实历史指数后才会输出具体金额；否则按硬性要求输出"原书未给出具体数值，按符号推导"。</p>
+<h4>关键点</h4>
+<ul>
+<li>原书唯一给出的数字是 <strong>1714 年《Longitude Act》悬赏 £20000</strong>（PDF p.108），这是本题的锚点。</li>
+<li>本题是<strong>历史货币折算题</strong>，需要 1714→今天的价格指数，而<strong>本章事实底座未提供该指数</strong>，故不能编造具体金额。</li>
+<li>正确做法是给出换算公式 $M_{\text{today}} = M_{1714}\times \text{CPI}_{\text{today}}/\text{CPI}_{1714}$，并注明数据来源。</li>
+<li>该题的教学意图是让读者体会"定位"问题的历史经济价值，与本章"航位推算 + 地标观测"的动机相呼应。</li>
+<li>与本章其他数值（如 Harrison 航海钟、Cook 航行经度误差 13 km）一样，属于历史背景，不参与 EKF/粒子滤波的公式推导。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 6 章 Localization</li>
+<li>依据：</li>
+<li>£20000 悬赏与 1714《Longitude Act》：本章事实底座第 6 节（PDF p.108）。</li>
+<li>经度奖作为"外部观测修正航位推算"的历史引子：事实底座第 4 节推导链条第 1 步。</li>
+<li>"原书未给出具体数值，按符号推导"：事实底座未包含任何 1714→今天的通胀/价格指数数据，故按硬性要求 1 处理。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确 driver 对象的接口约定</h5>
+<p>原书第 113 页给出的 driver 对象是一个"运动策略"抽象：它不直接修改机器人状态，而是每个控制周期被调用一次，返回一个速度指令 $\mathbf{u}=(v,\omega)$（线速度、角速度），由 <code>veh.step(v, omega)</code> 执行。因此本题要实现的 driver 必须满足：</p>
+<ul>
+<li>构造时接收圆心 $\mathbf{c}=(c_x,c_y)$ 与半径 $R$；</li>
+<li>每次调用 <code>demand()</code> 时，根据机器人当前位姿 $\hat{\mathbf{x}}=[x\ y\ \theta]^T$ 计算并返回 $(v,\omega)$，使机器人收敛到圆周上并沿圆周运动。</li>
+</ul>
+<p>原书未给出该 driver 的具体数值参数（如 $v$、增益），故下面按符号推导，数值由使用者自定。</p>
+<h5>第 2 步：几何误差定义</h5>
+<p>设机器人当前位置 $\mathbf{p}=(x,y)$，圆心 $\mathbf{c}=(c_x,c_y)$。定义径向向量与径向距离：</p>
+<p>$$\mathbf{r}=\mathbf{p}-\mathbf{c},\qquad d=\|\mathbf{r}\|$$</p>
+<p>期望的切向方向（逆时针）为径向向量逆时针旋转 $90^\circ$：</p>
+<p>$$\hat{\mathbf{t}}=\frac{1}{d}\begin{bmatrix}0&-1\\1&0\end{bmatrix}\mathbf{r}=\frac{1}{d}\begin{bmatrix}-r_y\\ r_x\end{bmatrix}$$</p>
+<p>机器人当前朝向为 $\hat{\mathbf{h}}=[\cos\theta\ \sin\theta]^T$。定义两个误差：</p>
+<ul>
+<li><strong>径向误差</strong>（离圆周的偏差）：$e_r = d - R$；</li>
+<li><strong>航向误差</strong>（朝向与切向的夹角）：$e_\theta = \mathrm{atan2}$ 意义下的 $\angle(\hat{\mathbf{t}},\hat{\mathbf{h}})$，即</li>
+</ul>
+<p>$$e_\theta = \mathrm{wrap}\big(\mathrm{atan2}(t_y,t_x)-\theta\big)$$</p>
+<p>其中 $\mathrm{wrap}(\cdot)$ 把角度归一化到 $(-\pi,\pi]$。</p>
+<h5>第 3 步：控制律设计</h5>
+<p>采用"切向速度 + 径向修正 + 航向对齐"的比例控制：</p>
+<p>$$v = v_0 - k_r\,e_r,\qquad \omega = k_\theta\,e_\theta + k_t\,v_0\,\kappa$$</p>
+<p>其中 $\kappa=1/R$ 是圆周曲率，$k_r,k_\theta,k_t>0$ 为增益。三项含义：</p>
+<ol>
+<li>$v_0$ 为标称巡航速度；</li>
+<li>$-k_r e_r$：若机器人偏外（$e_r>0$）则减速，偏内则加速，从而把径向误差压回零；</li>
+<li>$k_\theta e_\theta$：把航向拉向切向；</li>
+<li>$k_t v_0/R$：前馈项，提供维持圆周运动所需的名义角速度 $\omega=v/R$。</li>
+</ol>
+<p>注意：原书未给出 $v_0,k_r,k_\theta,k_t$ 的具体取值，需按仿真步长 $T=0.1$ s（facts 中 Vehicle 默认值）整定，例如 $v_0=1$ m/s、$k_r=1$、$k_\theta=2$、$k_t=1$。</p>
+<h5>第 4 步：可运行代码（Python 伪 MATLAB 风格）</h5>
+<pre><code class="lang-python">import numpy as np
+
+def wrap(a):
+    return (a + np.pi) % (2*np.pi) - np.pi
+
+class CircleDriver:
+    def __init__(self, centre, radius, v0=1.0, kr=1.0, kth=2.0, kt=1.0):
+        self.c = np.asarray(centre, float)
+        self.R = float(radius)
+        self.v0, self.kr, self.kth, self.kt = v0, kr, kth, kt
+
+    def demand(self, x):
+        # x = [x, y, theta]
+        r = np.array([x[0], x[1]]) - self.c
+        d = np.linalg.norm(r)
+        if d < 1e-9:
+            return self.v0, self.v0 / self.R      # 退化情形
+        t = np.array([-r[1], r[0]]) / d           # 逆时针切向
+        e_r = d - self.R
+        e_th = wrap(np.arctan2(t[1], t[0]) - x[2])
+        v = self.v0 - self.kr * e_r
+        w = self.kth * e_th + self.kt * self.v0 / self.R
+        return v, w</code></pre>
+<p>调用方式（与 <code>veh.step</code> 配合）：</p>
+<pre><code class="lang-python">drv = CircleDriver(centre=[0, 0], radius=5.0)
+for k in range(1000):
+    v, w = drv.demand(veh.x)      # veh.x = [x, y, theta]
+    veh.step(v, w)</code></pre>
+<h5>第 5 步：预期观察</h5>
+<ul>
+<li>若初始位姿在圆周上且朝向切向，$e_r=e_\theta=0$，输出 $v=v_0,\ \omega=v_0/R$，机器人做匀速圆周运动；</li>
+<li>若初始位姿偏离圆周，$e_r\neq 0$ 使 $v$ 变化，$e_\theta\neq 0$ 使 $\omega$ 修正，轨迹在若干步内收敛到目标圆；</li>
+<li>由于里程计噪声 $\mathbf{V}=\mathrm{diag}([\sigma_d,\sigma_\theta]^2)$（facts 中 $\sigma_d=2$ cm、$\sigma_\theta=0.5^\circ$）的存在，实际轨迹会在圆附近抖动，但不会发散——这正是闭环控制相对纯 dead reckoning 的优势。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>driver 对象是"策略层"，只输出 $(v,\omega)$，不直接改状态；与 <code>veh.step(v, omega)</code> 解耦。</li>
+<li>圆周跟踪的核心是把误差分解为<strong>径向误差</strong> $e_r=d-R$ 与<strong>航向误差</strong> $e_\theta$，分别用 $v$ 与 $\omega$ 修正。</li>
+<li>前馈项 $\omega=v/R$ 提供名义曲率，反馈项只负责消除初始偏差与噪声扰动。</li>
+<li>原书未给出该 driver 的具体增益与速度数值，需按仿真步长 $T=0.1$ s 自行整定。</li>
+<li>闭环修正能抑制里程计漂移，与本章"dead reckoning 的 $\mathbf{P}$ 单调不减、必须靠外部观测/反馈修正"的主线一致。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 6 章 Localization</li>
+<li>依据：</li>
+<li>driver 对象与 <code>veh.step(v, omega)</code> 接口：facts 第 6 节（<code>veh.step(1,0.3)</code> 两次调用、<code>Vehicle</code> 默认 $L=1$、maxspeed=5、alphalim=0.5、$T=0.1$ s）。</li>
+<li>里程计噪声 $\sigma_d=2$ cm、$\sigma_\theta=0.5^\circ$、$\mathbf{V}=\mathrm{diag}([\sigma_d,\sigma_\theta]^2)$：facts 第 5 节公式 1 与第 6 节。</li>
+<li>独轮车运动学 $\dot{x}=v\cos\theta,\ \dot{y}=v\sin\theta,\ \dot{\theta}=\omega$：facts 第 1 节记号约定。</li>
+<li>闭环修正抑制不确定性、dead reckoning 的 $\mathbf{P}$ 单调不减：facts 第 4 节推导链条第 4 步与第 5 节公式 2。</li>
+<li>具体增益 $v_0,k_r,k_\theta,k_t$：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确差速驱动几何。</strong> 设左右轮转速分别为 $\omega_L$、$\omega_R$（rad/s），轮半径为 $r$，两轮间距（轮距）为 $b$。机器人沿车体 x 轴的前进线速度 $v$ 与绕竖直轴的角速度 $\omega$ 由两轮速度叠加得到。<strong>为什么</strong>：差速驱动的本质是"两轮速度差产生转动、两轮速度均值产生平移"，这是独轮车模型 $\dot{x}=v\cos\theta,\ \dot{y}=v\sin\theta,\ \dot{\theta}=\omega$ 的物理来源。</p>
+<p><strong>第 2 步：写出左右轮接地点线速度。</strong> 左轮接地点线速度 $v_L = r\,\omega_L$，右轮接地点线速度 $v_R = r\,\omega_R$。<strong>为什么</strong>：纯滚动假设下，轮缘线速度等于轮心相对地面的速度。</p>
+<p><strong>第 3 步：由刚体运动学分解 $v$ 与 $\omega$。</strong> 车体中心线速度取两轮均值，角速度由两轮速度差除以轮距：</p>
+<p>$$v = \frac{v_R + v_L}{2} = \frac{r(\omega_R + \omega_L)}{2}$$</p>
+<p>$$\omega = \frac{v_R - v_L}{b} = \frac{r(\omega_R - \omega_L)}{b}$$</p>
+<p><strong>为什么</strong>：车体绕瞬时旋转中心转动，左右轮到旋转中心的距离差为 $b$，故速度差 $v_R-v_L$ 对应角速度 $v_R-v_L$ 除以 $b$；而中心点速度是两端速度的平均。</p>
+<p><strong>第 4 步：代入独轮车模型得航向里程计方程。</strong> 将上式代入本章 SE(2) 独轮车模型：</p>
+<p>$$\dot{\theta} = \omega = \frac{r(\omega_R - \omega_L)}{b}$$</p>
+<p>$$\dot{x} = v\cos\theta = \frac{r(\omega_R+\omega_L)}{2}\cos\theta,\qquad \dot{y} = v\sin\theta = \frac{r(\omega_R+\omega_L)}{2}\sin\theta$$</p>
+<p><strong>为什么</strong>：本章位姿为 $\begin{bmatrix}x&y&\theta\end{bmatrix}^T\in SE(2)$，航向 $\theta$ 的演化只由 $\omega$ 决定，这正是"heading odometry"要导出的核心量。</p>
+<p><strong>第 5 步：离散化（对应本章里程计递推形式）。</strong> 在采样间隔 $\Delta t$ 内，令 $\delta\theta = \omega\,\Delta t$，$\delta d = v\,\Delta t$，则</p>
+<p>$$\theta_{k+1} = \theta_k + \frac{r(\omega_R-\omega_L)}{b}\Delta t$$</p>
+<p>$$\begin{bmatrix}x_{k+1}\\y_{k+1}\end{bmatrix} = \begin{bmatrix}x_k\\y_k\end{bmatrix} + \frac{r(\omega_R+\omega_L)}{2}\Delta t\begin{bmatrix}\cos\theta_k\\\sin\theta_k\end{bmatrix}$$</p>
+<p><strong>为什么</strong>：这与本章过程模型 $\hat{\mathbf{x}}_{k+1}=f(\hat{\mathbf{x}}_k,\delta\mathbf{h}_k+\mathbf{v}_k)$ 中"先沿车 x 移 $\delta d$ 再转 $\delta\theta$"的 SE(2) 递推一致，$\delta\mathbf{h}_k=(\delta d,\delta\theta)$ 即由左右轮编码器增量算出。</p>
+<p><strong>第 6 步：含噪形式（可选，接本章 EKF 预测）。</strong> 若左右轮转速带独立噪声，则 $\delta d,\delta\theta$ 带噪，对应过程噪声 $\mathbf{v}=(v_d,v_\theta)\sim\mathcal{N}(0,\mathbf{V})$，$\mathbf{V}=\mathrm{diag}([\sigma_d,\sigma_\theta]^2)$，进入 EKF 预测 $\mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$。</p>
+<h4>关键点</h4>
+<ul>
+<li>差速驱动航向里程计的核心两式：$v=\dfrac{r(\omega_R+\omega_L)}{2}$，$\omega=\dfrac{r(\omega_R-\omega_L)}{b}$。</li>
+<li>航向方程 $\dot\theta=\dfrac{r(\omega_R-\omega_L)}{b}$ 只依赖轮速差与轮距，与轮半径成正比。</li>
+<li>离散化后 $\delta d=v\Delta t$、$\delta\theta=\omega\Delta t$，正好是本章 SE(2) 过程模型的输入 $\delta\mathbf{h}_k$。</li>
+<li>纯死路推算时协方差 $\mathbf{P}$ 单调不减（$\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$ 正定），必须靠观测更新才能下降。</li>
+<li>原书未给出 $r$、$b$ 的具体数值，本题按符号推导。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 6 章 Localization</li>
+<li>依据：</li>
+<li>独轮车模型 $\dot{x}=v\cos\theta,\ \dot{y}=v\sin\theta,\ \dot{\theta}=\omega$ 与 SE(2) 位姿：事实底座 §1 记号约定、§5 公式 1。</li>
+<li>过程模型 $\hat{\mathbf{x}}_{k+1}=f(\hat{\mathbf{x}}_k,\delta\mathbf{h}_k+\mathbf{v}_k)$、$\mathbf{v}=(v_d,v_\theta)$、$\mathbf{V}=\mathrm{diag}([\sigma_d,\sigma_\theta]^2)$：事实底座 §5 公式 1、§4 步骤 3。</li>
+<li>EKF 预测 $\mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$ 及"$\mathbf{P}$ 不减"：事实底座 §5 公式 2、§4 步骤 4。</li>
+<li>里程计噪声示例 $\sigma_d=2$ cm、$\sigma_\theta=0.5°$：事实底座 §6（仅作噪声量级参考，本题未使用具体数值）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4. 航位推算（Dead-reckoning，见第 111 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 a) 问：试验不同的 $\mathbf{P}_0$、$\mathbf{V}$、$\hat{\mathbf{V}}$</h5>
+<p><strong>做什么</strong>：在 EKF 航位推算中，分别改变初始协方差 $\mathbf{P}_0$、仿真真值过程噪声 $\mathbf{V}$、滤波器内部使用的过程噪声估计 $\hat{\mathbf{V}}$，观察估计轨迹与协方差椭圆的变化。</p>
+<p><strong>为什么</strong>：本章事实底座明确指出，$\mathbf{V}$ 与 $\hat{\mathbf{V}}$ 是<strong>两个不同的量</strong>——$\mathbf{V}$ 是 Vehicle 仿真中注入的真实噪声协方差，$\hat{\mathbf{V}}$ 是 EKF 内部假设的噪声协方差。二者不一致会直接改变滤波器的"自信程度"。</p>
+<p>原书给出的基准数值（PDF p.112, p.114）：</p>
+<p>$$\mathbf{P}_0 = \mathrm{diag}([0.005,\ 0.005,\ 0.001]^2)$$</p>
+<p>$$\mathbf{V} = \mathrm{diag}([0.02,\ 0.5\pi/180]^2)\quad(\sigma_d=2\,\text{cm},\ \sigma_\theta=0.5^\circ)$$</p>
+<p>EKF 预测递推为：</p>
+<p>$$\hat{\mathbf{x}}_{k+1|k}=f(\hat{\mathbf{x}}_{k|k},\delta\mathbf{h}_k),\qquad \mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\hat{\mathbf{V}}\mathbf{F}_v^T$$</p>
+<p>可运行的 MATLAB 骨架（基于原书 <code>Vehicle</code>、<code>EKF</code> 类）：</p>
+<pre><code class="lang-matlab">% 基准
+P0 = diag([0.005, 0.005, 0.001].^2);
+V  = diag([0.02, 0.5*pi/180].^2);   % 仿真真值噪声
+Vh = V;                              % 滤波器假设
+
+veh = Vehicle(V);
+ekf = EKF(veh, Vh, P0);
+ekf.run(1000);
+
+% 试验 1：P0 放大 100 倍
+ekf.P0 = 100*P0;  ekf.run(1000);
+
+% 试验 2：Vh 大于 V（滤波器悲观）
+ekf.V = 2*V;      ekf.run(1000);
+
+% 试验 3：Vh 小于 V（滤波器过度自信）
+ekf.V = 0.5*V;    ekf.run(1000);</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>$\mathbf{P}_0$ 只影响早期瞬态，随步数增加被过程噪声项 $\mathbf{F}_v\hat{\mathbf{V}}\mathbf{F}_v^T$ 淹没。</li>
+<li>$\hat{\mathbf{V}}>\mathbf{V}$：协方差椭圆偏大，滤波器<strong>悲观</strong>（低估自身精度）。</li>
+<li>$\hat{\mathbf{V}}<\mathbf{V}$：协方差椭圆偏小，滤波器<strong>过度自信</strong>，真实误差可能落在椭圆之外。</li>
+<li>纯航位推算下 $\mathbf{P}$ 单调不减（因为 $\mathbf{F}_v\hat{\mathbf{V}}\mathbf{F}_v^T$ 正定）。</li>
+</ul>
+<h5>第 b) 问：绘制实际航向角与估计航向角</h5>
+<p><strong>做什么</strong>：从仿真中记录每步的真实 $\theta_k$ 与估计 $\hat{\theta}_{k|k}$，画在同一张图上对比。</p>
+<p><strong>为什么</strong>：图 6.4 只对比了位置 $(x,y)$，而航向角 $\theta$ 是 SE(2) 位姿的第三个分量，其误差会通过 $f(\cdot)$ 中的旋转项耦合回位置误差，因此单独观察 $\theta$ 的跟踪质量很有必要。</p>
+<pre><code class="lang-matlab">% 假设 ekf.run 内部保存了历史
+t     = 1:length(ekf.xhat);
+theta_true = veh.thetaHist;      % 真实航向
+theta_est  = ekf.xhat(3,:);      % 估计航向
+
+figure;
+plot(t, theta_true, 'k-', t, theta_est, 'r--');
+xlabel('time step'); ylabel('\theta (rad)');
+legend('actual', 'estimated');</code></pre>
+<p><strong>预期观察</strong>：由于航向角没有外部观测（纯航位推算），$\hat{\theta}$ 会随步数缓慢漂移，误差随 $\sigma_\theta$ 累积；曲线形状与真实值相似但逐渐分离。</p>
+<h5>第 c) 问：航向方差 vs 位置方差，以及随传感器方差的变化</h5>
+<p><strong>做什么</strong>：比较 $\mathbf{P}$ 的对角元 $P_{11},P_{22}$（位置方差）与 $P_{33}$（航向方差），并改变传感器噪声 $\mathbf{W}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$ 观察变化。</p>
+<p><strong>为什么</strong>：本章事实底座指出，纯航位推算下 $\mathbf{P}$ 只增不减；而一旦引入观测更新，$\mathbf{P}\leftarrow(\mathbf{I}-\mathbf{K}\mathbf{H}_x)\mathbf{P}$ 可使协方差下降。传感器方差 $\mathbf{W}$ 通过 Kalman 增益 $\mathbf{K}$ 影响下降幅度：</p>
+<p>$$\mathbf{K}=\mathbf{P}\mathbf{H}_x^T(\mathbf{H}_x\mathbf{P}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T)^{-1}$$</p>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><strong>纯航位推算</strong>：$P_{33}$（航向方差）增长最快，因为 $\theta$ 的误差直接由 $\sigma_\theta$ 累积；$P_{11},P_{22}$ 通过 $\mathbf{F}_x$ 中的 $\sin\theta,\cos\theta$ 项间接增长，且与 $\theta$ 的误差耦合。</li>
+<li><strong>加入观测后</strong>：$\mathbf{W}$ 增大 → $\mathbf{K}$ 减小 → 协方差下降变慢，$P_{33}$ 与 $P_{11},P_{22}$ 都更大。</li>
+<li>原书第 700 步的数值（PDF p.115）：</li>
+</ul>
+<p>$$\mathbf{P}_{700}=\begin{bmatrix}0.4674&0.0120&-0.0295\\0.0120&0.7394&0.0501\\-0.0295&0.0501&0.0267\end{bmatrix}$$</p>
+<p>可见 $P_{11}\approx0.467$、$P_{22}\approx0.739$（位置方差，单位 m²），$P_{33}\approx0.0267$（航向方差，单位 rad²）。$\sigma_x=\sqrt{0.4674}\approx0.6837$ m，95% 置信区间 $\pm2\sigma\approx\pm1.37$ m。</p>
+<pre><code class="lang-matlab">% 改变传感器方差
+W1 = diag([0.1, 1*pi/180].^2);   % 基准
+W2 = diag([0.5, 5*pi/180].^2);   % 放大
+sensor.W = W2;
+ekf.run(1000);
+% 比较 P(3,3) 与 P(1,1), P(2,2) 的终值</code></pre>
+<h4>关键点</h4>
+<ul>
+<li><strong>$\mathbf{V}$ 与 $\hat{\mathbf{V}}$ 必须区分</strong>：前者是仿真真值噪声，后者是滤波器假设；$\hat{\mathbf{V}}>\mathbf{V}$ 悲观，$\hat{\mathbf{V}}<\mathbf{V}$ 过度自信。</li>
+<li><strong>纯航位推算 $\mathbf{P}$ 单调不减</strong>：因为预测式 $\mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\hat{\mathbf{V}}\mathbf{F}_v^T$ 的第二项正定。</li>
+<li><strong>航向方差增长最快</strong>：$\theta$ 的误差直接由 $\sigma_\theta$ 累积，且通过 $\mathbf{F}_x$ 耦合到位置方差。</li>
+<li><strong>观测更新使协方差下降</strong>：$\mathbf{P}\leftarrow(\mathbf{I}-\mathbf{K}\mathbf{H}_x)\mathbf{P}$，$\mathbf{W}$ 越大 $\mathbf{K}$ 越小，下降越慢。</li>
+<li><strong>$\mathbf{P}_0$ 只影响瞬态</strong>：长期行为由过程噪声 $\hat{\mathbf{V}}$ 主导。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 6 章 Localization</li>
+<li>依据：</li>
+<li>航位推算过程模型与 EKF 预测：事实底座 §4 步骤 3–4、§5 公式 1–2</li>
+<li>$\mathbf{V}$ 与 $\hat{\mathbf{V}}$ 的区分：事实底座 §7 misconceptions 第 2 条（PDF p.116, 119）</li>
+<li>基准数值 $\mathbf{P}_0$、$\mathbf{V}$、$\mathbf{W}$：事实底座 §6（PDF p.112, 114, 116–117）</li>
+<li>第 700 步协方差矩阵与 $\sigma_x$：事实底座 §6（PDF p.115）</li>
+<li>Kalman 增益与更新公式：事实底座 §5 公式 4</li>
+<li>纯航位推算 $\mathbf{P}$ 单调不减：事实底座 §5 公式 2 下方说明</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 改变传感器特性</strong></p>
+<p>传感器模型为距离-方位观测</p>
+<p>$$\mathbf{z}=h(\mathbf{x}_v,\mathbf{x}_f)+\mathbf{w}=\begin{bmatrix}r\\\beta\end{bmatrix}+\mathbf{w},\qquad \mathbf{w}\sim\mathcal{N}(0,\mathbf{W}),\ \mathbf{W}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$$</p>
+<p>原书默认 $\sigma_r=0.1$ m、$\sigma_\beta=1^\circ$，即 <code>W = diag([0.1, 1*pi/180].^2)</code>。</p>
+<ul>
+<li><strong>协方差</strong>：$\mathbf{W}$ 增大 → Kalman 增益 $\mathbf{K}=\mathbf{P}\mathbf{H}_x^T(\mathbf{H}_x\mathbf{P}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T)^{-1}$ 中分母变大 → $\mathbf{K}$ 变小 → 观测被"打折"，更新后协方差下降幅度减小，估计误差增大。</li>
+<li><strong>采样率</strong>：观测越频繁，单位时间内更新次数越多，$\mathbf{P}$ 被反复压低，估计误差越小；采样率过低则两次观测之间 $\mathbf{P}$ 由预测步 $\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$ 持续抬升。</li>
+<li><strong>量程/方位角限制</strong>：量程或视场受限 → 可见地标数减少 → 某些时刻无观测可更新，退化为纯航位推算，$\mathbf{P}$ 单调不减（见公式 2 第二项正定）。方位角限制还会使可观测几何变差，放大沿视线方向的不确定性。</li>
+</ul>
+<p><strong>b) 改变 $\mathbf{W}$ 与 $\hat{\mathbf{V}}$</strong></p>
+<p>注意 $\mathbf{V}$ 在 Vehicle 中是仿真真值噪声，在 EKF 中是滤波器估计 $\hat{\mathbf{V}}$，二者各用一次。</p>
+<ul>
+<li>若 $\hat{\mathbf{V}}>\mathbf{V}$：滤波器认为过程噪声比实际大，$\mathbf{P}_{k+1|k}$ 被高估，$\mathbf{K}$ 偏大，滤波器<strong>悲观</strong>，对观测更信任，估计误差可能反而略小但协方差偏大。</li>
+<li>若 $\hat{\mathbf{V}}<\mathbf{V}$：滤波器<strong>过度自信</strong>，$\mathbf{K}$ 偏小，观测修正不足，估计误差增大而协方差却偏小——这是最危险的情形。</li>
+<li>增大 $\mathbf{W}$：$\mathbf{K}$ 减小，估计误差增大，最终协方差增大（观测权重下降）。</li>
+<li>增大 $\hat{\mathbf{V}}$：预测协方差增大，最终协方差增大，但滤波器对观测更敏感。</li>
+</ul>
+<p><strong>c) 仅测方位传感器</strong></p>
+<p>观测退化为 $\mathbf{z}=\beta+\mathbf{w}$，$\mathbf{W}=\sigma_\beta^2$（标量）。此时 $h(\cdot)$ 只含方位分量，$\mathbf{H}_x$ 只保留方位行。仅测方位时，单个地标只把位置约束到一条射线上，<strong>距离不可观测</strong>；需要至少两个不同方位的地标（三角化）才能确定位置。性能表现为：沿射线方向方差几乎不下降，横向方差下降明显；若地标共线或方位变化小，协方差矩阵趋于病态，估计误差显著大于距离-方位传感器。</p>
+<p><strong>d) 偶发错误观测</strong></p>
+<p>设错误率为 $p_e$。错误距离或错误身份相当于给 innovation $\boldsymbol\nu=\mathbf{z}-\hat{\mathbf{z}}$ 注入一个大幅值离群点。由于 EKF 更新为</p>
+<p>$$\hat{\mathbf{x}}_{k+1|k+1}=\hat{\mathbf{x}}_{k+1|k}+\mathbf{K}\boldsymbol\nu$$</p>
+<p>离群点会被 $\mathbf{K}$ 直接放大进状态，使估计跳变；同时 $\mathbf{P}\leftarrow(\mathbf{I}-\mathbf{K}\mathbf{H}_x)\mathbf{P}$ 被错误地压低，滤波器变得<strong>自信但错误</strong>。若错误身份即数据关联错误，会把地标 C 误认为 B，得到错误估计（原书 p.109、p.129 的灯塔触礁例子）。缓解手段：innovation gate（卡方检验）、鲁棒核、RANSAC。</p>
+<p><strong>e) EKF 中的数据关联</strong></p>
+<p>不再使用传感器返回的地标 id，而是对每个观测 $\mathbf{z}_i$ 与地图中每个地标 $\mathbf{x}_{f,j}$ 计算预测观测 $\hat{\mathbf{z}}_{ij}=h(\hat{\mathbf{x}}_v,\mathbf{x}_{f,j})$ 与 innovation $\boldsymbol\nu_{ij}$，以及 innovation 协方差 $\mathbf{S}_{ij}=\mathbf{H}_x\mathbf{P}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T$。采用最近邻（NN）或 Mahalanobis 距离</p>
+<p>$$d_{ij}^2=\boldsymbol\nu_{ij}^T\mathbf{S}_{ij}^{-1}\boldsymbol\nu_{ij}$$</p>
+<p>取最小者作为关联，并设门限 $\chi^2$ 拒绝离群。关联错误会引入偏差，是实际系统失败的主因之一。</p>
+<p><strong>f) 绘制航向角</strong></p>
+<p>在 <code>ekf.run(1000)</code> 后，从 <code>ekf.history</code>（或等价的历史记录）中取出每步的 $\hat{\theta}$，与 <code>veh</code> 的真值 $\theta$ 对比：</p>
+<pre><code class="lang-matlab">% 假设 ekf.run 已执行，history 含 x_est 与 x_true
+t   = 1:length(ekf.history);
+th_est  = squeeze(ekf.history(3,:));   % 估计航向
+th_true = squeeze(veh.history(3,:));   % 真值航向
+figure; plot(t, th_true, 'k', t, th_est, 'r--');
+xlabel('step'); ylabel('\theta (rad)');
+legend('true','estimated'); grid on;</code></pre>
+<p>预期：航向估计与真值贴合较好，因为航向由里程计直接积分且观测方位角对航向敏感；误差随步数缓慢漂移，但在观测更新处被拉回。</p>
+<p><strong>g) 航向方差 vs 位置方差</strong></p>
+<p>从 $\mathbf{P}$ 的对角元读取：$\sigma_\theta^2=P_{33}$，$\sigma_x^2=P_{11}$，$\sigma_y^2=P_{22}$。原书第 700 步给出</p>
+<p>$$\mathbf{P}_{700}=\begin{bmatrix}0.4674&0.0120&-0.0295\\0.0120&0.7394&0.0501\\-0.0295&0.0501&0.0267\end{bmatrix}$$</p>
+<p>可见 $\sigma_x=0.6837$ m（95% 置信 $\pm2\sigma=\pm1.37$ m），而 $\sigma_\theta=\sqrt{0.0267}\approx0.163$ rad。位置方差远大于航向方差，因为位置是航向误差随行进距离积分的结果，误差沿轨迹累积。</p>
+<p>当 $\sigma_r$、$\sigma_\beta$ 增大时：$\mathbf{W}$ 增大 → $\mathbf{K}$ 减小 → 更新对 $\mathbf{P}$ 的压缩变弱 → 位置与航向方差都增大。但位置方差对 $\sigma_r$ 更敏感（距离直接约束位置），航向方差对 $\sigma_\beta$ 更敏感（方位角直接约束航向）；由于位置误差还受航向误差积分放大，位置方差的增长通常快于航向方差。</p>
+<h4>关键点</h4>
+<ul>
+<li>预测步 $\mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$ 中第二项正定，纯航位推算 $\mathbf{P}$ 单调不减；只有观测更新 $\mathbf{P}\leftarrow(\mathbf{I}-\mathbf{K}\mathbf{H}_x)\mathbf{P}$ 才能压低协方差。</li>
+<li>$\mathbf{V}$ 与 $\mathbf{W}$ 各用两次：仿真真值一次、滤波器估计一次；$\hat{\mathbf{V}}<\mathbf{V}$ 导致过度自信，是最危险的失配。</li>
+<li>仅测方位传感器距离不可观测，需至少两个不同方位地标三角化；单地标只约束到一条射线。</li>
+<li>数据关联错误与偶发离群观测都会造成"自信但错误"的估计，需 innovation gate 或鲁棒方法。</li>
+<li>位置方差通常大于航向方差，因为位置误差是航向误差沿轨迹积分的结果。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 6 章 Localization</li>
+<li>依据：</li>
+<li>传感器模型与 $\mathbf{W}$：facts 第 5 节公式 3、第 6 节 <code>W = diag([0.1, 1*pi/180].^2)</code></li>
+<li>EKF 预测/更新与 $\mathbf{K}$：facts 第 5 节公式 2、4</li>
+<li>$\mathbf{V}$ 与 $\hat{\mathbf{V}}$ 双重使用：facts 第 7 节 misconceptions</li>
+<li>数据关联错误与灯塔例子：facts 第 7 节、第 6 节 p.109/p.129</li>
+<li>第 700 步 $\mathbf{P}_{700}$ 与 $\sigma_x=0.6837$、$\pm1.37$ m：facts 第 6 节</li>
+<li>仅测方位与三角化：facts 第 3 节概念 2（resectioning/triangulation）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6. 建图（Making a map，第 120 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题以 6.3 节「建图」的 EKF 框架为基础。回顾该框架：假设车辆位姿已知，状态向量为已观测到的 $M$ 个地标坐标，维数 $2M$；预测步骤平凡（地标静止不动），观测模型为距离-方位</p>
+<p>$$\mathbf{z}=h(\mathbf{x}_v,\mathbf{x}_f)+\mathbf{w}=\begin{bmatrix}r\\\beta\end{bmatrix}+\mathbf{w},\qquad \mathbf{w}\sim\mathcal{N}(0,\mathbf{W}),\quad \mathbf{W}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$$</p>
+<p>新地标通过逆观测 $g(\cdot)=h^{-1}$ 由位姿与观测算出坐标，再经 $y(\cdot)$ 与雅可比 $\mathbf{J}_z$ 扩展状态与协方差。</p>
+<h5>a) 改变传感器特性对性能的影响</h5>
+<p><strong>做什么</strong>：在 <code>map=Map(20)</code>、<code>W=diag([0.1,1*pi/180].^2)</code> 的基准配置上，分别扰动 $\sigma_r,\sigma_\beta$、采样率、量程与方位角限制，运行 <code>ekf.run(1000)</code> 并比较地标估计的置信椭圆。</p>
+<p><strong>为什么</strong>：由 Kalman 更新公式</p>
+<p>$$\mathbf{K}=\mathbf{P}_{k+1|k}\mathbf{H}_x^T(\mathbf{H}_x\mathbf{P}_{k+1|k}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T)^{-1}$$</p>
+<p>观测噪声协方差 $\mathbf{W}$ 直接进入增益分母。因此：</p>
+<ul>
+<li><strong>协方差 $\mathbf{W}$ 增大</strong>（$\sigma_r,\sigma_\beta$ 变大）：$\mathbf{K}$ 变小，每次观测对状态的修正量减小，地标估计收敛更慢、稳态协方差更大，置信椭圆更大。</li>
+<li><strong>采样率提高</strong>：单位时间内更新次数增多，$\mathbf{P}$ 被反复削减，收敛更快、稳态精度更高；但计算量线性上升。</li>
+<li><strong>量程限制</strong>：量程缩小使远处地标不可见，某些地标长期得不到观测，其协方差只增不减（预测步骤不改变地标协方差，但无更新则无法下降），甚至无法被初始化。</li>
+<li><strong>方位角限制</strong>：视场变窄使可同时观测的地标数减少，观测几何变差（尤其影响沿视线方向的距离可观测性），估计不确定性增大。</li>
+</ul>
+<p>原书未给出这些扰动下的具体数值，按符号推导；基准数值 $\sigma_r=0.1$ m、$\sigma_\beta=1°$ 来自 6.3 节。</p>
+<h5>b) 纯方位传感器 vs 距离-方位传感器</h5>
+<p><strong>做什么</strong>：把观测模型改为仅含方位 $\mathbf{z}=\beta+\mathbf{w}$，即 $\mathbf{H}_x$ 只保留方位行，重新运行建图。</p>
+<p><strong>为什么</strong>：纯方位观测下，单个地标只把车辆约束到一条射线上，<strong>距离不可观测</strong>。对建图而言，新地标的初始化 $g(\cdot)=h^{-1}$ 需要距离才能算出坐标，纯方位无法单独初始化地标，必须依赖车辆运动产生的视差（三角测量/triangulation）才能确定地标距离。因此：</p>
+<ul>
+<li>收敛显著变慢，需要车辆移动足够距离形成基线；</li>
+<li>沿视线方向的不确定性远大于垂直方向，置信椭圆被拉长；</li>
+<li>若车辆静止或运动退化，地标估计不可观测。</li>
+</ul>
+<p>距离-方位传感器同时给出 $r$ 与 $\beta$，单次观测即可初始化地标，收敛快、椭圆接近圆形。原书未给出纯方位情形的具体数值，按符号推导。</p>
+<h5>c) 用 EKF 实现数据关联</h5>
+<p><strong>做什么</strong>：不再使用 <code>sensor.reading()</code> 返回的身份 $i$，而是对每个观测 $\mathbf{z}$，遍历地图中所有已知地标，计算 innovation 并做门限检验，选最匹配者。</p>
+<p><strong>为什么</strong>：数据关联错误会把灯塔 C 误认为 B，得到错误估计（原书 p.109、p.129 的触礁例子）。标准做法是<strong>最近邻 + 马氏距离门限</strong>：</p>
+<p>对第 $j$ 个地标，innovation</p>
+<p>$$\boldsymbol\nu_j=\mathbf{z}-\hat{\mathbf{z}}_j,\qquad \hat{\mathbf{z}}_j=h(\hat{\mathbf{x}}_v,\hat{\mathbf{x}}_{f,j})$$</p>
+<p>其协方差为 $\mathbf{S}_j=\mathbf{H}_x\mathbf{P}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T$，马氏距离</p>
+<p>$$d_j^2=\boldsymbol\nu_j^T\mathbf{S}_j^{-1}\boldsymbol\nu_j$$</p>
+<p>选 $j^\star=\arg_j\min d_j^2$；若 $d_{j^\star}^2$ 超过门限（如 $\chi^2$ 分位数），则判定为新地标并执行状态扩展。这样把「身份识别」从传感器转移到滤波器内部，是实际系统必需的一步。</p>
+<p><strong>可运行验证（MATLAB，Toolbox 风格）</strong>：</p>
+<pre><code class="lang-matlab">map = Map(20);
+W = diag([0.1, 1*pi/180].^2);
+V = diag([0.005, 0.5*pi/180].^2);
+veh = Vehicle(V);
+sensor = RangeBearingSensor(veh, map, W);
+ekf = EKF(veh, V, sensor, map, diag([.01,.01,.005].^2));
+ekf.run(1000);
+% 预期：地标估计随步数收敛，置信椭圆缩小；
+% 增大 W 后椭圆变大、收敛变慢。</code></pre>
+<h4>关键点</h4>
+<ul>
+<li>建图 EKF 中，观测噪声 $\mathbf{W}$ 通过 Kalman 增益分母控制修正强度：$\mathbf{W}$ 越大，修正越弱、收敛越慢、稳态协方差越大。</li>
+<li>采样率、量程、视场共同决定「地标被观测的机会」；无观测则协方差无法下降。</li>
+<li>纯方位传感器距离不可观测，必须靠车辆运动视差才能初始化地标，收敛慢且椭圆沿视线拉长。</li>
+<li>数据关联是实际系统的必需环节；用马氏距离 + 门限做最近邻关联，可避免「自信但错误」的估计。</li>
+<li>注意 $\mathbf{W}$ 在传感器与滤波器中各用一次（原书 p.116、119 的对照）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 6 章</li>
+<li>依据：</li>
+<li>建图框架、状态维数 $2M$、$g(\cdot)=h^{-1}$、$\mathbf{J}_z$、$\mathbf{H}_x$ 稀疏性：事实底座第 4 节第 7 步、第 5 节公式 3</li>
+<li>观测模型与 $\mathbf{W}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$、$\sigma_r=0.1$ m、$\sigma_\beta=1°$：事实底座第 5 节公式 3、第 6 节 <code>Map(20,10)</code> 条目</li>
+<li>Kalman 增益与更新公式：事实底座第 5 节公式 4</li>
+<li>数据关联错误后果（灯塔 C 误认为 B、触礁）：事实底座第 7 节 misconceptions</li>
+<li>$\mathbf{W}$ 两次使用：事实底座第 7 节 misconceptions</li>
+<li>纯方位/三角测量概念：事实底座第 3 节第 2 条（resectioning vs triangulation）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是围绕第 6 章 SLAM（6.4 节）的仿真实验题，核心状态向量为 $2M+3$ 维（$M$ 个地标 + 车辆位姿 $\begin{bmatrix}x&y&\theta\end{bmatrix}^T$），协方差分块为</p>
+<p>$$\boldsymbol\Sigma=\begin{bmatrix}\boldsymbol\Sigma_{vv}&\boldsymbol\Sigma_{vm}\\ \boldsymbol\Sigma_{vm}^T&\boldsymbol\Sigma_{mm}\end{bmatrix}.$$</p>
+<p><strong>a) 改变传感器特性。</strong> 观测模型为 $\mathbf{z}=h(\mathbf{x}_v,\mathbf{x}_f)+\mathbf{w}$，$\mathbf{w}\sim\mathcal{N}(0,\mathbf{W})$，其中 $\mathbf{W}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$。由 Kalman 更新</p>
+<p>$$\mathbf{K}=\mathbf{P}_{k+1|k}\mathbf{H}_x^T(\mathbf{H}_x\mathbf{P}_{k+1|k}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T)^{-1}$$</p>
+<p>可知：$\mathbf{W}$ 增大 → 分母增大 → $\mathbf{K}$ 减小 → 观测被更少采信，$\mathbf{P}$ 下降更慢，估计误差更大。采样率提高等价于单位时间内更新次数增多，每次更新都使 $\mathbf{P}\leftarrow(\mathbf{I}-\mathbf{K}\mathbf{H}_x)\mathbf{P}$，故收敛更快、稳态方差更小。量程与方位角限制则决定哪些地标可被观测：限制越严，可见地标越少，$\mathbf{H}_x$ 中非零行越少，可观测性下降，$\boldsymbol\Sigma_{mm}$ 与 $\boldsymbol\Sigma_{vv}$ 收敛更慢。原书未给出具体数值，按符号推导。</p>
+<p><strong>b) 纯方位 vs 距离-方位。</strong> 距离-方位观测 $\mathbf{z}=\begin{bmatrix}r\\\beta\end{bmatrix}+\mathbf{w}$ 同时约束径向与切向；纯方位只有 $\beta$，单个地标仅把车辆约束到一条射线上，需多个不同方位地标才能定位（即 resectioning 的几何思想）。因此纯方位传感器收敛更慢、对地标几何分布更敏感，且距离信息缺失使 $\boldsymbol\Sigma_{vv}$ 中径向分量下降缓慢。原书未给出具体数值，按符号推导。</p>
+<p><strong>c) 数据关联。</strong> 原书用传感器返回的地标 id 直接确定对应关系。改为自行关联时，需对每个观测 $\mathbf{z}_i$ 与地图中每个地标 $\mathbf{x}_{f,j}$ 计算预测观测 $\hat{\mathbf{z}}_{ij}=h(\hat{\mathbf{x}}_v,\hat{\mathbf{x}}_{f,j})$ 及 innovation $\boldsymbol\nu_{ij}=\mathbf{z}_i-\hat{\mathbf{z}}_{ij}$，用马氏距离</p>
+<p>$$d_{ij}^2=\boldsymbol\nu_{ij}^T(\mathbf{H}_x\mathbf{P}\mathbf{H}_x^T+\mathbf{H}_w\mathbf{W}\mathbf{H}_w^T)^{-1}\boldsymbol\nu_{ij}$$</p>
+<p>做最近邻匹配（或门限筛选）。关联错误会引入误差，可能形成"自信但错误的机器人"（原书 p.129）。</p>
+<p><strong>d) 绘制航向角。</strong> 从 EKF 状态向量中提取第 3 个分量 $\hat\theta_{k|k}$，与仿真真值 $\theta_k$ 同图绘制。原书 Fig. 6.10 只画了位置，航向图应呈现类似的收敛趋势：初期误差大，随观测更新逐渐贴合真值。</p>
+<p><strong>e) 方差比较。</strong> 航向方差为 $\boldsymbol\Sigma_{vv}$ 的第 (3,3) 元素，位置方差为第 (1,1)、(2,2) 元素。由预测</p>
+<p>$$\mathbf{P}_{k+1|k}=\mathbf{F}_x\mathbf{P}_{k|k}\mathbf{F}_x^T+\mathbf{F}_v\mathbf{V}\mathbf{F}_v^T$$</p>
+<p>第二项正定，纯死路推算时 $\mathbf{P}$ 单调不减；观测更新才使其下降。当 $\sigma_r,\sigma_\beta$ 增大，$\mathbf{W}$ 增大，$\mathbf{K}$ 减小，所有方差下降变慢。由于航向只受 $\beta$ 直接影响（$\partial h/\partial\theta$ 项），而位置同时受 $r$ 与 $\beta$ 影响，通常航向方差对 $\sigma_\beta$ 更敏感，位置方差对 $\sigma_r$ 更敏感。原书未给出具体数值，按符号推导。</p>
+<p><strong>可运行验证代码（MATLAB，基于原书工具箱）：</strong></p>
+<pre><code class="lang-matlab">% 基于 Corke 工具箱的 SLAM 实验骨架
+map = Map(20);                      % 20 个地标，±10 m
+W = diag([0.1, 1*pi/180].^2);       % 距离-方位噪声
+veh = Vehicle;  veh.V = diag([0.02, 0.5*pi/180].^2);
+sensor = RangeBearingSensor(veh, map, W);
+ekf = EKF(veh, sensor, diag([.01,.01,.005].^2), W);
+ekf.run(1000);
+% 观察：增大 W 中 σ_r 或 σ_β，重跑，比较 P 收敛速度与稳态值</code></pre>
+<p>预期：$\sigma_r$ 或 $\sigma_\beta$ 增大时，$\mathbf{P}$ 收敛更慢、稳态方差更大；纯方位版本需更多地标才能收敛。</p>
+<h4>关键点</h4>
+<ul>
+<li>SLAM 状态为 $2M+3$ 维，协方差分块 $\boldsymbol\Sigma_{vv},\boldsymbol\Sigma_{mm},\boldsymbol\Sigma_{vm}$，$\boldsymbol\Sigma_{mm}$ 非块对角。</li>
+<li>观测噪声 $\mathbf{W}$ 增大 → Kalman 增益 $\mathbf{K}$ 减小 → 协方差下降变慢。</li>
+<li>纯方位传感器缺少径向约束，收敛慢且依赖地标几何。</li>
+<li>数据关联错误会引入误差，可能形成"自信但错误"的估计。</li>
+<li>航向方差对 $\sigma_\beta$ 更敏感，位置方差对 $\sigma_r$ 更敏感。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 6 章</li>
+<li>依据：</li>
+<li>观测模型与 Kalman 更新：facts 第 5 节公式 3、4；第 4 节步骤 5、6</li>
+<li>SLAM 协方差分块：facts 第 5 节公式 5；第 4 节步骤 8</li>
+<li>数据关联：facts 第 3 节第 7 条；第 7 节 misconceptions</li>
+<li>传感器参数（$\sigma_r=0.1$ m、$\sigma_\beta=1°$、<code>Map(20,10)</code>）：facts 第 6 节</li>
+<li>纯方位/resectioning：facts 第 3 节第 2 条</li>
+<li>航向与位置方差：facts 第 5 节公式 2、4</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8. 粒子滤波（第 125 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是围绕本章 6.5 节 Monte-Carlo/粒子滤波的<strong>实验探究题</strong>，原书未给出具体数值，以下按符号推导并给出可运行代码与预期观察。</p>
+<p><strong>a) 是否总能收敛？</strong></p>
+<p>粒子滤波的收敛性依赖三个条件：粒子数 $N$ 足够大、过程噪声 $\mathbf{Q}$ 与似然协方差 $\mathbf{L}$ 设置合理、以及初始粒子云覆盖真实位姿。按 6.5 节三步迭代：</p>
+<p>$$\mathbf{x}_{v,i}\leftarrow f(\mathbf{x}_{v,i},\mathbf{u})+\mathbf{q}\langle k\rangle,\quad w=w_0\exp\!\left(-\tfrac12\boldsymbol\nu^T\mathbf{L}^{-1}\boldsymbol\nu\right),\quad w'_i=\frac{w_i}{\sum w_i}$$</p>
+<p><strong>结论：不保证每次收敛。</strong> 原因有二：</p>
+<ol>
+<li>重采样是随机过程（累积直方图 $c_j=\sum_{i\le j}w'_i$ 加均匀随机数 $r$ 选取 $j^\star$），单次运行存在随机性；</li>
+<li>若 $\mathbf{Q}$ 过小，粒子云会过早坍缩（样本贫化），一旦真实位姿落在粒子云之外便无法恢复。</li>
+</ol>
+<p><strong>b) 参数影响</strong></p>
+<ul>
+<li>$\mathbf{Q}=\mathrm{diag}([\sigma_x,\sigma_y,\sigma_\theta]^2)$：过程噪声协方差。$\mathbf{Q}$ 越大，粒子扩散越广，收敛越慢但鲁棒性越强（能跟踪快速机动）；$\mathbf{Q}$ 越小，收敛越快但易发散。</li>
+<li>$\mathbf{L}=\mathrm{diag}([\sigma_r,\sigma_\beta]^2)$：似然协方差。$\mathbf{L}$ 越小，似然峰越尖锐，权重差异越大，收敛越快但易过拟合；$\mathbf{L}$ 越大，权重趋于均匀，收敛慢。</li>
+<li>$w_0$：初始权重，仅作归一化基准，对收敛速度无本质影响（因 $w'_i=w_i/\sum w_i$ 会消去公共因子）。</li>
+<li>$N$：粒子数。$N$ 越大，PDF 近似越精确，最终标准差越小、越稳定；$N$ 过小导致样本贫化。收敛速度随 $N$ 增大而略降（每步计算量增大）。</li>
+</ul>
+<p>原书实验设置：<code>Q=diag([0.1,0.1,1*pi/180]).^2</code>、<code>L=diag([0.1 0.1])</code>、<code>ParticleFilter(veh,sensor,Q,L,1000)</code>、<code>pf.run(1000)</code>；标准差在时间步 10–20 骤降 [PDF p.126–127]。</p>
+<p><strong>c) 绑架机器人问题变体</strong></p>
+<ul>
+<li><strong>初始粒子在初始位姿附近</strong>：这是标准初始化，粒子云集中，收敛快，但若机器人被"绑架"（瞬移到别处），粒子云无法覆盖新位置，滤波器失效。</li>
+<li><strong>粒子均匀分布在 xy 平面、朝向设为真实值</strong>：粒子覆盖全域，能应对位置绑架，但因朝向已知，问题被简化。若朝向也未知，需在 $[-\pi,\pi]$ 均匀撒朝向，收敛更慢。这正是粒子滤波相对 EKF 的优势——<strong>支持多假设、非高斯分布</strong>（6.5 节、6.6 节小结）。</li>
+</ul>
+<p><strong>d) 不同似然函数</strong></p>
+<p>原书用 Gaussian 似然（仅为方便）：</p>
+<p>$$w=w_0\exp\!\left(-\tfrac12\boldsymbol\nu^T\mathbf{L}^{-1}\boldsymbol\nu\right)$$</p>
+<p>改用<strong>反距离似然</strong>，例如 $w=w_0/(\|\boldsymbol\nu\|+\epsilon)$：</p>
+<ul>
+<li>优点：对异常值更鲁棒（重尾），不会因单个远观测使权重骤降为零；</li>
+<li>缺点：峰更平缓，收敛速度下降，最终标准差可能偏大；</li>
+<li>比较时观察：反距离似然的收敛曲线更平滑但更慢，最终标准差略大于 Gaussian 似然。</li>
+</ul>
+<p><strong>可运行代码（MATLAB，基于原书工具箱）</strong></p>
+<pre><code class="lang-matlab">% a) 多次运行检验收敛性
+for trial = 1:10
+    veh = Vehicle; sensor = Sensor; 
+    Q = diag([0.1,0.1,1*pi/180]).^2;
+    L = diag([0.1 0.1]);
+    pf = ParticleFilter(veh, sensor, Q, L, 1000);
+    pf.run(1000);
+    fprintf('Trial %d: final std = %.4f\n', trial, pf.std);
+end
+
+% b) 参数扫描
+N_list = [100, 500, 1000, 5000];
+for N = N_list
+    pf = ParticleFilter(veh, sensor, Q, L, N);
+    pf.run(1000);
+    fprintf('N=%d: std=%.4f\n', N, pf.std);
+end
+
+% c) 均匀初始化
+pf = ParticleFilter(veh, sensor, Q, L, 1000);
+pf.initUniform();  % 粒子均匀撒在 xy 平面
+pf.run(1000);
+
+% d) 反距离似然（需修改 ParticleFilter 的 likelihood 方法）
+% w = w0 ./ (norm(nu) + eps);</code></pre>
+<p><strong>预期观察</strong>：a) 多数运行收敛，偶有发散；b) $N$ 增大标准差下降，$\mathbf{Q}$ 增大收敛变慢；c) 均匀初始化能应对绑架但收敛慢；d) 反距离似然收敛更慢但更鲁棒。</p>
+<h4>关键点</h4>
+<ul>
+<li>粒子滤波<strong>不保证每次收敛</strong>，随机重采样与样本贫化是主因；$N$、$\mathbf{Q}$、$\mathbf{L}$ 共同决定收敛速度与最终标准差。</li>
+<li>$w_0$ 因归一化被消去，对收敛无本质影响；$N$ 越大越精确但计算量越大。</li>
+<li>绑架机器人问题考验粒子云的<strong>覆盖范围</strong>：集中初始化快但脆弱，均匀初始化鲁棒但慢——体现粒子滤波支持多假设的优势。</li>
+<li>似然函数选择是<strong>鲁棒性与收敛速度的权衡</strong>：Gaussian 峰尖锐收敛快，反距离重尾更鲁棒但慢。</li>
+<li>粒子滤波相对 EKF 的核心优势：<strong>不假设 Gaussian、不需线性化、支持多假设</strong>（6.6 节小结）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 6 章</li>
+<li>依据：</li>
+<li>粒子滤波三步迭代公式、Gaussian 似然、重采样：事实底座第 5 节公式 6、第 4 节推导链条第 9 步</li>
+<li>参数设置 <code>Q</code>、<code>L</code>、<code>ParticleFilter(...,1000)</code>、<code>pf.run(1000)</code>、标准差骤降：事实底座第 6 节 [PDF p.126–127]</li>
+<li>粒子滤波不假设 Gaussian、支持多假设：事实底座第 3 节概念 8、第 4 节第 10 步</li>
+<li>绑架机器人问题：事实底座第 3 节概念 8（"支持多假设"）</li>
+<li>反距离似然：题干本身，原书未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

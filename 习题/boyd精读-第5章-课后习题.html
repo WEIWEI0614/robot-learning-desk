@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 5 章「Approximation and fitting」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 5 章「Approximation and fitting」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>三种解释如下：</li>
+</ol>
+<ul>
+<li><strong>估计解释</strong>：若 $y=Ax+v$，其中 $v$ 是未知误差，则估计 $x$ 等价于选择 $\hat x$ 使残差 $r=y-A\hat x$ 尽量小，即 $\hat x=\arg\min_z\|Az-y\|$。</li>
+<li><strong>几何解释</strong>：把 $b$ 投影到 $A$ 的列空间 $\mathbf{R}(A)$ 上，寻找列空间中距离 $b$ 最近的点 $Ax$。</li>
+<li><strong>设计解释</strong>：寻找设计变量 $x$，使 $Ax$ 尽可能接近目标 $b$。</li>
+</ul>
+<ol>
+<li>加权范数定义为 $\|z\|_W=\|Wz\|$。要使它成为范数，$W$ 必须<strong>非奇异</strong>。否则存在非零 $z$ 使 $Wz=0$，正定性失败。</li>
+</ol>
+<ol>
+<li>正规方程 $A^TAx=A^Tb$ <strong>总有解</strong>，因为 $A^Tb\in\mathbf{R}(A^T)=\mathbf{R}(A^TA)$。但唯一解</li>
+</ol>
+<p>$$
+x=(A^TA)^{-1}A^Tb
+$$</p>
+<p>需要 $A$ <strong>列独立</strong>，即 $\mathrm{rank}\,A=n$，从而 $A^TA$ 可逆。若 $A$ 列相关，则解不唯一，只能取某个最小范数解或其他选择。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>比较小残差处的惩罚增长速度。当 $|u|$ 很小时，</li>
+</ol>
+<p>$$
+|u|\gg u^2.
+$$</p>
+<p>因此 $\ell_1$ 对小残差施加的相对惩罚更大，优化器更倾向于把一些小残差直接压到 $0$，从而产生更多零残差。$\ell_2$ 在小残差处惩罚很弱，通常不会产生精确零残差。</p>
+<ol>
+<li>比较<strong>大残差</strong>处的惩罚增长速度。当 $|u|$ 很大时，</li>
+</ol>
+<p>$$
+u^2\gg |u|.
+$$</p>
+<p>因此 $\ell_2$ 对离群点造成的大残差惩罚极重，解会被离群点强烈拉偏；而 $\ell_1$ 对大残差只线性增长，惩罚增长慢，因此对离群点不敏感，更鲁棒。</p>
+<ol>
+<li>若对大残差赋零罚，则目标函数可能鼓励所有残差都变得很大，因为大残差不再增加代价，总罚可能反而更小。这样最优解会失去“拟合数据”的意义。因此凸惩罚通常要求在大 $u$ 处至少线性增长。</li>
+</ol>
+<ol>
+<li>理想惩罚 (6.3) 对离群点不敏感，但它是<strong>非凸</strong>的，导致组合优化难题。Huber 惩罚 $\phi_{\rm hub}$ 在小残差处保持二次、在大残差处转为线性，是凸函数，同时保留了对小残差的二次敏感性和对大残差的线性鲁棒性，因此可作为理想非凸惩罚的凸近似。</li>
+</ol>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>当 $m<n$ 时，$Ax=b$ 是欠定方程组，通常有无穷多解，因此“在所有可行解中选范数最小者”才有意义。若 $m=n$ 且 $A$ 可逆，则唯一可行点为</li>
+</ol>
+<p>$$
+x=A^{-1}b,
+$$</p>
+<p>没有选择余地，最小范数问题退化。</p>
+<ol>
+<li>最小 $\ell_2$ 范数解为</li>
+</ol>
+<p>$$
+x^\star=A^T(AA^T)^{-1}b.
+$$</p>
+<p>它可由对偶变量</p>
+<p>$$
+\nu^\star=-2(AA^T)^{-1}b
+$$</p>
+<p>代入最优性条件得到。该式需要 $\mathrm{rank}\,A=m$，从而 $AA^T$ 可逆。</p>
+<ol>
+<li>最小 $\ell_1$ 范数问题倾向于产生稀疏解：最优解中至多有 $m$ 个非零分量。这是因为 $\ell_1$ 球在多面体顶点处有稀疏结构，线性约束下的最优解常落在顶点。精确求解稀疏表示若穷举所有支撑集，需要</li>
+</ol>
+<p>$$
+\frac{n!}{m!(n-m)!}
+$$</p>
+<p>种选择，因此最小 $\ell_1$ 范数只是稀疏解的<strong>启发式</strong>，不是精确组合优化。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li>目标函数为</li>
+</ol>
+<p>$$
+J(x)=\|Ax-b\|_2^2+\delta\|x\|_2^2
+=(Ax-b)^T(Ax-b)+\delta x^Tx.
+$$</p>
+<p>展开：</p>
+<p>$$
+J(x)=x^TA^TAx-2b^TAx+b^Tb+\delta x^Tx.
+$$</p>
+<p>对 $x$ 求梯度：</p>
+<p>$$
+\nabla J(x)=2A^TAx-2A^Tb+2\delta x.
+$$</p>
+<p>令梯度为零：</p>
+<p>$$
+(A^TA+\delta I)x=A^Tb.
+$$</p>
+<p>由于 $\delta>0$，$A^TA+\delta I\succ0$，可逆，因此</p>
+<p>$$
+x=(A^TA+\delta I)^{-1}A^Tb.
+$$</p>
+<ol>
+<li>优势：即使 $A$ 列相关或 $A^TA$ 奇异，$\delta>0$ 仍保证 $A^TA+\delta I\succ0$，解唯一且数值稳定。它不需要对 $A$ 的秩或维度作额外假设。</li>
+</ol>
+<ol>
+<li>设 $A=\bar A+U$，其中 $U$ 随机且 $\mathbb{E}U=0$。则</li>
+</ol>
+<p>$$
+\mathbb{E}\|Ax-b\|_2^2
+=\|\bar Ax-b\|_2^2+x^TPx,
+$$</p>
+<p>其中</p>
+<p>$$
+P=\mathbb{E}U^TU.
+$$</p>
+<p>因此随机鲁棒最小二乘问题为</p>
+<p>$$
+\min_x\ \|\bar Ax-b\|_2^2+x^TPx.
+$$</p>
+<p>若 $P=\delta I$，则化为</p>
+<p>$$
+\min_x\ \|\bar Ax-b\|_2^2+\delta\|x\|_2^2,
+$$</p>
+<p>即 Tikhonov 形式，解为</p>
+<p>$$
+x=(\bar A^T\bar A+\delta I)^{-1}\bar A^Tb.
+$$</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<ol>
+<li><strong>必要性</strong>：设 $f$ 凸且 $f(u_i)=y_i$。由凸函数一阶条件，对任意 $i$，</li>
+</ol>
+<p>$$
+f(u_j)\ge f(u_i)+\nabla f(u_i)^T(u_j-u_i)
+$$</p>
+<p>在 $f$ 可微时成立；更一般地，取 $g_i$ 为 $f$ 在 $u_i$ 的任一 subgradient，则</p>
+<p>$$
+y_j=f(u_j)\ge f(u_i)+g_i^T(u_j-u_i)=y_i+g_i^T(u_j-u_i).
+$$</p>
+<p>因此 (6.19) 成立。</p>
+<ol>
+<li><strong>充分性</strong>：若存在 $g_i$ 满足 (6.19)，构造</li>
+</ol>
+<p>$$
+f(z)=\max_{i=1,\dots,m}\left\{y_i+g_i^T(z-u_i)\right\}.
+$$</p>
+<p>这是有限个仿射函数的最大值，因此是凸函数。并且对每个 $i$，</p>
+<p>$$
+f(u_i)\ge y_i+g_i^T(u_i-u_i)=y_i.
+$$</p>
+<p>另一方面，由 (6.19)，对任意 $j$，</p>
+<p>$$
+y_i+g_i^T(u_j-u_i)\le y_j,
+$$</p>
+<p>取 $z=u_i$ 时对任意 $j$ 有</p>
+<p>$$
+y_j+g_j^T(u_i-u_j)\le y_i.
+$$</p>
+<p>因此 $f(u_i)\le y_i$。综上 $f(u_i)=y_i$。</p>
+<ol>
+<li>单调凸插值要求 $f$ 凸且非减。在一维情形，附加条件为</li>
+</ol>
+<p>$$
+g_i\ge 0,\qquad i=1,\dots,m.
+$$</p>
+<p>这样构造出的 $f$ 是分段线性凸函数且非减。</p>
+<ol>
+<li>代码示例：</li>
+</ol>
+<pre><code class="lang-python">import cvxpy as cp
+import numpy as np
+
+# 数据：一维三点
+u = np.array([0.0, 1.0, 2.0])
+y = np.array([0.0, 1.0, 3.0])
+m = len(u)
+
+# 变量：g_i
+g = cp.Variable(m)
+
+constraints = []
+for i in range(m):
+    for j in range(m):
+        constraints.append(y[j] >= y[i] + g[i] * (u[j] - u[i]))
+
+# 单调凸插值附加条件
+constraints.append(g >= 0)
+
+prob = cp.Problem(cp.Minimize(0), constraints)
+prob.solve()
+
+print("status:", prob.status)
+print("g:", g.value)</code></pre>
+<p>预期观察：若数据本身可由非减凸函数插值，则 <code>prob.status</code> 为 <code>optimal</code>，且 <code>g.value</code> 非负；若数据违反凸性或单调性，则问题不可行。该代码把无穷维凸函数插值化为有限维线性不等式可行性问题，与 (6.19) 和单调条件一致。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MR 第 8 章「Dynamics of Open Chains」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>MR 第 8 章「Dynamics of Open Chains」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章核心方程为</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}+h(\theta,\dot{\theta}).</p>
+<p>\]</p>
+<p>其中 \(h\) 可拆成 quadratic velocity 项与 gravity 项：</p>
+<p>\[</p>
+<p>h(\theta,\dot{\theta})=c(\theta,\dot{\theta})+g(\theta).</p>
+<p>\]</p>
+<p>进一步，\(c\) 可由 Christoffel symbols 写成</p>
+<p>\[</p>
+<p>c_i(\theta,\dot{\theta})=\sum_{j=1}^n\sum_{k=1}^n \Gamma_{ijk}(\theta)\dot{\theta}_j\dot{\theta}_k,</p>
+<p>\]</p>
+<p>也可写成矩阵形式</p>
+<p>\[</p>
+<p>c(\theta,\dot{\theta})=C(\theta,\dot{\theta})\dot{\theta},</p>
+<p>\]</p>
+<p>其中</p>
+<p>\[</p>
+<p>c_{ij}(\theta,\dot{\theta})=\sum_{k=1}^n\Gamma_{ijk}(\theta)\dot{\theta}_k.</p>
+<p>\]</p>
+<p>Christoffel symbols 由 mass matrix 的偏导生成：</p>
+<p>\[</p>
+<p>\Gamma_{ijk}(\theta)=\frac12\left(\frac{\partial m_{ij}}{\partial\theta_k}+\frac{\partial m_{ik}}{\partial\theta_j}-\frac{\partial m_{jk}}{\partial\theta_i}\right).</p>
+<p>\]</p>
+<p>因此四种等价形式为</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}+h(\theta,\dot{\theta})</p>
+<p>=M(\theta)\ddot{\theta}+c(\theta,\dot{\theta})+g(\theta)</p>
+<p>=M(\theta)\ddot{\theta}+\dot{\theta}^T\Gamma(\theta)\dot{\theta}+g(\theta)</p>
+<p>=M(\theta)\ddot{\theta}+C(\theta,\dot{\theta})\dot{\theta}+g(\theta).</p>
+<p>\]</p>
+<p>\(M(\theta)\) 是 symmetric positive-definite。对称性来自动能二次型 \(K=\frac12\dot{\theta}^T M(\theta)\dot{\theta}\)；正定性保证动能非负且除 \(\dot{\theta}=0\) 外为正，从而 forward dynamics 可写为</p>
+<p>\[</p>
+<p>\ddot{\theta}=M^{-1}(\theta)(\tau-h),</p>
+<p>\]</p>
+<p>并且 \(M^{-1}\) 存在。第 11 章控制还会用到 \(\dot{M}(\theta)-2C(\theta,\dot{\theta})\) skew symmetric 的 passivity property。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章方程</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}+h(\theta,\dot{\theta})</p>
+<p>\]</p>
+<p>把关节力/力矩与运动联系起来。</p>
+<p><strong>Forward dynamics</strong>：已知 \((\theta,\dot{\theta},\tau)\)，求 \(\ddot{\theta}\)。由方程解出</p>
+<p>\[</p>
+<p>\ddot{\theta}=M^{-1}(\theta)\bigl(\tau-h(\theta,\dot{\theta})\bigr).</p>
+<p>\]</p>
+<p>这里需要 \(M(\theta)\) 可逆，而 \(M\) 是 symmetric positive-definite，所以一定可逆。Forward dynamics 典型用于仿真：给定当前状态和关节输入力矩，计算下一时刻加速度，再积分得到新的 \(\theta,\dot{\theta}\)。</p>
+<p><strong>Inverse dynamics</strong>：已知 \((\theta,\dot{\theta},\ddot{\theta})\)，求 \(\tau\)。直接代入</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}+h(\theta,\dot{\theta})</p>
+<p>=M(\theta)\ddot{\theta}+c(\theta,\dot{\theta})+g(\theta).</p>
+<p>\]</p>
+<p>Inverse dynamics 典型用于控制与轨迹检查：给定期望轨迹 \(\theta(t),\dot{\theta}(t),\ddot{\theta}(t)\)，计算所需关节力/力矩 \(\tau(t)\)，再检查执行器是否可行。</p>
+<p>二者方向相反：forward 是“力矩 \(\to\) 加速度”，inverse 是“加速度 \(\to\) 力矩”。常见错误是把二者搞反。注意 \(h\) 中可包含 gravity 与 quadratic velocity 项；本章 Lagrangian 和 Newton-Euler 动力学不自动包含 joint friction，friction 在 §8.9.4 单独讨论。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>取广义坐标 \(\theta\in\mathbb{R}^n\)，广义力 \(\tau\in\mathbb{R}^n\)。定义 kinetic energy</p>
+<p>\[</p>
+<p>K(\theta,\dot{\theta})=\frac12\dot{\theta}^T M(\theta)\dot{\theta}</p>
+<p>=\frac12\sum_{j,k}m_{jk}(\theta)\dot{\theta}_j\dot{\theta}_k,</p>
+<p>\]</p>
+<p>potential energy \(P(\theta)\)，Lagrangian</p>
+<p>\[</p>
+<p>L(\theta,\dot{\theta})=K(\theta,\dot{\theta})-P(\theta).</p>
+<p>\]</p>
+<p>Euler-Lagrange 方程为</p>
+<p>\[</p>
+<p>\tau=\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}}-\frac{\partial L}{\partial\theta}.</p>
+<p>\]</p>
+<p>先算</p>
+<p>\[</p>
+<p>\frac{\partial L}{\partial\dot{\theta}_i}</p>
+<p>=\frac{\partial K}{\partial\dot{\theta}_i}</p>
+<p>=\sum_j m_{ij}(\theta)\dot{\theta}_j.</p>
+<p>\]</p>
+<p>因此</p>
+<p>\[</p>
+<p>\frac{d}{dt}\frac{\partial L}{\partial\dot{\theta}_i}</p>
+<p>=\sum_j m_{ij}(\theta)\ddot{\theta}_j</p>
+<p>+\sum_j\sum_k\frac{\partial m_{ij}}{\partial\theta_k}\dot{\theta}_j\dot{\theta}_k.</p>
+<p>\]</p>
+<p>再算</p>
+<p>\[</p>
+<p>\frac{\partial L}{\partial\theta_i}</p>
+<p>=\frac{\partial K}{\partial\theta_i}-\frac{\partial P}{\partial\theta_i}</p>
+<p>=\frac12\sum_{j,k}\frac{\partial m_{jk}}{\partial\theta_i}\dot{\theta}_j\dot{\theta}_k</p>
+<p>-\frac{\partial P}{\partial\theta_i}.</p>
+<p>\]</p>
+<p>代入 Euler-Lagrange 方程：</p>
+<p>\[</p>
+<p>\tau_i=\sum_j m_{ij}\ddot{\theta}_j</p>
+<p>+\sum_{j,k}\frac{\partial m_{ij}}{\partial\theta_k}\dot{\theta}_j\dot{\theta}_k</p>
+<p>-\frac12\sum_{j,k}\frac{\partial m_{jk}}{\partial\theta_i}\dot{\theta}_j\dot{\theta}_k</p>
+<p>+\frac{\partial P}{\partial\theta_i}.</p>
+<p>\]</p>
+<p>把二次速度项合并。由于 \(j,k\) 对称求和，可写成</p>
+<p>\[</p>
+<p>\tau_i=\sum_j m_{ij}\ddot{\theta}_j</p>
+<p>+\sum_{j,k}\Gamma_{ijk}\dot{\theta}_j\dot{\theta}_k</p>
+<p>+\frac{\partial P}{\partial\theta_i},</p>
+<p>\]</p>
+<p>其中</p>
+<p>\[</p>
+<p>\Gamma_{ijk}(\theta)=\frac12\left(\frac{\partial m_{ij}}{\partial\theta_k}+\frac{\partial m_{ik}}{\partial\theta_j}-\frac{\partial m_{jk}}{\partial\theta_i}\right).</p>
+<p>\]</p>
+<p>这就是 Christoffel symbols of the first kind。它们完全由 mass matrix \(M(\theta)\) 对 \(\theta\) 的偏导生成，并进一步组成 Coriolis/centripetal 项</p>
+<p>\[</p>
+<p>c_i=\sum_{j,k}\Gamma_{ijk}\dot{\theta}_j\dot{\theta}_k.</p>
+<p>\]</p>
+<p>若定义 \(C\) 的元素</p>
+<p>\[</p>
+<p>c_{ij}=\sum_k\Gamma_{ijk}\dot{\theta}_k,</p>
+<p>\]</p>
+<p>则 \(c=C\dot{\theta}\)。最终得到</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}+C(\theta,\dot{\theta})\dot{\theta}+g(\theta),</p>
+<p>\qquad g_i=\frac{\partial P}{\partial\theta_i}.</p>
+<p>\]</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 验证逆矩阵。</strong></p>
+<p>对 \((0^\circ,90^\circ)\)：</p>
+<p>\[</p>
+<p>M M^{-1}</p>
+<p>=</p>
+<p>\begin{bmatrix}3&1\\1&1\end{bmatrix}</p>
+<p>\begin{bmatrix}0.5&-0.5\\-0.5&1.5\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>3\cdot0.5+1\cdot(-0.5)&3\cdot(-0.5)+1\cdot1.5\\</p>
+<p>1\cdot0.5+1\cdot(-0.5)&1\cdot(-0.5)+1\cdot1.5</p>
+<p>\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}1&0\\0&1\end{bmatrix}.</p>
+<p>\]</p>
+<p>对 \((0^\circ,150^\circ)\)：</p>
+<p>\[</p>
+<p>M M^{-1}</p>
+<p>=</p>
+<p>\begin{bmatrix}1.27&0.13\\0.13&1\end{bmatrix}</p>
+<p>\begin{bmatrix}0.8&-0.11\\-0.11&1.01\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}</p>
+<p>1.27\cdot0.8+0.13\cdot(-0.11)&1.27\cdot(-0.11)+0.13\cdot1.01\\</p>
+<p>0.13\cdot0.8+1\cdot(-0.11)&0.13\cdot(-0.11)+1\cdot1.01</p>
+<p>\end{bmatrix}.</p>
+<p>\]</p>
+<p>计算：</p>
+<p>\[</p>
+<p>1.27\cdot0.8=1.016,\quad 0.13\cdot(-0.11)=-0.0143,\quad 1.016-0.0143=1.0017\approx1.</p>
+<p>\]</p>
+<p>\[</p>
+<p>1.27\cdot(-0.11)=-0.1397,\quad 0.13\cdot1.01=0.1313,\quad -0.1397+0.1313=-0.0084\approx0.</p>
+<p>\]</p>
+<p>\[</p>
+<p>0.13\cdot0.8=0.104,\quad 1\cdot(-0.11)=-0.11,\quad 0.104-0.11=-0.006\approx0.</p>
+<p>\]</p>
+<p>\[</p>
+<p>0.13\cdot(-0.11)=-0.0143,\quad 1\cdot1.01=1.01,\quad -0.0143+1.01=0.9957\approx1.</p>
+<p>\]</p>
+<p>在给定有效数字下，二者互为逆矩阵。</p>
+<p><strong>2. 为什么 \(M(\theta)\) 随 configuration 改变，而 \(I_b\) 不变。</strong></p>
+<p>单个刚体的 spatial inertia \(G_b\) 或 rotational inertia \(I_b\) 是在 body frame \(\{b\}\) 中表示的。刚体自身质量分布不变，所以 \(I_b\) 在 body frame 中 constant。机构 mass matrix \(M(\theta)\) 描述的是关节空间中的等效惯量，它把各连杆惯量通过当前 configuration 下的 Jacobian 映射到关节坐标：</p>
+<p>\[</p>
+<p>M(\theta)=\sum_i J_{ib}^T(\theta)G_iJ_{ib}(\theta).</p>
+<p>\]</p>
+<p>当 \(\theta\) 改变时，各连杆相对关节轴的姿态改变，Jacobian 改变，因此 \(M(\theta)\) 改变。即使 joint axes 正交或平行，\(M(\theta)\) 和 \(h(\theta,\dot{\theta})\) 也可能非常复杂。</p>
+<p><strong>3. 在 \((0^\circ,90^\circ)\) 处，\(\dot{\theta}=0\)，\(\tau=(1,0)\)。</strong></p>
+<p>因为 \(\dot{\theta}=0\)，quadratic velocity 项 \(c(\theta,\dot{\theta})=0\)。若忽略 gravity 或将其并入 \(\tau\) 的讨论，则</p>
+<p>\[</p>
+<p>\tau=M(\theta)\ddot{\theta}.</p>
+<p>\]</p>
+<p>所以</p>
+<p>\[</p>
+<p>\ddot{\theta}=M^{-1}\tau</p>
+<p>=</p>
+<p>\begin{bmatrix}0.5&-0.5\\-0.5&1.5\end{bmatrix}</p>
+<p>\begin{bmatrix}1\\0\end{bmatrix}</p>
+<p>=</p>
+<p>\begin{bmatrix}0.5\\-0.5\end{bmatrix}.</p>
+<p>\]</p>
+<p>即 \(\ddot{\theta}_1=0.5\)，\(\ddot{\theta}_2=-0.5\)。\(\ddot{\theta}\) 一般不是 \(\tau\) 的标量倍，因为 \(M(\theta)\) 不是标量矩阵，而是 symmetric positive-definite 矩阵，在不同加速度方向给出 different effective mass。只有在 \(M\) 为标量倍单位阵的特殊情况下才会同向成比例。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. gear ratio 的作用。</strong></p>
+<p>理想 gearhead 以 factor \(G\) 放大关节力矩，同时以 factor \(G\) 降低关节速度。若电机 rotor inertia 为 \(I_{\text{rotor}}\)，则反映到关节侧的 apparent/reflected inertia 为</p>
+<p>\[</p>
+<p>G^2I_{\text{rotor}}.</p>
+<p>\]</p>
+<p>因此大 \(G\) 会显著增大关节等效惯量。原书例子中，第二个机器人可用关节力矩是第一个的 10 倍，但每个关节最高速度是第一个的 1/10。大 \(G\) 还会使 mass matrix 更 diagonal，dynamics 趋向 decoupled。</p>
+<p><strong>2. 比较 \(G=10\) 与 \(G=100\)。</strong></p>
+<p>当 \(G=10\)：</p>
+<p>\[</p>
+<p>M_{11}=4.13+2\cos\theta_2,\quad</p>
+<p>M_{12}=M_{21}=1.01+\cos\theta_2,\quad</p>
+<p>M_{22}=1.13.</p>
+<p>\]</p>
+<p>当 \(G=100\)：</p>
+<p>\[</p>
+<p>M_{11}=16.5+2\cos\theta_2,\quad</p>
+<p>M_{12}=M_{21}=1.13+\cos\theta_2,\quad</p>
+<p>M_{22}=13.5.</p>
+<p>\]</p>
+<p>对角项 \(M_{11},M_{22}\) 随 \(G\) 增大而显著增大，主要因为 rotor apparent inertia \(G^2I_{\text{rotor}}\) 增大。非对角耦合项 \(M_{12}=M_{21}\) 也变化，但相对对角项变小。例如在 \(\theta_2=0\) 时：</p>
+<ul>
+<li>\(G=10\)：\(M_{11}=6.13\)，\(M_{12}=2.01\)，\(M_{22}=1.13\)。非对角/对角约为 \(2.01/6.13\approx0.33\)，\(2.01/1.13\approx1.78\)。</li>
+<li>\(G=100\)：\(M_{11}=18.5\)，\(M_{12}=2.13\)，\(M_{22}=13.5\)。非对角/对角约为 \(2.13/18.5\approx0.115\)，\(2.13/13.5\approx0.158\)。</li>
+</ul>
+<p>可见 \(G=100\) 时非对角项相对对角项更小，mass matrix 更接近对角，关节间耦合减弱，dynamics 趋向 decoupled。</p>
+<p><strong>3. 可运行 Python 代码。</strong></p>
+<pre><code class="lang-python">import numpy as np
+
+def mass_matrix(theta2, G):
+    c = np.cos(theta2)
+    if G == 10:
+        M11 = 4.13 + 2*c
+        M12 = 1.01 + c
+        M22 = 1.13
+    elif G == 100:
+        M11 = 16.5 + 2*c
+        M12 = 1.13 + c
+        M22 = 13.5
+    else:
+        raise ValueError("G must be 10 or 100")
+    return np.array([[M11, M12],
+                     [M12, M22]])
+
+for theta2 in [0.0, np.pi/2]:
+    print(f"theta2 = {theta2:.4f} rad")
+    for G in [10, 100]:
+        M = mass_matrix(theta2, G)
+        print(f"  G = {G}")
+        print(M)
+        off_diag_ratio_11 = abs(M[0,1]) / abs(M[0,0])
+        off_diag_ratio_22 = abs(M[0,1]) / abs(M[1,1])
+        print(f"  |M12|/M11 = {off_diag_ratio_11:.4f}, |M12|/M22 = {off_diag_ratio_22:.4f}")
+    print()</code></pre>
+<p>预期观察：对每个 \(\theta_2\)，\(G=100\) 时 \(M_{11}\) 和 \(M_{22}\) 明显大于 \(G=10\) 时；同时 \(|M_{12}|/M_{11}\) 与 \(|M_{12}|/M_{22}\) 在 \(G=100\) 时更小，说明大 gear ratio 使 mass matrix 更对角化，关节耦合更弱。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

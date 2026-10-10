@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 1 章「Introduction」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 1 章「Introduction」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 小问：关键属性与时间线</strong></p>
+<p>关键属性是 <strong>programmability</strong>（可编程性）。事实底座第 3 节第 2 条与第 4 节第 1–2 步明确给出：</p>
+<ul>
+<li>George Devol 于 <strong>1954</strong> 年用 CNC 控制器替换 master，命名为 “programmed articulated transfer device”；</li>
+<li>Joseph Engelberger 于 <strong>1956</strong> 年在 Connecticut 创立 Unimation；</li>
+<li>Unimation 于 <strong>1961</strong> 年把首台机器人装入 General Motors 工厂。</li>
+</ul>
+<p>注意区分：master–slave teleoperator 是“机器人之前的祖先”，其耦合方式是机械连杆（后改为电/液压耦合），本身<strong>不是</strong>可编程机器人。Unimation 的真正创新在于 programmability，而非主从式演进。</p>
+<p><strong>第 2 小问：开链结构的三个问题与缓解手段</strong></p>
+<p>事实底座第 3 节第 3 条给出：</p>
+<ol>
+<li>悬臂臂端难以精确控制；</li>
+<li>难以调节其刚度；</li>
+<li>运动链基部的误差会被向链远端放大。</li>
+</ol>
+<p>缓解手段是采用 <strong>hydraulic actuators</strong>（液压执行器），因其兼具高功率与总体高精度。这也解释了为何需要高精度、高功率的执行器。</p>
+<p><strong>第 3 小问：四条笨拙表现</strong></p>
+<p>事实底座第 3 节第 4 条（[PDF p.8]）给出：</p>
+<ol>
+<li><strong>lack of dexterity</strong>——能牢固夹持却不能操纵被夹物；</li>
+<li>可能的抓取数有限，需频繁更换 end-effector；</li>
+<li>末端的小运动常需臂的动，且远离末端的电机更大、更慢、更低效；</li>
+<li><strong>lack of fine force control</strong>，使装配任务限于最基础者。</li>
+</ol>
+<p>这四条是引入 multifingered hand 的直接动机，也是第 5、6 章 grasp map、force-closure、manipulability 等主题的出发点。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 错误。</strong> 事实底座第 7 节明确指出，“机器人 = 仿人机器”这一感知来自 Čapek 剧作及后续科幻文学/影视，而当代机器人相对娱乐业制造的期待显得 “primitive”。读者应把机器人理解为 <strong>computer-controlled electromechanical devices</strong>（[PDF p.1–2]）。</p>
+<p><strong>2. 错误。</strong> 事实底座第 7 节引原文：“it is fair to say that the eighties were not a period of great innovation in terms of building new types of robots”。研究重心转向 <strong>control / trajectory planning / sensor aggregation</strong>，而非建造新型机器人（[PDF p.7]）。</p>
+<p><strong>3. 错误。</strong> 事实底座第 7 节指出，computed torque 方法 computationally demanding，且涉及的 exact cancellation “in practice had to be done either approximately or adaptively”（[PDF p.7]）。即精确对消在实践上只能近似或自适应地完成。</p>
+<p><strong>4. 错误。</strong> 事实底座第 7 节引原文：本书运动学处理 “something of a deviation from most other textbooks, which prefer a Denavit–Hartenberg formulation”，改用 <strong>product of exponentials</strong>（POE），由 Brockett [12] 首先提出（[PDF p.14]）。见到 DH 记号不要用来改写本书 POE。</p>
+<p><strong>5. 错误。</strong> 事实底座第 7 节与第 9 节第 4 条指出：若指尖自由滚动，仅靠第 6 章的工具 “it is not explicitly possible for us to control the locations to which they roll”，无法把手指从一个接触位置移到另一个。这正是第 7 章（nonholonomic behavior）与第 8 章（motion planning / finger repositioning）的动机（[PDF p.16–17]）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>依据事实底座第 1 节“记号约定（全书统一，不要改写）”：</p>
+<p><strong>1. 刚体位姿</strong></p>
+<p>$$g=(p,R)\in SE(3)$$</p>
+<p>其中 $p\in\mathbb{R}^3$ 为平移，$R\in SO(3)$ 为旋转。</p>
+<p><strong>2. 旋转的指数表示</strong></p>
+<p>$$R=\exp(\hat\omega)$$</p>
+<p>其中 $\hat\omega$ 为反对称矩阵（skew-symmetric），满足</p>
+<p>$$\hat\omega^\top=-\hat\omega$$</p>
+<p><strong>3. 矩阵指数</strong></p>
+<p>$$\exp(\hat\xi)=\sum_{k=0}^{\infty}\frac{1}{k!}\hat\xi^k$$</p>
+<p>其中 $\hat\xi\in\mathfrak{se}(3)$ 是 $\xi\in\mathbb{R}^6$ 的同构像。</p>
+<p><strong>4. twist 与 wrench</strong></p>
+<p>旋量（twist）：</p>
+<p>$$\xi=(v,\omega)\in\mathbb{R}^6,\qquad \hat\xi=\begin{bmatrix}\hat\omega & v\\0&0\end{bmatrix}$$</p>
+<p>力旋量（wrench）：</p>
+<p>$$\eta=(f,m)\in\mathbb{R}^6,\qquad \hat\eta=\begin{bmatrix}\hat f & m\\0&0\end{bmatrix}$$</p>
+<p><strong>5. 指数积公式（POE）</strong></p>
+<p>$$T(\theta)=e^{\hat\xi_1\theta_1}e^{\hat\xi_2\theta_2}\cdots e^{\hat\xi_n\theta_n}$$</p>
+<p>固定不变的 $\xi_i$ 称为 <strong>screw axes</strong>。</p>
+<p><strong>6. 空间/体 Jacobian 关系</strong></p>
+<p>$$J_b=J_s T$$</p>
+<p>下标 $s$（spatial）表示空间表述，$b$（body）表示体表述。</p>
+<p><strong>补充提醒（乘法顺序）</strong>：事实底座第 1 节明确强调，本书 POE 与 Jacobian 一律按原文“空间在前、体在后”的书写顺序，与 Corke / Modern Robotics 中 $^A\mathbf{T}_B$ 的链乘顺序相反。本章仅作声明，无推导。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>依据事实底座第 4 节“推导链条（伪代码级，6–10 步）”：</p>
+<p><strong>1. Devol 的关键替换与命名</strong></p>
+<p>George Devol 于 <strong>1954</strong> 年用 <strong>CNC 控制器替换 master</strong>，命名为 “<strong>programmed articulated transfer device</strong>”（[PDF p.3]）。这是从 master–slave teleoperator 到可编程机器人的关键转变。</p>
+<p><strong>2. 从开链到传感反馈的链条</strong></p>
+<p>按事实底座第 4 节第 3–4 步：</p>
+<ul>
+<li>开链悬臂结构 → 末端控制/刚度困难、误差沿链放大 → 采用 <strong>high-power high-precision hydraulic actuators</strong>；</li>
+<li>传感反馈：<strong>Ernst 1962</strong> 力传感堆叠方块（首个与非结构化环境交互的系统，促成 MIT Project MAC）；<strong>Tomović–Boni</strong> 压力传感；<strong>McCarthy 等 1963</strong> 二值视觉 → 机器人进入非结构环境。</li>
+</ul>
+<p><strong>3. 研究手谱系（至少四个）</strong></p>
+<p>依据事实底座第 6 节与第 4 节第 9 步：</p>
+<ul>
+<li><strong>Okada 三指绳驱</strong>手；</li>
+<li><strong>Hanafusa–Asada 三弹性指单电机</strong>手；</li>
+<li><strong>Salisbury 手</strong>：3 指、每指 3 自由度、全绳驱（用电机）；</li>
+<li><strong>Utah/MIT 手</strong>：4 指（3 指+1 拇指）、每指 4 自由度、绳驱（用气动活塞）；</li>
+<li><strong>NYU 手</strong>：4 指平面、步进电机；</li>
+<li><strong>Styx</strong>：2 指、每指 2 关节、全直驱（UC Berkeley, 1988）。</li>
+</ul>
+<p><strong>4. 第 2–9 章路线图</strong></p>
+<p>依据事实底座第 4 节第 10 步与第 8 节：</p>
+<ul>
+<li><strong>第 2 章</strong>：刚体运动与 screws/twists/wrenches（exponential map、Euler 定理推广、reciprocal screws）；</li>
+<li><strong>第 3 章</strong>：POE 与逆运动学/Jacobian（Paden–Kahan canonical problems、奇异几何刻画、闭环链运动学）；</li>
+<li><strong>第 4 章</strong>：动力学与 Lyapunov 控制（Lagrangian → Newton–Euler、开链 Lagrangian、computed torque 与 PD 控制律稳定性）；</li>
+<li><strong>第 5 章</strong>：grasp/force-closure/manipulability/rolling（对应四条笨拙缺陷）；</li>
+<li><strong>第 6 章</strong>：Pfaffian 约束动力学与 tendon 驱动（nonredundant & manipulable 时动力学特别简单，redundant 或 nonmanipulable 时需实质修改、分层控制）；</li>
+<li><strong>第 7 章</strong>：nonholonomy 与 controllability 对偶（无滑滚动、角动量守恒；car parking、mobile robots、space robots、hopping robot 飞行相；holonomic/partially nonholonomic 分类）；</li>
+<li><strong>第 8 章</strong>：nonholonomic motion planning（Lie bracket、chain form、Ritz basis、finger repositioning）；</li>
+<li><strong>第 9 章</strong>：技术前景（传感/执行器 milli- 与 micro-scale、计算与控制进步、移动机器人与危险环境、minimally invasive surgery）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>代码：</strong></p>
+<pre><code class="lang-python"># 依据 mls94 第 1 章事实底座第 6 节构造
+history = {
+    "Čapek 引入 'robot' 一词": 1921,
+    "力反馈 teleoperator 加入": 1949,
+    "Devol 首个机器人": 1954,
+    "Unimation 成立": 1956,
+    "首台装入 GM 工厂": 1961,
+    "Ernst 力传感机器人": 1962,
+    "McCarthy 二值视觉": 1963,
+    "Kawasaki 引进 Unimation 授权": 1968,
+    "WAVE 语言": 1973,
+    "Cincinnati Milacron T^3": 1974,
+    "PUMA": 1978,
+    "SCARA": 1979,
+    "Asada direct-drive": 1981,
+    "von Berlichingen 弹簧手": 1509,
+}
+
+# 2. 按年份升序打印
+print("=== 按年份升序 ===")
+for name, year in sorted(history.items(), key=lambda kv: kv[1]):
+    print(f"{year}: {name}")
+
+# 3. 从 'robot' 一词引入到 PUMA 问世的年数
+delta = history["PUMA"] - history["Čapek 引入 'robot' 一词"]
+print(f"\n从 'robot' 一词引入到 PUMA 问世: {delta} 年")
+
+# 4. 手结构
+hands = {
+    "Salisbury":  {"fingers": 3, "dof_per_finger": 3, "drive": "全绳驱（电机）"},
+    "Utah/MIT":   {"fingers": 4, "dof_per_finger": 4, "drive": "绳驱（气动活塞）"},
+    "NYU":        {"fingers": 4, "dof_per_finger": None, "drive": "步进电机（平面）"},
+    "Styx":       {"fingers": 2, "dof_per_finger": 2, "drive": "全直驱"},
+}
+print("\n=== 手结构 ===")
+for name, info in hands.items():
+    print(f"{name}: {info}")
+
+# 5. 运动皮层支配手部比例
+print("\n=== 运动皮层支配手部比例 ===")
+print("人类: 30–40%")
+print("多数猴: 20–30%")
+print("狗与猫: 低于 10%")</code></pre>
+<p><strong>预期观察与对应关系：</strong></p>
+<ol>
+<li><strong>按年份升序输出</strong>：第一行应为 <code>1509: von Berlichingen 弹簧手</code>，最后一行应为 <code>1981: Asada direct-drive</code>。这与事实底座第 6 节完全一致——von Berlichingen 弹簧手是 Childress 引用的最早假肢（1509），Asada direct-drive 是链条中最后一个年份（1981）。</li>
+</ol>
+<ol>
+<li><strong>年数差</strong>：<code>1978 - 1921 = 57</code> 年。对应事实底座中 “robot” 一词由 Karel Čapek 于 1921 年引入、PUMA 于 1978 年问世。</li>
+</ol>
+<ol>
+<li><strong>手结构输出</strong>：</li>
+</ol>
+<ul>
+<li>Salisbury：3 指、每指 3 自由度、全绳驱（用电机）；</li>
+<li>Utah/MIT：4 指（3 指+1 拇指）、每指 4 自由度、绳驱（用气动活塞）；</li>
+<li>NYU：4 指平面、步进电机（事实底座未给出每指自由度数，故代码中设为 <code>None</code>，体现“原书未给出具体数值”的约束）；</li>
+<li>Styx：2 指、每指 2 关节、全直驱（UC Berkeley, 1988）。</li>
+</ul>
+<ol>
+<li><strong>运动皮层比例</strong>：人类 30–40%、多数猴 20–30%、狗与猫低于 10%。对应事实底座第 6 节 [PDF p.9–10]。</li>
+</ol>
+<p><strong>关键提醒</strong>：事实底座明确声明“本书习题刻意不给数值”，且“原书亦声明全书刻意不含数值习题 [PDF p.13]”。本题的数值全部来自事实底座第 6 节的历史/统计数字，未编造任何新数值；NYU 手每指自由度数原书未给出，代码中以 <code>None</code> 显式标记，符合“数字零编造”要求。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

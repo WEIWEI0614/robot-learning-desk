@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>代码详解 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">代码详解<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>代码详解：这轮写的每一行在干什么</h1>
+<div class="sub">
+  逐行拆解 · 先讲"公式怎么变成代码"，再逐文件走一遍 ｜
+  <span class="tag tCore">进阶</span>不预设编程基础，但需要你愿意读代码
+</div>
+
+<h2>0 · 这页解决什么问题</h2>
+
+<div class="card">
+  <p>前三个面板讲的是"我做了什么、为什么"。这一页讲<strong>代码本身</strong>：</p>
+  <ol>
+    <li><strong>公式怎么变成代码</strong>——拿 PPO 的真实公式和 CleanRL 的真实代码对照着看，这是理解"算法落地"最快的一条路；</li>
+    <li><strong>一个小赋值例子</strong>——从数学符号到 Python 变量，把最基础的那一步讲透；</li>
+    <li><strong>逐行拆解我写的代码</strong>——MCP 服务器、基准测试脚本、站点构建脚本，每行干什么、为什么用这个函数而不是别的。</li>
+  </ol>
+</div>
+
+<div class="toc">
+  <div class="small" style="margin-bottom:6px;">目录</div>
+  <ol>
+    <li>先看全貌：这轮我写了哪些代码</li>
+    <li>从一个赋值开始（最基础的一步）</li>
+    <li>公式 → 代码：用 PPO 真实源码做对照</li>
+    <li>server.py 逐行拆解（主交付物）</li>
+    <li>算力基准脚本逐段拆解</li>
+    <li>站点构建脚本我改了什么</li>
+    <li>为什么是这些函数：选型对照表</li>
+    <li>可复制的最小示例</li>
+  </ol>
+</div>
+
+<h2>1 · 先看全貌</h2>
+
+<table>
+  <tr><th>文件</th><th>规模</th><th>作用</th><th>性质</th></tr>
+  <tr>
+    <td><code>server.py</code></td><td>129 行</td>
+    <td>MCP 服务器，把 CleanRL 的 PPO 变成 3 个可调用工具</td>
+    <td><strong>主交付物</strong></td>
+  </tr>
+  <tr>
+    <td><code>hw_bench_jax.py</code></td><td>约 45 行</td>
+    <td>测 MJX 在不同并行度下的吞吐</td>
+    <td>一次性测量</td>
+  </tr>
+  <tr>
+    <td><code>sustained.py</code></td><td>约 60 行</td>
+    <td>7 分钟持续满载，测降频与内存交换</td>
+    <td>一次性测量</td>
+  </tr>
+  <tr>
+    <td><code>build_site.py</code></td><td>改约 40 行</td>
+    <td>把多个 HTML 合并成单页应用</td>
+    <td>改造既有脚本</td>
+  </tr>
+  <tr>
+    <td>校验探针片段</td><td>十几行</td>
+    <td>检测页面横向溢出、样式作用域</td>
+    <td>一次性验证</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>先说一个贯穿全页的判断标准：</strong>写这种"把别人的代码包成工具"的程序，<strong>唯一重要的原则是"不重写被包装的逻辑"</strong>。下面你会看到，<code>server.py</code> 里没有一行 PPO 算法代码——它要么调用原仓库的命令行，要么读原仓库的源码。这不是偷懒，是<strong>为了让结果可信</strong>。
+</div>
+
+<h2>2 · 从一个赋值开始</h2>
+
+<p>在最复杂的算法里，最基础的构件仍然是"赋值"——<strong>把右边算出来的值，放进左边这个名字里</strong>。我们从 CleanRL 里挑一行真实代码：</p>
+
+<pre><code>gamma: float = 0.99</code></pre>
+
+<table>
+  <tr><th>片段</th><th>是什么</th><th>为什么这么写</th></tr>
+  <tr>
+    <td class="cd">gamma</td>
+    <td>变量名，对应强化学习公式里的符号 <strong>γ</strong></td>
+    <td>Python 里变量名只是标签。<strong>名字本身不影响计算</strong>，但叫 <code>gamma</code> 而不是 <code>g</code>，半年后你还看得懂。</td>
+  </tr>
+  <tr>
+    <td class="cd">: float</td>
+    <td>类型注解（type annotation），声明"这个值是小数"</td>
+    <td>Python 是动态类型语言，<strong>不写也能跑</strong>。写它的作用是：① 给人看；② 给工具看——CleanRL 用 <code>tyro</code> 库读类型注解，<strong>自动把它变成命令行参数</strong> <code>--gamma</code>。不写注解，这个参数就不会出现在命令行里。</td>
+  </tr>
+  <tr>
+    <td class="cd">= 0.99</td>
+    <td>赋值本身，同时是默认值</td>
+    <td>"不指定时用 0.99"。写成 0.99 而不是 0.99 之外的任何数，是因为这是 RL 里的经验值——<strong>表示"未来的奖励每往远一步就打 1% 折扣"</strong>。</td>
+  </tr>
+</table>
+
+<h3>2.1 为什么必须是 float 而不是 int</h3>
+<p>这是个能说明"数据类型不是小事"的好例子：</p>
+
+<pre><code><span class="cm"># 如果 gamma 是整数类型，只能取 0 或 1</span>
+gamma_int = <span class="nm">0</span>          <span class="cm"># 完全不要未来：只看眼前这一步的奖励</span>
+gamma_int = <span class="nm">1</span>          <span class="cm"># 未来和现在一样重要：永不衰减，训练常不收敛</span>
+
+<span class="cm"># 而 float 能表达"打折"这个中间状态</span>
+gamma = <span class="nm">0.99</span>         <span class="cm"># 每远一步，权重乘 0.99</span></code></pre>
+
+<div class="key">
+  <strong>这就是"数学符号 → 代码"的第一道坎：数学里的 γ 是实数，代码里你必须挑一个能装下它的类型。</strong>挑错了，你表达不出"折扣"这个概念——这不是精度问题，是<strong>表达能力</strong>问题。
+</div>
+
+<h3>2.2 赋值到底发生了什么（跑一遍看结果）</h3>
+<p>把赋值放进循环，你就能看见"折扣"是怎么累积的：</p>
+
+<pre><code>gamma = <span class="nm">0.99</span>
+reward = <span class="nm">1.0</span>
+<span class="kw">for</span> step <span class="kw">in</span> <span class="kw">range</span>(<span class="nm">4</span>):
+    <span class="kw">print</span>(step, <span class="kw">round</span>(reward, <span class="nm">6</span>))
+    reward = reward * gamma      <span class="cm"># 赋值：右边算完，再放回左边</span></code></pre>
+
+<table>
+  <tr><th>轮次</th><th>打印时的 reward</th><th>这一步之后 reward 变成</th><th>含义</th></tr>
+  <tr><td>step=0</td><td class="cd">1.0</td><td class="cd">0.99</td><td>当前奖励权重 1.00</td></tr>
+  <tr><td>step=1</td><td class="cd">0.99</td><td class="cd">0.9801</td><td>一步之后只值 99%</td></tr>
+  <tr><td>step=2</td><td class="cd">0.9801</td><td class="cd">0.970299</td><td>两步之后值 98%</td></tr>
+  <tr><td>step=3</td><td class="cd">0.970299</td><td class="cd">0.960596</td><td>三步之后值 96%</td></tr>
+</table>
+
+<div class="note">
+  <strong><code>reward = reward * gamma</code> 这一行值得盯三秒。</strong>它先算右边的 <code>reward * gamma</code>，得到新值，再赋给左边的 <code>reward</code>。<strong>同一个名字在等号两边，含义不同</strong>：右边是"旧值"，左边是"新值"。几乎所有"累积""迭代""更新"的代码，都是这个形状——包括神经网络的参数更新。
+</div>
+
+<h2>3 · 公式 → 代码：用 PPO 真实源码对照</h2>
+
+<p>这一节是整页的核心。强化学习论文里的公式看起来吓人，但落到代码上往往只有几行。看四个例子，从易到难。</p>
+
+<h3>3.1 例一：动作采样（从概率分布到一行）</h3>
+
+<div class="fml">a ~ π<sub>θ</sub>(·|s)　　a 从策略网络输出的概率分布里采样</div>
+
+<pre><code><span class="kw">def</span> <span class="nm">get_action_and_value</span>(self, x, action=<span class="kw">None</span>):
+    logits = self.actor(x)              <span class="cm"># ①</span>
+    probs = Categorical(logits=logits)  <span class="cm"># ②</span>
+    <span class="kw">if</span> action <span class="kw">is</span> <span class="kw">None</span>:
+        action = probs.sample()         <span class="cm"># ③</span>
+    <span class="kw">return</span> action, probs.log_prob(action), probs.entropy(), self.critic(x)</code></pre>
+
+<table>
+  <tr><th>行</th><th>代码</th><th>对应公式的哪一部分</th><th>为什么用这个函数</th></tr>
+  <tr>
+    <td class="ln">①</td><td class="cd">logits = self.actor(x)</td>
+    <td>策略网络 π<sub>θ</sub> 对状态 s 的输出</td>
+    <td><code>self.actor</code> 是一个神经网络，<code>x</code> 是观测。<strong>注意输出叫 <code>logits</code> 不叫 <code>probs</code></strong>——网络直接吐出来的是"未归一化的分数"，不是概率。</td>
+  </tr>
+  <tr>
+    <td class="ln">②</td><td class="cd">probs = Categorical(logits=logits)</td>
+    <td>把分数变成概率分布</td>
+    <td><code>Categorical</code> 是 PyTorch 的<strong>类别分布</strong>对象。传 <code>logits=</code> 而不是先 softmax 再传概率，<strong>是因为 softmax 已经内置在里面了，而且数值更稳</strong>（后面 3.3 会讲这一点）。</td>
+  </tr>
+  <tr>
+    <td class="ln">③</td><td class="cd">action = probs.sample()</td>
+    <td>a ~ π<sub>θ</sub>(·|s) 里的那个"~"（采样）</td>
+    <td><strong>公式里的波浪号是最容易被忽略的一步。</strong>它意味着"随机抽一个"，而不是"取概率最大的那个"。强化学习必须有随机性——否则永远试不到新动作，学不出东西。</td>
+  </tr>
+  <tr>
+    <td class="ln">④</td><td class="cd">return action, probs.log_prob(action), probs.entropy(), self.critic(x)</td>
+    <td>返回四个量</td>
+    <td>一次返回四个值是为了<strong>省一次网络前向计算</strong>。四个值分别是：采到的动作、它的对数概率（算 ratio 要用）、分布的熵（算探索奖励要用）、状态价值 V(s)。</td>
+  </tr>
+</table>
+
+<div class="warn">
+  <strong>为什么返回的是 <code>log_prob</code> 而不是 <code>prob</code>？</strong>因为下一步算 ratio 要做除法，而概率可能是 <code>1e-8</code> 这种极小数——一连乘就变成 0，梯度就没了。取了对数之后，<strong>除法变成减法</strong>，极小值也变成普通负数。这是科学计算里最常用的"数值稳定性"手法之一。
+</div>
+
+<h3>3.2 例二：GAE 优势估计（从递推公式到倒序循环）</h3>
+
+<div class="fml">
+δ<sub>t</sub> = r<sub>t</sub> + γ·V(s<sub>t+1</sub>)·(1−d<sub>t</sub>) − V(s<sub>t</sub>)<br>
+Â<sub>t</sub> = δ<sub>t</sub> + γ·λ·(1−d<sub>t</sub>)·Â<sub>t+1</sub>
+</div>
+
+<pre><code>                delta = rewards[t] + args.gamma * nextvalues * nextnonterminal - values[t]
+                advantages[t] = lastgaelam = delta + args.gamma * args.gae_lambda * nextnonterminal * lastgaelam</code></pre>
+
+<table>
+  <tr><th>代码片段</th><th>符号</th><th>逐字对应</th></tr>
+  <tr><td class="cd">rewards[t]</td><td>r<sub>t</sub></td><td>第 t 步拿到的即时奖励</td></tr>
+  <tr><td class="cd">args.gamma</td><td>γ</td><td>折扣因子（就是第 2 节那个 0.99）</td></tr>
+  <tr><td class="cd">nextvalues</td><td>V(s<sub>t+1</sub>)</td><td>下一步的状态价值</td></tr>
+  <tr><td class="cd">nextnonterminal</td><td>(1−d<sub>t</sub>)</td><td><strong>必须是 1 减 done</strong>：如果这一步是终止步（done=1），未来价值就该归零</td></tr>
+  <tr><td class="cd">- values[t]</td><td>− V(s<sub>t</sub>)</td><td>减去当前价值，得到"实际比预期好多少"</td></tr>
+  <tr><td class="cd">args.gae_lambda</td><td>λ</td><td>GAE 的平滑系数，控制"往前看多远"</td></tr>
+  <tr><td class="cd">lastgaelam</td><td>Â<sub>t+1</sub></td><td>上一轮迭代算出来的优势</td></tr>
+</table>
+
+<div class="key">
+  <strong>为什么这段代码必须"倒着循环"？</strong>看公式最后一项 <code>Â<sub>t+1</sub></code>——<strong>算 t 时刻的优势，需要先有 t+1 时刻的优势</strong>。所以循环只能从最后一步往回走：<code>for t in reversed(range(num_steps))</code>。<br>
+  这种"当前值依赖下一个值"的结构叫<strong>递推</strong>。认出它，你就知道该倒序——这是公式决定代码结构的典型例子，<strong>不是程序员的选择，是数学逼出来的</strong>。
+</div>
+
+<h3>3.3 例三：PPO 的核心——被裁剪的目标函数</h3>
+
+<div class="fml">
+L<sup>CLIP</sup>(θ) = E[ min( ρ<sub>t</sub>(θ)·Â<sub>t</sub> , clip(ρ<sub>t</sub>(θ), 1−ε, 1+ε)·Â<sub>t</sub> ) ]<br>
+其中　ρ<sub>t</sub>(θ) = π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) / π<sub>θ_old</sub>(a<sub>t</sub>|s<sub>t</sub>)
+</div>
+
+<pre><code>                logratio = newlogprob - b_logprobs[mb_inds]          <span class="cm"># ①</span>
+                ratio = logratio.exp()                              <span class="cm"># ②</span>
+
+                pg_loss1 = -mb_advantages * ratio                   <span class="cm"># ③</span>
+                pg_loss2 = -mb_advantages * torch.clamp(ratio, <span class="nm">1</span> - args.clip_coef, <span class="nm">1</span> + args.clip_coef)
+                pg_loss = torch.max(pg_loss1, pg_loss2).mean()      <span class="cm"># ④</span></code></pre>
+
+<table>
+  <tr><th>行</th><th>代码</th><th>公式里的哪一步</th><th>为什么这么写</th></tr>
+  <tr>
+    <td class="ln">①</td><td class="cd">logratio = newlogprob - b_logprobs[mb_inds]</td>
+    <td>log ρ（ρ 的对数）</td>
+    <td><strong>除法变减法</strong>：ρ = 新概率/旧概率，取对数后 log ρ = log(新) − log(旧)。新概率是<strong>重新前向算出来的</strong>（因为参数更新了），旧概率是<strong>采样时存下来的</strong>。</td>
+  </tr>
+  <tr>
+    <td class="ln">②</td><td class="cd">ratio = logratio.exp()</td>
+    <td>ρ = e<sup>log ρ</sup></td>
+    <td>先减再 exp 回来，比直接除更稳。加了这行，<strong>数值上等价，稳定性上不同</strong>。</td>
+  </tr>
+  <tr>
+    <td class="ln">③</td><td class="cd">pg_loss1 = -mb_advantages * ratio</td>
+    <td>−Â·ρ（取负号）</td>
+    <td><strong>为什么有负号？</strong>公式里是"最大化 L"，但 PyTorch 的优化器只会"最小化 loss"。所以<strong>最大化目标 = 最小化它的负数</strong>。这个负号是公式与框架约定之间的翻译。</td>
+  </tr>
+  <tr>
+    <td class="ln">④</td><td class="cd">pg_loss = torch.max(pg_loss1, pg_loss2).mean()</td>
+    <td>min(...) 取的是哪一支</td>
+    <td><strong>注意：公式写 min，代码写 max，这不是错。</strong>因为第 ③ 步已经整体取了负号——<strong>min(正目标) 等价于 max(负目标)</strong>。取 max 的效果是"两个候选里挑更悲观的那个"，从而不让策略一次走太远。<code>.mean()</code> 是把一个 minibatch 里所有样本的损失取平均，对应公式里的 <strong>E[·]</strong>。</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>这段代码最值得学的是什么？是 <code>torch.clamp</code> 这一个函数。</strong>公式里的 <code>clip(x, 1−ε, 1+ε)</code> 在代码里就是 <code>torch.clamp(ratio, 1-coef, 1+coef)</code>——<strong>它把比值硬卡在 [0.8, 1.2] 区间内（ε=0.2 时）</strong>。这就是 PPO 名字里"近端（Proximal）"的全部含义：限制策略每次更新的幅度。<strong>一个数学约束，落到代码上就是一个函数调用。</strong>
+</div>
+
+<h3>3.4 例四：总损失（从三项相加减到一行）</h3>
+
+<div class="fml">L = L<sup>CLIP</sup> − c<sub>1</sub>·H(π) + c<sub>2</sub>·L<sup>VF</sup></div>
+
+<pre><code>                loss = pg_loss - args.ent_coef * entropy_loss + v_loss * args.vf_coef</code></pre>
+
+<table>
+  <tr><th>代码项</th><th>公式项</th><th>作用</th></tr>
+  <tr><td class="cd">pg_loss</td><td>L<sup>CLIP</sup></td><td>策略损失：让好动作更可能被选中</td></tr>
+  <tr><td class="cd">- args.ent_coef * entropy_loss</td><td>−c<sub>1</sub>·H(π)</td><td><strong>熵奖励</strong>：减去熵损失 = 鼓励熵变大 = 鼓励探索。<code>ent_coef=0.01</code> 是权重，控制"牺牲多少得分去换探索"</td></tr>
+  <tr><td class="cd">+ v_loss * args.vf_coef</td><td>+c<sub>2</sub>·L<sup>VF</sup></td><td>价值网络损失：让 V(s) 估得准。估准了才能算对优势</td></tr>
+</table>
+
+<div class="ok">
+  <strong>一行代码装下了整个 PPO 的目标函数。</strong>你以后读任何强化学习论文，都可以用这个套路：先找到"目标函数"那个公式，然后去找代码里对应的 <code>loss = ...</code> 那一行——<strong>中间的差距，无非是"负号、平均、clamp、系数"这四种翻译</strong>。
+</div>
+
+<h3>3.5 附：张量的形状变换在干什么</h3>
+
+<pre><code>        b_obs = obs.reshape((-1,) + envs.single_observation_space.shape)
+        b_advantages = advantages.reshape(-1)</code></pre>
+
+<p>采样时数据是<strong>按时间步分段的</strong>（形状 <code>[步数, 并行环境数, ...]</code>），而训练时要<strong>把所有样本打平混在一起</strong>（形状 <code>[总样本数, ...]</code>）。</p>
+<ul>
+  <li><code>.reshape(-1)</code> 里的 <strong>−1 意思是"这一维你自己算"</strong>：给定总元素数和其他维的大小，剩下一维自动推算。</li>
+  <li>为什么要打平？因为 PPO 要<strong>随机打乱后分批</strong>（minibatch）。如果不打平，你就只能按时间顺序喂——那等于喂给网络一串高度相关的样本，训练效果差。</li>
+  <li><code>(−1,) + shape</code> 这种写法：<strong>元组拼接</strong>。前面加一维"样本数"，后面保留原始的形状（比如观测是 4 维向量，就打平成 <code>[N, 4]</code>）。</li>
+</ul>
+
+<h2>4 · server.py 逐行拆解</h2>
+
+<p>这是我这一轮写的<strong>主交付物</strong>。按代码分块讲。</p>
+
+<h3>4.1 文件头：为什么第一段是文字</h3>
+
+<pre><code><span class="st">"""CleanRL PPO MCP server.
+
+Every tool is bound to the upstream CleanRL repository
+(https://github.com/vwxyzjn/cleanrl). No scientific logic is reimplemented
+here: tools either shell out to the repository's own CLI entry point
+(`cleanrl/ppo.py`) or read its source, and report the repository's outputs.
+"""</span></code></pre>
+
+<p>三引号包起来的叫 <strong>docstring（文档字符串）</strong>。它不参与执行，但会被 Python 保存成模块的属性，可以被工具读出、被 <code>help()</code> 显示。</p>
+<div class="note">
+  <strong>为什么这行注释格外重要：</strong>它写的是"这里没有重写任何科学逻辑"。读过前面「论文转Agent」那一页你就知道，这句话是整个 Paper2Agent 方法论的硬规矩——<strong>把设计约束写在文件最显眼的位置，是防止后来者（包括三个月后的我自己）图省事去抄一份简化版实现。</strong>
+</div>
+
+<h3>4.2 import 区：每个 import 是干什么的</h3>
+
+<pre><code><span class="kw">from</span> __future__ <span class="kw">import</span> annotations
+<span class="kw">import</span> ast          <span class="cm"># 解析 Python 源码</span>
+<span class="kw">import</span> os           <span class="cm"># 读环境变量</span>
+<span class="kw">import</span> re           <span class="cm"># 正则表达式，抓日志</span>
+<span class="kw">import</span> subprocess   <span class="cm"># 启动外部程序</span>
+<span class="kw">import</span> sys          <span class="cm"># 拿当前解释器路径</span>
+<span class="kw">import</span> time         <span class="cm"># 计时</span>
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path   <span class="cm"># 路径操作</span>
+
+<span class="kw">from</span> fastmcp <span class="kw">import</span> FastMCP</code></pre>
+
+<table>
+  <tr><th>import</th><th>干什么用</th><th>为什么需要</th></tr>
+  <tr><td class="cd">__future__ annotations</td><td>让类型注解延迟求值</td><td>允许在函数签名里写"还没定义的类名"，且省一点启动开销。是现代的默认习惯</td></tr>
+  <tr><td class="cd">ast</td><td>把 Python 源码解析成语法树</td><td><strong>读默认超参用的</strong>——不能直接 <code>import</code> 那个文件，因为那样会执行它的 <code>if __name__ == "__main__"</code> 块，把训练真的跑起来</td></tr>
+  <tr><td class="cd">os</td><td>读环境变量</td><td>仓库路径和 Python 路径不写死在代码里，让调用方通过环境变量告诉它</td></tr>
+  <tr><td class="cd">re</td><td>正则匹配</td><td>从训练的文本输出里捞出数字</td></tr>
+  <tr><td class="cd">subprocess</td><td>启动外部进程并拿到输出</td><td><strong>核心</strong>——真正跑训练靠它</td></tr>
+  <tr><td class="cd">sys</td><td>拿到当前 Python 解释器路径</td><td>作为"用哪个 Python 去跑"的兜底值</td></tr>
+  <tr><td class="cd">time</td><td>计时</td><td>报告这次训练花了多少秒</td></tr>
+  <tr><td class="cd">pathlib.Path</td><td>面向对象的路径</td><td>比字符串拼接更安全、跨平台</td></tr>
+  <tr><td class="cd">fastmcp.FastMCP</td><td>MCP 框架</td><td>提供 <code>@mcp.tool()</code> 装饰器和协议实现</td></tr>
+</table>
+
+<h3>4.3 全局配置：两行，但每行都有讲究</h3>
+
+<pre><code>REPO = Path(os.environ.get(<span class="st">"CLEANRL_REPO"</span>, <span class="st">""</span>)).expanduser().resolve()
+PY = os.environ.get(<span class="st">"CLEANRL_PY"</span>, sys.executable)</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">os.environ.get("CLEANRL_REPO", "")</td><td>读环境变量，读不到给空字符串</td><td>用 <code>.get()</code> 而不是 <code>os.environ["..."]</code>——后者读不到会直接抛异常。<strong>这里故意不抛</strong>，是为了稍后在 <code>_ppo_script()</code> 里给一句人话错误提示</td></tr>
+  <tr><td class="cd">.expanduser()</td><td>把 <code>~</code> 展开成用户主目录</td><td>环境变量里写 <code>~/cleanrl</code> 是很自然的写法，但 shell 展开不一定会发生（取决于怎么传进来的）</td></tr>
+  <tr><td class="cd">.resolve()</td><td>转成绝对路径，解析 <code>..</code> 和符号链接</td><td>后面要把这个路径<strong>传给子进程</strong>，子进程的工作目录可能不同，必须绝对路径</td></tr>
+  <tr><td class="cd">sys.executable</td><td>当前解释器的路径</td><td>兜底：如果没配 <code>CLEANRL_PY</code>，就用"正在跑这个服务器的那一个" Python</td></tr>
+</table>
+
+<div class="key">
+  <strong>为什么这两行放在模块顶层、而不是函数里？</strong>因为它们<strong>只需要读一次</strong>。放在顶层，服务器启动时就读好，之后每次工具调用直接用；放在函数里则每次调用都读一遍。<strong>这叫"配置与逻辑分离"，也是让这个文件能通过环境变量适配任何机器的方式。</strong>
+</div>
+
+<h3>4.4 正则表达式：两行抓日志</h3>
+
+<pre><code>_RETURN_RE = re.compile(<span class="st">r"episodic_return=\[(-?[\d.]+)\]"</span>)
+_SPS_RE = re.compile(<span class="st">r"SPS:\s*(\d+)"</span>)</code></pre>
+
+<table>
+  <tr><th>片段</th><th>含义</th></tr>
+  <tr><td class="cd">r"..."</td><td>原始字符串（raw string）。<strong>反斜杠不当转义符处理</strong>——正则里大量用 <code>\d</code> <code>\s</code>，不写 <code>r</code> 会踩转义坑</td></tr>
+  <tr><td class="cd">re.compile(...)</td><td>预先编译成模式对象。<strong>好处是同一模式被反复匹配时不用每次重新解析</strong></td></tr>
+  <tr><td class="cd">episodic_return=\[</td><td>匹配字面量 <code>episodic_return=[</code>。<code>\[</code> 是转义——方括号在正则里表示字符集，要匹配它本身必须加反斜杠</td></tr>
+  <tr><td class="cd">(-?[\d.]+)</td><td>捕获组。<code>-?</code>=可能有负号；<code>[\d.]+</code>=一个或多个"数字或小数点"。<strong>括号是精髓</strong>：<code>findall</code> 只会把括号里的内容返回出来，外面的 <code>episodic_return=[</code> 只是用来定位</td></tr>
+  <tr><td class="cd">SPS:\s*(\d+)</td><td><code>\s*</code>=零个或多个空白字符（容忍 <code>SPS: 123</code> 和 <code>SPS:123</code> 两种写法）；<code>\d+</code>=一个或多个数字</td></tr>
+</table>
+
+<div class="note">
+  <strong>为什么用正则，而不用 <code>split()</code> 或字符串查找？</strong>因为<strong>输出格式的边角情况太多</strong>：数字可能是负数、可能有空格、可能跟其他文本混在一行。<code>split</code> 依赖位置，格式一变就崩；正则描述的是"长什么样"，更耐改。
+</div>
+
+<h3>4.5 守卫函数：fail fast</h3>
+
+<pre><code><span class="kw">def</span> <span class="nm">_ppo_script</span>() -> Path:
+    p = REPO / <span class="st">"cleanrl"</span> / <span class="st">"ppo.py"</span>
+    <span class="kw">if</span> <span class="kw">not</span> p.is_file():
+        <span class="kw">raise</span> RuntimeError(
+            <span class="st">f"CleanRL script not found at {p}. Set CLEANRL_REPO to a checkout of "</span>
+            <span class="st">"https://github.com/vwxyzjn/cleanrl"</span>
+        )
+    <span class="kw">return</span> p</code></pre>
+
+<table>
+  <tr><th>代码</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">def _ppo_script() -> Path:</td><td>定义一个私有函数（名字前下划线是"内部使用"的约定）</td><td>三处地方都需要"检查脚本在不在"，抽出来避免重复</td></tr>
+  <tr><td class="cd">REPO / "cleanrl" / "ppo.py"</td><td>用 <code>/</code> 运算符拼路径</td><td>这是 <code>pathlib</code> 的语法糖，等价于"拼一级路径"。<strong>比字符串拼接干净</strong>，且自动处理分隔符</td></tr>
+  <tr><td class="cd">if not p.is_file():</td><td>检查文件是否存在</td><td>用 <code>is_file()</code> 而不是 <code>exists()</code>——后者对目录也返回 True</td></tr>
+  <tr><td class="cd">raise RuntimeError(...)</td><td>主动抛异常</td><td><strong>这里就是 4.3 埋的伏笔</strong>：环境变量为空时 REPO 是当前目录，脚本当然找不到；与其让后面报一个莫名其妙的错，不如在这里<strong>直接把原因和修法写进错误信息</strong></td></tr>
+  <tr><td class="cd">f"..."</td><td>f-string，花括号里可以嵌变量</td><td>把实际路径 <code>{p}</code> 打印出来——<strong>报错时告诉你"它去哪儿找过"</strong>，比只说"没找到"有用得多</td></tr>
+</table>
+
+<h3>4.6 工具一：列算法（6 行）</h3>
+
+<pre><code><span class="nm">@mcp.tool()</span>
+<span class="kw">def</span> <span class="nm">list_algorithms</span>() -> dict:
+    <span class="st">"""List the algorithm implementations shipped in the CleanRL repository."""</span>
+    d = REPO / <span class="st">"cleanrl"</span>
+    algos = <span class="kw">sorted</span>(p.name <span class="kw">for</span> p <span class="kw">in</span> d.glob(<span class="st">"*.py"</span>) <span class="kw">if</span> <span class="kw">not</span> p.name.startswith(<span class="st">"_"</span>))
+    <span class="kw">return</span> {<span class="st">"repo"</span>: <span class="kw">str</span>(REPO), <span class="st">"algorithm_scripts"</span>: algos, <span class="st">"count"</span>: <span class="kw">len</span>(algos)}</code></pre>
+
+<table>
+  <tr><th>行</th><th>代码</th><th>作用与理由</th></tr>
+  <tr><td class="ln">1</td><td class="cd">@mcp.tool()</td><td><strong>装饰器</strong>。它的作用是把下面这个函数<strong>注册</strong>给 MCP 框架，并读取它的签名和 docstring 自动生成工具描述。<strong>不加这一行，函数就是个普通函数，客户端看不到它。</strong></td></tr>
+  <tr><td class="ln">2</td><td class="cd">def list_algorithms() -> dict:</td><td><strong>没有参数</strong>，返回 dict。</td></tr>
+  <tr><td class="ln">3</td><td class="cd">"""..."""</td><td><strong>docstring 会成为这个工具的"描述"</strong>，是 AI 判断"什么时候该调用它"的唯一依据。所以工具函数必须写 docstring——这是 MCP 的设计，不是风格问题</td></tr>
+  <tr><td class="ln">4</td><td class="cd">algos = sorted(p.name for p in d.glob("*.py") if not p.name.startswith("_"))</td><td>这是一个<strong>生成器表达式</strong>：<code>d.glob("*.py")</code> 找出所有 .py 文件，取名字，过滤掉下划线开头的（那些是内部模块），再 <code>sorted</code> 排序。<strong>为什么排序？</strong>不排序的话每次返回顺序可能不同，会让"返回值比对"这种验证失效</td></tr>
+  <tr><td class="ln">5</td><td class="cd">return {...}</td><td>返回字典。<strong>为什么返回 <code>count</code> 这个看着冗余的字段？</strong>因为验收脚本要断言返回值，有一个稳定的整数比断言一个长列表容易。这是"为可验证性做的设计"</td></tr>
+</table>
+
+<h3>4.7 工具二：读超参配置（10 行，用了 AST）</h3>
+
+<p>这个工具的目标是：<strong>不改动、不执行任何代码，把源文件里 <code>Args</code> 类的默认值读出来</strong>。</p>
+
+<pre><code><span class="nm">@mcp.tool()</span>
+<span class="kw">def</span> <span class="nm">get_ppo_config</span>() -> dict:
+    src = _ppo_script().read_text()
+    defaults: dict = {}
+    <span class="kw">for</span> node <span class="kw">in</span> ast.walk(ast.parse(src)):
+        <span class="kw">if</span> <span class="kw">isinstance</span>(node, ast.ClassDef) <span class="kw">and</span> node.name == <span class="st">"Args"</span>:
+            <span class="kw">for</span> stmt <span class="kw">in</span> node.body:
+                <span class="kw">if</span> <span class="kw">isinstance</span>(stmt, ast.AnnAssign) <span class="kw">and</span> stmt.value <span class="kw">is not</span> <span class="kw">None</span>:
+                    <span class="kw">try</span>:
+                        defaults[stmt.target.id] = ast.literal_eval(stmt.value)
+                    <span class="kw">except</span> Exception:
+                        defaults[stmt.target.id] = ast.unparse(stmt.value)
+    <span class="kw">return</span> {<span class="st">"script"</span>: <span class="kw">str</span>(_ppo_script()), <span class="st">"defaults"</span>: defaults}</code></pre>
+
+<table>
+  <tr><th>行</th><th>代码</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="ln">1</td><td class="cd">src = _ppo_script().read_text()</td><td>把源文件当纯文本读进来</td><td><strong>注意这里只是"读文本"，绝不 import</strong>。import 会执行整个文件</td></tr>
+  <tr><td class="ln">2</td><td class="cd">defaults: dict = {}</td><td>准备一个空字典装结果</td><td>带类型注解，让编辑器能推断类型</td></tr>
+  <tr><td class="ln">3</td><td class="cd">ast.parse(src)</td><td>把源码文本解析成<strong>语法树</strong></td><td>语法树是"代码的结构化表示"：每个类、每个赋值、每个运算符都变成一个节点对象</td></tr>
+  <tr><td class="ln">3</td><td class="cd">ast.walk(...)</td><td>把树里<strong>所有节点</strong>遍历一遍</td><td>我们不知道 <code>Args</code> 类在文件里哪个位置，穷举最省事</td></tr>
+  <tr><td class="ln">4</td><td class="cd">isinstance(node, ast.ClassDef) and node.name == "Args"</td><td>筛出类定义，且类名是 Args</td><td><code>isinstance</code> 判断节点类型——这是遍历语法树的固定套路：<strong>先按类型筛，再按名字筛</strong></td></tr>
+  <tr><td class="ln">5</td><td class="cd">for stmt in node.body:</td><td>遍历这个类体里的每条语句</td><td>类的成员就写在这里</td></tr>
+  <tr><td class="ln">6</td><td class="cd">isinstance(stmt, ast.AnnAssign)</td><td>筛出"带类型注解的赋值"</td><td><code>AnnAssign</code> = annotated assignment，正是 <code>gamma: float = 0.99</code> 这种写法对应的节点</td></tr>
+  <tr><td class="ln">6</td><td class="cd">and stmt.value is not None</td><td>排除只有注解、没有默认值的项</td><td>比如 <code>target_kl: float = None</code> 之外，还有纯声明 <code>x: int</code>，它没有值可取</td></tr>
+  <tr><td class="ln">8</td><td class="cd">defaults[stmt.target.id] = ast.literal_eval(stmt.value)</td><td>把节点里的字面量转成真正的 Python 值</td><td><code>stmt.target.id</code> 拿到变量名（如 "gamma"）。<code>literal_eval</code> 是<strong>安全的求值函数</strong>——它只认字面量（数字、字符串、元组），<strong>遇到函数调用会拒绝执行</strong>，这正是它和危险的 <code>eval()</code> 的区别</td></tr>
+  <tr><td class="ln">5</td><td class="cd">try / except Exception</td><td>兜底</td><td>有些默认值不是字面量（比如 <code>field(default_factory=list)</code>），<code>literal_eval</code> 会失败</td></tr>
+  <tr><td class="ln">9</td><td class="cd">defaults[...] = ast.unparse(stmt.value)</td><td>失败时退化成"把它转回源码文本"</td><td><code>ast.unparse</code> 是语法树转字符串。这样<strong>不会因为一个字段读不出来就整个工具失败</strong>，只是那个值以文本形式呈现</td></tr>
+</table>
+
+<div class="key">
+  <strong>这一段代码最值得记住的两点：</strong><br>
+  ① <strong><code>ast.literal_eval</code> 而不是 <code>eval</code></strong>。两者长得像，安全性天差地别：<code>eval("__import__('os').system('rm -rf /')")</code> 会真的执行，<code>literal_eval</code> 会直接报错拒绝。<strong>凡是处理"别人的文本"的场合，永远用前者。</strong><br>
+  ② <strong>读源码比硬编码值好</strong>。如果我直接把 <code>gamma=0.99</code> 写进工具里，等仓库更新后这个工具就会<strong>说谎</strong>——它报的还是老值。读源码则永远和当前 checkout 一致。
+</div>
+
+<h3>4.8 工具三：跑训练（主体）</h3>
+
+<h4>4.8.1 签名：参数与默认值</h4>
+
+<pre><code><span class="nm">@mcp.tool()</span>
+<span class="kw">def</span> <span class="nm">train_ppo</span>(
+    env_id: <span class="kw">str</span> = <span class="st">"CartPole-v1"</span>,
+    total_timesteps: <span class="kw">int</span> = <span class="nm">10000</span>,
+    seed: <span class="kw">int</span> = <span class="nm">1</span>,
+    learning_rate: <span class="kw">float</span> = <span class="nm">0.00025</span>,
+    num_envs: <span class="kw">int</span> = <span class="nm">1</span>,
+    last_n: <span class="kw">int</span> = <span class="nm">20</span>,
+) -> dict:</code></pre>
+
+<table>
+  <tr><th>参数</th><th>类型注解的作用</th></tr>
+  <tr><td class="cd">env_id: str</td><td><strong>注解不只是注释</strong>——MCP 框架会读取它，生成工具的输入 schema。客户端（AI）据此知道"这里要传一个字符串"。<strong>类型写错，AI 就会传错类型的参数</strong></td></tr>
+  <tr><td class="cd">total_timesteps: int = 10000</td><td>默认 1 万步，是为了"默认调用也很快能出结果"，而不是照抄 CleanRL 的 50 万</td></tr>
+  <tr><td class="cd">num_envs: int = 1</td><td><strong>这里埋过一个坑</strong>：CleanRL 官方默认是 4，我这里默认 1。验收时正是因为这个不一致，导致参考跑和工具跑的结果对不上（288 回合 vs 202 回合）。<strong>教训：默认值要跟被包装的系统保持一致，否则很容易在对账时踩雷</strong></td></tr>
+  <tr><td class="cd">last_n: int = 20</td><td>不传给子进程，只用于本函数内部计算"最后 n 局的均值"</td></tr>
+</table>
+
+<h4>4.8.2 docstring：写给人，也写给 AI</h4>
+
+<pre><code>    <span class="st">"""Run CleanRL's PPO on a Gymnasium environment and report training metrics.
+
+    ... With a fixed seed and `--torch-deterministic` the run is reproducible, so
+    the reported statistics can be compared against a reference run.
+
+    Notes: `total_timesteps` must be a multiple of `num_envs` x 128 ...
+    """</span></code></pre>
+
+<p>这段文字里有<strong>三条约束</strong>：可复现的条件、total_timesteps 的整除要求、以及"CartPole 之外的环境需要装额外依赖"。</p>
+<div class="note">
+  <strong>为什么要把约束写进 docstring 而不是代码注释？</strong>因为<strong>注释只有人看得到，docstring 会进入工具描述被 AI 读到</strong>。当 AI 打算调用这个工具时，"total_timesteps 必须是 num_envs×128 的倍数"这条信息能帮它避免传一个会崩的参数。<strong>在 MCP 里，docstring 是接口的一部分，不是文档。</strong>
+</div>
+
+<h4>4.8.3 组装命令行</h4>
+
+<pre><code>    _ppo_script()
+    cmd = [
+        PY,
+        <span class="st">"cleanrl/ppo.py"</span>,
+        <span class="st">"--env-id"</span>, env_id,
+        <span class="st">"--total-timesteps"</span>, <span class="kw">str</span>(<span class="kw">int</span>(total_timesteps)),
+        <span class="st">"--seed"</span>, <span class="kw">str</span>(<span class="kw">int</span>(seed)),
+        <span class="st">"--learning-rate"</span>, <span class="kw">str</span>(<span class="kw">float</span>(learning_rate)),
+        <span class="st">"--num-envs"</span>, <span class="kw">str</span>(<span class="kw">int</span>(num_envs)),
+        <span class="st">"--torch-deterministic"</span>,
+        <span class="st">"--no-track"</span>,
+    ]</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">_ppo_script()</td><td>单独调一次，只为触发检查</td><td>这是"先验证前提再干活"：脚本不在就直接抛错，不要启动一个注定失败的子进程</td></tr>
+  <tr><td class="cd">cmd = [...]</td><td>用<strong>列表</strong>而不是字符串</td><td><strong>这是安全要点</strong>：列表形式 <code>subprocess.run</code> 不会走 shell 解析，参数里有空格或分号也不会被当成命令分隔符。<strong>用字符串再拼 shell 命令，就是命令注入漏洞的来源</strong></td></tr>
+  <tr><td class="cd">PY</td><td>列表第一项是解释器路径</td><td>要用<strong>装了依赖的那个 Python</strong> 跑，而不是"碰巧能跑这个服务器的那个"</td></tr>
+  <tr><td class="cd">"cleanrl/ppo.py"</td><td>脚本相对路径</td><td>配合后面 <code>cwd=REPO</code>，这样写命令行最短</td></tr>
+  <tr><td class="cd">str(int(total_timesteps))</td><td>先转整数再转字符串</td><td><strong>双重转换是有意的</strong>：<code>int()</code> 把 <code>10000.0</code> 这类浮点输入截断成整数，<code>str()</code> 再变成命令行能接受的文本。<strong>如果直接 <code>str(10000.0)</code>，命令行会收到 "10000.0"，有的参数解析器会报错</strong></td></tr>
+  <tr><td class="cd">"--torch-deterministic"</td><td>开关型参数，只有名字没有值</td><td>让 PyTorch 用确定性算法。<strong>这是"结果可复现"的前提之一</strong></td></tr>
+  <tr><td class="cd">"--no-track"</td><td>关闭实验追踪</td><td>CleanRL 默认会往 wandb 上传。关掉，避免要求网络和账号，也避免把数据传出去</td></tr>
+</table>
+
+<h4>4.8.4 执行并计时</h4>
+
+<pre><code>    t0 = time.time()
+    proc = subprocess.run(
+        cmd, cwd=<span class="kw">str</span>(REPO), capture_output=<span class="kw">True</span>, text=<span class="kw">True</span>, timeout=<span class="nm">3600</span>
+    )
+    wall = time.time() - t0
+    <span class="kw">if</span> proc.returncode != <span class="nm">0</span>:
+        <span class="kw">raise</span> RuntimeError(<span class="st">f"cleanrl/ppo.py failed:\n{proc.stderr[-4000:]}"</span>)</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么用这个而不是别的</th></tr>
+  <tr><td class="cd">time.time()</td><td>取当前时间戳（浮点秒）</td><td>后面相减得到墙钟耗时</td></tr>
+  <tr><td class="cd">subprocess.run</td><td>启动子进程、等它结束、收集结果</td><td><strong>为什么不用 <code>os.system()</code></strong>？它只能拿到退出码，<strong>拿不到输出</strong>——而我们正是要靠输出来提取指标。<strong>为什么不用 <code>Popen</code></strong>？那是"不等待"的异步版本，这里要等它跑完</td></tr>
+  <tr><td class="cd">cwd=str(REPO)</td><td>设置子进程的工作目录</td><td>CleanRL 会把日志写到相对路径 <code>runs/</code>。设了 cwd，日志就落在仓库目录里，后面找得到</td></tr>
+  <tr><td class="cd">capture_output=True</td><td>把 stdout / stderr 收进内存</td><td>等价于同时设 <code>stdout=PIPE, stderr=PIPE</code>，但更简洁</td></tr>
+  <tr><td class="cd">text=True</td><td>把输出按文本解码</td><td>不写的话拿到的是 <code>bytes</code>，正则匹配还得先手动 <code>decode()</code></td></tr>
+  <tr><td class="cd">timeout=3600</td><td>最多跑 1 小时</td><td><strong>必须有</strong>。仿真训练可能因为 bug 卡死，没有超时的话这个 MCP 服务器会被一个挂起的子进程永久占住</td></tr>
+  <tr><td class="cd">wall = time.time() - t0</td><td>结束时间减开始时间</td><td>报告实际耗时</td></tr>
+  <tr><td class="cd">proc.returncode != 0</td><td>判断子进程是否失败</td><td>约定：返回 0 表示成功，非 0 表示出错</td></tr>
+  <tr><td class="cd">raise RuntimeError(f"...{proc.stderr[-4000:]}")</td><td>把错误往上抛，附带 stderr 尾部</td><td><code>[-4000:]</code> 是<strong>切片</strong>：只取最后 4000 个字符。<strong>为什么只取尾部？</strong>因为 Python 的报错信息关键部分在最后（异常类型和消息），前面的调用栈又长又没用；不截断会把整段错误塞进上下文，浪费且难读</td></tr>
+</table>
+
+<h4>4.8.5 提取指标</h4>
+
+<pre><code>    returns = [<span class="kw">float</span>(x) <span class="kw">for</span> x <span class="kw">in</span> _RETURN_RE.findall(proc.stdout)]
+    sps = [<span class="kw">int</span>(x) <span class="kw">for</span> x <span class="kw">in</span> _SPS_RE.findall(proc.stdout)]
+    tail = returns[-<span class="kw">max</span>(<span class="nm">1</span>, <span class="kw">int</span>(last_n)):]</code></pre>
+
+<table>
+  <tr><th>代码</th><th>作用</th><th>关键点</th></tr>
+  <tr><td class="cd">_RETURN_RE.findall(proc.stdout)</td><td>扫全部输出，返回所有捕获组</td><td><code>findall</code> 在有捕获组时<strong>只返回括号里的内容</strong>，所以得到的是一个数字字符串列表</td></tr>
+  <tr><td class="cd">[float(x) for x in ...]</td><td>列表推导：逐个转成浮点</td><td>正则抓出来的是<strong>字符串</strong>，必须转换才能算数</td></tr>
+  <tr><td class="cd">returns[-max(1, int(last_n)):]</td><td>取最后 last_n 个</td><td><strong>这一行有双重保护</strong>：<code>int()</code> 防止传入字符串；<code>max(1, ...)</code> 防止传入 0 或负数——<code>returns[-0:]</code> 在 Python 里等于"整个列表"，是个很容易踩的坑</td></tr>
+</table>
+
+<h4>4.8.6 找运行目录 &amp; 返回结果</h4>
+
+<pre><code>    run_dirs = <span class="kw">sorted</span>(
+        (REPO / <span class="st">"runs"</span>).glob(<span class="st">f"{env_id}__ppo__{seed}__*"</span>),
+        key=<span class="kw">lambda</span> p: p.stat().st_mtime,
+    )
+    <span class="kw">return</span> {
+        <span class="st">"env_id"</span>: env_id,
+        ...
+        <span class="st">"mean_return_last_n"</span>: <span class="kw">round</span>(<span class="kw">sum</span>(tail) / <span class="kw">len</span>(tail), <span class="nm">3</span>) <span class="kw">if</span> tail <span class="kw">else</span> <span class="kw">None</span>,
+        <span class="st">"max_return"</span>: <span class="kw">max</span>(returns) <span class="kw">if</span> returns <span class="kw">else</span> <span class="kw">None</span>,
+        <span class="st">"tail_returns"</span>: tail,
+    }</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">glob(f"{env_id}__ppo__{seed}__*")</td><td>按命名规则找这次运行的日志目录</td><td>CleanRL 的目录名格式是 <code>环境名__实验名__种子__时间戳</code>，用模式匹配捞出来</td></tr>
+  <tr><td class="cd">key=lambda p: p.stat().st_mtime</td><td>按修改时间排序</td><td><code>lambda</code> 是匿名函数，这里当"排序依据"用。<strong>取最后一个 = 最新的一次运行</strong></td></tr>
+  <tr><td class="cd">round(sum(tail) / len(tail), 3)</td><td>算均值并保留 3 位小数</td><td><strong>为什么要 round 到固定位数？</strong>浮点数的完整表示有十几位，每次可能有极微小的差异。<strong>四舍五入到 3 位，能让"逐位比对"这种严格验收变得可行</strong>——这是为可验证性做的设计</td></tr>
+  <tr><td class="cd">if tail else None</td><td>空列表的兜底</td><td><strong>防止除零</strong>。如果训练一个回合都没跑完，<code>tail</code> 是空的，<code>sum([])/0</code> 会抛异常</td></tr>
+  <tr><td class="cd">"tail_returns": tail</td><td>把原始数据也返回</td><td>不止给结论，还给证据。<strong>出问题时你可以自己复算，而不是只能相信我</strong></td></tr>
+</table>
+
+<h3>4.9 程序入口</h3>
+
+<pre><code><span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    mcp.run()</code></pre>
+<p>这个经典写法的含义是：<strong>只有"直接运行这个文件"时才启动服务器</strong>；如果别人 <code>import</code> 它，则不会自动启动（只借用里面的函数）。<code>mcp.run()</code> 默认用 stdio 传输——把标准输入输出当成通信管道，客户端把它作为子进程启动。</p>
+
+<h2>5 · 算力基准脚本逐段拆解</h2>
+
+<p>这个脚本的目的是"测出每秒能推多少步"。核心难点在于：<strong>JAX 是异步的</strong>——它把计算排队后立刻返回，不等算完。所以计时必须显式地"等"。</p>
+
+<pre><code>env = registry.load(<span class="st">"CartpoleBalance"</span>)
+step = jax.jit(jax.vmap(env.step))
+reset = jax.jit(jax.vmap(env.reset))</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么必须这样</th></tr>
+  <tr><td class="cd">registry.load("CartpoleBalance")</td><td>按名字取出环境对象</td><td>54 个环境都注册在表里，按名字取最方便</td></tr>
+  <tr><td class="cd">env.step</td><td>环境自带的"推进一步"方法</td><td><strong>注意：不是我们写的</strong>。我们只是在包装它</td></tr>
+  <tr><td class="cd">jax.vmap(...)</td><td><strong>向量化映射</strong>：把"单个环境前进一步"变成"N 个环境同时前进一步"</td><td>这是 MJX 吞吐量的来源。写一次单环境逻辑，<code>vmap</code> 自动批量执行</td></tr>
+  <tr><td class="cd">jax.jit(...)</td><td><strong>即时编译</strong>：把 Python 函数编译成高效机器码</td><td>不编译的话，每一步都要走 Python 解释器，慢几个数量级。代价是首次调用有编译时间</td></tr>
+</table>
+
+<pre><code>    state = jax.block_until_ready(reset(rng[1:]))
+    act = jnp.zeros((N, env.action_size))
+    jax.block_until_ready(step(state, act))          <span class="cm"># 编译 + 预热</span>
+    t0 = time.time()
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(REPS):
+        state = step(state, act)
+    jax.block_until_ready(state)                     <span class="cm"># 关键：等真正算完</span>
+    dt = time.time() - t0</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">jax.block_until_ready(...)</td><td>阻塞，直到计算真的完成</td><td><strong>这是本脚本最关键的一行。</strong>没有它，计时测到的是"排队花了多久"，而不是"算完花了多久"——结果会虚假地高几个数量级</td></tr>
+  <tr><td class="cd">jnp.zeros((N, env.action_size))</td><td>造一批零动作</td><td>动作值本身不影响我们要测的"仿真吞吐"</td></tr>
+  <tr><td class="cd">jax.block_until_ready(step(state, act))</td><td>先空跑一次</td><td><strong>把编译时间排除在计时之外</strong>。不预热的话，第一次调用会把 JIT 编译的几秒钟算进去，严重低估吞吐</td></tr>
+  <tr><td class="cd">dt = time.time() - t0</td><td>得到净耗时</td><td>再用 <code>REPS * N / dt</code> 算出每秒步数</td></tr>
+</table>
+
+<div class="note">
+  <strong>持续负载测试里还有两个小技巧：</strong><br>
+  <code>vm_stat</code> 的输出用正则抓 <code>Swapouts:</code> 后面的数字，<strong>比较测试前后的差值</strong>——绝对数没意义（系统本来就有历史累计），<strong>增量才说明"这段负载有没有逼着系统用磁盘当内存"</strong>。<br>
+  <code>pmset -g therm</code> 读系统热状态。<strong>它返回 "No thermal warning level has been recorded" 本身就是结论</strong>——说明负载还没让系统接近温度墙。
+</div>
+
+<h2>6 · 站点构建脚本我改了什么</h2>
+
+<p><code>build_site.py</code> 是已有的脚本，我改了三处。关键看<strong>为什么这么改</strong>。</p>
+
+<h3>6.1 原来的问题：硬编码的清单</h3>
+<p>脚本里有两个地方需要"知道所有面板叫什么"：一个是面板顺序数组，一个是<strong>用正则从网址里认出面板名</strong>。原来的写法是：</p>
+
+<pre><code><span class="cm"># 改之前（问题所在）</span>
+var m = hash.match(/^p-(roadmap|daily|terms|links)-/);</code></pre>
+
+<p>这个正则里<strong>手写了面板名清单</strong>。结果是：某次加了 <code>cs329a</code> 面板，但忘了往这个正则里补——<strong>那个面板的锚点深链就一直失效，而且不报错</strong>。</p>
+
+<h3>6.2 改法：让清单只有一个来源</h3>
+
+<pre><code><span class="cm"># Python 侧：把 ORDER 注入到 JS 里</span>
+SHELL_JS = (SHELL_JS
+            .replace(<span class="st">"__ORDER__"</span>, json.dumps(ORDER))
+            .replace(<span class="st">"__NAMES__"</span>, json.dumps({k: META[k][<span class="nm">0</span>] <span class="kw">for</span> k <span class="kw">in</span> ORDER}, ensure_ascii=<span class="kw">False</span>))
+            .replace(<span class="st">"__PKEYS__"</span>, json.dumps(<span class="st">"|"</span>.join(ORDER))))</code></pre>
+
+<pre><code><span class="cm"># JS 侧：从注入的数据动态生成正则</span>
+var PKEYS = <span class="st">"roadmap|daily|terms|hw|sim|p2a|cs329a|links"</span>;
+var ANCHOR_RE = <span class="kw">new</span> <span class="nm">RegExp</span>(<span class="st">'^p-('</span> + PKEYS + <span class="st">')-'</span>);</code></pre>
+
+<table>
+  <tr><th>片段</th><th>作用</th><th>为什么</th></tr>
+  <tr><td class="cd">.replace("__ORDER__", ...)</td><td>用占位符做模板替换</td><td>把"面板清单"这<strong>一个</strong>事实源固定在 Python 侧，JS 只是消费者。<strong>以后加面板只需改一处</strong></td></tr>
+  <tr><td class="cd">json.dumps(ORDER)</td><td>把 Python 列表转成 JSON 文本</td><td><code>["roadmap", "daily", ...]</code> 恰好也是合法的 JavaScript 数组字面量，<strong>所以可以直接嵌进 JS 源码</strong></td></tr>
+  <tr><td class="cd">ensure_ascii=False</td><td>不把中文转成 <code>\uXXXX</code> 转义</td><td>默认会转义，中文页签名会变成一堆 <code>\u5de5\u7a0b</code>，<strong>文件里就搜不到中文了</strong>，以后维护很痛苦</td></tr>
+  <tr><td class="cd">new RegExp('^p-(' + PKEYS + ')-')</td><td>运行时构造正则</td><td>JS 里正则字面量 <code>/.../ </code> 必须在写代码时就写全，<strong>不能插变量</strong>。要用动态内容就必须用 <code>RegExp</code> 构造函数</td></tr>
+  <tr><td class="cd">"|".join(ORDER)</td><td>把列表拼成 <code>a|b|c</code> 的形式</td><td>这正是正则里"或"的语法。<strong>注意这里没有转义</strong>——面板名是我们自己定的纯小写字母，不含正则特殊字符，所以安全。如果是用户输入，就必须转义</td></tr>
+</table>
+
+<div class="key">
+  <strong>这个改动背后是一条通用原则：同一个事实，只能有一个来源（Single Source of Truth）。</strong>原来的 bug 不是"写错了正则"，而是"同一个清单存在两份"——只要有两份，就一定会有一天不同步。<strong>修 bug 要修结构，不是修那一行。</strong>
+</div>
+
+<h3>6.3 样式作用域：为什么每个面板的 CSS 都要加前缀</h3>
+<p>多个 HTML 合并成一个页面时，<strong>所有 CSS 会混在一起</strong>。如果两个面板都定义了 <code>table</code> 的样式，后面的会覆盖前面的——<strong>面板之间会互相污染</strong>。</p>
+
+<pre><code><span class="cm"># 原脚本里的处理：给选择器加面板前缀</span>
+<span class="kw">for</span> s <span class="kw">in</span> [x.strip() <span class="kw">for</span> x <span class="kw">in</span> sel.split(<span class="st">","</span>) <span class="kw">if</span> x.strip()]:
+    <span class="kw">if</span> s <span class="kw">in</span> (<span class="st">"body"</span>, <span class="st">"html"</span>):
+        parts.append(scope)              <span class="cm"># body/html → 直接换成面板选择器</span>
+    <span class="kw">else</span>:
+        parts.append(<span class="st">f"{scope} {s}"</span>)   <span class="cm"># 其余 → 前面加作用域</span></code></pre>
+
+<p>处理之后，<code>table{...}</code> 变成 <code>#p-hw table{...}</code>——<strong>只有 <code>id="p-code-p-hw"</code> 的面板里的表格会应用这条规则</strong>。这就是"CSS 作用域"的手工实现。</p>
+
+<div class="note">
+  <strong>这也解释了我在写新面板时必须遵守的两条约束：</strong><br>
+  ① <strong>不能写 <code>:root</code></strong>——脚本会把 <code>:root</code> 整块丢掉，配色统一由全局提供；<br>
+  ② <strong>表头必须写 ≥2 个 <code>&lt;th&gt;</code></strong>——页面上那段给移动端加标签的脚本，靠"首行是不是全是 th"来判断表头，少于两个就识别不到，手机上表格会失去标签。
+</div>
+
+<h2>7 · 为什么是这些函数：选型对照表</h2>
+
+<p>同一件事往往有好几种写法。这张表是"我为什么挑了这个"。</p>
+
+<table>
+  <tr><th>要做的事</th><th>我用的</th><th>为什么不用别的</th></tr>
+  <tr>
+    <td>读源码里的默认超参</td>
+    <td><code>ast.parse</code> + <code>literal_eval</code></td>
+    <td><strong>不能用 <code>import</code></strong>——那会执行整个文件（包括 <code>if __name__ == "__main__"</code> 里的训练）。<strong>不能用正则</strong>——语法变体太多。<strong>不能用 <code>eval</code></strong>——会执行任意代码</td>
+  </tr>
+  <tr>
+    <td>运行外部程序并拿到输出</td>
+    <td><code>subprocess.run(..., capture_output=True)</code></td>
+    <td><strong>不用 <code>os.system</code></strong>——拿不到输出。<strong>不用 <code>Popen</code></strong>——它是异步的，这里需要等结果</td>
+  </tr>
+  <tr>
+    <td>从日志里抓数字</td>
+    <td><code>re.findall</code> + 捕获组</td>
+    <td><strong>不用 <code>split</code></strong>——依赖位置，格式一变就崩。<strong>不用 JSON 解析</strong>——日志不是 JSON</td>
+  </tr>
+  <tr>
+    <td>路径操作</td>
+    <td><code>pathlib.Path</code></td>
+    <td><strong>不用字符串拼接</strong>——要自己处理分隔符和跨平台；<code>Path</code> 还能直接 <code>.glob()</code> <code>.is_file()</code></td>
+  </tr>
+  <tr>
+    <td>让计算真正等完</td>
+    <td><code>jax.block_until_ready</code></td>
+    <td><strong>不能用 <code>time.sleep</code> 猜</strong>——不同规模耗时不同，等短了不准、等长了浪费时间</td>
+  </tr>
+  <tr>
+    <td>把"单环境逻辑"变成"批量"</td>
+    <td><code>jax.vmap</code></td>
+    <td><strong>不用手写 for 循环</strong>——那样还是逐个算，拿不到并行加速；<code>vmap</code> 把整批当成一次运算</td>
+  </tr>
+  <tr>
+    <td>模型合并时避免样式冲突</td>
+    <td>给每个选择器加面板前缀</td>
+    <td><strong>不用 iframe</strong>——会和面板切换、锚点跳转打架；<strong>不用 Shadow DOM</strong>——老浏览器兼容性差</td>
+  </tr>
+  <tr>
+    <td>把配置传进程序</td>
+    <td>环境变量</td>
+    <td><strong>不写死在代码里</strong>——换台机器就要改代码；<strong>不用命令行参数</strong>——MCP 客户端配置里传环境变量更自然</td>
+  </tr>
+</table>
+
+<h2>8 · 可复制的最小示例</h2>
+
+<p>把上面这些原理压缩成两个能直接跑的最小例子。</p>
+
+<h3>8.1 最小 MCP 工具（十几行）</h3>
+
+<pre><code><span class="kw">from</span> fastmcp <span class="kw">import</span> FastMCP
+
+mcp = FastMCP(<span class="st">"我的第一个工具"</span>)
+
+<span class="nm">@mcp.tool()</span>
+<span class="kw">def</span> <span class="nm">加两个数</span>(a: <span class="kw">float</span>, b: <span class="kw">float</span>) -> dict:
+    <span class="st">"""把两个数相加并返回结果。"""</span>      <span class="cm"># 这句话会成为工具描述</span>
+    <span class="kw">return</span> {<span class="st">"和"</span>: a + b}
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    mcp.run()</code></pre>
+
+<p><strong>三个要点：</strong>① <code>@mcp.tool()</code> 是注册；② 类型注解决定参数 schema；③ docstring 决定 AI 什么时候调它。</p>
+
+<h3>8.2 最小"包装别人代码"的模板</h3>
+
+<pre><code><span class="kw">import</span> re, subprocess
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+REPO = Path(<span class="st">"/path/to/repo"</span>)
+NUMS = re.compile(<span class="st">r"结果=(-?[\d.]+)"</span>)
+
+<span class="kw">def</span> <span class="nm">跑一次</span>(参数: <span class="kw">int</span> = <span class="nm">10</span>) -> dict:
+    <span class="st">"""调用仓库自带脚本，抓取它打印的结果。"""</span>
+    cmd = [<span class="st">"python"</span>, <span class="st">"main.py"</span>, <span class="st">"--n"</span>, <span class="kw">str</span>(<span class="kw">int</span>(参数))]   <span class="cm"># 列表，不走 shell</span>
+    p = subprocess.run(cmd, cwd=<span class="kw">str</span>(REPO),
+                       capture_output=<span class="kw">True</span>, text=<span class="kw">True</span>, timeout=<span class="nm">600</span>)
+    <span class="kw">if</span> p.returncode != <span class="nm">0</span>:
+        <span class="kw">raise</span> RuntimeError(p.stderr[-<span class="nm">2000</span>:])
+    vals = [<span class="kw">float</span>(x) <span class="kw">for</span> x <span class="kw">in</span> NUMS.findall(p.stdout)]
+    <span class="kw">return</span> {<span class="st">"n"</span>: <span class="kw">len</span>(vals), <span class="st">"值"</span>: vals}</code></pre>
+
+<div class="ok">
+  <strong>这个模板的四个要点，正好对应前面讲的四件事：</strong><br>
+  ① 命令行用<strong>列表</strong>（安全）；② 显式设 <code>timeout</code>（防挂死）；③ 非零退出码就抛错（fail fast）；④ 返回<strong>原始数据而不只是结论</strong>（可复核）。<br>
+  <strong>换任何仓库、任何语言，这个骨架都通用——变的是命令行怎么拼、正则怎么抓。</strong>
+</div>
+
+<div class="key">
+  <strong>最后一条，也是最重要的一条：</strong>写"包装类"程序时，<strong>判断你写得好不好的标准，不是代码优雅，而是"能不能被验证"</strong>。<br>
+  这次我的服务器之所以能通过逐位比对，靠的不是写得多漂亮，而是三个刻意的设计：<strong>固定随机种子、把统计值四舍五入到固定位数、同时返回原始数据</strong>。<br>
+  <strong>能被验证的代码，才是可信的代码。</strong>
+</div>
+
+</div>
+<nav class="pager" data-for="code"></nav>
+
+</div>
+</main>
+</body>
+</html>

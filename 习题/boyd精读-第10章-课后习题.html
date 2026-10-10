@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 10 章「Interior-point methods」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 10 章「Interior-point methods」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>定义。</strong> 指示函数</p>
+<p>$$
+I_-(u)=\begin{cases}0,&u\le 0,\\ \infty,&u>0.\end{cases}
+$$</p>
+<p>对数障碍（带参数 $t>0$）</p>
+<p>$$
+bI_-(u)=-\frac{1}{t}\log(-u),\qquad \mathrm{dom}\,bI_-=-\mathbb{R}_{++}=\{u\mid u<0\}.
+$$</p>
+<p><strong>为什么必须替换。</strong> 三个角度：</p>
+<ol>
+<li><strong>可微性</strong>：$I_-$ 在 $u=0$ 处不连续、不可微，Newton 法需要目标二阶可微，无法直接使用；$bI_-$ 在 $-\mathbb{R}_{++}$ 上光滑（任意阶可微），$\nabla bI_-(u)=\frac{1}{tu}$，$\nabla^2 bI_-(u)=-\frac{1}{tu^2}$（凸函数二阶导非负需注意符号约定，此处 $bI_-$ 作为 $u$ 的函数在 $u<0$ 上凸）。</li>
+<li><strong>闭性</strong>：$bI_-$ 是闭凸函数，其定义域 $-\mathbb{R}_{++}$ 的开闭性与 $I_-$ 的 $\{u\le 0\}$ 不同，但作为扩展值函数仍保持闭性，保证极小化问题适定。</li>
+<li><strong>$u\uparrow 0$ 的极限</strong>：当 $u\to 0^-$ 时 $-\log(-u)\to+\infty$，故 $bI_-(u)\to+\infty$，形成"壁垒"，把迭代点挡在 $f_i(x)<0$ 内部；而 $I_-$ 在 $u=0$ 处取有限值 $0$，没有这种阻挡效果。</li>
+</ol>
+<p><strong>改写形式。</strong> 标准问题</p>
+<p>$$
+\min\ f_0(x)\quad \mathrm{s.t.}\ f_i(x)\le 0,\ i=1,\dots,m;\quad Ax=b
+$$</p>
+<p>用指示函数吸收不等式约束：</p>
+<p>$$
+\min\ f_0(x)+\sum_{i=1}^m I_-(f_i(x))\quad \mathrm{s.t.}\ Ax=b.
+$$</p>
+<p>用 $bI_-$ 光滑近似，得 (11.4)：</p>
+<p>$$
+\min\ f_0(x)+\sum_{i=1}^m -\frac{1}{t}\log(-f_i(x))\quad \mathrm{s.t.}\ Ax=b.
+$$</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>对数障碍。</strong></p>
+<p>$$
+\varphi(x)=-\sum_{i=1}^m\log(-f_i(x)),\qquad \mathrm{dom}\,\varphi=\{x\mid f_i(x)<0,\ i=1,\dots,m\},
+$$</p>
+<p>即严格可行域。</p>
+<p><strong>中心路径。</strong> 对每个 $t>0$，</p>
+<p>$$
+x^\star(t)=\arg\min\ tf_0(x)+\varphi(x)\quad \mathrm{s.t.}\ Ax=b. \tag{11.6}
+$$</p>
+<p>（(11.6) 与 (11.4) 目标相差因子 $t$，极小点相同。）</p>
+<p><strong>对偶点。</strong> 由中心性条件 (11.7) 可令</p>
+<p>$$
+\lambda_i^\star(t)=-\frac{1}{t\,f_i(x^\star(t))}>0,\qquad \nu^\star(t)=\frac{\hat\nu}{t}. \tag{11.10}
+$$</p>
+<p><strong>间隙推导。</strong> 将 $\lambda^\star,\nu^\star$ 代入拉格朗日函数，$x^\star(t)$ 极小化 $L(x,\lambda^\star,\nu^\star)$，故对偶函数</p>
+<p>$$
+g(\lambda^\star,\nu^\star)=L(x^\star(t),\lambda^\star,\nu^\star)
+=f_0(x^\star(t))+\sum_i\lambda_i^\star f_i(x^\star(t))+\nu^{\star T}(Ax^\star(t)-b).
+$$</p>
+<p>由 $Ax^\star(t)=b$ 第三项为零；由 (11.10) 有 $\lambda_i^\star f_i(x^\star(t))=-\frac{1}{t}$，故</p>
+<p>$$
+g(\lambda^\star,\nu^\star)=f_0(x^\star(t))-\frac{m}{t}.
+$$</p>
+<p>于是对偶间隙</p>
+<p>$$
+f_0(x^\star(t))-g(\lambda^\star,\nu^\star)=\frac{m}{t}.
+$$</p>
+<p>由弱对偶 $g(\lambda^\star,\nu^\star)\le p^\star$，得</p>
+<p>$$
+f_0(x^\star(t))-p^\star\le f_0(x^\star(t))-g(\lambda^\star,\nu^\star)=\frac{m}{t}.
+$$</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>中心性条件 (11.11)。</strong> 点 $x$ 在中心路径上（即 $x=x^\star(t)$）当且仅当存在 $\lambda,\nu$ 使得</p>
+<p>$$
+\begin{aligned}
+Ax&=b,\\
+f_i(x)&<0,\quad i=1,\dots,m,\\
+\lambda&\succ 0,\\
+\nabla f_0(x)+\sum_i\lambda_i\nabla f_i(x)+A^T\nu&=0,\\
+-\lambda_i f_i(x)&=\frac{1}{t},\quad i=1,\dots,m.
+\end{aligned}
+$$</p>
+<p>其中前四组是原始可行、对偶可行与稳定条件，最后一组是软化后的互补松弛。</p>
+<p><strong>与 KKT 的唯一差别。</strong> KKT 条件中互补松弛为</p>
+<p>$$
+\lambda_i f_i(x)=0,\quad i=1,\dots,m,
+$$</p>
+<p>而中心性条件把它替换为</p>
+<p>$$
+-\lambda_i f_i(x)=\frac{1}{t}.
+$$</p>
+<p>其余条件（原始可行、$\lambda\succeq 0$、稳定条件）完全一致。</p>
+<p><strong>$t\to\infty$ 的极限。</strong> 由 $-\lambda_i f_i(x)=1/t$，当 $t\to\infty$ 时右端趋于 $0$，即</p>
+<p>$$
+\lambda_i f_i(x)\to 0,\quad i=1,\dots,m,
+$$</p>
+<p>这正是 KKT 的互补松弛。因此中心性条件在 $t\to\infty$ 时逐条趋于 KKT 条件。若原问题满足强对偶与 Slater 条件，KKT 点即最优解，故 $x^\star(t)$ 随 $t\to\infty$ 趋于原问题最优解 $x^\star$，且对偶间隙 $m/t\to 0$，说明 $f_0(x^\star(t))\to p^\star$。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>Algorithm 11.1（barrier method）。</strong></p>
+<p>给定严格可行初始点 $x$，$t^{(0)}>0$，$\mu>1$，容差 $\epsilon>0$。</p>
+<p>重复：</p>
+<ol>
+<li><strong>中心化步</strong>：以当前 $x$ 为起点，用 Newton 法极小化 $tf_0(x)+\varphi(x)$ s.t. $Ax=b$，得到 $x^\star(t)$。</li>
+<li>令 $x:=x^\star(t)$。</li>
+<li><strong>停止准则</strong>：若 $m/t<\epsilon$，则停止，返回 $x$。</li>
+<li><strong>增大 $t$</strong>：$t:=\mu t$。</li>
+</ol>
+<p><strong>1. 外层迭代次数。</strong> 由 $t^{(k)}=\mu^k t^{(0)}$，要求 $m/t^{(k)}<\epsilon$，即</p>
+<p>$$
+k>\frac{\log\!\big(m/(t^{(0)}\epsilon)\big)}{\log\mu}.
+$$</p>
+<p>故外层迭代数为</p>
+<p>$$
+\left\lceil\frac{\log\!\big(m/(t^{(0)}\epsilon)\big)}{\log\mu}\right\rceil.
+$$</p>
+<p><strong>2. 为什么不能一次取 $t=m/\epsilon$。</strong> 若直接取 $t=m/\epsilon$，则 (11.6) 的目标 $tf_0+\varphi$ 中 $t$ 极大，障碍项 $\varphi$ 相对权重极小，Hessian 在接近边界处剧烈变化，Newton 法从任意严格可行点出发难以收敛；且初始点通常远离该 $t$ 对应的中心路径，Newton 步长与收敛域问题严重。逐步增大 $t$ 使每个中心化问题都从上一个中心点热启动，保证 Newton 法在少数几步内收敛。</p>
+<p><strong>3. $\mu$ 的推荐范围。</strong> 原书建议 $\mu\in[10,100]$（实践中 $\mu\in[3,100]$ 总 Newton 步近似不变，取 10–20 即可）。$\mu$ 太小则外层迭代暴增；$\mu$ 太大则每次中心化步数增加。</p>
+<p>$\mu=1+1/\sqrt m$ 的用途：<strong>仅用于理论复杂度分析</strong>，此时总 Newton 步数上界为</p>
+<p>$$
+N\le c_1+c_2\sqrt m,
+$$</p>
+<p>即 order $\sqrt m$。原书明确指出该取值与冗余约束 $a^Tx\le 1$ 一样，<strong>只用于理论分析，实践中不应使用</strong>。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合应用 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 中心化 Newton 方程。</strong> 中心化问题为</p>
+<p>$$
+\min\ tc^Tx-\sum_{i=1}^m\log(b_i-a_i^Tx)\quad \mathrm{s.t.}\ Ax=b.
+$$</p>
+<p>其 Newton 方程为</p>
+<p>$$
+\big(t\cdot 0+\nabla^2\varphi(x)\big)\Delta x_{nt}=-(\nabla(tc^Tx)+\nabla\varphi(x)),\quad A\Delta x_{nt}=0,
+$$</p>
+<p>即</p>
+<p>$$
+A^T\mathrm{diag}(d)^2A\,\Delta x_{nt}=-(tc+A^Td),\qquad A\Delta x_{nt}=0,
+$$</p>
+<p>其中 $d_i=1/(b_i-a_i^Tx)$。这就是 (11.14) 消去 $\lambda_i=-1/(tf_i(x))$ 后的形式。</p>
+<p><strong>2. Python 实现。</strong></p>
+<pre><code class="lang-python">import numpy as np
+
+def barrier_lp(c, A, b, x0, t0=1.0, mu=10.0, eps=1e-6, tol_nt=1e-8):
+    m, n = A.shape
+    x = x0.copy()
+    t = t0
+    gaps = []
+    while m / t >= eps:
+        # centering: Newton on t*c^T x - sum log(b - A x)
+        for _ in range(100):
+            r = b - A @ x
+            d = 1.0 / r
+            grad = t * c + A.T @ d
+            H = A.T @ (d[:, None]**2 * A)
+            # solve [H A^T; A 0][dx; nu] = [-grad; 0]
+            K = np.block([[H, A.T], [A, np.zeros((m, m))]])
+            rhs = np.concatenate([-grad, np.zeros(m)])
+            sol = np.linalg.solve(K, rhs)
+            dx = sol[:n]
+            lam2 = grad @ dx  # Newton decrement squared
+            if lam2 / 2 <= tol_nt:
+                break
+            # backtracking line search
+            alpha, beta = 0.01, 0.5
+            s = 1.0
+            while np.any(b - A @ (x + s * dx) <= 0):
+                s *= beta
+            while (t * c @ (x + s * dx) - np.sum(np.log(b - A @ (x + s * dx)))
+                   > t * c @ x - np.sum(np.log(b - A @ x)) + alpha * s * grad @ dx):
+                s *= beta
+            x = x + s * dx
+        gaps.append(m / t)
+        t *= mu
+    return x, gaps
+
+# 小例子
+np.random.seed(0)
+m, n = 20, 10
+A = np.random.randn(m, n)
+b = A @ np.random.randn(n) + 5.0  # 保证严格可行
+c = np.random.randn(n)
+x0 = np.linalg.lstsq(A, b - 1.0, rcond=None)[0]  # 严格可行起点
+x_opt, gaps = barrier_lp(c, A, b, x0, t0=1.0, mu=10.0, eps=1e-6)
+print("gaps:", gaps)</code></pre>
+<p><strong>3. 预期观察。</strong> 对偶间隙序列 $m/t$ 随外层迭代按因子 $1/\mu$ 递减，即</p>
+<p>$$
+\frac{m}{t^{(k)}}=\frac{m}{t^{(0)}\mu^k},
+$$</p>
+<p>在 $\log$ 坐标下呈线性下降。原书数值例子（小 LP，$A\in\mathbb{R}^{100\times50}$，$p^\star=1$，初始间隙 100，终止 $<10^{-6}$）显示：$\mu=50$ 与 $\mu=150$ 总 Newton 步约 35–40，$\mu=2$ 每次中心化约 2–3 步，$\mu=150$ 每次约 7 步；Figure 11.5 中 25 个 $\mu\in[1.2,200]$，间隙从 100 降到 $10^{-3}$，$\mu\gtrsim 3$ 表现好，建议 $\mu\in[10,100]$。因此运行上述代码应观察到：间隙单调递减、外层迭代数约 $\log(m/(t^{(0)}\epsilon))/\log\mu$，且 $\mu$ 在 10–100 区间时总 Newton 步数对 $\mu$ 不敏感。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

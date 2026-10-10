@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 11 章「Image Formation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 11 章「Image Formation」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是第 11 章开篇的"动手建立直觉"练习：把本章的中心透视成像模型（Sect. 11.1）从公式变成可交互的几何对象。核心工具是书中 <code>CentralCamera</code> 类与 <code>mkcube</code> 函数。</p>
+<p><strong>第 1 步：建立中心相机对象。</strong></p>
+<p>中心透视模型把光线汇聚于相机坐标系 $\{C\}$ 的原点，像平面在 $z=f$。用默认参数即可：</p>
+<pre><code class="lang-matlab">cam = CentralCamera();          % 默认 1024x1024, f=8mm, 10um 方形像素</code></pre>
+<p>原书默认 <code>CentralCamera</code> 为 1024×1024、8 mm 焦距、10 µm 方形像素（facts 第 6 节末）。也可显式指定，如 <code>CentralCamera('focal', 0.015)</code> 表示 15 mm 镜头。</p>
+<p><strong>第 2 步：建立立方体靶标。</strong></p>
+<p><code>mkcube</code> 返回立方体 8 个顶点的齐次坐标，尺寸为边长：</p>
+<pre><code class="lang-matlab">P = mkcube(0.2, 'T', transl([0,0,1]));   % 边长 0.2 m，中心在 (0,0,1)</code></pre>
+<p>原书例中 <code>mkcube(0.2,'T',transl([0,0,1]))</code> 得 3×8 的顶点集（facts 第 6 节）。<code>'T'</code> 参数把立方体放到世界系指定位姿。</p>
+<p><strong>第 3 步：投影并可视化。</strong></p>
+<p>把世界点 $\tilde{\mathbf{C}}_n=(X,Y,Z,1)^T$ 经相机矩阵投影到像素：</p>
+<p>$$\tilde{\mathbf{p}} = \mathbf{C}\,\tilde{\mathbf{C}}_n,\qquad \mathbf{C}=\mathbf{K}\,[\mathbf{R}\mid\mathbf{p}]$$</p>
+<pre><code class="lang-matlab">cam.plot(P);                     % 在像平面画出立方体投影
+cam.plot(P, 'Tcam', Tcam);       % 指定相机位姿</code></pre>
+<p><strong>第 4 步：改变相机位姿。</strong></p>
+<p>相机位姿由外参 $\boldsymbol{\xi}_C\in SE(3)$ 描述。例如相机左移 0.5 m：</p>
+<pre><code class="lang-matlab">Tcam = transl(-0.5, 0, 0);
+cam.plot(P, 'Tcam', Tcam);</code></pre>
+<p>原书例：相机左移 0.5 m 后，同一世界点的像平面 x 坐标由 1.5 mm 增至 4.0 mm（facts 第 6 节）。这直观说明外参改变的是"世界点在相机系中的坐标"，而内参 $\mathbf{K}$ 不变。</p>
+<p><strong>第 5 步：改变立方体位姿（翻滚动画）。</strong></p>
+<p>让立方体绕三轴同时旋转，观察投影如何随姿态变化：</p>
+<pre><code class="lang-matlab">for th = 0:0.1:2*pi
+    T_cube = transl(0,0,1.5) * trotx(th) * troty(th*1.2) * trotz(th*1.3);
+    cam.plot( mkcube(0.2,'T',T_cube) );
+    drawnow
+end</code></pre>
+<p>原书用 <code>T_cube=transl(0,0,1.5)*trotx(th)*troty(th*1.2)*trotz(th*1.3)</code> 做翻滚动画（facts 第 6 节）。</p>
+<p><strong>第 6 步：观察透视投影的六性质。</strong></p>
+<p>改变位姿时可验证：直线仍投影为直线；立方体的平行棱在图像中交于消失点（vanishing point）。例如斜视时：</p>
+<pre><code class="lang-matlab">Tcam = transl(-1,0,0.5) * troty(0.9);
+cam.project([1 0 0 0]', 'Tcam', Tcam)   % 消失点 = (1803, 512)</code></pre>
+<p>原书该例消失点为 (1803, 512)（facts 第 6 节）。注意：平行于像平面的平面内的平行线不产生消失点，这是六性质中的例外。</p>
+<p><strong>预期观察：</strong></p>
+<ul>
+<li>正视时立方体投影为规则的正方形网格状轮廓；</li>
+<li>相机平移使投影整体平移并改变大小（近大远小）；</li>
+<li>立方体旋转时投影发生非刚性形变，但每条棱仍是直线；</li>
+<li>斜视时平行棱的延长线汇聚于消失点。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>中心透视模型：$x=fX/Z,\ y=fY/Z$，光线汇聚于 $\{C\}$ 原点，像平面在 $z=f$。</li>
+<li>相机矩阵 $\mathbf{C}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\in\mathbb{R}^{3\times4}$，把世界齐次点线性映射到像素齐次坐标。</li>
+<li>内参 $\mathbf{K}$（$f,\rho_w,\rho_h,u_0,v_0$，5 个）决定"相机固有"投影，外参 $\boldsymbol{\xi}_C$（6 个）决定"相机摆放"；共 11 参数。</li>
+<li>透视投影六性质：$\mathbb{R}^3\to\mathbb{R}^2$、直线仍为直线、平行线交于消失点（平行于像平面者例外）、conics 投影为 conics、非一一对应、非 conformal。</li>
+<li>映射非一一对应：给定像素 $(u,v)$ 只能确定世界点在一条投影射线上，不能唯一确定 $(X,Y,Z)$（第 14 章再讨论）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章</li>
+<li>依据：</li>
+<li>中心透视模型与相似三角形公式：facts 第 3 节概念 1、第 4 节步骤 1、第 5 节公式 1</li>
+<li>相机矩阵 $\mathbf{C}$ 与内参/外参：facts 第 3 节概念 3–4、第 4 节步骤 2–4、第 5 节公式 2–3</li>
+<li>透视投影六性质：facts 第 3 节概念 2</li>
+<li><code>CentralCamera</code> 默认参数（1024×1024、8 mm、10 µm）：facts 第 6 节末</li>
+<li><code>mkcube(0.2,'T',transl([0,0,1]))</code> 得 3×8：facts 第 6 节</li>
+<li>相机左移 0.5 m 后 x 由 1.5 mm 增至 4.0 mm：facts 第 6 节</li>
+<li>翻滚动画 <code>T_cube=transl(0,0,1.5)*trotx(th)*troty(th*1.2)*trotz(th*1.3)</code>：facts 第 6 节</li>
+<li>斜视消失点 (1803, 512)：facts 第 6 节</li>
+<li>映射非一一对应：facts 第 7 节 misconceptions 第 1 条</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确几何设定</h5>
+<p>本题是第 11 章「Image Formation」中关于相机位姿与投影的练习。核心是把第 10 章的 $SE(3)$ 齐次变换工具与本章的相机模型结合起来：相机在世界系中的位姿 $\boldsymbol{\xi}_C$ 决定外参 $[\mathbf{R}\mid\mathbf{p}]$，从而决定世界点 $\tilde{\mathbf{C}}_n=(X,Y,Z,1)^T$ 投影到像素 $\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$ 的结果。</p>
+<p>设立方体中心位于世界坐标 $\mathbf{c}=(0,0,1)$（与事实底座中 <code>mkcube(0.2,'T',transl([0,0,1]))</code> 一致），边长为 0.2 m。相机在半径 $R$ 的圆轨道上运动，轨道平面为 $z=z_0$，方位角为 $\alpha$。则相机位置为</p>
+<p>$$
+\mathbf{p}_C(\alpha)=\big(R\cos\alpha,\;R\sin\alpha,\;z_0\big)^T .
+$$</p>
+<p>相机始终朝向立方体中心，即光轴（相机系 $z$ 轴）指向 $\mathbf{c}$。</p>
+<h5>第 2 步：构造「始终朝向中心」的旋转</h5>
+<p>相机系 $\{C\}$ 的光轴沿 $z$，因此要求相机 $z$ 轴方向为</p>
+<p>$$
+\hat{\mathbf{z}}_C=\frac{\mathbf{c}-\mathbf{p}_C}{\|\mathbf{c}-\mathbf{p}_C\|}.
+$$</p>
+<p>用第 10 章的 <code>lookat</code> 思路构造 $\mathbf{R}\in SO(3)$：取世界系 $z$ 轴作为参考「上方向」，则</p>
+<p>$$
+\hat{\mathbf{x}}_C=\frac{\hat{\mathbf{z}}_C\times\hat{\mathbf{z}}_W}{\|\hat{\mathbf{z}}_C\times\hat{\mathbf{z}}_W\|},\qquad
+\hat{\mathbf{y}}_C=\hat{\mathbf{z}}_C\times\hat{\mathbf{x}}_C,
+$$</p>
+<p>于是 $\mathbf{R}=[\hat{\mathbf{x}}_C\ \hat{\mathbf{y}}_C\ \hat{\mathbf{z}}_C]$，相机位姿</p>
+<p>$$
+\mathbf{T}_C(\alpha)=\begin{bmatrix}\mathbf{R}(\alpha)&\mathbf{p}_C(\alpha)\\ \mathbf{0}&1\end{bmatrix}\in SE(3).
+$$</p>
+<p>注意：本章约定相机位姿参数为 $\boldsymbol{\xi}_C$，而 <code>CentralCamera</code> 的 <code>project</code> 方法接受的是世界点与相机位姿 <code>Tcam</code>，即把世界点变换到相机系的那个 $SE(3)$ 矩阵。</p>
+<h5>第 3 步：MATLAB 脚本</h5>
+<pre><code class="lang-matlab">% orbit_camera.m  —— 相机绕立方体轨道飞行，始终朝向立方体中心
+clear; close all;
+
+% 1) 建立默认相机（1024x1024, 8mm, 10um 方形像素）
+cam = CentralCamera('default');
+
+% 2) 立方体：边长 0.2 m，中心在 (0,0,1)
+cube = mkcube(0.2, 'T', transl([0,0,1]));
+
+% 3) 轨道参数
+R    = 1.0;          % 轨道半径 (m)
+z0   = 1.0;          % 轨道平面高度 (m)
+c    = [0;0;1];      % 立方体中心
+N    = 120;          % 一圈的帧数
+
+for k = 1:N
+    alpha = 2*pi*(k-1)/N;
+
+    % 相机位置
+    pC = [R*cos(alpha); R*sin(alpha); z0];
+
+    % 构造朝向立方体中心的旋转 R (lookat)
+    zc = (c - pC);  zc = zc / norm(zc);      % 光轴指向中心
+    zw = [0;0;1];                            % 世界参考上方向
+    xc = cross(zc, zw);  xc = xc / norm(xc);
+    yc = cross(zc, xc);
+    Rc = [xc yc zc];
+
+    % 相机位姿 Tcam: 世界 -> 相机
+    Tcam = [Rc' , -Rc'*pC; 0 0 0 1];
+
+    % 投影立方体 8 个顶点
+    p = cam.project(cube, 'Tcam', Tcam);
+
+    % 可视化
+    clf;
+    cam.plot(p, 'Tcam', Tcam);
+    drawnow;
+end</code></pre>
+<h5>第 4 步：预期观察</h5>
+<ul>
+<li>立方体 8 个顶点在图像上形成透视投影；由于相机始终正对中心，立方体大致位于图像中央，主点 $(u_0,v_0)$ 附近。</li>
+<li>随着 $\alpha$ 变化，立方体在图像中缓慢旋转（因为相机绕它转），但不会移出视场——这正是「始终朝向中心」的效果。</li>
+<li>若把 <code>Tcam</code> 换成固定位姿（例如 <code>transl(-1,0,0.5)*troty(0.9)</code>，与事实底座中斜视例子一致），立方体会随轨道位置移出画面甚至消失，形成对比。</li>
+<li>用 <code>cam.fov()*180/pi</code> 可查看视场角（默认相机约 $[46.2,37.7]$ 度），据此可判断 $R$ 与 $z_0$ 是否让立方体完整入画。</li>
+</ul>
+<h5>第 5 步：与本章知识点的联系</h5>
+<ul>
+<li>本题把「世界点 → 相机系 → 像平面 → 像素」的链条完整走了一遍：<code>Tcam</code> 提供外参 $[\mathbf{R}\mid\mathbf{p}]$，<code>cam</code> 提供内参 $\mathbf{K}$，<code>project</code> 执行 $\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$。</li>
+<li>相机位姿 $\boldsymbol{\xi}_C$ 的 6 个自由度中，位置由轨道参数 $(R,z_0,\alpha)$ 决定，姿态由 <code>lookat</code> 约束（3 个自由度被「朝向中心」固定），因此轨道上每帧的位姿是唯一确定的。</li>
+<li>若把 <code>CentralCamera</code> 换成鱼眼模型（<code>'projection','equiangular'</code>），同一脚本仍可运行，但立方体直边会变成曲线——这是本章广角模型的直接体现。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>相机「朝向某点」等价于约束相机系 $z$ 轴方向 $\hat{\mathbf{z}}_C=(\mathbf{c}-\mathbf{p}_C)/\|\cdot\|$，再用 <code>lookat</code> 构造完整 $\mathbf{R}\in SO(3)$。</li>
+<li>投影公式 $\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$ 中，<code>Tcam</code> 就是 $[\mathbf{R}\mid\mathbf{p}]$ 的 $SE(3)$ 封装；<code>cam.project(...,'Tcam',Tcam)</code> 完成全部计算。</li>
+<li>轨道半径 $R$ 与高度 $z_0$ 必须与相机视场角匹配，否则立方体会移出画面；默认相机 FOV 约 $[46.2,37.7]$ 度。</li>
+<li>本题是第 10 章 $SE(3)$ 与第 11 章成像几何的联合练习，也是第 12 章 image warping 与第 14 章 3D 重建的几何基础。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章 Image Formation，习题 2。</li>
+<li>依据：</li>
+<li>投影公式与相机矩阵：facts 第 5 节公式 2、3；第 4 节推导步骤 1–4。</li>
+<li>相机位姿 $\boldsymbol{\xi}_C$ 与外参：facts 第 1 节记号约定、第 3 节概念 4。</li>
+<li><code>CentralCamera</code> 默认参数与 <code>mkcube</code>、<code>project</code>、<code>plot</code> 用法：facts 第 6 节例题（默认 1024×1024、8 mm、10 µm；<code>mkcube(0.2,'T',transl([0,0,1]))</code>；斜视 <code>Tcam=transl(-1,0,0.5)*troty(0.9)</code>）。</li>
+<li>视场角 <code>cam.fov()</code>：facts 第 6 节 <code>cam.fov()*180/pi = [46.2127, 37.6930]</code> 度。</li>
+<li>鱼眼模型 <code>'projection','equiangular'</code>：facts 第 6 节鱼眼例题。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确任务与几何设定</h5>
+<p>本题要求用 MATLAB（Corke 工具箱，即 RVC 工具箱）编写脚本，让一台 <code>CentralCamera</code> 相机沿某条轨迹"飞过"一个立方体，并观察立方体在图像中的投影变化。这本质上是把本章的<strong>透视投影公式</strong> $\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$ 反复作用于立方体顶点，从而生成动画。</p>
+<p>依据事实底座第 6 节，原书给出的立方体例子为：</p>
+<ul>
+<li>立方体边长 0.2 m，<code>mkcube(0.2,'T',transl([0,0,1]))</code> 得 3×8 顶点矩阵；</li>
+<li>翻滚动画用 <code>T_cube=transl(0,0,1.5)*trotx(th)*troty(th*1.2)*trotz(th*1.3)</code>；</li>
+<li>默认 <code>CentralCamera</code> 为 1024×1024、8 mm 焦距、10 µm 方形像素。</li>
+</ul>
+<p>本题是"相机飞越立方体"，即<strong>立方体固定、相机运动</strong>（与上面"相机固定、立方体翻滚"互为对偶）。</p>
+<h5>第 2 步：构造立方体</h5>
+<p>用 <code>mkcube</code> 生成 8 个顶点（齐次坐标 4×8，<code>mkcube</code> 返回 3×8，需补一行 1）：</p>
+<pre><code class="lang-matlab">cube = mkcube(0.2, 'T', transl([0,0,1]));   % 3x8，中心在 (0,0,1)
+cube = [cube; ones(1,8)];                    % 4x8 齐次坐标</code></pre>
+<h5>第 3 步：构造相机并设定飞行轨迹</h5>
+<p>相机从立方体一侧飞到另一侧。设相机沿 $x$ 轴平移，同时保持朝向立方体中心（或保持固定朝向），焦距用默认 8 mm：</p>
+<pre><code class="lang-matlab">cam = CentralCamera('focal', 0.008, 'pixel', 10e-6, ...
+                    'resolution', [1024 1024], ...
+                    'centre', [512 512]);</code></pre>
+<p>飞行轨迹：相机位置从 $x=-1$ 到 $x=+1$，$z=0.5$，始终看向立方体中心 $(0,0,1)$。用 <code>transl</code> 与 <code>lookat</code> 构造位姿：</p>
+<pre><code class="lang-matlab">for x = linspace(-1, 1, 50)
+    Tcam = transl(x, 0, 0.5) * troty(0);   % 位置
+    Tcam = Tcam * lookat(Tcam, [0 0 1]');  % 朝向立方体中心
+    cam.plot(cube, 'Tcam', Tcam);          % 投影并绘制
+    drawnow;
+end</code></pre>
+<p>其中 <code>lookat</code> 是 RVC 工具箱中根据相机位置与目标点构造朝向的函数（若工具箱版本无此函数，可手动用 <code>tr2rt</code> 构造旋转矩阵）。</p>
+<h5>第 4 步：投影计算（脚本核心）</h5>
+<p>对每一帧，投影由本章 Eq. 11.7–11.9 给出：</p>
+<p>$$
+\tilde{\mathbf{p}} = \mathbf{K}\,[\mathbf{R}\mid\mathbf{p}]\,\tilde{\mathbf{C}}_n
+$$</p>
+<p>其中 $\mathbf{K}$ 由 $f,\rho_w,\rho_h,u_0,v_0$ 组成，$[\mathbf{R}\mid\mathbf{p}]$ 是相机外参。<code>cam.plot(cube,'Tcam',Tcam)</code> 内部即完成此运算并画出立方体 12 条棱的投影。</p>
+<h5>第 5 步：预期观察</h5>
+<ul>
+<li>当相机位于 $x=-1$ 时，立方体偏向图像右侧；随 $x$ 增大，立方体在图像中向左移动并逐渐变大（靠近时 $Z$ 减小，$x=fX/Z$ 增大）。</li>
+<li>立方体的<strong>平行棱</strong>在图像中不再平行，而是汇聚到<strong>消失点</strong>（vanishing point）——这正是本章透视投影六性质之一。</li>
+<li>若相机朝向固定（不 <code>lookat</code>），立方体会从视野一侧进入、另一侧离开，可观察到明显的透视畸变。</li>
+</ul>
+<h5>第 6 步：可运行完整脚本</h5>
+<pre><code class="lang-matlab">% fly_camera_through_cube.m
+cube = mkcube(0.2, 'T', transl([0,0,1]));
+cube = [cube; ones(1,8)];
+
+cam = CentralCamera('focal', 0.008, 'pixel', 10e-6, ...
+                    'resolution', [1024 1024], 'centre', [512 512]);
+
+for x = linspace(-1, 1, 60)
+    Tcam = transl(x, 0, 0.5);
+    Tcam = Tcam * lookat(Tcam, [0 0 1]');
+    cam.plot(cube, 'Tcam', Tcam, 'fps', 30);
+end</code></pre>
+<p>预期：动画中立方体 8 个顶点被投影为 8 个像素点，12 条棱连成线框，随相机平移而移动、缩放、透视变形。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>投影公式是核心</strong>：$\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$，本题只是把该式在动画循环中反复调用。</li>
+<li><strong>相机运动 vs 物体运动</strong>：原书例题是立方体翻滚（<code>T_cube</code> 变化），本题是相机飞行（<code>Tcam</code> 变化），二者在投影公式中地位对称——改变的都是外参。</li>
+<li><strong>消失点现象</strong>：立方体平行棱在图像中汇聚，验证透视投影"平行线交于消失点"的性质（事实底座第 3 节性质 2）。</li>
+<li><strong>默认参数</strong>：<code>CentralCamera</code> 默认 1024×1024、8 mm、10 µm，主点 (512,512)；若用 15 mm 镜头则视场更窄（原书 <code>fov</code> 例为 46.2°×37.7°）。</li>
+<li><strong>非一一对应</strong>：单帧图像无法恢复立方体真实 3D 位置，只能确定投影射线（第 14 章逆问题）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章 Image Formation，习题 3。</li>
+<li>依据：</li>
+<li>投影公式 $\tilde{\mathbf{p}}=\mathbf{K}[\mathbf{R}\mid\mathbf{p}]\tilde{\mathbf{C}}_n$：事实底座第 5 节公式 3、第 4 节步骤 4。</li>
+<li><code>mkcube(0.2,'T',transl([0,0,1]))</code> 得 3×8：事实底座第 6 节例题。</li>
+<li>立方体翻滚 <code>T_cube=transl(0,0,1.5)*trotx(th)*troty(th*1.2)*trotz(th*1.3)</code>：事实底座第 6 节。</li>
+<li>默认 <code>CentralCamera</code> 1024×1024、8 mm、10 µm：事实底座第 6 节末。</li>
+<li>消失点性质：事实底座第 3 节性质 2。</li>
+<li>非一一对应：事实底座第 7 节 misconceptions 第 1 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确成像链条。</strong> 本章把成像拆成「世界点 → 相机系 → 归一化像平面 → 像素」四步。对中心相机，先由透视投影（Eq. 11.2）得到理想像平面坐标：</p>
+<p>$$x = f\frac{X}{Z},\qquad y = f\frac{Y}{Z}$$</p>
+<p>再经内参 $\mathbf{K}$ 映射到像素：</p>
+<p>$$\tilde{\mathbf{p}} = \mathbf{K}\,[\mathbf{R}\mid\mathbf{p}]\,\tilde{\mathbf{C}}_n$$</p>
+<p><strong>第 2 步：加入径向畸变。</strong> 本章的畸变模型以径向为主，误差用多项式近似（Eq. 11.12）：</p>
+<p>$$\delta r = r\,(k_1 r^2 + k_2 r^4 + k_3 r^6)$$</p>
+<p>其中 $r$ 是像点到主点的半径。畸变后的坐标由理想坐标加上沿径向的偏移得到（Eq. 11.13–11.14）。$k_1$ 的符号决定畸变类型：$k_1<0$ 使外围点向内收缩，为 barrel；$k_1>0$ 使外围点向外扩张，为 pincushion。切向畸变 $(p_1,p_2)$ 属 decentering，本题不改变其值即可。</p>
+<p><strong>第 3 步：构造 10 × 10 平面点阵。</strong> 用 <code>mkgrid</code> 生成规则网格，置于相机前方 $Z>0$ 处（避免 Eq. 11.3 在 $Z=0$ 的奇异）。例如：</p>
+<pre><code class="lang-matlab">% 10x10 平面网格，间距 0.05 m，位于 z=1 m 平面
+P = mkgrid(10, 0.05, 'T', transl(0,0,1.0));   % 3x100
+
+% 中心相机，8 mm 焦距、10 µm 像素（默认 CentralCamera 参数）
+cam = CentralCamera('focal', 0.008, 'pixel', 10e-6, ...
+                    'resolution', [1024 1024]);
+
+% 无畸变参考投影
+p0 = cam.project(P);</code></pre>
+<p><strong>第 4 步：分别设置 barrel 与 pincushion。</strong> 本章把 $(k_1,k_2,k_3,p_1,p_2)$ 视为额外内参，Bouguet 顺序为 $\mathrm{kc}=(k_1,k_2,p_1,p_2,k_3)$。注意 $k_3$ 不在常规末位。</p>
+<pre><code class="lang-matlab">% barrel：k1 < 0
+cam_barrel = cam;
+cam_barrel.distortion = [-0.3, 0.1, 0, 0, 0];   % kc = (k1,k2,p1,p2,k3)
+p_barrel = cam_barrel.project(P);
+
+% pincushion：k1 > 0
+cam_pincushion = cam;
+cam_pincushion.distortion = [ 0.3, 0.1, 0, 0, 0];
+p_pincushion = cam_pincushion.project(P);
+
+% 可视化对比
+figure; hold on
+plot(p0(1,:), p0(2,:), 'k+')          % 理想网格
+plot(p_barrel(1,:), p_barrel(2,:), 'bo')      % barrel
+plot(p_pincushion(1,:), p_pincushion(2,:), 'r*')  % pincushion
+axis ij; axis equal; legend('ideal','barrel','pincushion')</code></pre>
+<p><strong>第 5 步：预期观察。</strong> 理想网格是等间距直线族；barrel 畸变下网格外缘点被拉向主点，整体呈「桶」形外凸；pincushion 畸变下外缘点被推离主点，四角向外拉伸，呈「枕」形内凹。中心附近（$r$ 小）因 $r^3$ 项主导而位移很小，畸变随 $r$ 增大而显著——这正是 $\delta r \propto r^3$ 的体现。若把 $k_1$ 从 0 连续扫到 $\pm 0.5$，可看到网格由直变弯的渐变过程。</p>
+<p><strong>第 6 步：与标定的关系。</strong> 本章指出线性标定 <code>camcald</code> 不能估计畸变，畸变会污染 $\mathbf{C}$ 的元素；要恢复 $(k_1,k_2,k_3,p_1,p_2)$ 需非线性优化，以线性解为初值（典型 16+ 参数）。本题正是这一事实的直观演示：畸变参数一变，投影几何即偏离理想透视。</p>
+<h4>关键点</h4>
+<ul>
+<li>径向畸变由 $\delta r = r(k_1 r^2 + k_2 r^4 + k_3 r^6)$ 描述，$k_1$ 的符号决定 barrel（$k_1<0$）还是 pincushion（$k_1>0$）。</li>
+<li>畸变随半径 $r$ 的三次方增长，故中心几乎不变形、边缘最明显。</li>
+<li>畸变参数 $(k_1,k_2,k_3,p_1,p_2)$ 视为额外内参；Bouguet 顺序为 $\mathrm{kc}=(k_1,k_2,p_1,p_2,k_3)$，$k_3$ 不在末位。</li>
+<li>线性标定无法估计畸变，畸变会污染相机矩阵 $\mathbf{C}$；需非线性优化。</li>
+<li>平面点阵须置于 $Z>0$，因透视投影 Eq. 11.3 在 $Z=0$ 奇异。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章</li>
+<li>依据：</li>
+<li>透视投影与像素映射：facts 第 4 节步骤 1–4、第 5 节公式 1–3</li>
+<li>径向畸变多项式与参数：facts 第 4 节步骤 6、第 5 节公式 4、第 3 节概念 5</li>
+<li>kc 参数顺序与线性标定不能估畸变：facts 第 7 节 misconceptions</li>
+<li>默认 CentralCamera 参数（8 mm、10 µm、1024×1024）：facts 第 6 节末条</li>
+<li>$Z=0$ 奇异：facts 第 7 节 misconceptions</li>
+<li>本题具体畸变数值原书未给出，按符号推导设定示例值。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是<strong>动手实验题</strong>，核心是复现书中 Sect. 11.2.1 的线性齐次标定流程（DLT），然后系统改变三个因素观察结果。下面分步给出推导与可运行代码。</p>
+<h5>第 1 步：建立标定方程（为什么这样堆叠）</h5>
+<p>由事实底座第 4 节第 2、4 步，投影关系为</p>
+<p>$$\tilde{\mathbf{p}} = \mathbf{C}\,\tilde{\mathbf{C}}_n,\qquad \mathbf{C}\in\mathbb{R}^{3\times4}$$</p>
+<p>展开为两个独立方程（消去齐次尺度 $\lambda$）：</p>
+<p>$$u = \frac{C_{11}X+C_{12}Y+C_{13}Z+C_{14}}{C_{31}X+C_{32}Y+C_{33}Z+C_{34}},\qquad
+v = \frac{C_{21}X+C_{22}Y+C_{23}Z+C_{24}}{C_{31}X+C_{32}Y+C_{33}Z+C_{34}}$$</p>
+<p>约定 $C_{34}=1$（事实底座第 4 节第 5 步：$\mathbf{C}$ 整体尺度有 1 个自由度），每个标定点给出 2 个方程，未知量 11 个，故 <strong>N ≥ 6</strong>。堆叠成</p>
+<p>$$\mathbf{A}\,\mathbf{c} = \mathbf{b},\qquad \mathbf{c}\in\mathbb{R}^{11}$$</p>
+<p>用 least squares 求解。<strong>为什么必须 3 维靶点</strong>：若点共面，$\mathbf{A}$ 的列线性相关，rank deficient（事实底座第 7 节）。</p>
+<h5>第 2 步：MATLAB 实验代码</h5>
+<pre><code class="lang-matlab">% 真值相机
+cam = CentralCamera('focal', 0.015, 'pixel', 10e-6, ...
+      'resolution', [1280 1024], 'centre', [640 512]);
+
+% 真值靶标位姿
+T_true = transl(0.1, 0.2, 1.5) * rpy2tr(0.1, 0.2, 0.3);
+
+% 实验 1：改变标定点数 N
+for N = [6 8 12 20 50]
+    P = mkgrid(3, 0.2, 'T', T_true);   % 3xN 世界点
+    p = cam.project(P);                 % 2xN 像素
+    C = camcald(P, p);                  % 线性标定
+    res = residual(C, P, p);            % 重投影残差
+    fprintf('N=%d  max residual = %.6f px\n', N, max(res));
+end
+
+% 实验 2：加像素噪声
+for sigma = [0 0.05 0.5 2.0]
+    p_noisy = cam.project(P) + sigma*randn(size(p));
+    C = camcald(P, p_noisy);
+    fprintf('sigma=%.2f  max residual = %.6f px\n', sigma, max(residual(C,P,p_noisy)));
+end
+
+% 实验 3：加镜头畸变（camcald 无法估计畸变，会污染 C）
+cam.distortion = [0.1 0.01 0 0 0];   % kc = (k1,k2,p1,p2,k3)
+p_dist = cam.project(P);
+C = camcald(P, p_dist);
+fprintf('with distortion  max residual = %.6f px\n', max(residual(C,P,p_dist)));</code></pre>
+<h5>第 3 步：预期观察</h5>
+<ul>
+<li><strong>点数 N</strong>：N=6 时方程数恰好等于未知数，残差接近 0 但解对噪声极敏感；N 增大残差先降后趋于稳定。原书标定例中最大残差为 <strong>0.067393 像素</strong>（事实底座第 6 节）。</li>
+<li><strong>噪声 σ</strong>：残差随 σ 近似线性增长；估计位姿误差也随之增大。可用 <code>invcamcal(C)</code> 分解出内参与位姿，与 <code>T_true</code> 比较。</li>
+<li><strong>畸变</strong>：<code>camcald</code> 不能估计畸变（事实底座第 7 节），畸变会污染 $\mathbf{C}$ 的元素，残差显著上升。需非线性优化（典型 16+ 参数）以线性解为初值。</li>
+</ul>
+<h5>第 4 步：位姿估计与验证</h5>
+<pre><code class="lang-matlab">[K, R, t] = invcamcal(C);
+T_est = [R t; 0 0 0 1];
+% 注意：invcamcal 估出的是相对标定靶的 ^T C_hat
+% 真值是 ^C xi_T，需复合后与单位阵比较（事实底座第 7 节）</code></pre>
+<p>原书位姿估计例：<code>T_unknown = transl(0,0,2)*trotx(0.1)*troty(0.2)</code>，<code>cam.estpose</code> 恢复到四位小数一致（事实底座第 6 节）。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>点数</strong>：N ≥ 6 是线性标定的最低要求；N 越大越稳健，但残差不会无限下降。</li>
+<li><strong>噪声</strong>：残差与噪声近似成正比；线性解对噪声敏感，实际需非线性精化。</li>
+<li><strong>畸变</strong>：<code>camcald</code> 无法估计畸变，畸变会污染 $\mathbf{C}$；必须用非线性优化。</li>
+<li><strong>尺度不定</strong>：$\mathbf{C}$ 只确定到 scale factor，约定 $C_{34}=1$（事实底座第 4 节第 5 步）。</li>
+<li><strong>共面陷阱</strong>：共面靶点导致 rank deficient，标定靶必须 3 维（事实底座第 7 节）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章</li>
+<li>依据：</li>
+<li>投影方程与 $\mathbf{C}$ 定义：事实底座第 4 节第 2、4 步；第 5 节公式 2、3</li>
+<li>尺度自由度与 $C_{34}=1$：事实底座第 4 节第 5 步；第 7 节</li>
+<li>N ≥ 6 与共面 rank deficient：事实底座第 4 节第 7 步；第 7 节</li>
+<li>标定残差 0.067393 像素、位姿估计例：事实底座第 6 节</li>
+<li><code>camcald</code> 不能估畸变：事实底座第 7 节</li>
+<li><code>invcamcal</code> 位姿方向：事实底座第 7 节</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确几何设定。</strong></p>
+<p>矩形金字塔形视场指：以相机光心（投影中心）为顶点，四条侧棱沿光轴方向张开，形成一个以光轴为中心轴、水平半角 $\theta_h$、竖直半角 $\theta_v$ 的矩形锥（四棱锥）。我们要的是这个锥体所张的立体角 $\Omega$，即该锥面在单位球面上截出的球面矩形区域的面积。</p>
+<p><strong>第 2 步：写出立体角的定义式。</strong></p>
+<p>立体角按定义是单位球面上的面积元积分：</p>
+<p>$$\Omega=\iint_{\mathcal{S}} \sin\theta\, d\theta\, d\varphi$$</p>
+<p>其中 $\theta$ 是从光轴量起的极角（colatitude），$\varphi$ 是方位角。对矩形视场，$\theta$ 与 $\varphi$ 的积分限互相耦合——因为矩形边界在球面上不是 $\theta=\text{const}$ 或 $\varphi=\text{const}$ 的简单曲线。</p>
+<p><strong>第 3 步：用方向余弦建立矩形边界约束。</strong></p>
+<p>设光轴为 $z$，单位方向向量为 $\hat{\mathbf{u}}=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta)$。矩形视场的边界由两个平面约束给出：</p>
+<p>$$|u_x| \le u_z \tan\theta_h,\qquad |u_y| \le u_z \tan\theta_v$$</p>
+<p>即</p>
+<p>$$|\tan\theta\cos\varphi| \le \tan\theta_h,\qquad |\tan\theta\sin\varphi| \le \tan\theta_v.$$</p>
+<p><strong>第 4 步：化为对 $\theta$ 的积分。</strong></p>
+<p>对给定方位角 $\varphi$，$\theta$ 的上限由两个约束中更紧的一个决定：</p>
+<p>$$\tan\theta_{\max}(\varphi)=\min\!\left(\frac{\tan\theta_h}{|\cos\varphi|},\ \frac{\tan\theta_v}{|\sin\varphi|}\right).$$</p>
+<p>于是</p>
+<p>$$\Omega=\int_{0}^{2\pi}\!\!\int_{0}^{\theta_{\max}(\varphi)} \sin\theta\, d\theta\, d\varphi
+=\int_{0}^{2\pi}\Bigl(1-\cos\theta_{\max}(\varphi)\Bigr)\,d\varphi.$$</p>
+<p><strong>第 5 步：利用对称性化简。</strong></p>
+<p>由四重对称性，只需在第一象限 $0\le\varphi\le\pi/2$ 积分再乘 4。在第一象限内，$\cos\varphi,\sin\varphi\ge 0$，分界角 $\varphi^\ast$ 满足</p>
+<p>$$\frac{\tan\theta_h}{\cos\varphi^\ast}=\frac{\tan\theta_v}{\sin\varphi^\ast}
+\;\Longrightarrow\;
+\tan\varphi^\ast=\frac{\tan\theta_v}{\tan\theta_h}.$$</p>
+<p>当 $0\le\varphi\le\varphi^\ast$ 时竖直约束更紧，$\tan\theta_{\max}=\tan\theta_v/\sin\varphi$；当 $\varphi^\ast\le\varphi\le\pi/2$ 时水平约束更紧，$\tan\theta_{\max}=\tan\theta_h/\cos\varphi$。</p>
+<p><strong>第 6 步：写出最终积分表达式。</strong></p>
+<p>$$\boxed{\;\Omega=4\left[\int_{0}^{\varphi^\ast}\!\left(1-\cos\theta_{\max}^{(v)}(\varphi)\right)d\varphi
++\int_{\varphi^\ast}^{\pi/2}\!\left(1-\cos\theta_{\max}^{(h)}(\varphi)\right)d\varphi\right]\;}$$</p>
+<p>其中</p>
+<p>$$\cos\theta_{\max}^{(v)}=\frac{\sin\varphi}{\sqrt{\sin^2\varphi+\tan^2\theta_v}},\qquad
+\cos\theta_{\max}^{(h)}=\frac{\cos\varphi}{\sqrt{\cos^2\varphi+\tan^2\theta_h}},$$</p>
+<p>$$\varphi^\ast=\arctan\!\left(\frac{\tan\theta_v}{\tan\theta_h}\right).$$</p>
+<p><strong>第 7 步：说明与本章事实底座的关系。</strong></p>
+<p>本章事实底座给出水平视场半角公式 $\theta_h=\arctan\!\left(\dfrac{N\rho_w}{2f}\right)$（第 5 节公式 6），即由像素阵列宽度 $N\rho_w$ 与焦距 $f$ 确定 $\theta_h$；竖直方向同理得 $\theta_v$。因此本题的 $\theta_h,\theta_v$ 正是由相机内参 $f,\rho_w,\rho_h$ 与分辨率决定的量。事实底座还给出「半球 $2\pi$ sr、全球 $4\pi$ sr」作为参照：当 $\theta_h=\theta_v=\pi/2$ 时，矩形锥退化为半空间，$\Omega\to 2\pi$ sr，与之一致。</p>
+<p><strong>第 8 步：数值验证（可选，MATLAB）。</strong></p>
+<p>事实底座未给出本题的具体 $\theta_h,\theta_v$ 数值，故按符号推导。若取默认 <code>CentralCamera</code>（1024×1024、8 mm 焦距、10 µm 方形像素），则</p>
+<p>$$\theta_h=\theta_v=\arctan\!\left(\frac{1024\times 10^{-5}}{2\times 8\times 10^{-3}}\right)=\arctan(0.64)\approx 32.6^\circ.$$</p>
+<p>可用数值积分验证：</p>
+<pre><code class="lang-matlab">th_h = atan(1024*10e-6/(2*8e-3));
+th_v = th_h;
+f = @(phi) 1 - cos(min(atan(tan(th_h)./abs(cos(phi))), ...
+                          atan(tan(th_v)./abs(sin(phi)))));
+Omega = integral(f, 0, 2*pi);   % 预期约 1.13 sr</code></pre>
+<p>预期观察到 $\Omega$ 略小于 $4\sin\theta_h\sin\theta_v$（后者是「小角近似」下把球面矩形当平面矩形算出的值），因为大角度下球面弯曲使实际立体角偏小。</p>
+<h4>关键点</h4>
+<ul>
+<li>矩形视场的立体角<strong>不能</strong>简单写成 $\theta_h\theta_v$ 或 $4\sin\theta_h\sin\theta_v$；后者只在 $\theta_h,\theta_v$ 很小时成立（此时 $\Omega\approx 4\tan\theta_h\tan\theta_v$）。</li>
+<li>正确做法是把矩形边界写成方向余弦约束 $|u_x|\le u_z\tan\theta_h$、$|u_y|\le u_z\tan\theta_v$，再对单位球面积分。</li>
+<li>积分限 $\theta_{\max}(\varphi)$ 是 $\varphi$ 的分段函数，分界角 $\varphi^\ast=\arctan(\tan\theta_v/\tan\theta_h)$。</li>
+<li>极限检验：$\theta_h=\theta_v=\pi/2$ 时 $\Omega=2\pi$ sr（半球），与事实底座「半球 $2\pi$ sr」一致；$\theta_h,\theta_v\to 0$ 时 $\Omega\to 4\theta_h\theta_v$。</li>
+<li>本题的 $\theta_h,\theta_v$ 由本章内参 $f,\rho_w,\rho_h$ 与分辨率经 $\theta_h=\arctan(N\rho_w/2f)$ 确定，是「相机视场」与「立体角」之间的桥梁。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章 Image Formation</li>
+<li>依据：</li>
+<li>水平视场半角公式 $\theta_h=\arctan(N\rho_w/2f)$：事实底座第 5 节「关键公式」第 6 条。</li>
+<li>半球 $2\pi$ sr、全球 $4\pi$ sr：事实底座第 6 节「例题与数值例子」末段。</li>
+<li>默认 <code>CentralCamera</code> 参数（1024×1024、8 mm、10 µm）：事实底座第 6 节末段。</li>
+<li>立体角积分与矩形锥几何：按符号推导，原书未给出本题具体数值。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解题目要求</h5>
+<p>Bouguet 的 Camera Calibration Toolbox 是 MATLAB 中经典的相机标定工具，其"示例 1"（example 1）是使用一组已拍摄的棋盘格标定图像，运行 <code>calib_gui</code> / <code>calib</code> 流程，估计相机的内参（focal length、principal point、畸变系数）并评估重投影误差。本题要求读者动手复现该示例，从而把本章的标定理论（内参 $\mathbf{K}$、畸变参数 $(k_1,k_2,p_1,p_2,k_3)$、外参 $\boldsymbol{\xi}_C$）落到实际数据上。</p>
+<h5>第 2 步：标定模型回顾</h5>
+<p>由本章事实底座，像素坐标与相机矩阵的关系为</p>
+<p>$$\tilde{\mathbf{p}} = \mathbf{K}\,[\mathbf{R}\mid\mathbf{p}]\,\tilde{\mathbf{C}}_n,\qquad \mathbf{K}=\begin{bmatrix} f/\rho_w & 0 & u_0\\ 0 & f/\rho_h & v_0\\ 0&0&1\end{bmatrix}$$</p>
+<p>其中内参 5 个（$f,\rho_w,\rho_h,u_0,v_0$），外参 6 个，共 11 个参数；$\mathbf{C}$ 有 12 个元素、整体尺度 1 个自由度。畸变采用径向多项式</p>
+<p>$$\delta r = r\,(k_1 r^2 + k_2 r^4 + k_3 r^6)$$</p>
+<p>加上切向项 $(p_1,p_2)$。Bouguet 工具箱输出的 <code>kc</code> 顺序为 $(k_1,k_2,p_1,p_2,k_3)$——注意 $k_3$ 不在常规末位。</p>
+<h5>第 3 步：运行示例 1 的流程</h5>
+<p>在 MATLAB 中执行（工具箱需先加入路径）：</p>
+<pre><code class="lang-matlab">% 启动标定 GUI
+calib_gui
+
+% 或使用命令行方式（示例 1 的典型流程）
+% 1) 读取标定图像（约 20 幅棋盘格）
+% 2) 对每幅图提取角点
+% 3) 运行标定主程序
+calib</code></pre>
+<p>典型操作顺序为：<code>Image names</code> → <code>Extract grid corners</code>（对每幅图点选棋盘四角并输入方格尺寸）→ <code>Calibration</code> → <code>Save</code>。工具箱会先给出线性（DLT）初值，再做非线性优化（典型 16+ 参数），因为<strong>线性标定无法估计畸变</strong>，畸变会污染 $\mathbf{C}$ 的元素。</p>
+<h5>第 4 步：预期输出与本章数值对照</h5>
+<p>事实底座给出的 Bouguet 输出示例为：</p>
+<ul>
+<li><code>fc = [661.66988, 662.82841] ± [1.17902, 1.26556]</code>（焦距，单位：像素）</li>
+<li><code>cc = [306.09593, 240.79019] ± [2.38421, 2.17462]</code>（主点，单位：像素）</li>
+<li><code>alpha_c = 0</code>（像素轴夹角 90.00000°）</li>
+<li><code>kc = [-0.26424, 0.22644, 0.00020, 0.00023, 0.00000]</code>（即 $k_1,k_2,p_1,p_2,k_3$）</li>
+<li><code>err = [0.45328, 0.38910]</code>（重投影误差，单位：像素）</li>
+<li>标定图像典型约 20 幅</li>
+</ul>
+<p>这些数值与本章 <code>camcald</code> 示例（最大残差 0.067393 像素）量级不同，因为 Bouguet 用的是真实拍摄图像、含畸变，而 <code>camcald</code> 是线性标定、不能估畸变。</p>
+<h5>第 5 步：与本章 <code>invcamcal</code> 的对照</h5>
+<p>若把 Bouguet 的 <code>fc</code> 与本章 <code>invcamcal</code> 的输出比较，需注意：<code>invcamcal</code> 设 $\rho=1$，估出的"焦距"以像素为单位且数值很大（如 1504），不能与真实焦距（米）直接比较。Bouguet 的 <code>fc</code> 同样是像素单位，二者可比；但若要与物理焦距 $f$（米）比较，需乘以像素尺寸 $\rho$。</p>
+<h5>第 6 步：验证要点</h5>
+<p>运行后应检查：</p>
+<ol>
+<li>重投影误差 <code>err</code> 是否在亚像素量级（示例约 0.4 像素）；</li>
+<li>像素轴夹角是否接近 90°（<code>alpha_c ≈ 0</code>）；</li>
+<li>畸变系数 $k_1$ 是否为负（桶形畸变常见）；</li>
+<li>主点 <code>cc</code> 是否接近图像中心（示例图像约 640×480，<code>cc≈(306,241)</code> 略偏）。</li>
+</ol>
+<h4>关键点</h4>
+<ul>
+<li>Bouguet 示例 1 是<strong>真实图像 + 非线性优化</strong>的标定流程，输出 <code>fc, cc, alpha_c, kc, err</code>，其中 <code>kc</code> 顺序为 $(k_1,k_2,p_1,p_2,k_3)$，$k_3$ 不在末位。</li>
+<li>线性标定（DLT / <code>camcald</code>）<strong>不能估计畸变</strong>，畸变会污染 $\mathbf{C}$；Bouguet 以线性解为初值再做非线性优化。</li>
+<li>焦距与像素尺寸不可分，总以 $f/\rho_w$、$f/\rho_h$ 成对出现；<code>fc</code> 是像素单位，不能直接与物理焦距（米）比较。</li>
+<li>标定靶必须 3 维（通常 2–3 个平面），共面点会导致 Eq. 11.16 左端矩阵 rank deficient。</li>
+<li>重投影误差 <code>err</code> 是标定质量的直接指标，亚像素量级（约 0.4 像素）为正常。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章</li>
+<li>依据：</li>
+<li>内参/外参计数与 $\mathbf{C}$ 尺度自由度：facts 第 3 节第 3–4 条、第 4 节第 5 步、第 9 节第 1 题</li>
+<li>畸变模型与参数顺序：facts 第 3 节第 5 条、第 4 节第 6 步、第 7 节"kc 参数顺序"</li>
+<li>线性标定不能估畸变：facts 第 7 节"线性标定无法估畸变"</li>
+<li>共面点 rank deficient：facts 第 4 节第 7 步、第 9 节第 2 题</li>
+<li>焦距与像素尺寸不可分：facts 第 7 节"焦距与像素尺寸不可分"、第 9 节第 3 题</li>
+<li>Bouguet 输出数值：facts 第 6 节"Bouguet 输出"</li>
+<li><code>camcald</code> 残差与 <code>invcamcal</code> 数值：facts 第 6 节"标定例"、"invcamcal"</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是一道<strong>动手实践题</strong>：要求读者用本章介绍的相机标定流程，标定自己计算机上配备的相机（例如笔记本内置摄像头或外接 USB 摄像头）。原书未给出具体数值，下面按本章的符号与流程给出可运行的步骤与代码。</p>
+<h5>第 1 步：理解"标定"要估什么</h5>
+<p>由本章事实底座第 3 节第 4、6 条，相机标定的目标是估计：</p>
+<ul>
+<li><strong>内参</strong> $\mathbf{K}$：焦距 $f$、像素尺寸 $\rho_w,\rho_h$、主点 $(u_0,v_0)$，共 5 个；</li>
+<li><strong>外参</strong>：相机相对标定靶的位姿 $\boldsymbol{\xi}_C\in SE(3)$，共 6 个；</li>
+<li><strong>畸变参数</strong>：径向 $(k_1,k_2,k_3)$ 与切向 $(p_1,p_2)$，视为额外内参。</li>
+</ul>
+<p>内参 5 + 外参 6 = 11 个参数，而相机矩阵 $\mathbf{C}\in\mathbb{R}^{3\times4}$ 有 12 个元素，整体尺度有 1 个自由度，故约定 $C_{34}=1$（事实底座第 3 节第 4 条、第 7 节）。</p>
+<h5>第 2 步：准备标定靶</h5>
+<p>由事实底座第 7 节，<strong>共面点会导致 Eq. 11.16 左端矩阵 rank deficient</strong>，因此标定靶必须提供 3 维信息，通常用 2–3 个不同朝向的平面（棋盘格在不同位姿下拍摄），且 $N\ge 6$。原书 Bouguet 例中典型使用约 20 幅标定图像。</p>
+<h5>第 3 步：采集图像</h5>
+<p>用待标定相机从多个角度拍摄棋盘格，覆盖图像的不同区域（中心、四角），以便约束主点与畸变。</p>
+<h5>第 4 步：运行标定（MATLAB，遵循原书工具箱）</h5>
+<pre><code class="lang-matlab">% 假设已用待标定相机拍摄了若干棋盘格图像，存于 calib_images/
+% 使用 Bouguet 标定工具箱（原书第 11 章使用的工具）
+% 1) 读取图像并提取角点
+% 2) 运行标定主程序
+calib_gui;   % 在 GUI 中依次加载图像、提取角点、标定</code></pre>
+<p>标定完成后，Bouguet 工具箱会输出形如（事实底座第 6 节 Bouguet 例）：</p>
+<ul>
+<li><code>fc = [661.66988, 662.82841] ± [1.17902, 1.26556]</code>（以像素为单位的焦距）</li>
+<li><code>cc = [306.09593, 240.79019] ± [2.38421, 2.17462]</code>（主点）</li>
+<li><code>alpha_c = 0</code>（像素轴夹角，理想为 90°）</li>
+<li><code>kc = [-0.26424, 0.22644, 0.00020, 0.00023, 0.00000]</code>，注意顺序为 $(k_1,k_2,p_1,p_2,k_3)$，$k_3$ 不在常规末位（事实底座第 7 节）</li>
+<li><code>err = [0.45328, 0.38910]</code>（重投影误差，单位像素）</li>
+</ul>
+<h5>第 5 步：用本章的 $\mathbf{C}$ 与 <code>invcamcal</code> 交叉验证</h5>
+<p>若改用原书自带的 <code>camcald</code> 做线性标定，会得到相机矩阵 $\mathbf{C}$（事实底座第 6 节标定例）：</p>
+<pre><code>C = [[883.1620, -240.0720, 531.4419, 612.0432],
+     [259.3786,  994.1921, 234.8182, 712.0180],
+     [-0.1043,   0.0985,   0.6494,   1.0000]]</code></pre>
+<p>再用 <code>invcamcal(C)</code> 分解出内参与位姿。注意：<code>invcamcal</code> 设 $\rho=1$，估出的"焦距"以像素为单位且数值很大（例中 1504），<strong>不能与真实焦距（米）直接比较</strong>；可比量是 <code>est.f/est.rho(1)</code> 与真值 <code>cam.f/cam.rho(2)</code>（事实底座第 6、7 节）。</p>
+<h5>第 6 步：检查结果是否合理</h5>
+<ul>
+<li>重投影误差应在亚像素量级（Bouguet 例中约 0.4 像素）；</li>
+<li>像素轴夹角应接近 90°（例中 90.00000°）；</li>
+<li>若误差偏大，说明畸变未被正确建模——<strong>线性标定 <code>camcald</code> 无法估畸变</strong>，畸变会污染 $\mathbf{C}$ 元素，需用非线性优化（典型 16+ 参数）以线性解为初值（事实底座第 7 节）。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li>标定 = 估计内参（5 个）+ 外参（6 个）+ 畸变参数；$\mathbf{C}$ 有 12 元素但只有 11 个自由度，整体尺度不定，约定 $C_{34}=1$。</li>
+<li>标定靶必须提供 3 维信息（2–3 个平面），共面点会使 Eq. 11.16 矩阵 rank deficient，且 $N\ge 6$。</li>
+<li>焦距与像素尺寸不可分，总以 $f/\rho_w$、$f/\rho_h$ 成对出现；<code>invcamcal</code> 设 $\rho=1$ 时估出的"焦距"以像素为单位，不能与真实焦距直接比。</li>
+<li>Bouguet 的 <code>kc</code> 顺序为 $(k_1,k_2,p_1,p_2,k_3)$，$k_3$ 不在末位。</li>
+<li>线性标定无法估畸变，需非线性优化；重投影误差应达亚像素量级。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 11 章 Image Formation</li>
+<li>依据：</li>
+<li>内参/外参计数与 $\mathbf{C}$ 尺度自由度：事实底座第 3 节第 4 条、第 7 节</li>
+<li>共面点 rank deficient 与 $N\ge 6$：事实底座第 4 节第 7 步、第 7 节</li>
+<li>畸变参数与 <code>camcald</code> 不能估畸变：事实底座第 3 节第 5 条、第 7 节</li>
+<li><code>invcamcal</code> 设 $\rho=1$、焦距以像素为单位：事实底座第 6 节、第 7 节</li>
+<li>Bouguet 输出格式与 <code>kc</code> 顺序：事实底座第 6 节、第 7 节</li>
+<li>标定图像典型约 20 幅：事实底座第 6 节</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>题目</h4>
+<p><strong>9.</strong> 对于相机标定矩阵分解的示例（Sect. 11.2.2），确定真实相机位姿与估计相机位姿之间的 roll-pitch-yaw 姿态误差。</p>
+<p><strong>10.</strong> 位姿估计（Sect. 11.2.3）</p>
+<p>a) 对不同的物体位姿（更近、更远）重复位姿估计练习。</p>
+<p>b) 对不同的相机噪声水平重复。</p>
+<p>c) 当点数减少时会发生什么？</p>
+<p>d) 增加点数能否抵消噪声增大的影响？</p>
+<p>e) 在调用 <code>estpose</code> 方法之前改变相机 <code>cam</code> 的内参。将焦距和主点分别改变 5% 会有什么影响？</p>
+<p><strong>11.</strong> 对鱼眼相机和球面相机重复练习 2 和 3。</p>
+<p><strong>12.</strong> 参考 Fig. 11.18，推导抛物面镜的函数 $\psi(\theta)$。</p>
+<p><strong>13.</strong> 参考 Fig. 11.18，推导 xz 平面内等角镜（equi-angular mirror）的方程 $z(x)$。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>解答</h4>
+<h5>第 9 题：RPY 姿态误差</h5>
+<p><strong>做什么</strong>：从 <code>invcamcal</code> 分解出的估计位姿与真值位姿中提取旋转矩阵，比较二者。</p>
+<p><strong>为什么</strong>：<code>invcamcal</code> 估出的是相对标定靶的 ${}^T\hat{\mathbf{C}}$，而真值是 ${}^C\boldsymbol{\xi}_T$，需先复合再与单位阵比较（见 facts §7「位姿方向」）。</p>
+<p>设真值旋转 $\mathbf{R}_{\text{true}}$、估计旋转 $\hat{\mathbf{R}}$，则姿态误差旋转为</p>
+<p>$$\mathbf{R}_{\text{err}} = \mathbf{R}_{\text{true}}^T \hat{\mathbf{R}}$$</p>
+<p>再由 $\mathbf{R}_{\text{err}}$ 用 <code>tr2rpy</code> 提取 RPY 角 $\boldsymbol{\phi}_{\text{err}} = (\phi_r,\phi_p,\phi_y)$，误差范数 $\|\boldsymbol{\phi}_{\text{err}}\|$。</p>
+<p>原书示例中 <code>T_unknown=transl(0,0,2)*trotx(0.1)*troty(0.2)</code>，<code>cam.estpose</code> 恢复到四位小数一致（facts §6），故 RPY 误差在 $10^{-4}$ rad 量级。<strong>原书未给出该误差的具体数值</strong>，需运行代码得到：</p>
+<pre><code class="lang-matlab">% 真值位姿
+T_true = transl(0,0,2) * trotx(0.1) * troty(0.2);
+% 估计位姿（由 estpose 返回）
+T_est  = cam.estpose(P, p);   % P 世界点, p 像素点
+% 姿态误差
+R_err  = T_true(1:3,1:3)' * T_est(1:3,1:3);
+rpy_err = tr2rpy(R_err);      % 单位 rad
+norm(rpy_err)</code></pre>
+<p><strong>预期</strong>：<code>norm(rpy_err)</code> 约为 $10^{-4}$ 量级，与「四位小数一致」吻合。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 10 题：位姿估计的参数扫描</h5>
+<p><strong>a) 更近/更远</strong>：改变 <code>T_unknown</code> 的平移 $z$。物体越远，同一像素误差对应的世界坐标误差越大（透视 $x=fX/Z$，$Z$ 增大使灵敏度下降），位姿估计精度下降。</p>
+<p><strong>b) 不同噪声</strong>：在像素坐标上加高斯噪声 $\sigma$（原书标定例 $\sigma=0.05$ 像素，最大残差 0.067393 像素）。噪声越大，估计误差越大。</p>
+<p><strong>c) 点数减少</strong>：PnP 最少需 3 点（P3P），点数减少到临界值时解不唯一或数值不稳定；少于 3 点无法求解。</p>
+<p><strong>d) 增加点数 vs 噪声</strong>：增加点数可平均掉零均值噪声，估计误差按 $1/\sqrt{N}$ 下降；但若噪声为系统偏差（如畸变污染），增加点数无法消除。故<strong>能部分抵消随机噪声，不能抵消系统误差</strong>。</p>
+<p><strong>e) 内参改变 5%</strong>：<code>estpose</code> 使用相机内参 $\mathbf{K}$。焦距 $f$ 改变 5% 会整体缩放投影，主点 $(u_0,v_0)$ 改变 5% 会平移投影。二者都会使估计位姿产生偏差——因为算法假设内参正确。原书未给出具体数值，按符号推导：$\mathbf{K}$ 误差 $\Delta\mathbf{K}$ 传播为位姿误差 $\Delta\boldsymbol{\xi}\propto \mathbf{J}^{-1}\Delta\mathbf{K}$。</p>
+<pre><code class="lang-matlab">for z = [1, 2, 5]
+    T_true = transl(0,0,z) * trotx(0.1) * troty(0.2);
+    % ... 投影、加噪、estpose、比较
+end</code></pre>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 11 题：鱼眼与球面相机</h5>
+<p>对鱼眼相机（<code>'projection','equiangular'</code>，视场 180°/190°）和球面相机重复练习 2、3。关键差异：</p>
+<ul>
+<li>鱼眼：$r=r(\theta)$，矩形像平面约 25% 浪费（facts §6）。</li>
+<li>球面：投影到单位球面取 $(\varphi,\theta)$，展开矩形时顶/底边对应南/北极（facts §7）。</li>
+</ul>
+<pre><code class="lang-matlab">cam = CentralCamera('focal', 0.015, 'pixel', 10e-6, ...
+    'resolution', [1280 1024], 'projection', 'equiangular');</code></pre>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 12 题：抛物面镜的 $\psi(\theta)$</h5>
+<p>参考 Fig. 11.18：视点 $F$ 在球心 $O$ 上方距离 $\ell$，球心到像平面距离 $m$。抛物面镜满足等距性质：入射光线经镜面反射后汇聚于焦点 $F$。</p>
+<p>抛物面方程（以焦点为原点）$z = \frac{x^2+y^2}{4p}$，$p$ 为焦距。入射角 $\theta$ 与反射角 $\psi$ 的关系由镜面法线决定。对抛物面，反射光线平行于光轴，故</p>
+<p>$$\psi(\theta) = \theta$$</p>
+<p>即抛物面镜是<strong>等角镜</strong>的一种极限情形（反射角等于入射角）。更一般地，由统一模型 Eq. 11.21：</p>
+<p>$$r=\frac{(\ell+m)\sin\theta}{\ell+\cos\theta}$$</p>
+<p>对抛物面镜，$\ell$ 取特定值使 $\psi$ 与 $\theta$ 满足上述关系。<strong>原书未给出抛物面 $\psi(\theta)$ 的显式闭式</strong>，需由镜面几何推导。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 13 题：等角镜 $z(x)$</h5>
+<p>等角镜（equi-angular mirror）要求反射角 $\psi$ 与入射角 $\theta$ 成正比：$\psi = k\theta$（$k$ 为常数）。在 xz 平面内，镜面曲线 $z(x)$ 满足：</p>
+<p>$$\frac{dz}{dx} = \tan\left(\frac{\theta + \psi}{2}\right) = \tan\left(\frac{(1+k)\theta}{2}\right)$$</p>
+<p>结合 $\tan\theta = x/z$（入射光线方向），积分得 $z(x)$。对 $k=1$（等角），</p>
+<p>$$z(x) = \frac{x^2}{4p}$$</p>
+<p>即抛物面。<strong>原书未给出等角镜 $z(x)$ 的完整闭式</strong>，需按上述微分方程积分。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>第 9 题</strong>：姿态误差 $\mathbf{R}_{\text{err}}=\mathbf{R}_{\text{true}}^T\hat{\mathbf{R}}$，用 <code>tr2rpy</code> 提取 RPY；原书示例精度约 $10^{-4}$ rad。</li>
+<li><strong>第 10 题</strong>：增加点数按 $1/\sqrt{N}$ 抑制随机噪声，但不能消除系统误差（畸变、内参偏差）。</li>
+<li><strong>第 11 题</strong>：鱼眼/球面相机需用统一模型 $\ell,m$ 参数；透视相机 $\ell=0$，鱼眼常 $\ell>1$。</li>
+<li><strong>第 12–13 题</strong>：抛物面镜 $\psi=\theta$；等角镜 $\psi=k\theta$，由 $\frac{dz}{dx}=\tan\frac{\theta+\psi}{2}$ 积分求 $z(x)$。</li>
+<li><strong>通用</strong>：所有数值结论必须来自 facts 或运行代码，原书未给出的写「按符号推导」。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 11 章 Image Formation</li>
+<li>依据：</li>
+<li>第 9 题：facts §6（<code>invcamcal</code> 示例）、§7（位姿方向）</li>
+<li>第 10 题：facts §6（标定例 $\sigma=0.05$、残差 0.067393 像素）、§7（内参不可分）</li>
+<li>第 11 题：facts §6（鱼眼/球面示例）、§7（鱼眼视场浪费、球面展开）</li>
+<li>第 12–13 题：facts §5（Eq. 11.21 统一模型）、§6（$\ell,m$ 取值）、§7（统一模型 $\ell,m$ 易混）</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

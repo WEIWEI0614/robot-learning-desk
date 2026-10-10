@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 6 章「Statistical estimation」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 6 章「Statistical estimation」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章的核心结论是：</p>
+<p>ML 问题</p>
+<p>$$
+\max_x\ l(x)\quad \text{s.t.}\quad x\in C
+$$</p>
+<p>是凸优化问题，当且仅当：</p>
+<ol>
+<li>log-likelihood $l$ 对每个观测 $y$ 是凹函数；</li>
+<li>约束集 $C$ 可由线性等式与凸不等式描述。</li>
+</ol>
+<p>在线性测量 + IID 噪声模型下：</p>
+<p>$$
+y_i=a_i^Tx+v_i,
+$$</p>
+<p>其中 $v_i$ 独立同分布，密度为 $p$。于是似然为</p>
+<p>$$
+p_{y|x}(x,y)=\prod_{i=1}^m p(y_i-a_i^Tx),
+$$</p>
+<p>log-likelihood 为</p>
+<p>$$
+l(x)=\sum_{i=1}^m \log p(y_i-a_i^Tx).
+$$</p>
+<p>若 $p$ 是 log-concave，即 $\log p$ 凹，则 $l$ 凹，ML 问题是凸问题。</p>
+<p>它与第 6 章 penalty approximation 等价，是因为：</p>
+<p>$$
+\max_x \sum_i \log p(y_i-a_i^Tx)
+\iff
+\min_x \sum_i -\log p(y_i-a_i^Tx).
+$$</p>
+<p>令 penalty</p>
+<p>$$
+\phi(z)=-\log p(z),
+$$</p>
+<p>则问题变成</p>
+<p>$$
+\min_x \sum_i \phi(y_i-a_i^Tx),
+$$</p>
+<p>这正是 penalty approximation 的形式。反向地，任意 penalty $\phi$ 也可对应噪声密度</p>
+<p>$$
+p(z)=\frac{e^{-\phi(z)}}{\int e^{-\phi(u)}\,du}.
+$$</p>
+<p>三种噪声对应关系：</p>
+<ul>
+<li>Gaussian 噪声：$p(z)\propto e^{-z^2/(2\sigma^2)}$，$\phi(z)\propto z^2$，对应最小二乘；</li>
+<li>Laplacian 噪声：$p(z)=\frac1{2a}e^{-|z|/a}$，$\phi(z)=|z|/a+\text{const}$，对应 $\ell_1$ penalty；</li>
+<li>Uniform 噪声：$p(z)$ 在 $[-a,a]$ 上为常数，$\phi(z)$ 在区间内为常数、区间外为 $+\infty$，对应 $\ell_\infty$ 型约束。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>MAP 估计为</p>
+<p>$$
+\hat x_{map}=\arg\max_x p_{x|y}(x,y).
+$$</p>
+<p>由 Bayes 公式，</p>
+<p>$$
+p_{x|y}(x,y)=\frac{p_{y|x}(x,y)p_x(x)}{p_y(y)}.
+$$</p>
+<p>因为分母 $p_y(y)$ 与 $x$ 无关，所以</p>
+<p>$$
+\hat x_{map}
+=
+\arg\max_x \left(\log p_{y|x}(x,y)+\log p_x(x)\right).
+$$</p>
+<p>这就是 MAP 的对数形式。</p>
+<p>与 ML 相比：</p>
+<p>$$
+\hat x_{ml}=\arg\max_x \log p_{y|x}(x,y).
+$$</p>
+<p>因此 MAP 与 ML 的唯一差别是先验项 $\log p_x(x)$。原书也强调，这里“brushing aside the philosophical differences”，即只从优化形式看，MAP 就是 ML 加一项先验。</p>
+<p>若先验 $p_x$ 在约束集 $C$ 上均匀，则 $\log p_x(x)$ 在 $C$ 上为常数，优化时不影响最优解，因此 MAP 退化为 ML。</p>
+<p>凸性方面：</p>
+<ul>
+<li>若 $\log p_{y|x}(x,y)$ 凹；</li>
+<li>且 $\log p_x(x)$ 凹，即先验 $p_x$ 是 log-concave；</li>
+</ul>
+<p>则</p>
+<p>$$
+\log p_{y|x}(x,y)+\log p_x(x)
+$$</p>
+<p>是两个凹函数之和，仍为凹函数。若约束集 $C$ 由线性等式与凸不等式描述，则 MAP 问题是凸优化问题。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>协方差估计中，原变量是 $R\in\mathbb S^n_{++}$，信息矩阵为</p>
+<p>$$
+S=R^{-1}.
+$$</p>
+<p>原书指出，log-likelihood 关于 $R$ 不是凹的，因此不能直接对 $R$ 做凸优化。换元 $S=R^{-1}$ 后，目标变为</p>
+<p>$$
+l(S)=\text{const}+\frac N2\log\det S-\frac N2\mathrm{tr}(SY),
+$$</p>
+<p>其中</p>
+<p>$$
+Y=\frac1N\sum_{k=1}^N y_ky_k^T.
+$$</p>
+<p>该目标关于 $S$ 是凹的，因为：</p>
+<ul>
+<li>$\log\det S$ 在 $\mathbb S^n_{++}$ 上凹；</li>
+<li>$-\mathrm{tr}(SY)$ 关于 $S$ 是线性的；</li>
+<li>二者之和凹。</li>
+</ul>
+<p>因此可得到凸问题</p>
+<p>$$
+\max_S\ \log\det S-\mathrm{tr}(SY)
+\quad \text{s.t.}\quad S\in\mathcal S,
+$$</p>
+<p>其中 $\mathcal S$ 表示由先验信息或约束给出的可行集合。</p>
+<p>无先验时，对 $S$ 求无约束最优。利用</p>
+<p>$$
+\nabla_S\log\det S=S^{-1},
+$$</p>
+<p>一阶条件为</p>
+<p>$$
+S^{-1}-Y=0,
+$$</p>
+<p>即</p>
+<p>$$
+S=Y^{-1}.
+$$</p>
+<p>因此</p>
+<p>$$
+\hat R_{ml}=Y.
+$$</p>
+<p>但该结论要求 $Y\in\mathbb S^n_{++}$。若 $Y\notin\mathbb S^n_{++}$，则 log-likelihood 无上界，ML 估计不存在或退化。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>设 $X$ 取值 $\{1,\dots,n\}$，参数 $\theta\in\{1,\dots,m\}$，概率矩阵</p>
+<p>$$
+P\in\mathbb R^{n\times m},\qquad p_{kj}=\mathrm{prob}(X=k|\theta=j).
+$$</p>
+<p>随机化检测器为</p>
+<p>$$
+T\in\mathbb R^{m\times n},\qquad t_{ik}=\mathrm{prob}(\hat\theta=i|X=k).
+$$</p>
+<p>其列随机约束为</p>
+<p>$$
+t_k\succeq0,\qquad \mathbf 1^Tt_k=1,\qquad k=1,\dots,n.
+$$</p>
+<p>检测概率矩阵为</p>
+<p>$$
+D=TP,\qquad D_{ij}=\mathrm{prob}(\hat\theta=i|\theta=j).
+$$</p>
+<p>检测器设计可化为 LP，是因为：</p>
+<ul>
+<li>minimax 目标涉及最坏情形错误概率，是分段线性凸函数；</li>
+<li>Bayes 风险为</li>
+</ul>
+<p>$$
+q^TP^e,
+$$</p>
+<p>其中 $q$ 是先验，$P^e_i=1-D_{ii}$，关于 $T$ 仿射；</p>
+<ul>
+<li>加权和目标</li>
+</ul>
+<p>$$
+\mathrm{tr}(W^TD)
+$$</p>
+<p>关于 $T$ 线性。</p>
+<p>因此这些目标在列随机约束下都是 LP。</p>
+<p>标量化检测器设计 LP 为</p>
+<p>$$
+\min_T\ \mathrm{tr}(W^TD)
+\quad \text{s.t.}\quad t_k\succeq0,\quad \mathbf 1^Tt_k=1.
+$$</p>
+<p>逐列取最小可得确定性最优检测器</p>
+<p>$$
+\hat\theta=\arg\min_j (WP^T)_{jk}.
+$$</p>
+<p>随机化检测器并非无用。直觉上“引入随机化只会更差”，但 Example 7.4 给出反例。该例中 $n=4$，概率矩阵为</p>
+<p>$$
+P=
+\begin{bmatrix}
+0.70&0.10\\
+0.20&0.10\\
+0.05&0.70\\
+0.05&0.10
+\end{bmatrix}.
+$$</p>
+<p>ROC 顶点对应确定性检测器，例如</p>
+<p>$$
+T^{(1)}=
+\begin{bmatrix}
+1&1&0&1\\
+0&0&1&0
+\end{bmatrix},\quad
+T^{(2)}=
+\begin{bmatrix}
+1&1&0&0\\
+0&0&1&1
+\end{bmatrix},\quad
+T^{(3)}=
+\begin{bmatrix}
+1&0&0&0\\
+0&1&1&1
+\end{bmatrix}.
+$$</p>
+<p>点 4 对应随机化 minimax 检测器</p>
+<p>$$
+T^{(4)}=
+\begin{bmatrix}
+1&2/3&0&0\\
+0&1/3&1&1
+\end{bmatrix}.
+$$</p>
+<p>其 false positive 与 false negative 概率均为 $1/6$，优于任何确定性检测器。这说明随机化可以到达确定性检测器无法到达的 Pareto 最优点。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>Chernoff 界的一般形式为</p>
+<p>$$
+\log\mathrm{prob}(X\in C)
+\le
+\inf_\lambda\left\{
+S_C(-\lambda)+\log E\exp(\lambda^TX)
+\right\},
+$$</p>
+<p>其中 $S_C$ 是集合 $C$ 的 support function。</p>
+<p>高斯多面体情形下，设 $X\sim N(0,I)$，$C$ 为多面体。利用</p>
+<p>$$
+\log E\exp(\lambda^TX)=\frac12\lambda^T\lambda,
+$$</p>
+<p>Chernoff 界化为 QP：</p>
+<p>$$
+\min\ b^Tu+\frac12\lambda^T\lambda
+\quad \text{s.t.}\quad u\succeq0,\quad A^Tu+\lambda=0.
+$$</p>
+<p>该问题可进一步解释为到 $C$ 的距离问题，最终得到</p>
+<p>$$
+\mathrm{prob}(X\in C)\le \exp\left(-\frac{\mathrm{dist}(0,C)^2}{2}\right).
+$$</p>
+<p>一维高斯尾概率验证代码如下：</p>
+<pre><code class="lang-python">import numpy as np
+from scipy.stats import norm
+
+u = 1.5
+bound = np.exp(-u**2 / 2)
+true_prob = 1 - norm.cdf(u)
+
+print("u =", u)
+print("Chernoff bound =", bound)
+print("true tail probability =", true_prob)
+print("bound >= true?", bound >= true_prob)</code></pre>
+<p>预期观察：</p>
+<ul>
+<li>当 $u\ge0$ 时，Chernoff 界给出</li>
+</ul>
+<p>$$
+\mathrm{prob}(X\ge u)\le e^{-u^2/2}.
+$$</p>
+<ul>
+<li>运行结果应满足 <code>bound >= true_prob</code>。</li>
+<li>例如 $u=1.5$ 时，$e^{-u^2/2}\approx0.3247$，而真实尾概率约为 $0.0668$，界成立但较松。</li>
+<li>原书还指出，Remark 7.3 的 $\Phi(-d)$ 界至少与 Chernoff 界一样 sharp，因为</li>
+</ul>
+<p>$$
+\Phi(-d)\le e^{-d^2/2},\qquad d\ge0.
+$$</p>
+<p>因此该数值实验也符合“Chernoff 界是上界，但不一定最紧”的结论。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

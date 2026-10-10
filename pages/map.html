@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>知识地图 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.cluster{margin-bottom:34px}
+#p-map .btn-lesson{display:inline-block;margin-top:11px;font-size:12.5px;
+ color:var(--teal);text-decoration:none;border:1px solid rgba(93,202,165,.4);
+ background:rgba(93,202,165,.1);padding:4px 11px;border-radius:5px}
+#p-map .btn-lesson:hover{background:rgba(93,202,165,.2)}
+#p-map .zhlink{margin-left:10px;color:var(--amber)}
+#p-map .bd.zhbadge{margin-left:8px;background:rgba(93,202,165,.14);color:var(--teal);
+ border:1px solid rgba(93,202,165,.4);text-decoration:none}
+#p-map .navjump{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+#p-map .navjump a{font-size:12.5px;color:var(--tx2);text-decoration:none;
+ border:1px solid var(--line);background:var(--panel2);padding:5px 12px;border-radius:16px}
+#p-map .navjump a:hover{color:var(--amber);border-color:var(--amber)}
+#p-map table.tbl{margin:12px 0}
+#p-map table.tbl td,#p-map table.tbl th{padding:6px 8px;font-size:13px}
+#p-map .note.key .card{display:inline-block;margin-top:10px}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">知识地图<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<h1>知识地图 · 演进链条与缺口</h1>
+<p class="sub">
+把 21 篇论文压成 <b>5 条演进链</b>，按链条读而不是按单篇读。<br>
+单篇内部（逐段对照、术语、公式）交给 EasyRead；这一层管的是<b>跨篇关联</b>——工具给不出的部分。
+</p>
+
+<div class="stats">
+<div class="st"><div class="n">5</div><div class="l">主题簇</div></div>
+<div class="st"><div class="n">21</div><div class="l">论文</div></div>
+<div class="st"><div class="n">21/21</div><div class="l">簇内 PDF 在本地</div></div>
+<div class="st"><div class="n">21/21</div><div class="l">事实底座已建</div></div>
+</div>
+
+<div class="navjump">
+<a href="#c-rl-foundation">RL 基础</a><a href="#c-vla-evolution">VLA 演进</a><a href="#c-sim-and-sim2real">仿真与迁移</a><a href="#c-diffusion-policy">扩散策略</a><a href="#c-control-hardware">控制与硬件</a>
+</div>
+
+<div class="note key">
+<b>为什么按簇读：</b>单篇读完了你只会知道「这篇做了什么」。按演进链读，你才能看出
+「上一版解决不了什么、这一版换掉了哪一层」。投资岗问技术的时候，问的正是后者。
+<br><br>
+<b>建议起点：</b>RL 基础：从策略梯度到信赖域。它是另外几簇的共同前置——先读它，后面每一步都能看懂相对前一版改了什么。
+</div>
+
+<div class="note">
+<b>簇的划分依据：</b>不是按引用数，也不是按年份。是按「这几篇合起来能回答同一个问题」来分的。
+每簇的 <span class="bd paper" style="font-size:11px">论文精读</span> 偏原理与算法，
+<span class="bd frontier" style="font-size:11px">产业链底层</span> 偏补底层结构性的缺口。
+</div>
+
+<h2>5 条演进链</h2>
+<section class="cluster">
+<header class="ch">
+<h3 id="c-rl-foundation">RL 基础：从策略梯度到信赖域</h3><span class="bd paper">论文精读</span>
+</header>
+<p class="rationale"><b>为什么按这个顺序读：</b>TRPO 解决步长与单调改进的冲突 → A3C 用异步并行破样本相关性 → DDPG 把 DQN 的离散动作推广到连续 → MPC 跳出策略学习、直接在线规划。四篇构成一条清晰的「怎么把 RL 用在连续控制上」的路线。</p>
+<div class="thread">
+<div class="thread-label">演进线索</div>
+<div class="thread-body">策略梯度的方差问题 → 信赖域约束 → 样本效率 → 连续动作处理 → 在线重规划</div>
+</div>
+<div class="steps">
+<div class="step">
+<div class="idx">1</div>
+<div class="body">
+<h5>Trust Region Policy Optimization</h5>
+<div class="sm"><span class="keytag">trpo-2015</span> · 2015 · 3,093 被引<a class="pdf" href="https://arxiv.org/abs/1502.05477" target="_blank" rel="noopener" title="Trust Region Policy Optimization">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">2</div>
+<div class="body">
+<h5>Asynchronous Methods for Deep Reinforcement Learning</h5>
+<div class="sm"><span class="keytag">a3c-2016</span> · 2016 · 1,689 被引<a class="pdf" href="https://arxiv.org/abs/1602.01783" target="_blank" rel="noopener" title="Asynchronous Methods for Deep Reinforcement Learning">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">3</div>
+<div class="body">
+<h5>Continuous control with deep reinforcement learning</h5>
+<div class="sm"><span class="keytag">ddpg-2015</span> · 2015 · 5,337 被引<a class="pdf" href="https://arxiv.org/abs/1509.02971" target="_blank" rel="noopener" title="Continuous control with deep reinforcement learning">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">4</div>
+<div class="body">
+<h5>Learning Model Predictive Control for Quadrotor Navigation</h5>
+<div class="sm"><span class="keytag">mpc-2020</span> · 2020 · 477 被引<span class="pdf none">无公开原文</span></div>
+</div>
+</div>
+</div>
+<div class="grid2">
+<div class="box">
+<div class="bl">读完必须能回答</div>
+<ul class="must"><li>为什么 TRPO 要加KL 约束而不能直接调大学习率</li><li>A3C 的异步设计解决了什么同步并行的问题</li><li>DDPG 相比 DQN 改了什么（确定性策略 + 策略梯度 + 目标值平滑）</li><li>MPC 属于 model-based 还是 model-free，它和前三篇的关系</li></ul>
+</div>
+<div class="box">
+<div class="bl">怎么用</div>
+<p class="ia">这是你产业链底层缺口里「模型架构原理」的入口。投资视角要能问出：这四篇里哪一篇的方法现在还在用？答不上来说明只读了摘要。</p>
+<a class="btn-lesson" href="../课件/簇复盘-rl-foundation.html" target="_blank">本簇复盘课件（3457 KB）</a>
+</div>
+</div>
+</section><section class="cluster">
+<header class="ch">
+<h3 id="c-vla-evolution">VLA 演进：视觉-语言-动作怎么融合</h3><span class="bd frontier">产业链底层</span>
+</header>
+<p class="rationale"><b>为什么按这个顺序读：</b>RT-2 把动作离散化成 token 复用 LLM → OpenVLA 证明开源小模型也能做，并解决动作离散化的精度损失 → ALOHA 用 ACT 做低成本双臂遥操作 → Mobile ALOHA 把它推到动态场景。这是最需要优先掌握的一簇。</p>
+<div class="thread">
+<div class="thread-label">演进线索</div>
+<div class="thread-body">语言接地（SayCan：LLM 决定做什么）→ 动作离散化为token（RT-2）→ 开源小模型验证（OpenVLA）→ 低成本双臂数据采集（ALOHA）→ 动态场景适应（Mobile ALOHA）</div>
+</div>
+<div class="steps">
+<div class="step">
+<div class="idx">1</div>
+<div class="body">
+<h5>RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control</h5>
+<div class="sm"><span class="keytag">rt-2-2023</span> · 2023 · 273 被引<a class="pdf" href="https://arxiv.org/abs/2307.15818" target="_blank" rel="noopener" title="RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">2</div>
+<div class="body">
+<h5>OpenVLA: An Open-Source Vision-Language-Action Model</h5>
+<div class="sm"><span class="keytag">openvla-2024</span> · 2024 · 43 被引<a class="pdf" href="https://arxiv.org/abs/2406.09246" target="_blank" rel="noopener" title="OpenVLA: An Open-Source Vision-Language-Action Model">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">3</div>
+<div class="body">
+<h5>Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware</h5>
+<div class="sm"><span class="keytag">aloha-2023</span> · 2023 · 659 被引<a class="pdf" href="https://doi.org/10.15607/rss.2023.xix.016" target="_blank" rel="noopener" title="Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">4</div>
+<div class="body">
+<h5>Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation</h5>
+<div class="sm"><span class="keytag">mobile-aloha-2024</span> · 2024 · 31 被引<a class="pdf" href="https://arxiv.org/abs/2401.02117" target="_blank" rel="noopener" title="Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">5</div>
+<div class="body">
+<h5>Do As I Can, Not As I Say: Grounding Language in Robotic Affordances</h5>
+<div class="sm"><span class="keytag">saycan-2022</span> · 2022 · 524 被引<a class="pdf" href="https://arxiv.org/abs/2204.01691" target="_blank" rel="noopener" title="Do As I Can, Not As I Say: Grounding Language in Robotic Affordances">原文</a></div>
+</div>
+</div>
+</div>
+<div class="grid2">
+<div class="box">
+<div class="bl">读完必须能回答</div>
+<ul class="must"><li>SayCan 的affordance 评分怎么解决「语言模型会幻想不存在的技能」</li><li>RT-2 的动作离散化带来什么好处、牺牲了什么</li><li>OpenVLA 的 7B 参数为什么够用，数据量是多少</li><li>ACT 的反直觉之处：为什么双臂数据需要特殊处理</li><li>这几篇分别依赖哪些上游技术（VLM 架构、推理框架、显存与数据存储）</li></ul>
+</div>
+<div class="box">
+<div class="bl">怎么用</div>
+<p class="ia">你明确说缺口是产业链中上游底层。VLA 这簇是「应用层看得懂、底层说不清」的典型。读完要能回答：训练一个 7B 的 VLA 需要多少显存和多少数据？</p>
+<a class="btn-lesson" href="../课件/簇复盘-vla-evolution.html" target="_blank">本簇复盘课件（2367 KB）</a>
+</div>
+</div>
+</section><section class="cluster">
+<header class="ch">
+<h3 id="c-sim-and-sim2real">仿真与迁移：现实到虚拟的桥</h3><span class="bd paper">论文精读</span>
+</header>
+<p class="rationale"><b>为什么按这个顺序读：</b>MuJoCo 提供高保真动力学 → 域随机化让策略见过「所有可能的现实」 → 四足机器人真的做到了零样本迁移 → Habitat 转向具身导航的仿真。这簇回答一个核心问题：为什么 sim2real 能work。</p>
+<div class="thread">
+<div class="thread-label">演进线索</div>
+<div class="thread-body">高保真物理引擎 → 视觉域随机化 → 动态随机化 → 从物理仿真到具身场景</div>
+</div>
+<div class="steps">
+<div class="step">
+<div class="idx">1</div>
+<div class="body">
+<h5>MuJoCo: A physics engine for model-based control</h5>
+<div class="sm"><span class="keytag">mujoco-2012</span> · 2012 · 4,605 被引<a class="pdf" href="https://doi.org/10.1109/iros.2012.6386109" target="_blank" rel="noopener" title="MuJoCo: A physics engine for model-based control">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">2</div>
+<div class="body">
+<h5>Domain randomization for transferring deep neural networks from simulation to the real world</h5>
+<div class="sm"><span class="keytag">domain-randomization-2017</span> · 2017 · 2,937 被引<a class="pdf" href="https://doi.org/10.1109/iros.2017.8202133" target="_blank" rel="noopener" title="Domain randomization for transferring deep neural networks from simulation to the real world">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">3</div>
+<div class="body">
+<h5>Sim-to-Real: Learning Agile Locomotion For Quadruped Robots</h5>
+<div class="sm"><span class="keytag">sim2real-quadruped-2018</span> · 2018 · 702 被引<a class="pdf" href="https://doi.org/10.15607/rss.2018.xiv.010" target="_blank" rel="noopener" title="Sim-to-Real: Learning Agile Locomotion For Quadruped Robots">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">4</div>
+<div class="body">
+<h5>Habitat: A Platform for Embodied AI Research</h5>
+<div class="sm"><span class="keytag">habitat-2019</span> · 2019 · 1,082 被引<a class="pdf" href="https://arxiv.org/abs/1904.01201" target="_blank" rel="noopener" title="Habitat: A Platform for Embodied AI Research">原文</a></div>
+</div>
+</div>
+</div>
+<div class="grid2">
+<div class="box">
+<div class="bl">读完必须能回答</div>
+<ul class="must"><li>域随机化的核心假设是什么，什么时候会失效</li><li>为什么需要动态随机化而不是只随机化视觉</li><li>零样本迁移成功的前提条件（哪些差距必须先被随机化覆盖）</li><li>Habitat 的贡献是物理引擎还是场景资产</li></ul>
+</div>
+<div class="box">
+<div class="bl">怎么用</div>
+<p class="ia">这簇直接对应「算力与仿真」这条产业链。投资视角该问：仿真平台的商业价值到底在哪——是卖软件还是卖训练数据。</p>
+<a class="btn-lesson" href="../课件/簇复盘-sim-and-sim2real.html" target="_blank">本簇复盘课件（3442 KB）</a>
+</div>
+</div>
+</section><section class="cluster">
+<header class="ch">
+<h3 id="c-diffusion-policy">扩散策略：RL 之外的另一条路</h3><span class="bd frontier">产业链底层</span>
+</header>
+<p class="rationale"><b>为什么按这个顺序读：</b>Diffusion Policy 用扩散模型直接生成动作轨迹，绕开 RL 的样本效率问题 → 早期导航与 EQA 论文提供了具身任务的评测基础 → World Model 给出「先在想象中练习」的范式。这一簇是当前最热的技术分叉。</p>
+<div class="thread">
+<div class="thread-label">演进线索</div>
+<div class="thread-body">动作序列生成范式（自回归 vs 扩散）→ 具身任务评测 → 内部世界模型模拟</div>
+</div>
+<div class="steps">
+<div class="step">
+<div class="idx">1</div>
+<div class="body">
+<h5>Diffusion Policy: Visuomotor Policy Learning via Action Diffusion</h5>
+<div class="sm"><span class="keytag">diffusion-policy-2023</span> · 2023 · 596 被引<a class="pdf" href="https://arxiv.org/abs/2303.04137" target="_blank" rel="noopener" title="Diffusion Policy: Visuomotor Policy Learning via Action Diffusion">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">2</div>
+<div class="body">
+<h5>Vision-and-Language Navigation: Interpreting Visually-Grounded Navigation Instructions in Real Environments</h5>
+<div class="sm"><span class="keytag">vision-language-navigation-2018</span> · 2018 · 881 被引<a class="pdf" href="https://arxiv.org/abs/1711.07280" target="_blank" rel="noopener" title="Vision-and-Language Navigation: Interpreting Visually-Grounded Navigation Instructions in Real Environments">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">3</div>
+<div class="body">
+<h5>Embodied Question Answering</h5>
+<div class="sm"><span class="keytag">embodied-question-answering-2018</span> · 2018 · 351 被引<a class="pdf" href="https://doi.org/10.1109/cvpr.2018.00008" target="_blank" rel="noopener" title="Embodied Question Answering">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">4</div>
+<div class="body">
+<h5>Dream to Control: Learning Behaviors by Latent Imagination</h5>
+<div class="sm"><span class="keytag">world-model-2018</span> · 2018 · 134 被引<a class="pdf" href="https://arxiv.org/abs/1912.01603" target="_blank" rel="noopener" title="Dream to Control: Learning Behaviors by Latent Imagination">原文</a></div>
+</div>
+</div>
+</div>
+<div class="grid2">
+<div class="box">
+<div class="bl">读完必须能回答</div>
+<ul class="must"><li>扩散策略为什么在操作任务上比 RL 样本效率高</li><li>它牺牲了什么（推理速度、多模态行为）</li><li>World Model 的想象 rollout 与真实 rollout 的差距在哪</li></ul>
+</div>
+<div class="box">
+<div class="bl">怎么用</div>
+<p class="ia">这是 2025-2026 具身智能最活跃的方向。读它是为了判断技术路线，不是为了知道某个公式。</p>
+<a class="btn-lesson" href="../课件/簇复盘-diffusion-policy.html" target="_blank">本簇复盘课件（3456 KB）</a>
+</div>
+</div>
+</section><section class="cluster">
+<header class="ch">
+<h3 id="c-control-hardware">控制与硬件：ZMP / SEA / SLAM 三块地基</h3><span class="bd frontier">产业链底层</span>
+</header>
+<p class="rationale"><b>为什么按这个顺序读：</b>这四篇是「不读会一直在踩坑」的基础。ZMP 告诉你双足为什么能平衡（三十五年的生命史 = 一个概念怎么活这么久）；SEA 告诉你执行器刚度为什么是控制问题不是机械问题；MonoSLAM 给出视觉单里程计的开山做法；Learning to Walk 把RL 真正用到足式运动上，是RL 基础簇的落地验证。</p>
+<div class="thread">
+<div class="thread-label">演进线索</div>
+<div class="thread-body">平衡的理论基础 → 执行器物理建模 → 视觉定位 → 学习控制落地</div>
+</div>
+<div class="steps">
+<div class="step">
+<div class="idx">1</div>
+<div class="body">
+<h5>Zero-Moment Point - Thirty Five Years of its Life</h5>
+<div class="sm"><span class="keytag">vukobratovic-zmp-2004</span> · 2004 · 2,295 被引<a class="pdf" href="https://www.cs.cmu.edu/~cga/legs/vukobratovic.pdf" target="_blank" rel="noopener" title="Zero-Moment Point - Thirty Five Years of its Life">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">2</div>
+<div class="body">
+<h5>Series elastic actuators</h5>
+<div class="sm"><span class="keytag">pratt-williamson-1995</span> · 1995 · 2,219 被引<a class="pdf" href="https://doi.org/10.1109/iros.1995.525827" target="_blank" rel="noopener" title="Series elastic actuators">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">3</div>
+<div class="body">
+<h5>MonoSLAM: Real-Time Single Camera SLAM</h5>
+<div class="sm"><span class="keytag">monoslam-2007</span> · 2007 · 4,352 被引<a class="pdf" href="https://doi.org/10.1109/tpami.2007.1049" target="_blank" rel="noopener" title="MonoSLAM: Real-Time Single Camera SLAM">原文</a></div>
+</div>
+</div><div class="step">
+<div class="idx">4</div>
+<div class="body">
+<h5>Learning to Walk Via Deep Reinforcement Learning</h5>
+<div class="sm"><span class="keytag">learning-to-walk-2019</span> · 2019 · 444 被引<a class="pdf" href="https://doi.org/10.15607/rss.2019.xv.011" target="_blank" rel="noopener" title="Learning to Walk Via Deep Reinforcement Learning">原文</a></div>
+</div>
+</div>
+</div>
+<div class="grid2">
+<div class="box">
+<div class="bl">读完必须能回答</div>
+<ul class="must"><li>ZMP 是什么、为什么它和重心不是一回事</li><li>SEA（串联弹性执行器）为什么能省掉复杂控制</li><li>MonoSLAM 的核心思路与后来的 ORB-SLAM 差在哪</li><li>Learning to Walk 是纯 RL 控制还是混合控制，它为什么能成功</li></ul>
+</div>
+<div class="box">
+<div class="bl">怎么用</div>
+<p class="ia">这簇最能暴露「只读过综述没读原文」的缺口。被问「你了解双足机器人的平衡原理吗」时，能说出 ZMP 的物理约束条件，而不是只说个名字。</p>
+<a class="btn-lesson" href="../课件/簇复盘-control-hardware.html" target="_blank">本簇复盘课件（3453 KB）</a>
+</div>
+</div>
+</section>
+
+<div id="rl4-zh" class="note key">
+<b>RL 基础簇精读物料</b><br>
+该簇四篇的<b>中文全文翻译</b>与一节 <b>OpenMAIC 互动课件</b>已备好，可离线打开、断网可用。
+译文保留原文全部实验数字与公式（公式用 KaTeX 渲染），供逐段精读与对照原文使用。
+<table class="tbl"><thead><tr><th>#</th><th>key</th><th>中文标题</th><th>译文</th><th>课件</th><th>原文</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>trpo-2015</code></td><td>信赖域策略优化</td><td rowspan="4"><a href="../课件/RL基础四部曲-TRPO-A3C-DDPG-LMPC.html" target="_blank">RL 基础四部曲（22 幕互动课堂）</a></td><td><a href="https://arxiv.org/abs/1502.05477" target="_blank" rel="noopener">原文</a></td></tr>
+<tr><td>2</td><td><code>a3c-2016</code></td><td>深度强化学习的异步方法</td><td><a href="https://arxiv.org/abs/1602.01783" target="_blank" rel="noopener">原文</a></td></tr>
+<tr><td>3</td><td><code>ddpg-2015</code></td><td>连续控制（DDPG）</td><td><a href="https://arxiv.org/abs/1509.02971" target="_blank" rel="noopener">原文</a></td></tr>
+<tr><td>4</td><td><code>mpc-2020</code></td><td>四旋翼学习型 MPC</td><td>无公开原文</td></tr>
+</tbody></table>
+<a class="card" href="../pages/rl4.html"><div class="ct">📘 RL 四篇原文汇总页</div><div class="cm">四篇译文 + 课件的集中入口</div></a>
+</div>
+
+</div>
+</main>
+</body>
+</html>

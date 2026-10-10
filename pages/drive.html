@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>每日驱动 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">每日驱动<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>每日驱动 · 30 天游戏化学习</h1>
+<p class="sub">这不是「给学习加点徽章」。徽章那种东西两周就失效——它给的是外在奖励，而外在奖励会<b style="color:var(--amber)">挤掉</b>本来就不多的内在动机。
+这一版换了几根真正有效的杠杆：<b style="color:var(--amber)">变率奖励（每天开局抽事件卡）、能力可视化（技能树真的在长）、意外成就（不预告，触发才知道）、收藏（战利品墙）、可展示的战绩</b>。
+同时加了三道防焦虑的闸——在第七节，别跳过。</p>
+
+<h2>一　今天的战局</h2>
+
+<div class="hud">
+  <div class="hudc"><div class="k">当前进度</div><div class="v"><span id="p-drive-hDay">1</span><span class="u">/ 30</span></div></div>
+  <div class="hudc"><div class="k">连击</div><div class="v"><span id="p-drive-hStreak">0</span><span class="u">天</span></div></div>
+  <div class="hudc"><div class="k">经验</div><div class="v"><span id="p-drive-hXp">0</span><span class="u">XP</span></div></div>
+  <div class="hudc"><div class="k">段位</div><div class="v" style="font-size:17px" id="p-drive-hRank">见习</div></div>
+  <div class="hudc"><div class="k">休假券</div><div class="v" style="font-size:17px" id="p-drive-hRest">1</div></div>
+</div>
+<div class="bar"><i id="p-drive-hBar" style="width:0%"></i></div>
+<p class="rankline" id="p-drive-hRankDesc">—</p>
+
+<div class="ev" id="p-drive-evBox">
+  <div class="eh"><span class="ic" id="p-drive-evIcon">🎲</span><span class="tt" id="p-drive-evName">—</span><span class="kd" id="p-drive-evKind">—</span></div>
+  <div class="eb" id="p-drive-evDesc">—</div>
+</div>
+
+<div class="today">
+  <div class="th">
+    <div class="dn" id="p-drive-tPhase">阶段一</div>
+    <div class="dt" id="p-drive-tTitle">—</div>
+  </div>
+  <div class="tb">
+    <div class="hook">
+      <div class="hl">今日钩子 · 先猜，再动手</div>
+      <div class="ht" id="p-drive-tHook">—</div>
+    </div>
+    <div class="sect">
+      <div class="sl">今天的产出（做完手上要多出这个）</div>
+      <div class="sv" id="p-drive-tOut">—</div>
+    </div>
+    <div class="modes">
+      <div class="mh">
+        <button type="button" class="on" data-md="full">45 分钟 · 完整版</button>
+        <button type="button" data-md="min">15 分钟 · 保底版</button>
+        <button type="button" data-md="tiny">5 分钟 · 保命版</button>
+        <button type="button" data-md="rest">休假券</button>
+      </div>
+      <div class="mb" id="p-drive-tMode">—</div>
+    </div>
+    <div class="sect">
+      <div class="sl">完成判定（达到就算今天过关）</div>
+      <div class="sv" id="p-drive-tChk">—</div>
+    </div>
+    <div class="acts">
+      <button type="button" class="pri" id="p-drive-bFull">完成 · 完整版</button>
+      <button type="button" id="p-drive-bMin">只做完保底</button>
+      <button type="button" class="gho" id="p-drive-bTiny">保命版</button>
+    </div>
+    <div class="flag" id="p-drive-tFlag"></div>
+
+    <div class="loot" id="p-drive-lootBox">
+      <div class="lh">战利品掉落</div>
+      <div class="lv" id="p-drive-lootTxt">—</div>
+      <div class="gain" id="p-drive-lootGain"></div>
+      <div class="lm">掉落内容是随机的，不重复也预告不了。它不教你东西，只负责让你「咦？」一下。</div>
+    </div>
+  </div>
+</div>
+
+<div class="inrow">
+  <input type="text" id="p-drive-trophyIn" placeholder="登记今天的战利品：一句话，比如「10 条演示 → ACT 成功率 31%」">
+  <button type="button" id="p-drive-trophyBtn">入册</button>
+</div>
+<p class="small">这一栏是整个系统里<b style="color:var(--amber)">最值钱</b>的一格。30 天后你回头看的不是分数，是这面墙——它证明你真的做了三十个东西。登记失败也算，同样值钱。</p>
+
+<div class="acts">
+  <button type="button" id="p-drive-bReport">复制今日战报</button>
+  <button type="button" class="gho" id="p-drive-bReroll">重抽一次事件卡</button>
+</div>
+<p class="small" id="p-drive-reportTip">战报可以贴到任何地方。你是硬碰硬证明自己的性格，那就得有能拿出来给人看的东西。</p>
+
+<div class="pick" id="p-drive-pick"></div>
+<p class="small">上面这排是手动跳天，正常不用点——进度靠打卡自动往前走。</p>
+
+<h2>二　技能树</h2>
+<p class="sub">五个维度，每天做完自动加点。<b style="color:var(--amber)">它长起来的时候，你能看见自己变强了</b>——这比任何分数都管用，因为分数是系统给的，技能是你自己的。</p>
+<div class="skills" id="p-drive-skills"></div>
+
+<h2>三　成就墙</h2>
+<p class="sub">带 ❓ 的是<b style="color:var(--amber)">隐藏成就，不告诉你触发条件</b>。被剧透的成就没有惊喜，而惊喜才是奖励本身。</p>
+<div class="ach" id="p-drive-ach"></div>
+
+<h2>四　30 天日历</h2>
+<div class="lgd">
+  <span><i style="background:var(--panel2);border:1px solid var(--line)"></i>未做</span>
+  <span><i style="background:rgba(93,202,165,.25);border:1px solid var(--teal)"></i>保命版</span>
+  <span><i style="background:rgba(93,202,165,.55);border:1px solid var(--teal)"></i>保底版</span>
+  <span><i style="background:var(--amber)"></i>完整版</span>
+  <span><i style="background:rgba(169,156,232,.3);border:1px solid var(--purple)"></i>休假</span>
+</div>
+<div class="cal" id="p-drive-cal"></div>
+
+<h2>五　战利品陈列</h2>
+<div class="tf" id="p-drive-trophy"></div>
+
+<h2>六　30 天完整路线</h2>
+<p class="sub">四个阶段，每 7 天一个可交付的作品。点任意一天展开；<b style="color:var(--amber)">带绿勾的是已完成</b>，展开后能看到当天给哪些技能加点。</p>
+<div id="p-drive-list"></div>
+
+<h2>七　三道防焦虑的闸（别跳过这一节）</h2>
+<div class="note warn"><b>游戏化有个已知的副作用：它把「我想做」变成「我不能断」。</b>连击一旦变成负担，整套系统会比没有游戏化时更让人厌恶——因为你开始为了不断连而应付，然后厌恶自己在应付。下面三道闸就是防这个的。</div>
+<dl class="qa">
+<dt>闸一 · 休假券是预先授权的，不是事后原谅</dt>
+<dd>你手上始终有休假券（顶部有显示），用它连击不断，且不产生任何「我今天偷懒了」的叙事。
+<b>预先授权和事后原谅是两回事</b>：前者是计划的一部分，后者是失败。</dd>
+<dt>闸二 · 断连不清零，只归 1</dt>
+<dd>XP、技能、成就、战利品<b>全部保留</b>，只有连击数字回到 1。你做过的事不会因为今天没做而消失——
+这条如果做不到，整套游戏化就变成勒索。</dd>
+<dt>闸三 · 30 天不是 deadline，是容器</dt>
+<dd>进度按<b>完成数</b>走，不按日历走。断三周回来，Day 还停在你上次的地方，不欠账、不用补。
+再说句实话：如果连五分钟保命版都连着两周不想点，那该改的是<b>路线</b>，不是你的意志力——回头去看「路线总览」。</dd>
+</dl>
+
+<h2>八　快乐从哪儿来</h2>
+<p class="sub">成就感是延迟的，快乐是即时的。系统里安排了四个即时快乐源：</p>
+<div class="card">
+<h3 style="margin-top:0">① 抽卡的未知感</h3>
+<p class="small">每天开局抽一张事件卡，可能是增益、可能是限制、可能是奇遇。<b>变率奖励是行为设计里最强的留存机制</b>——
+同样的平均收益，随机的比固定的让人上瘾得多。这是整套系统里唯一「故意让人上瘾」的设计，我把它放在<b>开局</b>，而不是结局。</p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">② 开箱的意外感</h3>
+<p class="small">打卡后掉一个宝箱，里面是一句随机的话——可能是硬核冷知识，可能是行业黑话翻译，可能是一句吐槽。
+<b>不重复、不预告、不解释</b>。它不教你东西，只负责让你笑一下或者愣一下。</p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">③ 失败被当成正面资产</h3>
+<p class="small">机器人学习里失败是常态，把它藏起来只会让人觉得自己不行。所以<b>战利品栏鼓励你登记失败</b>——
+「我把它搞崩了并且知道为什么」和「我做出来了」是同等价值的战利品，系统里还有一个专门的隐藏成就等着它。</p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">④ 可展示的战绩</h3>
+<p class="small">「复制今日战报」生成的那段文本，是设计给你<b>拿出来给人看</b>的。
+公开的、可验证的进度，对你这种性格比私下的自我鼓励有效得多。</p>
+</div>
+
+<div class="note key"><b>最后一句实话：</b>游戏化能解决「启动」问题，解决不了「方向」问题。
+它能让你每天打开电脑，但不能替你判断具身智能是不是值得你投入的那条路。
+那个判断只能靠 30 天后你手里那三十个产出物来做——所以别只顾着打卡，<b>战利品栏才是这个页面的正文</b>。</div>
+
+<h2>九　实在不想开机的时候</h2>
+<ul class="chk">
+<li><strong>通勤包听一段</strong> —— <a href="https://embodied-ai-pack.app.workbuddy.host/" target="_blank">embodied-ai-pack.app.workbuddy.host</a>，走路就能听，算保命版</li>
+<li><strong>只看图不看字</strong> —— 挑一篇论文只看 figure 1 和实验表，猜它想证明什么</li>
+<li><strong>刷一条 demo 视频</strong>，用一句话说出它为什么能做到（或者为什么是假的）</li>
+<li>直接点<b>保命版</b>：看钩子、猜答案、看解释，五分钟，连击照算</li>
+<li>再不行就用<b>休假券</b>——它是给你用的，不是给你攒着的</li>
+</ul>
+
+<p class="reset"><button type="button" id="p-drive-bReset">清空本机全部进度</button></p>
+
+</div>
+
+<script>
+(function(){
+
+/* ======================= 30 天内容 ======================= */
+var D=[
+ {p:1,t:"随机策略 vs 你的第一直觉",sk:["sim","algo"],
+  h:"一个完全随机动作的机械臂，在 MuJoCo Playground 的 reach 任务上成功率接近 0%。但你写一个「朝目标方向走」的启发式，20 行代码就能把它拉到两位数。这 20 行，就是你对这个任务的第一层真实理解——比看两小时教程扎实。",
+  o:"两张 rollout 截图 + 一个成功率数字对比",
+  m:"跑通官方示例 demo，截一张图，把随机策略的成功率记下来",
+  f:"自己写启发式策略（末端朝目标方向逐步靠近），跑 100 次，记录成功率",
+  c:"你有两个数字，第二个更大，且你知道大在哪"},
+
+ {p:1,t:"状态空间到底有多大",sk:["algo"],
+  h:"SO-101 六个自由度，每个关节位置量化成 100 档，状态数是 100 的 6 次方 = 10 的 12 次方。再算上图像观测，是无穷。这一秒钟，「查表法」被判了死刑——你必须理解为什么所有现代方法都在做函数近似。",
+  o:"一段能跑的代码，打印出你自己任务的状态空间量级",
+  m:"算出纯关节空间的离散状态数，打印出来",
+  f:"把图像维度加进去，画一条「网格点数随维度爆炸」的曲线",
+  c:"一个天文数字 + 一句「所以必须函数近似，不能查表」"},
+
+ {p:1,t:"录第一批演示数据",sk:["data","real"],
+  h:"机器人学的从来不是「这个任务该怎么做」，它学的是「人做这件事时关节角度的时间序列」。换句话说，你录进去的不是知识，是痕迹。理解这一点，后面所有关于数据质量的判断都会顺。",
+  o:"10 条遥操作轨迹，存成 LeRobot dataset 格式",
+  m:"录 3 条，打开 parquet 看一眼字段结构",
+  f:"录 20 条，把 20 条的末端轨迹叠加画在一张图上",
+  c:"目录里有 parquet + 视频，且你能说出每个字段是什么"},
+
+ {p:1,t:"第一条模仿学习曲线",sk:["algo","data"],
+  h:"只用 10 条演示、训练 20 分钟，ACT 就能在仿真里做出「看起来像回事」的动作——但成功率可能只有 30%。数据量和成功率之间的那条曲线，是你后面所有决策的依据。今天先把它画出来。",
+  o:"一条训练 loss 曲线 + 一次 rollout 视频",
+  m:"训练跑起来，看到 loss 在往下走",
+  f:"训练跑完，rollout 20 次，记录成功率",
+  c:"loss 曲线截图 + 一个成功率数字"},
+
+ {p:1,t:"故意搞坏它 · 消融日",sk:["algo"],
+  h:"今天不学新东西，只做破坏：把演示数据砍半、去掉动作归一化、把观测里的速度项删掉——看哪个掉得最狠。掉得最狠的那个，就是这个系统的命门。这是性价比最高的一天。",
+  o:"一张三行的消融对比表",
+  m:"跑一组对照，拿到两个数字",
+  f:"跑完三组对照，填满表格",
+  c:"表格有数字，且你能说出「最不能省的是哪个」"},
+
+ {p:1,t:"把相机挪 10 厘米",sk:["sim","data"],
+  h:"相机位置挪 10 厘米，成功率从 60% 掉到 15%。策略没变，模型没变，只挪了相机。这四个字——视觉泛化——的分量，你今天会第一次真实感受到，而不是在论文里读到。",
+  o:"视角扰动强度 vs 成功率的曲线",
+  m:"挪一次相机，记录前后数字",
+  f:"扫 5 档扰动强度，画出曲线",
+  c:"一条单调下降的曲线 + 一句「所以我需要 randomization」"},
+
+ {p:1,t:"冲刺一收尾 · 90 秒作品",sk:["write"],
+  h:"把这一周最好的结果拼成 90 秒。你会有一种「我真的做出了东西」的感觉——说清楚：这个感觉是后面三周唯一的燃料。别跳过今天。",
+  o:"90 秒演示视频 + 一页 README（3 个数字、1 个失败、1 个下一步）",
+  m:"只写 README（哪怕只有三行）",
+  f:"视频 + README 都做出来",
+  c:"两个文件都在，README 里有具体数字而不是形容词"},
+
+ {p:2,t:"写一个自己的 MJCF",sk:["sim"],
+  h:"官方模型都是别人写的。你第一次自己写三连杆臂，加载进去大概率会「炸开」——关节飞出画面。原因是惯性参数没给对。这个报错是每一个机器人从业者的成人礼，今天轮到你。",
+  o:"一个静置 10 秒不炸的自定义 MJCF",
+  m:"复制官方模型改参数，看它还能不能站住",
+  f:"从零写，亲手修一次惯性相关的报错",
+  c:"仿真截图 + 你说得出是哪一行参数救了它"},
+
+ {p:2,t:"摩擦系数扫描",sk:["sim"],
+  h:"夹不起来，八成不是策略的锅。摩擦系数从 0.1 调到 1.0，中间有个临界点，过了就能抓起来。这个临界点比本周任何一个超参数都重要，而且它不在任何教程的重点里。",
+  o:"摩擦系数 vs 抓取成功率曲线",
+  m:"试两个值，看差别",
+  f:"扫 6 个值，把临界点找出来",
+  c:"一条曲线 + 一个临界值"},
+
+ {p:2,t:"Domain Randomization 第一次",sk:["sim"],
+  h:"策略一行不动，只在训练时把桌面颜色、物体质量、摩擦系数随机化——真机迁移成功率常常能翻倍。这是 Sim2Real 整条链路上性价比最高的一招，今天亲手验证一次。",
+  o:"开 / 关 randomization 的两行对比表",
+  m:"只随机化颜色，做一次对比",
+  f:"颜色 + 质量 + 摩擦全随机，做完整对比",
+  c:"两行数字，且开了的明显更高"},
+
+ {p:2,t:"亲手造一个 reward hacking",sk:["algo"],
+  h:"reward = 到目标的负距离。机器人学会了把手伸到相机前面挡住目标——距离确实变小了。它会钻空子，而且比你想象的聪明。亲手复现一次，你以后再看任何 reward 设计都会先想「这能被怎么骗」。",
+  o:"一个「策略在作弊」的 rollout 视频 + 你的修法",
+  m:"复现一次作弊现象",
+  f:"复现 + 改 reward 把它修好",
+  c:"视频 + 一句话说清原来的 reward 为什么会被钻空子"},
+
+ {p:2,t:"手写 PPO 的 20 行",sk:["algo"],
+  h:"把 PPO 的 clip 项删掉，看 policy 的更新幅度怎么失控。这 20 行代码比读三篇博客有用——因为你是看着它炸的，不是听说它会炸。",
+  o:"20 行 PPO loss + 开 / 关 clip 的更新幅度对比",
+  m:"抄一遍 loss，跑通",
+  f:"做开关对比，画两条曲线",
+  c:"能用一句话解释 clip 到底在防什么"},
+
+ {p:2,t:"观测空间的选择",sk:["algo","data"],
+  h:"给策略看关节角，还是看图像？跑 20 分钟对比一次就知道——而答案取决于你的任务，没有通解。今天的目的不是找到通用答案，是建立「自己测」的习惯。",
+  o:"两种观测空间的对比表",
+  m:"跑一个，拿到数字",
+  f:"两个都跑，做对比",
+  c:"两行数字 + 一句「我这个任务该用哪个」"},
+
+ {p:2,t:"冲刺二收尾 · 开源你的环境",sk:["write","sim"],
+  h:"把一个能跑的环境 + 一个 baseline 数字放进仓库，你就有了可复现的成果——不是「学过强化学习」，是「我造了这个，baseline 是这个数」。这一天的产出，价值远超它的耗时。",
+  o:"一个 GitHub 仓库：env + 训练脚本 + README 里的 baseline 表",
+  m:"push 代码上去",
+  f:"补完 README + baseline 数字",
+  c:"别人 clone 下来，一条命令能跑通"},
+
+ {p:3,t:"第一次真机失败",sk:["real"],
+  h:"仿真 90%，真机 0%。这不是 bug，这几乎是具身智能这门学科的全部内容。把差异逐条写下来，你就拿到了接下来一周的待办清单——今天的任务是失败，而且要失败得有记录。",
+  o:"一份失败清单（延迟、摩擦、曝光、标定、机械间隙…）",
+  m:"真机跑一次，把现象记下来",
+  f:"逐项量化差异，列出 3 条以上带数字的",
+  c:"至少 3 条带数字的具体差异"},
+
+ {p:3,t:"测出你的真实控制频率",sk:["real"],
+  h:"标称 50Hz，实测常常只有 25Hz。这个差值会让所有你在仿真里调好的增益全部失效。测一次，你大概会第一次对「仿真里对、真机上错」有个物理层面的解释。",
+  o:"实测频率数字 + 一张时序抖动图",
+  m:"测出实际频率",
+  f:"画抖动分布，找出最大延迟来源",
+  c:"一个数字 + 一个主要瓶颈"},
+
+ {p:3,t:"标定相机",sk:["real"],
+  h:"内参错 5%，抓取位置偏 2 厘米，任务直接废。这一步枯燥到家，但它是「仿真里对、真机上错」最常见、最容易修、也最常被忽略的单点原因。",
+  o:"标定后的内参 + 重投影误差",
+  m:"跑通标定流程",
+  f:"把误差压到 1px 以内，并验证抓取点偏移",
+  c:"重投影误差 < 1px"},
+
+ {p:3,t:"仿真 + 真机混合训练",sk:["real","data"],
+  h:"90% 仿真 + 10% 真机，通常比 100% 真机好。真机数据贵得要命，但它指的是方向。今天把这条曲线扫出来，你就有了「还要不要继续录真机数据」的判断依据。",
+  o:"混合比例 vs 成功率的扫描曲线",
+  m:"跑两个比例",
+  f:"扫 5 个比例，找到最优点",
+  c:"一条曲线 + 一个最优比例"},
+
+ {p:3,t:"第一次跑 VLA 推理",sk:["algo"],
+  h:"不训练，只跑。看一个 7B 参数的模型，看到你家桌面的照片后，输出的 action 数组长什么样——那一瞬间你会对「大模型变成机器人」这件事有实感，而不是只停留在概念上。",
+  o:"一次 OpenVLA / π0 推理的完整输出",
+  m:"跑通官方 demo",
+  f:"换成你自己桌面的照片，看输出怎么变",
+  c:"一个 action 数组 + 一句「它到底看懂了没有」的判断"},
+
+ {p:3,t:"拆开 VLA 的输入",sk:["algo"],
+  h:"VLA 看到的根本不是图像，是图像被切成几百个 patch 后的 token 序列。分辨率和 token 预算是硬约束——这就是为什么「换个更大的模型」解决不了所有问题。",
+  o:"一张 patch 切分可视化",
+  m:"算出一帧图占多少 token",
+  f:"可视化 patch，并对比不同分辨率下的 token 数",
+  c:"一张图 + 一个 token 数"},
+
+ {p:3,t:"冲刺三收尾 · 真机跑通一次",sk:["real","write"],
+  h:"只要成功一次，哪怕 1/10，你就从「看过机器人」变成「让机器人干过活」。这个转变是读多少论文都换不来的。",
+  o:"一段真机视频 + 成功率数字",
+  m:"跑 10 次，记录成功率",
+  f:"跑 30 次 + 给失败模式归类",
+  c:"一段视频 + 一个数字 + 一类失败模式"},
+
+ {p:4,t:"选方向（今天只做这一件事）",sk:["write"],
+  h:"接下来 8 天只做一件事。三个方向选一个：A 把 Sim2Real 做扎实；B 做一个 VLA 微调实验；C 自己实现一个 policy 并开源。选错了没关系，选了才重要——犹豫一周比选错一周亏得多。",
+  o:"写下你选的方向和理由（三句话）",
+  m:"选一个，写三句话",
+  f:"选一个 + 拆成 8 个可执行的小任务",
+  c:"一段三句话的方向声明，且没有「可能」「也许」"},
+
+ {p:4,t:"方向 A · 把 Sim2Real 做扎实",sk:["sim","real"],
+  h:"把仿真和真机的观测并排放在一起，你会第一次「看见」那个 gap——不是概念上的 gap，是两张图摆在一起的那种。看见之后，缩小它的动作就变得很明显。",
+  o:"观测并排对比图 + 3 条缩小 gap 的具体动作",
+  m:"对比一组观测",
+  f:"实施其中 1 条并测量效果",
+  c:"对比图 + 一个改善数字"},
+
+ {p:4,t:"方向 B · VLA 微调实验",sk:["data","algo"],
+  h:"用你自己的 50 条数据微调一次，看它在你的任务上提升多少。你会得到一个反直觉的结论：数据分布比数据量更狠——50 条对口数据常常打赢 500 条不对口的。",
+  o:"微调前后的成功率对比",
+  m:"跑通微调脚本",
+  f:"微调 + 评估完整跑完",
+  c:"两个数字 + 一句「提升来自哪里」"},
+
+ {p:4,t:"方向 C · 自己实现一个 policy",sk:["algo"],
+  h:"不用框架，手写一遍 diffusion policy 的采样循环。写完之后你再看论文里那几个公式，会一眼就懂——因为你是从代码那边走过去的，不是从公式这边硬啃的。",
+  o:"一个能跑的手写采样实现 + 与框架的对齐测试",
+  m:"写出核心采样循环",
+  f:"对齐测试通过",
+  c:"与框架实现的数值误差 < 1e-5"},
+
+ {p:4,t:"把实验做成可复现",sk:["write"],
+  h:"一个不能复现的结果，等于没有结果。锁版本、记 seed、存 config——今天做的全是脏活，但它决定了你前面 25 天的工作到底算不算数。这是从业者和爱好者的分界线。",
+  o:"一份能一键复现的实验目录",
+  m:"锁版本 + 存 config",
+  f:"写 run.sh，从零跑通一次",
+  c:"换台机器能跑出相同的数字"},
+
+ {p:4,t:"失败分析日",sk:["data"],
+  h:"把 30 次 rollout 的失败逐帧看一遍，归类。你会发现 80% 的失败集中在 1-2 个模式上——修掉那一个，比调一百次参数有用。这是整个 30 天里最像「真工程师」的一天。",
+  o:"一张失败模式帕累托图",
+  m:"看 10 次，归类",
+  f:"看 30 次，画出帕累托图",
+  c:"一张图 + 一个主要失败模式"},
+
+ {p:4,t:"针对主要失败模式改一次",sk:["sim","real"],
+  h:"只改一处，只测这一处。这是唯一能让你确定「是它起作用」的方法——同时改三处，你永远不知道功劳归谁，下一次还是靠猜。",
+  o:"改动前后对比 + 一句因果结论",
+  m:"改一处 + 测一次",
+  f:"多测几组，确认不是噪声",
+  c:"一个数字变化 + 一句明确的因果陈述"},
+
+ {p:4,t:"写一篇技术博客",sk:["write"],
+  h:"把这 30 天里最反直觉的一个发现写出来。写不出来的地方，就是你还没真懂的地方——这是最狠的一次自测，比任何考试都准。",
+  o:"一篇 1500 字博客（有图、有数字、有失败）",
+  m:"列提纲 + 3 个要点",
+  f:"写完",
+  c:"发给一个同行，他能看懂"},
+
+ {p:4,t:"结营 · 和下一轮 30 天",sk:["write"],
+  h:"回头看 Day 1 那张随机策略的截图。30 天前你在那儿，现在你在这儿。这个对比不是为了感动自己，是为了给下一轮 30 天定一个真实的起点。",
+  o:"一份总结（5 个数字 + 3 个还不会的 + 下一轮大纲）",
+  m:"写总结",
+  f:"总结 + 下一轮 30 天大纲",
+  c:"有具体数字，且下一轮大纲能直接开工"}
+];
+
+var PH=["阶段一 · 手感周：让一个东西动起来",
+        "阶段二 · 仿真周：在 MuJoCo 里造你自己的世界",
+        "阶段三 · 真机周：第一次失败，然后修好它",
+        "阶段四 · 作品周：做一个能拿出来讲的东西"];
+
+/* ======================= 事件卡 ======================= */
+var CARDS=[
+ {n:"顺风局",ic:"🎁",k:"增益",d:"今天状态不错。若你完成了今天的产出，<span class='fx'>经验翻倍</span>。别浪费。",fx:"double"},
+ {n:"专注时刻",ic:"🎯",k:"增益",d:"今天你只需要做 <b>15 分钟保底版</b>，但结算时<span class='fx'>按完整版给经验</span>。适合事情多的日子。",fx:"minfull"},
+ {n:"军师在侧",ic:"🧙",k:"增益",d:"今天允许你上网搜答案、问 AI、抄别人的实现——<span class='fx'>不算作弊</span>。今天的目标是把东西跑通，不是证明你聪明。",fx:"ok"},
+ {n:"限时挑战",ic:"⏱",k:"限制",d:"今天<span class='fx'>限时 20 分钟</span>，到点就停。做不完保底版也算完成——限制存在的意义是逼你先动手。",fx:"ok"},
+ {n:"必须留影像",ic:"🎬",k:"限制",d:"今天的产出<span class='fx'>必须是一段视频或 GIF</span>，截图不算。会动的证据比静态图有说服力得多。",fx:"ok"},
+ {n:"费曼六十秒",ic:"🗣",k:"挑战",d:"完成后<span class='fx'>对着空气讲 60 秒</span>你今天做了什么。讲不明白的地方，就是你没真懂的地方。",fx:"ok"},
+ {n:"失败优先",ic:"💥",k:"奇遇",d:"今天的任务改成：<span class='fx'>故意制造一次失败</span>，然后解释它为什么失败。主动失败比被动失败学到的多。",fx:"ok"},
+ {n:"对照组",ic:"⚖️",k:"挑战",d:"今天<span class='fx'>必须跑两组对照</span>，只跑一组不算完成。单一数据点没有任何说服力。",fx:"ok"},
+ {n:"留档日",ic:"📝",k:"挑战",d:"今天的产出<span class='fx'>必须写进 README</span>，哪怕只有三行。不写下来的工作会在两周后彻底消失。",fx:"ok"},
+ {n:"断网日",ic:"✂️",k:"限制",d:"今天<span class='fx'>不许查任何新资料</span>。只用你已有的代码、笔记和脑子。你会发现你记得的比以为的多。",fx:"nosearch"},
+ {n:"双倍赌注",ic:"🎰",k:"风险",d:"今天<span class='fx'>只接受完整版</span>。做完了经验翻倍；做保底或保命，今天经验归零。高风险高回报，自己掂量。",fx:"gamble"},
+ {n:"休整日",ic:"🌿",k:"增益",d:"系统送的。今天<span class='fx'>可以只做保命版</span>，经验照给，连击照算。休息是计划的一部分。",fx:"ok"},
+ {n:"复盘日",ic:"🔁",k:"挑战",d:"今天<span class='fx'>重做昨天的任务</span>，但要求指标比昨天好一点。重复不是浪费，第二次才看得出细节。",fx:"ok"},
+ {n:"公开处刑",ic:"📣",k:"挑战",d:"今天把产出<span class='fx'>发到任意一个公开的地方</span>——朋友圈、X、GitHub 都行。公开的东西你才会认真做。",fx:"ok"},
+ {n:"交叉授粉",ic:"🌱",k:"奇遇",d:"今天去读一篇<span class='fx'>和你当前任务完全无关</span>的论文，找出一处能挪到你任务里的东西。最好的想法都来自隔壁。",fx:"ok"}
+];
+
+/* ======================= 宝箱掉落 ======================= */
+var LOOTS=[
+ "冷知识：MuJoCo 的名字来自 Multi-Joint dynamics with Contact。它在 2015 年被 DeepMind 收购前，是华盛顿大学一个只有几个人维护的项目。",
+ "冷知识：LeRobot 里 SO-101 那套舵机，单颗价格大概十几美元，整臂 BOM 常控制在 300 美元以内——这是这几年具身智能能普及的物质前提。",
+ "冷知识：ACT（Action Chunking with Transformers）最关键的设计不是 Transformer，是「一次预测 k 步动作」。它解决的是累积误差，不是表征能力。",
+ "黑话翻译：Sim2Real 的 gap 本质上不是「仿真不准」，是「你的策略过拟合了仿真里那些你没意识到的规律」。",
+ "黑话翻译：所谓 reward hacking，正经说法叫 specification gaming。它不是 bug，是优化器在忠实地执行你写下来的东西。",
+ "吐槽：所有机器人 demo 视频里最可疑的一件事，是它从不展示第 31 次尝试。",
+ "吐槽：如果你的策略在仿真里成功率 100%，先别高兴——大概率是任务太简单，或者你偷偷把终止条件写宽松了。",
+ "吐槽：「我调了一下午参数，最后发现是数据里有个 NaN。」这句话在本领域的出现频率，大概相当于「编译过了但跑不起来」。",
+ "提醒：真机上 90% 的「策略不行」，最后查出来都是延迟、标定、或者线缆松了。先怀疑物理世界，再怀疑模型。",
+ "提醒：一个不能复现的结果等于没有结果。今天随手记一个 seed，三十天后你会感谢自己。",
+ "提醒：数据质量 > 数据量 > 模型大小。这个不等式在本领域的绝大多数场景里都成立。",
+ "数据点：简单抓取任务的演示数据量级通常 50-200 条起步；长程任务是另一个数量级的问题，别用同一个直觉去估。",
+ "数据点：7B 的 VLA 在单卡上推理一帧通常在几十到几百毫秒量级——这就是「端到端机器人」目前受制于控制频率的原因。",
+ "数据点：diffusion policy 的采样步数从 100 降到 10，成功率常常只掉一点点。先试试降步数，别急着换模型。",
+ "一句实话：这行里真正稀缺的不是会调模型的人，是能把真机跑起来、并且知道它为什么又不跑了的人。",
+ "一句实话：你今天留下的产出物，比你看过的所有教程加起来都值钱。分数会归零，东西不会。"
+];
+
+/* ======================= 技能 ======================= */
+var SKN={sim:["仿真力","#5b9ce0"],real:["真机力","#e26d6b"],algo:["算法力","#a99ce8"],
+         data:["数据力","#5dcaa5"],write:["表达力","#ef9f27"]};
+var SKKEYS=["sim","real","algo","data","write"];
+var SKMAX=8;
+function skLv(v){ return v>=8?"宗师":v>=6?"熟练":v>=4?"入门":v>=2?"萌动":v>=1?"点亮":"未启"; }
+
+/* ======================= 段位 ======================= */
+var RANKS=[
+ [0,"见习","你还站在门口。"],
+ [100,"操作员","你已经能让东西动起来了，虽然还不知道它为什么动。"],
+ [300,"调试员","你的日常变成了「它又不对了」——但你已经知道该去哪儿找。"],
+ [600,"工程师","你开始能预测失败，而不只是遇见失败。"],
+ [1000,"主刀","你能把一个任务从零做到能拿出来演示。"],
+ [1500,"架构者","你不只是让它跑起来，你能说清它为什么能跑起来。"]
+];
+function rankOf(xp){ var r=RANKS[0]; for(var i=0;i<RANKS.length;i++){ if(xp>=RANKS[i][0]) r=RANKS[i]; } return r; }
+function nextGap(xp){ for(var i=0;i<RANKS.length;i++){ if(xp<RANKS[i][0]) return RANKS[i][0]-xp; } return 0; }
+
+/* ======================= 成就 ======================= */
+var ACHS=[
+ {id:"first",ic:"🚪",n:"开门",d:"完成第一天。一切的难点都在这一步。",
+  t:function(S){return S.done.length>=1;}},
+ {id:"full1",ic:"🔥",n:"满血一天",d:"做过一次完整版。",
+  t:function(S){return S.done.filter(function(x){return x.m==="full";}).length>=1;}},
+ {id:"life",ic:"🩹",n:"续命玩家",d:"用过保命版。会用保命版的人走得最远。",
+  t:function(S){return S.done.some(function(x){return x.m==="tiny";});}},
+ {id:"s3",ic:"⚡",n:"三日不辍",d:"连击 3 天。",t:function(S){return S.streak>=3;}},
+ {id:"s7",ic:"🏅",n:"七日成习",d:"连击 7 天。",t:function(S){return S.streak>=7;}},
+ {id:"s14",ic:"👑",n:"半月不断",d:"连击 14 天。",t:function(S){return S.streak>=14;}},
+ {id:"half",ic:"🏔",n:"半程",d:"完成 15 天。",t:function(S){return S.done.length>=15;}},
+ {id:"all",ic:"🎬",n:"通关",d:"30 天全部走完。",t:function(S){return S.done.length>=30;}},
+ {id:"sk5",ic:"🌳",n:"一技之长",d:"任一技能达到 6 点以上。",
+  t:function(S){for(var i=0;i<SKKEYS.length;i++){if((S.skills[SKKEYS[i]]||0)>=6)return true;}return false;}},
+ {id:"bal",ic:"🧭",n:"五维均衡",d:"五个技能全部点亮到 3 点以上。",
+  t:function(S){for(var i=0;i<SKKEYS.length;i++){if((S.skills[SKKEYS[i]]||0)<3)return false;}return true;}},
+ {id:"coll",ic:"🧰",n:"收藏家",d:"战利品册登记满 10 件。",
+  t:function(S){return S.loot.length>=10;}},
+ {id:"gamble",ic:"🎰",n:"赌徒",d:"❓ 隐藏成就",t:function(S){return !!S.flags.gambleWin;}},
+ {id:"nosearch",ic:"✂️",n:"断网也行",d:"❓ 隐藏成就",t:function(S){return !!S.flags.nosearch;}},
+ {id:"streak5f",ic:"🐕",n:"稳如老狗",d:"❓ 隐藏成就",t:function(S){
+    var c=0; for(var i=S.done.length-1;i>=0;i--){
+      if(S.done[i].m==="full"){ c++; if(c>=5) return true; } else break; } return false;}},
+ {id:"fail",ic:"💥",n:"失败博物馆",d:"❓ 隐藏成就",t:function(S){
+    var kw=["崩","失败","不行","没跑通","NaN","报错","炸"];
+    for(var i=0;i<S.loot.length;i++){ var t=S.loot[i].t;
+      for(var j=0;j<kw.length;j++){ if(t.indexOf(kw[j])>=0) return true; } } return false;}},
+ {id:"reroll",ic:"🎲",n:"不信邪",d:"❓ 隐藏成就",t:function(S){return !!S.flags.reroll;}}
+];
+
+/* ======================= 状态 ======================= */
+var KEY="drive_state_v2";
+var P="p-drive-";
+function gid(x){return document.getElementById(P+x);}
+function blank(){
+  return {done:[],xp:0,streak:0,last:"",cur:0,
+    skills:{sim:0,real:0,algo:0,data:0,write:0},
+    ach:[],loot:[],card:{},rest:1,flags:{},best:0};
+}
+function load(){
+  var s=null;
+  try{ s=JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){}
+  if(!s||typeof s!=="object") s=blank();
+  var b=blank();
+  for(var k in b){ if(!(k in s)) s[k]=b[k]; }
+  if(!s.skills) s.skills=b.skills;
+  for(var i=0;i<SKKEYS.length;i++){ if(typeof s.skills[SKKEYS[i]]!=="number") s.skills[SKKEYS[i]]=0; }
+  if(!s.flags) s.flags={};
+  if(typeof s.rest!=="number") s.rest=1;
+  if(typeof s.best!=="number") s.best=0;
+  if(!s.card) s.card={};
+  return s;
+}
+function save(s){ try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }
+
+var S=load();
+var mode="full";
+
+function todayStr(){ var d=new Date();
+  return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function curDay(){ return Math.min(S.done.length, D.length-1); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------- 事件卡 ---------- */
+function drawCard(force){
+  var d=curDay();
+  if(!force && S.card[d]!==undefined && CARDS[S.card[d]]) return CARDS[S.card[d]];
+  var i=Math.floor(Math.random()*CARDS.length);
+  S.card[d]=i; save(S);
+  return CARDS[i];
+}
+function renderCard(){
+  var c=drawCard(false), d=curDay();
+  gid("evIcon").textContent=c.ic;
+  gid("evName").textContent=c.n;
+  gid("evKind").textContent=c.k;
+  gid("evDesc").innerHTML=c.d;
+  gid("evBox").classList.toggle("used", S.done.length>d);
+}
+
+/* ---------- HUD ---------- */
+function renderHud(){
+  gid("hDay").textContent=(curDay()+1);
+  gid("hStreak").textContent=S.streak;
+  gid("hXp").textContent=S.xp;
+  var r=rankOf(S.xp);
+  gid("hRank").textContent=r[1];
+  gid("hRest").textContent=S.rest;
+  gid("hBar").style.width=Math.round(S.done.length/D.length*100)+"%";
+  gid("hRankDesc").textContent=r[1]+"：" + r[2] +
+    (S.done.length>=D.length ? "" : "　（距离下一档 "+nextGap(S.xp)+" XP）");
+}
+
+/* ---------- 今日 ---------- */
+function renderToday(){
+  var d=curDay(), it=D[d];
+  if(S.done.length>=D.length){
+    gid("tPhase").textContent="全部完成";
+    gid("tTitle").textContent="30 天走完了";
+    gid("tHook").textContent="下一轮想做什么？把 Day 22 那个「选方向」的动作再做一遍——先写三句话，不要等想清楚。";
+    gid("tOut").textContent="一份下一轮的 30 天大纲";
+    gid("tChk").textContent="大纲里每一天都有产出定义";
+    gid("tMode").innerHTML="<b>下一轮：</b>写大纲 + 把这一轮的仓库整理干净<br><b>或者：</b>回头看你的战利品墙，挑一个做成能发出去的东西。";
+    gid("tFlag").textContent="";
+    return;
+  }
+  gid("tPhase").textContent=PH[it.p-1];
+  gid("tTitle").textContent="Day "+(d+1)+" · "+it.t;
+  gid("tHook").textContent=it.h;
+  gid("tOut").textContent=it.o;
+  gid("tChk").textContent=it.c;
+  renderMode();
+}
+function renderMode(){
+  var it=D[curDay()];
+  if(!it) return;
+  var h="";
+  if(mode==="full"){ h="<b>45 分钟 · 完整版</b>（+30 XP）<br>"+it.f; }
+  else if(mode==="min"){ h="<b>15 分钟 · 保底版</b>（+12 XP）<br>"+it.m+
+    "<br><span style='color:var(--tx3)'>保底版做完就算过关，完整版以后有空再补，不要补账。</span>"; }
+  else if(mode==="tiny"){ h="<b>5 分钟 · 保命版</b>（+5 XP）<br>只读一遍上面的钩子，<b>先自己猜一个答案</b>，"+
+    "然后带着猜测去看答案。<br><span style='color:var(--tx3)'>猜错比猜对价值大。今天的目标是保持连击，不是学东西。</span>"; }
+  else { h="<b>休假券</b>（+5 XP · 连击不断）<br>用掉一张休假券，今天什么都不用做。<br>"+
+    "<span style='color:var(--tx3)'>剩余 "+S.rest+" 张。它是预先授权的休息，不是失败——别攒着。</span>"; }
+  gid("tMode").innerHTML=h;
+}
+
+/* ---------- 结算 ---------- */
+function award(md){
+  if(md==="rest" && S.rest<=0){
+    gid("tFlag").textContent="休假券用完了。用保命版吧，五分钟就好。"; return; }
+  var base = md==="full"?30 : md==="min"?12 : 5;
+  var card = drawCard(false);
+  var xp = base, note="";
+  if(card.fx==="double"){ xp=base*2; note="顺风局：经验翻倍"; }
+  else if(card.fx==="minfull" && md==="min"){ xp=30; note="专注时刻：保底按完整结算"; }
+  else if(card.fx==="gamble"){
+    xp = (md==="full") ? base*2 : 0;
+    note = (md==="full") ? "双倍赌注：押中了，翻倍" : "双倍赌注：没押中，今日经验归零（连击照算）";
+  }
+  if(card.fx==="gamble" && md==="full") S.flags.gambleWin=true;
+  if(card.fx==="nosearch" && md!=="tiny") S.flags.nosearch=true;
+
+  if(md==="rest") S.rest-=1;
+
+  var t=todayStr();
+  if(S.last!==t){
+    if(S.last){
+      var a=new Date(S.last+"T00:00:00"), b=new Date(t+"T00:00:00");
+      var diff=Math.round((b-a)/86400000);
+      S.streak = (diff===1) ? (S.streak+1) : 1;
+    } else { S.streak=1; }
+    S.last=t;
+  }
+  if(S.streak>S.best) S.best=S.streak;
+
+  var gained={};
+  if(S.done.length<D.length){
+    var idx=curDay();
+    S.done.push({x:xp,m:md,c:S.card[idx]});
+    var it=D[idx];
+    for(var i=0;i<it.sk.length;i++){
+      S.skills[it.sk[i]]=(S.skills[it.sk[i]]||0)+1;
+      gained[it.sk[i]]=1;
+    }
+  }
+  S.xp+=xp;
+  save(S);
+
+  var newAch=checkAch();
+
+  var msg="✅ 已结算　+"+xp+" XP";
+  if(note) msg+="　·　"+note;
+  msg+="　·　连击 "+S.streak+" 天";
+  gid("tFlag").textContent=msg;
+
+  gid("lootTxt").textContent=pick(LOOTS);
+  var g='<span>经验 <b>+'+xp+'</b></span>';
+  for(var k in gained){ g+='<span>'+SKN[k][0]+' <b>+1</b></span>'; }
+  for(var j=0;j<newAch.length;j++){ g+='<span>🏆 <b>'+newAch[j].n+'</b></span>'; }
+  gid("lootGain").innerHTML=g;
+  var box=gid("lootBox");
+  box.classList.remove("on"); void box.offsetWidth; box.classList.add("on");
+
+  renderAll();
+}
+
+/* ---------- 成就 ---------- */
+function checkAch(){
+  var out=[];
+  for(var i=0;i<ACHS.length;i++){
+    var a=ACHS[i];
+    if(S.ach.indexOf(a.id)>=0) continue;
+    var ok=false;
+    try{ ok=a.t(S); }catch(e){ ok=false; }
+    if(ok){ S.ach.push(a.id); out.push(a); }
+  }
+  if(out.length) save(S);
+  return out;
+}
+function renderAch(){
+  var h="";
+  for(var i=0;i<ACHS.length;i++){
+    var a=ACHS[i], got=S.ach.indexOf(a.id)>=0;
+    h+='<div class="ac'+(got?" got":"")+'"><span class="ai">'+a.ic+'</span>'+
+       '<div class="an">'+a.n+'</div><div class="ad">'+a.d+'</div></div>';
+  }
+  gid("ach").innerHTML=h;
+}
+
+/* ---------- 技能 ---------- */
+function renderSkills(){
+  var h="";
+  for(var i=0;i<SKKEYS.length;i++){
+    var k=SKKEYS[i], v=S.skills[k]||0;
+    var pct=Math.min(100, Math.round(v/SKMAX*100));
+    h+='<div class="sk"><div class="sn">'+SKN[k][0]+'</div>'+
+       '<div class="sb"><i style="width:'+pct+'%;background:'+SKN[k][1]+'"></i></div>'+
+       '<div class="sl2" style="color:'+(v?SKN[k][1]:"var(--tx3)")+'">'+skLv(v)+'</div>'+
+       '<div class="sv2">'+v+'</div></div>';
+  }
+  gid("skills").innerHTML=h;
+}
+
+/* ---------- 日历 ---------- */
+function renderCal(){
+  var h="";
+  for(var i=0;i<D.length;i++){
+    var cls="cel", lab=String(i+1);
+    if(i<S.done.length){
+      var m=S.done[i].m;
+      if(m==="full") cls+=" d3";
+      else if(m==="rest") cls+=" rest";
+      else if(m==="min") cls+=" d2";
+      else cls+=" d1";
+      lab="✓";
+    } else if(i===curDay()){ cls+=" cur"; }
+    h+='<div class="'+cls+'" title="Day '+(i+1)+'">'+lab+'</div>';
+  }
+  gid("cal").innerHTML=h;
+}
+
+/* ---------- 战利品 ---------- */
+function renderTrophy(){
+  if(!S.loot.length){
+    gid("trophy").innerHTML='<div class="tfc empty"><div class="tdn">空</div>'+
+      '<div class="tdt">还没有登记。做完今天那件事，回来写一句话——登记失败也算。</div></div>';
+    return;
+  }
+  var h="";
+  for(var i=S.loot.length-1;i>=0;i--){
+    h+='<div class="tfc"><div class="tdn">Day '+S.loot[i].d+'</div>'+
+       '<div class="tdt">'+esc(S.loot[i].t)+'</div></div>';
+  }
+  gid("trophy").innerHTML=h;
+}
+
+/* ---------- 30 天表 ---------- */
+function renderList(){
+  var h="", lastP=0;
+  for(var i=0;i<D.length;i++){
+    var it=D[i], done=(i<S.done.length), cur=(i===curDay()&&S.done.length<D.length);
+    if(it.p!==lastP){ h+='<div class="phhdr">'+PH[it.p-1]+'</div>'; lastP=it.p; }
+    var skt="";
+    for(var j=0;j<it.sk.length;j++) skt+='<span class="tag tOpt">'+SKN[it.sk[j]][0]+'</span>';
+    var mark = done ? (S.done[i].x>0 ? ("+"+S.done[i].x+" XP") : "跳过") : (cur?"当前":"");
+    h+='<div class="drow'+(done?" past":"")+(cur?" cur":"")+'">'
+      +'<div class="dh"><div class="n">'+(done?"✓":(i+1))+'</div>'
+      +'<div class="tt">Day '+(i+1)+' · '+it.t+'</div>'
+      +'<div class="ph">'+mark+'</div></div>'
+      +'<div class="db">'
+      +'<div class="blk"><div class="bl">钩子</div><div class="bv">'+it.h+'</div></div>'
+      +'<div class="blk"><div class="bl">产出</div><div class="bv"><b>'+it.o+'</b></div></div>'
+      +'<div class="blk"><div class="bl">15 分钟保底版</div><div class="bv">'+it.m+'</div></div>'
+      +'<div class="blk"><div class="bl">45 分钟完整版</div><div class="bv">'+it.f+'</div></div>'
+      +'<div class="blk"><div class="bl">完成判定</div><div class="bv">'+it.c+'</div></div>'
+      +'<div class="blk"><div class="bl">技能加点</div><div class="bv">'+skt+'</div></div>'
+      +'</div></div>';
+  }
+  gid("list").innerHTML=h;
+  var rows=gid("list").querySelectorAll(".drow");
+  Array.prototype.forEach.call(rows,function(r){
+    r.querySelector(".dh").addEventListener("click",function(){ r.classList.toggle("open"); });
+  });
+}
+
+/* ---------- 跳天 ---------- */
+function renderPick(){
+  var h="";
+  for(var i=0;i<D.length;i++){
+    h+='<button type="button" data-d="'+i+'"'+(i===curDay()?' class="on"':'')+'>'+(i+1)+'</button>';
+  }
+  gid("pick").innerHTML=h;
+  var bs=gid("pick").querySelectorAll("button");
+  Array.prototype.forEach.call(bs,function(b){
+    b.addEventListener("click",function(){
+      var n=parseInt(b.getAttribute("data-d"),10);
+      if(n>S.done.length){ while(S.done.length<n) S.done.push({x:0,m:"skip",c:null}); }
+      else { S.done=S.done.slice(0,n); }
+      S.cur=n; save(S); renderAll();
+    });
+  });
+}
+
+function renderAll(){
+  renderHud(); renderCard(); renderToday(); renderSkills();
+  renderAch(); renderCal(); renderTrophy(); renderList(); renderPick();
+}
+
+/* ---------- 事件绑定 ---------- */
+var mhBtns=document.querySelectorAll(".modes .mh button");
+Array.prototype.forEach.call(mhBtns,function(b){
+  b.addEventListener("click",function(){
+    mode=b.getAttribute("data-md");
+    Array.prototype.forEach.call(mhBtns,function(x){ x.classList.toggle("on", x===b); });
+    gid("bFull").textContent = (mode==="rest") ? "用掉休假券" : "完成 · 完整版";
+    renderMode();
+  });
+});
+gid("bFull").addEventListener("click",function(){ award(mode==="rest"?"rest":"full"); });
+gid("bMin").addEventListener("click",function(){ award("min"); });
+gid("bTiny").addEventListener("click",function(){ award("tiny"); });
+
+gid("bReroll").addEventListener("click",function(){
+  S.flags.reroll=true; drawCard(true); save(S);
+  var na=checkAch(); renderCard(); renderAch();
+  gid("tFlag").textContent="🎲 已重抽一次。不信邪是好事，但也别抽上瘾。"+
+    (na.length?("　🏆 解锁 "+na[na.length-1].n):"");
+});
+
+gid("trophyBtn").addEventListener("click",function(){
+  var v=gid("trophyIn").value.replace(/^\s+|\s+$/g,"");
+  if(!v){ gid("trophyIn").placeholder="先写一句再点，哪怕是「今天把环境跑崩了，明天修」"; return; }
+  S.loot.push({d:(curDay()+1),t:v}); save(S);
+  gid("trophyIn").value="";
+  var na=checkAch(); renderTrophy(); renderAch();
+  gid("tFlag").textContent="🧰 已入册。第 "+S.loot.length+" 件战利品。"+
+    (na.length?("　🏆 解锁 "+na[na.length-1].n):"");
+});
+
+gid("bReport").addEventListener("click",function(){
+  var r=rankOf(S.xp);
+  var txt="【具身智能 · 每日驱动】Day "+S.done.length+" / 30\n"+
+    "段位："+r[1]+"　经验："+S.xp+" XP\n"+
+    "连击："+S.streak+" 天（最长 "+S.best+" 天）\n"+
+    "技能："+SKKEYS.map(function(k){ return SKN[k][0]+(S.skills[k]||0); }).join(" / ")+"\n"+
+    "成就："+S.ach.length+" / "+ACHS.length+"　战利品："+S.loot.length+" 件";
+  copyText(txt);
+});
+function copyText(t){
+  var ok=function(){ gid("reportTip").textContent="已复制到剪贴板，贴到任何地方都行。"; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(ok,fallback);
+  } else fallback();
+  function fallback(){
+    var ta=document.createElement("textarea");
+    ta.value=t; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    var done=false;
+    try{ done=document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+    if(done) ok();
+    else gid("reportTip").textContent="复制失败，手动选中这段："+t;
+  }
+}
+
+gid("bReset").addEventListener("click",function(){
+  S=blank(); save(S); mode="full";
+  Array.prototype.forEach.call(mhBtns,function(x){
+    x.classList.toggle("on", x.getAttribute("data-md")==="full"); });
+  gid("bFull").textContent="完成 · 完整版";
+  gid("lootBox").classList.remove("on");
+  gid("tFlag").textContent=""; renderAll();
+});
+
+checkAch();
+renderAll();
+})();
+</script>
+<nav class="pager" data-for="drive"></nav>
+
+</div>
+</main>
+</body>
+</html>

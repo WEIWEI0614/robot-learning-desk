@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>造机器人 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">造机器人<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>造一台机器人：SO-101 从零件到第一次动作</h1>
+<div class="sub">
+  这篇是<b>零基础扫盲版</b>：先讲清每个概念是什么意思，再给可照着做的清单 ｜
+  <span class="tag tCore">实操</span>预算约 ¥1,700（双臂）／¥880（单臂）
+</div>
+
+<h2>0 · 先看结论：这篇告诉你什么</h2>
+
+<div class="card">
+  <p>你之前问"做一个像鸭子那样的开源机器人"。我给的建议是：<strong>别从鸭子开始，从 SO-101 机械臂开始。</strong>理由只有一个——它是同类目标里<strong>闭环最短、失败最便宜</strong>的一条路。</p>
+  <p>这篇把三件事讲清楚：</p>
+  <ol>
+    <li><strong>所有基础概念</strong>——舵机、减速比、自由度、校准、遥操作是什么，为什么缺一不可；</li>
+    <li><strong>完整 BOM 和装配步骤</strong>——照着买、照着装；</li>
+    <li><strong>我是怎么把这些信息核实出来的</strong>——哪几个来源、哪些对不上、我怎么判断的。</li>
+  </ol>
+</div>
+
+<div class="toc">
+  <div class="small" style="margin-bottom:6px;">目录</div>
+  <ol>
+    <li>基础概念扫盲（10 个词，看完你就看得懂任何机器人教程）</li>
+    <li>选型判断：为什么是 SO-101 而不是鸭子</li>
+    <li>完整 BOM 与采购口径</li>
+    <li>装配步骤（分 4 个阶段，含"为什么这么做"）</li>
+    <li>上手命令：从找端口到采数据</li>
+    <li>我是怎么核实这些信息的（方法与存疑点）</li>
+    <li>装完之后能干什么</li>
+  </ol>
+</div>
+
+<h2>1 · 基础概念扫盲</h2>
+
+<p>下面这 10 个词，是你读任何机器人教程都会遇到的。先过一遍，后面就不卡了。</p>
+
+<h3>1.1 什么是"开源机器人"</h3>
+<p>"开源"在硬件领域要分两层看，很多人在这里被坑：</p>
+<table>
+  <tr><th>层次</th><th>含义</th><th>例子</th></tr>
+  <tr><td><strong>硬件开源</strong></td><td>3D 打印文件、电路板设计、物料清单（BOM）全部公开，你可以自己造一台</td><td>SO-101、Open Duck Mini（<span class="tag tCon">可自造</span>）</td></tr>
+  <tr><td><strong>软件开源</strong></td><td>只有控制代码、训练代码、模型权重公开，硬件你得买成品</td><td>Microduck 鸭子（<span class="tag tNo">硬件不开源</span>）</td></tr>
+</table>
+<div class="warn">
+  <strong>这是最容易误解的一点。</strong>Hugging Face 的 Microduck（399 美元那只鸭子）软件是 Apache-2.0 开源的，但 Pollen Robotics 明确表示<strong>没有开源硬件的计划</strong>。想自己造鸭子，得看 <code>apirrone/Open_Duck_Mini</code>（约 3.4k star，目标 BOM &lt;$400）；想直接有台能改的成品，才买 Microduck。
+</div>
+
+<h3>1.2 自由度（DoF）与关节命名</h3>
+<p><strong>一个自由度 = 一个能独立运动的关节轴。</strong>SO-101 是 6 自由度机械臂，意思是它有 6 个转动关节，从底座到夹爪依次是：</p>
+<table>
+  <tr><th>顺序</th><th>关节名</th><th>通俗理解</th></tr>
+  <tr><td>1</td><td><code>shoulder_pan</code></td><td>整条手臂左右转（像人转身）</td></tr>
+  <tr><td>2</td><td><code>shoulder_lift</code></td><td>大臂上下抬（像人抬胳膊）</td></tr>
+  <tr><td>3</td><td><code>elbow_flex</code></td><td>手肘弯</td></tr>
+  <tr><td>4</td><td><code>wrist_flex</code></td><td>手腕上下掰</td></tr>
+  <tr><td>5</td><td><code>wrist_roll</code></td><td>手腕自转</td></tr>
+  <tr><td>6</td><td><code>gripper</code></td><td>夹爪开合</td></tr>
+</table>
+<p>没有第 7 个关节（比如人的小指那样的末端），是因为便宜的舵机机械臂做不出灵巧手。<strong>6 个自由度已经能完成"抓起来放进盒子里"这类任务</strong>，这已经足够跑通整条学习闭环。</p>
+
+<h3>1.3 舵机是什么</h3>
+<p>舵机（servo）就是"带位置反馈的电机"。它和普通电机最大的区别是：<strong>你告诉它"转到 90 度"，它自己闭环控制转到 90 度并保持住</strong>，而不是你给它通电它就一直转。</p>
+<p>每个关节一个舵机。SO-101 用的是 <strong>Feetech STS3215</strong>——一款带串行总线接口的数字舵机，能回读角度、温度、负载。</p>
+
+<h3>1.4 减速比（1/345 是什么意思）</h3>
+<p>电机本身转得快但没劲。舵机内部有一组齿轮把转速降下来、把扭矩放大，这个比例就是减速比。</p>
+<div class="key">
+  <strong>关键理解：<code>1/345</code> 表示"减速比 345 : 1"。</strong>电机转 345 圈，输出轴才转 1 圈。<br>
+  代价是变慢，收益是扭矩放大 345 倍（还要乘齿轮效率，实际约 70–80%）。
+</div>
+<p>所以 <code>1/345</code> 是最"有劲"的、<code>1/147</code> 是最"灵活"的。<strong>哪个关节需要劲，哪个关节就用大减速比</strong>——这就是下面 leader 臂配不同减速比的全部原因。</p>
+
+<h3>1.5 为什么 leader 臂和 follower 臂用不同的舵机</h3>
+<p>SO-101 是<strong>双臂系统</strong>：一条 leader（主臂，人手拖着动）+ 一条 follower（从臂，复现动作）。</p>
+<table>
+  <tr><th>臂</th><th>职责</th><th>选型逻辑</th></tr>
+  <tr><td><strong>leader</strong></td><td>人手直接握着自己动</td><td>要<strong>轻、好推</strong>——推力太大，人拖着累且记不准位置</td></tr>
+  <tr><td><strong>follower</strong></td><td>复现 leader 的动作，去干活</td><td>要<strong>有劲</strong>——要真抓东西、抗重力，所以全部用 1/345</td></tr>
+</table>
+<p>leader 的配比是：<code>shoulder_lift</code> 用 1/345（要扛住整条手臂自重）、<code>shoulder_pan</code> 和 <code>elbow_flex</code> 用 1/191（折中）、<code>wrist_flex</code>/<code>wrist_roll</code>/<code>gripper</code> 用 1/147（末端轻，要灵活）。</p>
+<div class="note">
+  <strong>这里有一个我核实时遇到的来源矛盾，顺手讲清楚。</strong>有一篇英文报道写"leader arm employs <em>three motors</em> with different ratios"（leader 用三个舵机）。我按这句去数，会觉得 leader 只有 3 个舵机。但对照商品 BOM：<code>1× 1/345 + 2× 1/191 + 3× 1/147 = 6</code>——正好 6 个。所以正确读法是"leader 用了<strong>三种不同减速比</strong>"，不是"三个舵机"。这类句子在转述时很容易被传歪。
+</div>
+
+<h3>1.6 总线舵机 vs 普通 PWM 舵机</h3>
+<p>这决定了你的接线方式，也是新手最容易接错的地方。</p>
+<table>
+  <tr><th></th><th>普通 PWM 舵机</th><th>总线舵机（SO-101 用的）</th></tr>
+  <tr><td>接线</td><td>每个舵机一根信号线，接到控制器不同引脚</td><td><strong>所有舵机串成一条线</strong>（菊花链），只有 3 根线：电源、地、数据</td></tr>
+  <tr><td>识别方式</td><td>靠物理引脚区分</td><td>靠每个舵机自己的 <strong>ID</strong>（1–6）区分</td></tr>
+  <tr><td>通信</td><td>单向往舵机发脉冲</td><td><strong>半双工串口</strong>，一根线双向收发，能回读角度/温度/负载</td></tr>
+</table>
+<div class="key">
+  <strong>为什么必须给每个舵机写唯一 ID：</strong>所有舵机通过同一根数据线接收指令，指令里带"这是给 3 号舵机的"。出厂时<strong>每个舵机的 ID 都是 1</strong>——如果不改，你发一条"1 号转到 90 度"，六个舵机会一起转，机器要么卡死要么把自己拧坏。ID 写进舵机的 EEPROM，<strong>掉电不丢，写一次就行</strong>。
+</div>
+<p>另外注意：连接电脑和舵机的是<strong>总线适配板</strong>（MotorBus / Waveshare 板），不是直接 USB 线。</p>
+<div class="warn">
+  <strong>一个能省几小时调试的细节：</strong>用 Waveshare 控制板时，<strong>两个跳线都要打到 channel B（USB）</strong>。打错的表现是电脑死活找不到串口，而你会怀疑驱动、怀疑线、怀疑舵机。
+</div>
+
+<h3>1.7 为什么要"校准"（这是最容易被跳过、后果最严重的一步）</h3>
+<p>校准要解决两个问题：</p>
+<ul>
+  <li><strong>零位</strong>：舵机内部的"0 度"和机械结构的"正前方"对不上。校准就是告诉系统"现在这个物理姿态，记作角度 0"。</li>
+  <li><strong>量程</strong>：每个关节能安全转动的上下限。不知道量程，程序就可能把关节往机械限位上撞。</li>
+</ul>
+<div class="warn">
+  <strong>为什么它和 AI 学习直接相关：</strong>神经网络策略学的是"在这个位置该输出什么数值"。如果两台机器人的零位定义不一样，<strong>同一套策略换一台机器就完全失效</strong>——因为它以为的"90 度"是另一处物理位置。这就是为什么官方文档说"校准对迁移学习是必需的"。<br>
+  还有一条：<strong>拆装过任何关节之后，必须重新校准。</strong>
+</div>
+
+<h3>1.8 遥操作（teleoperation）是什么</h3>
+<p>人操作 leader 臂，系统实时读取 leader 各关节角度，转成指令发给 follower 臂，follower 复现同样姿态。这是<strong>采集演示数据</strong>的标准方式——比用键盘/程序控制自然得多，因为人手演示的动作本身就是"正确做法"。</p>
+
+<h3>1.9 模仿学习，以及"为什么至少 50 条演示"</h3>
+<p>模仿学习（Imitation Learning / Behavior Cloning）的思路很直白：<strong>让机器人看人怎么做的，然后照做。</strong>常见算法是 ACT 或扩散策略（Diffusion Policy）。</p>
+<p>数据量为什么是 50 条起：一次演示只覆盖一种物体位置和一种操作轨迹。神经网络要从少数样本里学到"任务本质"很难，它更容易记住"这次物体在这、手往那走"。<strong>演示数量不足 → 换一个物体位置就失败。</strong>所以官方建议每个任务至少 50 条，并且刻意改变物体位置和朝向。</p>
+
+<h3>1.10 BOM 是什么</h3>
+<p>Bill of Materials，物料清单。开源硬件项目的 BOM 就是"你要买什么、买几个、什么规格"的完整列表。SO-101 的 BOM 由 Hugging Face 维护在 LeRobot 文档和 SO-ARM100 仓库里。</p>
+
+<h2>2 · 选型判断：为什么是 SO-101，不是鸭子</h2>
+
+<table>
+  <tr><th>维度</th><th>SO-101 机械臂</th><th>Open Duck Mini 双足鸭</th></tr>
+  <tr><td>成本</td><td><strong>¥880 单臂 / ¥1,700 双臂</strong></td><td>实际 BOM $500–650（≈¥3,600–4,700，<span class="tag tNo">不是宣传的 $400</span>）</td></tr>
+  <tr><td>舵机数量</td><td>6（单臂）</td><td>14–16 + 2 个微型舵机</td></tr>
+  <tr><td>技术难点</td><td>运动学 + 数据采集</td><td><strong>双足平衡 + sim2real 全栈最难的部分</strong></td></tr>
+  <tr><td>官方文档</td><td>完整装配指南 + BOM + 预排 STL</td><td>有 print guide / assembly guide，社区在完善中</td></tr>
+  <tr><td>训练生态</td><td>LeRobot 原生支持，MuJoCo 模型现成，ACT 半小时出策略</td><td>MuJoCo Playground + PPO，要训步态</td></tr>
+  <tr><td>失败代价</td><td>摔了不会坏，装错重装</td><td>跌倒可能损坏结构件和舵机</td></tr>
+</table>
+
+<div class="key">
+  <strong>我的判断：先用 SO-101 跑通一次完整闭环，再做鸭子。</strong><br>
+  不是因为鸭子不好，而是因为<strong>你没跑通过一次"硬件 → 数据 → 训练 → 真机部署"的完整链路之前，鸭子的难度会让你把大量时间花在调试上，而不是学习上</strong>。SO-101 用 1/4 的成本给你同样的完整闭环，而且每一步都有官方文档兜底。<br>
+  鸭子适合在你已经知道 sim2real 的坑在哪之后再做——<strong>那时你才配得上它的难度</strong>。
+</div>
+
+<h2>3 · 完整 BOM 与采购口径</h2>
+
+<h3>3.1 舵机（核心成本）</h3>
+<table>
+  <tr><th>用途</th><th>规格</th><th>数量</th><th>对应关节</th></tr>
+  <tr><td><strong>Follower</strong>（Standard 版）</td><td>7.4V，1/345</td><td>6</td><td>全部 6 个关节</td></tr>
+  <tr><td><strong>Follower</strong>（Pro 版）</td><td><strong>12V</strong>，1/345（C018）</td><td>6</td><td>全部 6 个关节，堵转扭矩约 30kg·cm</td></tr>
+  <tr><td><strong>Leader</strong></td><td>7.4V，1/345</td><td>1</td><td><code>shoulder_lift</code></td></tr>
+  <tr><td><strong>Leader</strong></td><td>7.4V，1/191</td><td>2</td><td><code>shoulder_pan</code>、<code>elbow_flex</code></td></tr>
+  <tr><td><strong>Leader</strong></td><td>7.4V，1/147</td><td>3</td><td><code>wrist_flex</code>、<code>wrist_roll</code>、<code>gripper</code></td></tr>
+</table>
+
+<h3>3.2 其余物料</h3>
+<table>
+  <tr><th>部件</th><th>数量</th><th>说明</th></tr>
+  <tr><td>总线舵机控制板</td><td>2</td><td>Waveshare 总线舵机适配板，每臂 1 块</td></tr>
+  <tr><td>USB-C 数据线 2m</td><td>2</td><td>电脑 ↔ 控制板</td></tr>
+  <tr><td>电源（Standard）</td><td>2× 5V 6A</td><td>两臂各一</td></tr>
+  <tr><td>电源（Pro）</td><td>1× 5V 6A + <strong>1× 12V 7.5A</strong></td><td>5V 给 leader，12V 给 follower</td></tr>
+  <tr><td>桌夹</td><td>4</td><td>把底座固定在桌面上</td></tr>
+  <tr><td>螺丝刀</td><td>1</td><td>需要星形（Torx）批头</td></tr>
+  <tr><td>3D 打印件</td><td>—</td><td>STL 在 SO-ARM100 仓库；可自打印或找打印服务</td></tr>
+  <tr><td>摄像头</td><td>1（可选）</td><td>OAK-D 或 Intel RealSense 适合采深度数据；BOM 不含</td></tr>
+</table>
+
+<h3>3.3 成本与购买渠道</h3>
+<table>
+  <tr><th>配置</th><th>美元</th><th>人民币（≈）</th></tr>
+  <tr><td>Follower 单臂</td><td>~$122</td><td>≈ ¥880</td></tr>
+  <tr><td>Leader + Follower 双臂</td><td>~$230</td><td>≈ ¥1,700</td></tr>
+  <tr><td>3D 打印（外包）</td><td>≈€50 单臂 / €105 双臂</td><td>自打印则只需材料费</td></tr>
+</table>
+<p class="small">渠道口径：美国 PartaBot；国际 Seeed Studio（约 $220 电机套件，+$35 打印件）；欧盟 AutoDiscovery；另有 WowRobo、RobotShop。国内可走 AliExpress / 淘宝同规格 STS3215（约 ¥100/个 vs 官方 $23/个，<strong>但需自行确认固件与 ID 写入工具兼容</strong>）。</p>
+
+<h3>3.4 3D 打印参数</h3>
+<table>
+  <tr><th>项</th><th>推荐值</th></tr>
+  <tr><td>材料</td><td>PLA+（基础）／PETG 或尼龙（高温环境）</td></tr>
+  <tr><td>喷嘴 / 层高</td><td>0.4mm 喷嘴 → 0.2mm 层高；0.6mm 喷嘴 → 0.4mm 层高</td></tr>
+  <tr><td>填充</td><td>15% 起，受力部位 35%+</td></tr>
+  <tr><td>支撑</td><td>全加，45° 以上悬垂可免</td></tr>
+  <tr><td>打印板尺寸</td><td>≥ 220×220（Ender 3）或 205×250（Prusa）</td></tr>
+  <tr><td>已验证机型</td><td>Prusa MINI+ / Creality Ender 3 / Bambu Lab A·P·X 系列</td></tr>
+  <tr><td>打印时长</td><td>单臂 8–16 小时</td></tr>
+  <tr><td>单文件 STL</td><td>Follower：<code>Ender_Follower_SO101.stl</code> / <code>Prusa_Follower_SO101.stl</code>；Leader 同理</td></tr>
+</table>
+
+<h2>4 · 装配步骤</h2>
+
+<div class="flow">
+  <span>① 打量规验打印机</span><b>→</b>
+  <span>② 打印全部结构件</span><b>→</b>
+  <span>③ 舵机写 ID</span><b>→</b>
+  <span>④ 装舵机走线</span><b>→</b>
+  <span>⑤ 菊花链接线</span><b>→</b>
+  <span>⑥ 固定底座通电</span><b>→</b>
+  <span>⑦ 校准</span><b>→</b>
+  <span>⑧ 单臂测试</span><b>→</b>
+  <span>⑨ 双臂遥操作</span><b>→</b>
+  <span>⑩ 采数据</span>
+</div>
+<p class="small">总耗时约 3–4 小时（不含打印）。</p>
+
+<h3>阶段一：打印前（别跳过）</h3>
+<div class="qa">
+  <div class="q">① 先打 <code>STL/Gauges/</code> 里的量规，对着 STS3215 舵机或乐高块试装</div>
+  <div class="a"><strong>为什么：</strong>如果打印机有尺寸偏差（挤出过量/不足、收缩），直接打整臂会得到一堆装不进去的零件。<strong>量规只花 10 分钟，能省 16 小时和一整卷料。</strong>过紧或过松就调切片缩放再打一次。</div>
+</div>
+
+<div class="qa">
+  <div class="q">② 打印全部结构件</div>
+  <div class="a">按上表参数。优先用仓库里预排好的单文件 STL（已经帮你排好版，不用自己摆件）。</div>
+</div>
+
+<h3>阶段二：舵机准备</h3>
+<div class="qa">
+  <div class="q">③ 给每个舵机写唯一 ID 和统一波特率</div>
+  <div class="a"><strong>为什么：</strong>出厂全是 ID=1。写进 EEPROM，掉电不丢，<strong>一辈子写一次</strong>——除非你把舵机拆到别的机器人上用。<br>
+  <strong>ID 必须按物理位置固定：</strong>底座=1 ... 夹爪=6。写错了意味着程序以为在动 1 号关节，实际动的是 5 号，机器会做出完全无法理解的动作。<br>
+  实操上：只连夹爪电机，确认 ID 设为 6，再依次往前做 wrist_roll……</div>
+</div>
+
+<h3>阶段三：机械装配</h3>
+<div class="qa">
+  <div class="q">④ 舵机装进连杆壳体，线缆穿过打印的走线槽</div>
+  <div class="a"><strong>为什么强调走线：</strong>关节转动会反复拉扯线缆。走线槽是为了让线在<strong>转动时留出余量</strong>，否则几十次动作后线就断了，还很难查。</div>
+</div>
+
+<div class="qa">
+  <div class="q">⑤ 菊花链接线，ID 1（底座）→ 6（夹爪）</div>
+  <div class="a">按 ID 顺序串接。总线是共享的，但接线顺序影响走线美观和线缆受力。</div>
+</div>
+
+<div class="qa">
+  <div class="q">⑥ 把底座夹到桌面再通电</div>
+  <div class="a"><strong>为什么：</strong>6 关节同时运动时反作用力很大，没固定的底座会直接翻倒或甩出去，可能砸坏夹爪。官方文档把这一步列为通电前强制项。<br>
+  <strong>通电时手远离工作空间</strong>，急停方式就是<strong>直接拔 USB 线</strong>。</div>
+</div>
+
+<h3>阶段四：校准与首次运动</h3>
+<div class="qa">
+  <div class="q">⑦ 校准（最关键的一步）</div>
+  <div class="a">按提示把手臂移动到整个运动范围的各个位置，系统记录每个关节的零位和量程。<br><strong>拆装过关节 → 必须重新校准。</strong></div>
+</div>
+
+<div class="qa">
+  <div class="q">⑧ 单臂通电测试，然后 ⑨ 双臂遥操作</div>
+  <div class="a">先只连 follower，验证 6 个关节都响应、无跳变、夹爪能全行程开合、<strong>没有线缆在某个姿态下被卡住</strong>。确认无误再接 leader。</div>
+</div>
+
+<div class="qa">
+  <div class="q">⑩ 采数据</div>
+  <div class="a">每任务 ≥50 条，刻意变化物体位置和朝向，给任务起有意义的名字。</div>
+</div>
+
+<h2>5 · 上手命令</h2>
+
+<p>先装 LeRobot（<code>[feetech]</code> 会带上 Feetech 舵机 SDK）：</p>
+<pre><code>pip install "lerobot[feetech]"</code></pre>
+
+<p>然后按顺序执行：</p>
+<pre><code># 1. 找到手臂的串口（运行后按提示插拔 USB）
+lerobot-find-port
+#   macOS 典型值：/dev/tty.usbmodem*  或  /dev/tty.usbserial-*
+#   Linux  典型值：/dev/ttyACM0（或 CH340 适配器的 ttyUSB0）
+
+# 2. 逐个写舵机 ID 与波特率
+lerobot-setup-motors --robot.type=so101_follower --robot.port=/dev/tty.usbmodemXXXX
+
+# 3. 校准 follower
+lerobot-calibrate --robot.type=so101_follower \
+  --robot.port=/dev/tty.usbmodemXXXX --robot.id=my_follower
+
+# 4. 校准 leader
+lerobot-calibrate --teleop.type=so101_leader \
+  --teleop.port=/dev/tty.usbmodemYYYY --teleop.id=my_leader
+
+# 5. 双臂遥操作
+lerobot-teleoperate --robot.type=so101 --robot.port=/dev/tty.usbmodemXXXX \
+  --teleop.type=so101_leader --teleop.port=/dev/tty.usbmodemYYYY
+
+# 6. 采数据（带摄像头）
+lerobot-record --robot.type=so101 --robot.port=/dev/tty.usbmodemXXXX \
+  --robot.cameras.top.type=opencv --robot.cameras.top.index=0 \
+  --dataset.repo_id=你的名字/so101-pick-cube --dataset.single_task="pick cube"</code></pre>
+
+<div class="note">
+  <strong>关于命令的版本差异：</strong>网上有些教程（包括我查到的中文页面）用的是旧版脚本路径 <code>python lerobot/scripts/calibrate.py</code>。新版 LeRobot 统一成了 <code>lerobot-calibrate</code> 这类 CLI 命令。两套现在都能跑，但<strong>别混着抄</strong>。
+</div>
+<div class="note">
+  <strong>Linux 用户额外一步：</strong>串口在 <code>/dev/ttyACM*</code>，需要把用户加进 <code>dialout</code> 组：<code>sudo usermod -aG dialout $USER</code>，然后注销重登（或 <code>newgrp dialout</code>）。macOS 不需要这一步，但要装 CH340 驱动。
+</div>
+
+<h2>6 · 我是怎么核实这些信息的</h2>
+
+<p>你问过我"你怎么操作的"。这一节就是答案——不是装饰，它决定了上面的数字可不可信。</p>
+
+<h3>6.1 我查了什么，为什么交叉验证</h3>
+<table>
+  <tr><th>来源</th><th>提供什么</th><th>可信度判断</th></tr>
+  <tr><td>Hugging Face LeRobot 官方文档</td><td>BOM、装配指南、命令</td><td><strong>最高</strong>——出问题它负责</td></tr>
+  <tr><td>TheRobotStudio 的 SO-ARM100 仓库</td><td>STL 文件、3DPRINT.md</td><td>高——硬件设计方</td></tr>
+  <tr><td>Silicon Valley Robotics Center 的 SO-101 中文页</td><td>分步流程、切片参数、打印机型</td><td>中高——工程向整理，步骤详细</td></tr>
+  <tr><td>商品页（ThinkRobotics 等）</td><td><strong>精确到货号</strong>的舵机配比（C018/C001/C044/C046）</td><td>中——商业来源，但货号具体，交叉得起来</td></tr>
+</table>
+
+<p><strong>为什么必须三四个来源对齐：</strong>单一来源的信息在转述时会变形。上面 1.5 节那个"three motors / 三种减速比"就是活例子——若只看一篇英文报道，我会给出一份错的 BOM。</p>
+
+<h3>6.2 我明确没有核实的东西（诚实标注）</h3>
+<ul>
+  <li><strong>国内渠道的实际价格与兼容性。</strong>淘宝/AliExpress 的 STS3215 约 ¥100/个，比官方 $23 便宜不少，但我<strong>没有实测过</strong>它的固件版本和 ID 写入工具是否与 LeRobot 兼容。这是省钱的最大不确定项。</li>
+  <li><strong>我没有实物。</strong>装配步骤来自官方文档与工程整理，我没有亲手装过，所以"手感类"的坑（哪颗螺丝难拧、哪个件容易断）我给不出来。</li>
+  <li><strong>打印时长 8–16 小时</strong>是社区口径，实际高度依赖切片参数和机器。</li>
+</ul>
+
+<div class="warn">
+  <strong>成本口径需要提醒：</strong>不同来源给出的"臂成本"不完全一致——有写 follower $121.94、有写 $123，差异来自汇率和采购时点。我采用 <strong>≈$122 / ≈$230</strong> 这一组（2026 年 9 月美国 BOM 口径）。你不是美国采购，实际落地价要用国内渠道重算——<strong>这些数字只能当量级参考</strong>。
+</div>
+
+<h2>7 · 装完之后能干什么</h2>
+
+<div class="card">
+  <h3 style="margin-top:0;">立刻能做的四件事</h3>
+  <ul>
+    <li><strong>遥操作</strong>：人手拖着 leader，follower 精确复现——这是后面所有训练的数据来源。</li>
+    <li><strong>采数据集并上传 Hugging Face Hub</strong>：数据格式是社区标准，可以直接被别人复用。</li>
+    <li><strong>训一个 ACT 或 Diffusion Policy</strong>：50 条演示，消费级硬件半小时出策略，让机械臂学会"捡方块放进盒子"。</li>
+    <li><strong>跑真机推理</strong>：把策略部署回机械臂，看它自己完成任务。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">这就是一条完整的具身智能闭环</h3>
+  <div class="flow">
+    <span>硬件装配</span><b>→</b><span>遥操作采数据</span><b>→</b><span>训策略</span><b>→</b><span>真机部署</span><b>→</b><span>失败样本回收</span><b>↺</b>
+  </div>
+  <p>这条链路上每一个环节，你都会亲手碰到真实问题：舵机堵转、相机延迟、策略撞限位、数据不收敛。<strong>这些才是"具身智能"真正的门槛，不是算法能不能背下来。</strong></p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">接下来怎么走</h3>
+  <ol>
+    <li><strong>先做仿真侧的准备</strong>（下一个面板）：把 MuJoCo 环境跑起来，知道策略长什么样、训练要多久。</li>
+    <li><strong>再决定买不买单臂</strong>：只想验证流程，$122 的单臂就够跑通"遥操作 → 采数据 → 训 ACT → 部署"。</li>
+    <li><strong>打印件先外包试水</strong>：没打印机的话，找打印服务花几百块，先验证你能装起来，再考虑买打印机。</li>
+  </ol>
+</div>
+
+<div class="key">
+  <strong>一句话总结：</strong>SO-101 的价值不在于它是台好机械臂，而在于它把"从零造一台会学习的机器人"这件事的成本压到了 <strong>¥1,700 + 一个周末</strong>。这个价格买到的不是硬件，是<strong>一次完整的、能失败的、便宜的学习机会</strong>。
+</div>
+
+</div>
+<nav class="pager" data-for="hw"></nav>
+
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 16 章「Advanced Visual Servoing」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 16 章「Advanced Visual Servoing」课后习题</h1>
+<p>原书课后习题 7 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：XY/Z 分区式 IBVS 的控制结构</h5>
+<p>经典 IBVS 直接对笛卡尔图像特征 $\mathbf{p}=(u,v)$ 施加比例控制，其光学流方程为</p>
+<p>$$\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu},\qquad \boldsymbol{\nu}=[v_x\ v_y\ v_z\ \omega_x\ \omega_y\ \omega_z]^T .$$</p>
+<p>在大误差下，$\mathbf{J}_{\mathrm{image}}$ 的耦合会导致相机沿光轴后退（camera retreat）。XY/Z 分区式 IBVS 的做法是：<strong>xy 平面内的运动仍由点特征控制，而 z 轴平移 $v_z$ 与绕光轴旋转 $\omega_z$ 改由两个额外的标量图像特征直接控制</strong>，从而把 z 通道与 xy 通道解耦。</p>
+<p><strong>第 1 步：选取 z 通道的两个标量特征。</strong></p>
+<ul>
+<li><strong>面积特征</strong>：取特征点构成正多边形的面积 $A$，它等于零阶矩 $m_{00}$，可由 <code>mpq_poly(p,0,0)</code> 计算。控制中实际使用 $\sqrt{A}$（量纲与长度一致，便于线性化）。面积对绕 z 轴旋转不变，因此适合与 $\omega_z$ 解耦。</li>
+<li><strong>角度特征</strong>：取最长线段与图像 $u$ 轴的夹角 $\theta\in[0,2\pi)$。</li>
+</ul>
+<p><strong>第 2 步：写出 z 通道的微分关系与控制律。</strong></p>
+<p>$$\begin{bmatrix}\dot{\sqrt{A}}\\ \dot\theta\end{bmatrix}=\mathbf{J}_z\begin{bmatrix}v_z\\ \omega_z\end{bmatrix}.$$</p>
+<p>采用比例控制：</p>
+<p>$$v_z=\lambda_A\big(\sqrt{A^*}\ominus\sqrt{A}\big),\qquad \omega_z=\lambda_\theta\big(\theta^*\ominus\theta\big),$$</p>
+<p>其中 $\ominus$ 是 modulo 减法算子（Toolbox 函数 <code>angdiff</code>），用于正确处理角度跨 $0/2\pi$ 边界的情形。若不用 modulo 减法，$\theta$ 在边界附近会产生跳变，导致 $\omega_z$ 符号错误。</p>
+<p><strong>第 3 步：回答 (a)——不同初始平移/旋转下的运动比较。</strong></p>
+<ul>
+<li><strong>纯平移初始误差</strong>：分区式方案中，xy 点特征驱动 $v_x,v_y$，面积特征驱动 $v_z$。由于面积随 $1/Z^2$ 变化，$\sqrt{A}\propto 1/Z$，因此 $v_z$ 直接反映深度误差，不会像经典 IBVS 那样出现“先后退再前进”的轨迹。经典 IBVS 在大平移误差下会出现明显的相机后退。</li>
+<li><strong>纯旋转初始误差</strong>：绕 z 轴的旋转由 $\theta$ 特征直接控制，$\omega_z$ 与 xy 通道解耦，收敛更直接。经典 IBVS 中旋转与平移在 $\mathbf{J}_{\mathrm{image}}$ 中耦合，旋转误差会诱发不必要的平移。</li>
+<li><strong>平移+旋转混合</strong>：分区式方案的运动更接近“先对准、再靠近”的解耦行为；经典 IBVS 则表现为耦合的曲线轨迹。</li>
+</ul>
+<p>原书未给出具体数值，按符号推导。可用 Simulink 模型 <code>sl_partitioned</code> 验证：初始位姿由 pose block 设定，期望图像点 $\mathbf{p}^*$ 由绿色 constant block 设定，运行 <code>sim('sl_partitioned')</code> 观察运动。</p>
+<p><strong>第 4 步：回答 (b)——构造特征离开图像的场景。</strong></p>
+<p>特征离开图像通常发生在以下情形：</p>
+<ol>
+<li><strong>初始误差过大</strong>：相机初始位姿远离目标，点特征在图像平面上的位移超出视场。</li>
+<li><strong>目标平面不垂直光轴</strong>：透视效应使面积变小、线段感知角度改变，引入不必要的 z 轴运动，可能把特征推出视场。该特征族仅在目标法向与光轴夹角 $\pm40°$ 内可靠。</li>
+<li><strong>绕 x/y 轴的大旋转</strong>：面积特征只对绕 z 轴旋转不变，<strong>不对 x、y 轴旋转不变</strong>，因此大倾斜会使面积特征失效。</li>
+</ol>
+<p>在仿真中，可设置较大的初始平移（如 $T_{c0}=\mathrm{transl}(0,0,-2)\cdot\mathrm{trotz}(1)$ 的放大版本）或较大的倾斜，使特征点逼近甚至越过图像边界 $W\times H$。</p>
+<p><strong>第 5 步：回答 (c)——加入排斥场。</strong></p>
+<p>排斥力的思想是：当特征点 $\mathbf{p}$ 逼近图像边缘时，产生一个推离相机的力，并入 z 轴平移控制器。</p>
+<p>设 $d(\mathbf{p})$ 为特征点到图像边缘的最短距离，$d_0$ 为作用区宽度，$\eta$ 为增益（阻尼单位）。排斥力项为</p>
+<p>$$v_z^{\mathrm{rep}}=\eta\cdot f\big(d(\mathbf{p}),d_0\big),$$</p>
+<p>其中 $f$ 在 $d(\mathbf{p})>d_0$ 时为 0，在 $d(\mathbf{p})\to 0$ 时增大。总 z 轴控制为</p>
+<p>$$v_z=\lambda_A\big(\sqrt{A^*}\ominus\sqrt{A}\big)+v_z^{\mathrm{rep}}.$$</p>
+<p><strong>注意事项</strong>：排斥力若在 $d_0$ 处不连续，会引起 chattering，因此需要平滑滤波与速度限幅。</p>
+<p><strong>可运行代码（MATLAB，基于原书 Toolbox 风格）：</strong></p>
+<pre><code class="lang-matlab">% 分区式 IBVS 仿真框架（示意）
+cam = CentralCamera('default');
+Tc0 = transl(0,0,-2) * trotz(1);   % 初始位姿
+vs = IBVS_partitioned(cam, 'T0', Tc0);
+vs.run();                           % 观察运动轨迹
+
+% 加入排斥场
+d0 = 50;      % 作用区宽度（像素）
+eta = 0.5;    % 排斥增益
+% 在 z 轴控制中叠加 v_z_rep = eta * f(d(p), d0)</code></pre>
+<p>预期观察：不加排斥场时，大误差场景下特征点可能逼近图像边缘甚至离开；加入排斥场后，特征点被“推回”视场内部，但若 $\eta$ 过大或 $f$ 不连续，会出现速度抖动（chattering）。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>分区解耦</strong>：XY/Z 分区式 IBVS 把 xy 平面控制与 z 轴平移/旋转解耦，z 轴用面积 $A$（控制量取 $\sqrt{A}$）和角度 $\theta$ 直接算 $v_z,\omega_z$，从而缓解经典 IBVS 的相机后退问题。</li>
+<li><strong>面积特征的适用边界</strong>：面积只对绕 z 轴旋转不变，<strong>不对 x、y 轴旋转不变</strong>；目标平面不垂直光轴时透视会使面积变小、线段角度改变，该特征族仅在目标法向与光轴夹角 $\pm40°$ 内可靠。</li>
+<li><strong>角度必须用 modulo 减法</strong>：$\theta\in[0,2\pi)$，跨 $0/2\pi$ 边界时必须用 $\ominus$（<code>angdiff</code>），否则 $\omega_z$ 符号出错；圆周运动两方向可达，受机械限位时要选对 $\omega_z$ 符号。</li>
+<li><strong>排斥场的作用与代价</strong>：排斥力按到图像边缘最短距离 $d(\mathbf{p})$、作用区宽 $d_0$、增益 $\eta$ 产生推离相机的力，并入 z 轴平移控制器；不连续会引起 chattering，需平滑滤波与速度限幅。</li>
+<li><strong>验证工具</strong>：Simulink 模型 <code>sl_partitioned</code>，初始位姿由 pose block 设定，期望图像点由绿色 constant block 设定，运行 <code>sim('sl_partitioned')</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 16 章</li>
+<li>依据：</li>
+<li>XY/Z 分区式 IBVS、面积与角度特征、排斥力：本章核心概念清单第 1–3 条；推导链条第 2 步；关键公式第 1–2 条。</li>
+<li>角度范围 $\theta\in[0,2\pi)$、目标法向 ±40°、排斥力距离 $d(\mathbf{p})$ 表达式 (16.4)：第 6 节例题与数值例子（PDF p.482–483）。</li>
+<li>Simulink <code>sl_partitioned</code>：第 6 节例题与数值例子（PDF p.483）。</li>
+<li>面积对 x/y 轴旋转不变性的旁注、透视效应、排斥力 chattering：第 7 节与常见困惑的对照（PDF p.483）。</li>
+<li>经典 IBVS 相机后退问题：第 0 节前后章依赖（第 15 章结论）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确三种方案的控制律与特征定义。</strong></p>
+<p>三者都采用比例型期望特征速度（Eq. 16.18）：</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}^*\ominus\mathbf{p})$$</p>
+<p>差别只在特征 $\mathbf{p}$ 与交互矩阵 $\mathbf{J}_{\mathrm{image}}$：</p>
+<ul>
+<li>经典 IBVS：$\mathbf{p}=(u,v)$，用第 15 章笛卡尔点特征雅可比。</li>
+<li>极坐标 IBVS：$\mathbf{p}=(r,\varphi)$，其中（Eq. 16.5、16.6）</li>
+</ul>
+<p>$$r=\sqrt{\bar u^2+\bar v^2},\qquad \varphi=\operatorname{atan2}(\bar v,\bar u)$$</p>
+<p>  其雅可比（Eq. 16.9）含三个常数元素 $0,0,-1$，即 $r$ 对 $\omega_z$ 不变、$\varphi$ 对 $v_z$ 不变、$\varphi$ 随 $\omega_z$ 反向。</p>
+<ul>
+<li>球面 IBVS：把特征投影到单位球面（Eq. 16.10）</li>
+</ul>
+<p>$$\mathbf{p}=\frac{1}{R}\mathbf{P},\qquad R=\sqrt{X^2+Y^2+Z^2}$$</p>
+<p>  取最小坐标（Eq. 16.11、16.12）</p>
+<p>$$\theta=\arccos\!\big(z/\sqrt{x^2+y^2+z^2}\big),\qquad \varphi=\operatorname{atan2}(y,x)$$</p>
+<p>  对 $N$ 点堆叠成 $\mathbf{J}\in\mathbb{R}^{2N\times6}$（Eq. 16.16）。</p>
+<p><strong>第 2 步：设计实验矩阵。</strong></p>
+<p>按题干要求，对「初始平移」与「初始旋转」做组合扫描。以原书两个示例为基准：</p>
+<ul>
+<li>极坐标示例 <code>IBVS_polar</code>：canonical camera，<code>Tc0 = transl(0,0,-2)*trotz(1)</code>。</li>
+<li>球面示例 <code>IBVS_sph</code>：<code>cam = SphericalCamera()</code>，<code>Tc0 = transl(0.3,0.3,-2)*trotz(0.4)</code>。</li>
+</ul>
+<p>把 <code>trotz</code> 的角度从 0 扫到约 1 rad（大旋转），把 <code>transl</code> 的横向分量从 0 扫到约 0.3–0.5 m（大平移），分别记录收敛轨迹、相机速度峰值与是否出现相机后退。</p>
+<p><strong>第 3 步：可运行代码（MATLAB，Toolbox 风格）。</strong></p>
+<pre><code class="lang-matlab">% 比较 polar / spherical / cartesian IBVS
+angles = [0 0.4 1.0];          % 初始绕 z 旋转
+offs   = [0 0.3 0.5];          % 初始横向平移
+
+for a = angles
+  for o = offs
+    % --- polar ---
+    cam = CentralCamera('default');
+    Tc0 = transl(o,o,-2)*trotz(a);
+    vs = IBVS_polar(cam, 'T0', Tc0, 'niter', 200);
+    vs.run();
+    fprintf('polar  a=%.1f o=%.1f  final err=%.3g\n', a, o, vs.error(end));
+
+    % --- spherical ---
+    camS = SphericalCamera();
+    vsS = IBVS_sph(camS, 'T0', Tc0, 'niter', 200);
+    vsS.run();
+    fprintf('sph    a=%.1f o=%.1f  final err=%.3g\n', a, o, vsS.error(end));
+
+    % --- classical (第15章) ---
+    vsC = IBVS(cam, 'T0', Tc0, 'niter', 200);
+    vsC.run();
+    fprintf('class  a=%.1f o=%.1f  final err=%.3g\n', a, o, vsC.error(end));
+  end
+end</code></pre>
+<p><strong>第 4 步：预期观察（依据本章事实底座）。</strong></p>
+<ol>
+<li><strong>大旋转</strong>：极坐标 IBVS 表现好于笛卡尔 IBVS。因为极坐标雅可比中 $\varphi$ 与 $\omega_z$ 的关系是常数 $-1$，绕光轴旋转被线性、直接地解耦，而笛卡尔点特征在大旋转下雅可比非线性强、易出现相机后退。</li>
+<li><strong>大平移</strong>：极坐标 IBVS 表现差。原书明确指出「极坐标 IBVS 与笛卡尔 IBVS 性能互补：极坐标大旋转好、大平移差」。</li>
+<li><strong>球面 IBVS</strong>：用大视场减小 $R_x$ 与 $-T_y$（$R_y$ 与 $-T_x$）的光流歧义，免去显式保持特征在视场内的需要，因此在平移+旋转混合的大误差下通常最稳健。</li>
+<li><strong>数值注意</strong>：极坐标在 $r=0$（图像中心）雅可比无定义；且 $|r|\gg|\varphi|$，不归一化会导致求解相机速度的数值问题。球面雅可比在南北极（$\sin\theta=0$）无定义，是最小表示的固有奇异性。</li>
+<li><strong>角度处理</strong>：所有涉及 $\varphi$ 的误差必须用 modulo-2π 减法 $\ominus$（Toolbox 函数 <code>angdiff</code>），否则跨 $0/2\pi$ 边界出错。</li>
+</ol>
+<p><strong>第 5 步：结论。</strong></p>
+<p>没有单一方案在所有初始条件下最优：极坐标适合大旋转、笛卡尔适合大平移、球面在混合大误差下最稳健。这正是本章引入混合伺服 BVS = IBVS + PBVS 与伺服任务分区的动机——按子空间分区控制，配合视角约束（目标法向在光轴 ±40° 内）与排斥力，才能在全工况下保证特征可见与收敛。</p>
+<h4>关键点</h4>
+<ul>
+<li>三种 IBVS 的差异只在特征参数化与交互矩阵，控制律同为 $\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$。</li>
+<li>极坐标与笛卡尔性能互补：极坐标大旋转好、大平移差；球面用大视场减小光流歧义，混合大误差下最稳健。</li>
+<li>极坐标雅可比含常数元素 $0,0,-1$，在 $r=0$ 处无定义；球面雅可比在 $\sin\theta=0$（南北极）处奇异。</li>
+<li>角度误差必须用 modulo-2π 减法 $\ominus$ / <code>angdiff</code>，否则跨 $0/2\pi$ 边界出错。</li>
+<li>该比较实验直接支撑本章引入 BVS 与伺服任务分区的动机。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 16 章 Advanced Visual Servoing</li>
+<li>依据：</li>
+<li>极坐标特征定义与雅可比：facts 第 5 节公式 1、2（Eq. 16.5、16.6、16.9）</li>
+<li>球面投影与最小坐标：facts 第 5 节公式 3、4（Eq. 16.10–16.12）</li>
+<li>堆叠雅可比与比例控制律：facts 第 5 节公式 5、6（Eq. 16.16、16.18）</li>
+<li>极坐标/球面示例参数：facts 第 6 节（<code>IBVS_polar</code>、<code>IBVS_sph</code>）</li>
+<li>性能互补、$r=0$ 奇异、球面南北极奇异、$\ominus$/<code>angdiff</code>：facts 第 7 节 misconceptions</li>
+<li>视角约束 ±40°、排斥力：facts 第 3 节概念 3、7 与第 6 节</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 末端执行器与相机之间的偏移</strong></p>
+<p>设末端执行器坐标系为 $E$，相机坐标系为 $C$，二者之间的固定变换为 ${}^E\mathbf{T}_C$。第 15 章的经典 IBVS 控制律直接以相机速度 $\boldsymbol{\nu}_c$ 为控制量，而机械臂控制器通常以末端速度 $\boldsymbol{\nu}_e$ 为输入。二者通过刚体速度变换关联：</p>
+<p>$$\boldsymbol{\nu}_c = {}^{C}\mathbf{J}_E\,\boldsymbol{\nu}_e$$</p>
+<p>其中 ${}^{C}\mathbf{J}_E$ 是第 8.1.1 节所述的堆叠雅可比（Eq. 8.2）中描述从末端到相机的速度传递部分。若相机相对末端有旋转 $\mathbf{R}_{EC}$ 与平移 $\mathbf{t}_{EC}$，则需把相机速度旋回末端系，并加上由平移引起的附加角速度耦合项。控制器结构变为：</p>
+<p>$$\boldsymbol{\nu}_e = \big(\mathbf{J}_{\mathrm{image}}\,{}^{C}\mathbf{J}_E\big)^{+}\,\dot{\mathbf{p}}^*$$</p>
+<p>其中 $\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$ 为比例型期望特征速度（Eq. 16.18），$\mathbf{J}_{\mathrm{image}}$ 为图像雅可比。<strong>为什么</strong>：若忽略该偏移，控制器会以为相机就在末端处，导致特征误差收敛到错误位形，甚至发散。加入 ${}^{C}\mathbf{J}_E$ 后，图像空间的误差被正确映射回关节/末端空间。</p>
+<p><strong>b) 离散采样与延迟</strong></p>
+<p>在相机模块后插入零阶保持采样器（周期 $T_s$）与纯延迟 $z^{-d}$。IBVS 闭环在连续域近似为一阶系统，增益 $\lambda$ 决定带宽；加入延迟后，开环传递函数含 $z^{-d}$ 因子，相位裕度随 $d$ 增大而下降。<strong>为什么</strong>：延迟使控制器用过时的图像误差计算速度，等效于相位滞后。当 $\lambda T_s d$ 超过约 1 时，闭环出现振荡；继续增大则失稳。权衡关系：要维持稳定，增益必须随延迟增大而减小，但增益减小又降低收敛速度。离散根轨迹上，极点随 $\lambda$ 增大向单位圆外移动，$d$ 越大越容易越界。原书未给出具体数值，按符号推导。</p>
+<p><strong>c) 运动目标建模</strong></p>
+<p>用 roblocks 的 Camera2 模块让目标以已知轨迹运动（如匀速直线或正弦）。跟踪误差定义为相机与目标之间的欧氏距离：</p>
+<p>$$e(t)=\|\mathbf{p}_c(t)-\mathbf{p}_t(t)\|$$</p>
+<p><strong>为什么</strong>：静止目标下 IBVS 收敛到零误差；目标运动时，控制器需持续追赶，稳态误差取决于目标速度与控制器带宽之比。若目标速度超过控制器可跟踪范围，误差发散。原书未给出具体数值，按符号推导。</p>
+<p><strong>d) 前馈技术</strong></p>
+<p>提示的核心思想：用目标未来位置而非当前位置作为控制参考。设目标在图像中的当前特征为 $\mathbf{p}(t)$，用 AlphaBeta 滤波器估计其速度 $\dot{\mathbf{p}}$，则前馈参考为：</p>
+<p>$$\mathbf{p}^*_{\mathrm{ff}} = \mathbf{p}(t) + \tau\,\dot{\mathbf{p}}(t)$$</p>
+<p>其中 $\tau$ 为预测时域。<strong>为什么</strong>：纯反馈控制对运动目标总有滞后，前馈把已知的目标运动提前补偿，可显著减小跟踪误差。$\tau$ 应约等于系统闭环时间常数；太小补偿不足，太大引入过冲。AlphaBeta 滤波器以 $\alpha$、$\beta$ 两个增益对位置与速度做递推估计，适合这种短时预测。原书未给出具体数值，按符号推导。</p>
+<p><strong>e) 对接任务中相机过近的问题</strong></p>
+<p>eye-in-hand 相机接近目标时，目标可能超出视场或特征点逼近视场边缘，触发第 16 章的排斥力（repulsive force）机制，甚至丢失特征。<strong>为什么</strong>：排斥力按到图像边缘最短距离 $d(\mathbf{p})$、作用区宽 $d_0$、增益 $\eta$ 产生推离相机的力，并入 z 轴平移控制器；若目标太近，排斥力会与对接任务冲突。避免策略：配置多个目标标记分布在较大范围，使相机在近距离仍能看到足够特征；或把目标法向保持在相机光轴 ±40° 内（原书指出该特征族仅在 ±40° 内可靠）；也可在对接末段切换到基于位姿的 PBVS 或混合伺服 BVS，利用位姿估计而非图像特征完成最后接近。</p>
+<h4>关键点</h4>
+<ul>
+<li>末端-相机偏移必须通过第 8.1.1 节的堆叠雅可比 ${}^{C}\mathbf{J}_E$ 补偿，否则 IBVS 收敛到错误位形。</li>
+<li>离散采样与延迟引入相位滞后，增益 $\lambda$ 与延迟 $d$ 存在稳定权衡；延迟越大，允许增益越小。</li>
+<li>运动目标跟踪需前馈：用 AlphaBeta 滤波器估计目标速度，以 $\mathbf{p}^*_{\mathrm{ff}}=\mathbf{p}+\tau\dot{\mathbf{p}}$ 作为参考，$\tau$ 约等于闭环时间常数。</li>
+<li>近距离对接问题源于视场约束与排斥力冲突；对策包括多标记配置、保持目标法向在光轴 ±40° 内、末段切换 PBVS/BVS。</li>
+<li>所有控制律均以比例型期望特征速度 $\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$（Eq. 16.18）为基础，角度差必须用 modulo-2π 算子 $\ominus$（<code>angdiff</code>）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 16 章</li>
+<li>依据：</li>
+<li>偏移补偿与堆叠雅可比：事实底座第 0 节（第 8 章 Eq. 8.2）、第 4 节推导链条第 8 步</li>
+<li>比例型期望特征速度 Eq. 16.18：事实底座第 5 节公式 6</li>
+<li>排斥力与 ±40° 视角约束：事实底座第 3 节概念 3、第 6 节例题、第 7 节 misconceptions</li>
+<li>极坐标/球面 IBVS 与 BVS：事实底座第 3 节概念 4–6</li>
+<li>离散采样、延迟、前馈、AlphaBeta：题干本身（原书习题），事实底座未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4. 移动机器人视觉伺服（第 489 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 0 步：明确本题的定位。</strong></p>
+<p>本题属于第 16 章末尾的“移动机器人视觉伺服”扩展练习，它把第 15 章的 IBVS 控制律、第 4 章的移动机器人运动学（独轮车 $\dot x=v\cos\theta,\ \dot y=v\sin\theta,\ \dot\theta=\omega$）与本章的球面/折反射特征参数化结合起来。核心思路是：<strong>控制律的形式不变，变的只是特征如何从图像映射到交互矩阵 $\mathbf{J}_{\mathrm{image}}$</strong>。</p>
+<p><strong>第 a) 步：把透视相机换成折反射相机。</strong></p>
+<p>折反射相机由一个镜面加一个透视相机组成，其成像等价于把场景点先投影到单位球面，再投影到图像平面。因此本章的<strong>球面 IBVS</strong>（Sect. 16 球面特征）正是折反射相机的天然特征参数化：</p>
+<p>$$\mathbf{p}=\frac{1}{R}\mathbf{P},\qquad R=\sqrt{X^2+Y^2+Z^2}$$</p>
+<p>取最小坐标</p>
+<p>$$\theta=\arccos\!\big(z/\sqrt{x^2+y^2+z^2}\big)\ (\text{colatitude}),\qquad \varphi=\operatorname{atan2}(y,x)\ (\text{azimuth})$$</p>
+<p>对每个特征点求导，代入第 15 章光学流方程 $\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu}$，得到球面雅可比；$N$ 个点堆叠为</p>
+<p>$$\mathbf{J}=\begin{bmatrix}\mathbf{J}_1\\ \vdots\\ \mathbf{J}_N\end{bmatrix}\in\mathbb{R}^{2N\times6}$$</p>
+<p>控制律仍为比例型</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}^*\ominus\mathbf{p})$$</p>
+<p>其中 $\ominus$ 为 modulo 角度差（Toolbox 函数 <code>angdiff</code>），$\theta\in[0,\pi]$、$\varphi\in[-\pi,\pi)$。</p>
+<p><strong>为什么这样做</strong>：折反射相机视场大，可缓解透视相机在 $R_x$ 与 $-T_y$（$R_y$ 与 $-T_x$）之间的光流歧义；球面表示免去显式保持特征在视场内的需要。<strong>注意</strong>：球面雅可比在南北极（$\sin\theta=0$）无定义，这是最小表示的固有奇异性（同 Sect. 2.2.1.3 欧拉角取舍）。</p>
+<p>对完整与非完整两种底盘，把上述 $\boldsymbol{\nu}=[v_x\ v_y\ v_z\ \omega_x\ \omega_y\ \omega_z]^T$ 通过底盘运动学约束映射到实际控制量 $(v,\omega)$ 即可：完整底盘可直接实现平面速度；非完整底盘只能沿车体前进方向运动，需把 $\boldsymbol{\nu}$ 投影到允许的子空间。</p>
+<p><strong>第 b) 步：完整底盘 + 折反射相机的途经点序列。</strong></p>
+<p>把每个途经点定义为一组期望球面特征坐标 $\mathbf{p}_i^*$。对第 $i$ 段，令</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}_i^*\ominus\mathbf{p})$$</p>
+<p>用 <code>pinv Jac</code>（非方阵/奇异时）或阻尼逆求相机速度：</p>
+<p>$$\boldsymbol{\nu}=\mathbf{J}^{+}\dot{\mathbf{p}}^*,\qquad \mathbf{J}^{+}=(\mathbf{J}^T\mathbf{J})^{-1}\mathbf{J}^T$$</p>
+<p>当 $\|\mathbf{p}_i^*\ominus\mathbf{p}\|<\epsilon$ 时切换到下一途经点。完整底盘可直接执行 $\boldsymbol{\nu}$ 的平面分量，无需额外约束。</p>
+<p><strong>第 c) 步：非完整底盘的纯追踪与循线。</strong></p>
+<p>非完整独轮车满足 $\dot x=v\cos\theta,\ \dot y=v\sin\theta,\ \dot\theta=\omega$，不能侧向平移，因此不能直接实现任意 $\boldsymbol{\nu}$。做法是把视觉特征误差映射为<strong>期望航向</strong>，再用第 4 章的控制律：</p>
+<ul>
+<li><strong>纯追踪</strong>：被追踪物体携带一个或两个点特征。由特征在图像中的位置（或球面坐标 $(\theta,\varphi)$）估计目标相对机器人的方位，令期望航向指向目标，$v$ 与距离误差成比例，$\omega$ 与航向误差成比例。两个点特征时可同时估计目标朝向，改善追踪。</li>
+<li><strong>循线</strong>：使用一个或两个线特征。由线特征在图像中的位置估计机器人相对线的横向偏差与方向偏差，$\omega$ 修正方向偏差，$v$ 保持前进。两个线特征时可同时约束横向位置与朝向。</li>
+</ul>
+<p><strong>为什么可行</strong>：视觉特征只提供误差信号，控制律结构仍来自第 4 章；把特征误差经 $\mathbf{J}_{\mathrm{image}}$ 映射到 $\boldsymbol{\nu}$，再投影到非完整约束允许的子空间，即可复用纯追踪/循线控制器。</p>
+<p><strong>可运行验证（MATLAB，基于本章 Toolbox 对象）</strong>：</p>
+<pre><code class="lang-matlab">% 球面（折反射）IBVS 仿真，参考本章 IBVS_sph 示例
+cam = SphericalCamera();
+Tc0 = transl(0.3,0.3,-2)*trotz(0.4);   % 原书示例初值
+vs = IBVS_sph(cam, 'Tc0', Tc0);
+vs.run();</code></pre>
+<p>预期观察：特征沿球面收敛到期望值，$\theta\in[0,\pi]$、$\varphi\in[-\pi,\pi)$；单点雅可比为 $2\times6$，$N$ 点堆叠为 $2N\times6$。若把 <code>SphericalCamera</code> 换成折反射相机模型，交互矩阵结构不变，仅投影关系改变。</p>
+<h4>关键点</h4>
+<ul>
+<li>折反射相机的自然特征参数化就是本章的<strong>球面 IBVS</strong>：单位球面投影 + 最小坐标 $(\theta,\varphi)$，雅可比在南北极奇异。</li>
+<li>控制律形式不变：$\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$，角度差必须用 modulo 算子 $\ominus$（<code>angdiff</code>），否则跨 $0/2\pi$ 边界出错。</li>
+<li>完整底盘可直接执行平面速度；非完整底盘必须把 $\boldsymbol{\nu}$ 投影到独轮车允许的子空间，再套用第 4 章纯追踪/循线控制律。</li>
+<li>途经点序列 = 分段比例控制 + 误差阈值切换，每段用 <code>pinv Jac</code> 或阻尼逆求相机速度。</li>
+<li>球面表示的大视场可减小 $R_x$ 与 $-T_y$（$R_y$ 与 $-T_x$）的光流歧义，这是选折反射相机的动机。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 16 章 Advanced Visual Servoing，习题 4（page 489）。</li>
+<li>依据：</li>
+<li>球面投影与最小坐标：本章 facts 第 5 节公式 3、4（Eq. 16.10–16.12）。</li>
+<li>堆叠雅可比与控制律：本章 facts 第 5 节公式 5、6（Eq. 16.16、16.18）。</li>
+<li>球面奇异性与光流歧义：本章 facts 第 7 节 misconceptions（PDF p.487）。</li>
+<li>非完整独轮车运动学：本章 facts 第 1 节记号约定。</li>
+<li>纯追踪/循线控制器：第 4 章（本题明确引用，属跨章依赖）。</li>
+<li>数值示例初值 <code>Tc0 = transl(0.3,0.3,-2)*trotz(0.4)</code>、<code>SphericalCamera</code>、<code>IBVS_sph</code>：本章 facts 第 6 节（PDF p.487）。</li>
+<li>原书未给出折反射相机替换后的具体数值，按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确「特征流场」是什么</h5>
+<p>Fig. 15.7 的画法是：固定相机做某种单位运动（例如沿 $x$ 平移、绕 $z$ 旋转），把图像平面上每个特征点处的<strong>特征速度</strong> $\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu}$ 画成箭头。因此本题要做的，就是把第 15 章笛卡尔 $(u,v)$ 的流场，换成第 16 章的两种新参数化：</p>
+<ul>
+<li>极坐标：$\mathbf{p}=(r,\varphi)$，由 (16.5)(16.6) 定义</li>
+</ul>
+<p>  $$r=\sqrt{\bar u^2+\bar v^2},\qquad \varphi=\operatorname{atan2}(\bar v,\bar u)$$</p>
+<p>  其中 $\bar u=u-\bar u_0$、$\bar v=v-\bar v_0$ 是相对主点的坐标。</p>
+<ul>
+<li>球面：$\mathbf{p}=(\theta,\varphi)$，由 (16.10)–(16.12) 定义</li>
+</ul>
+<p>  $$\mathbf{p}=\frac{1}{R}\mathbf{P},\quad R=\sqrt{X^2+Y^2+Z^2}$$</p>
+<p>  $$\theta=\arccos\!\big(z/\sqrt{x^2+y^2+z^2}\big)\ (\text{colatitude}),\qquad \varphi=\operatorname{atan2}(y,x)\ (\text{azimuth})$$</p>
+<h5>第 2 步：极坐标流场的构造</h5>
+<p>对 (16.5)(16.6) 求时间导数，并代入第 15 章的光学流方程 $\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu}$，即得极坐标光学流 (16.8) 与极坐标交互矩阵 (16.9)。其结构要点（原书 (16.9) 明确给出）：</p>
+<p>$$\mathbf{J}_{\mathrm{image}}=\begin{bmatrix}\cdots&0\\ \cdots&0&-1\end{bmatrix}$$</p>
+<p>即 $\mathbf{J}_{\mathrm{image}}$ 中含三个常数元素 $0$、$0$、$-1$，对应三条物理事实：</p>
+<ul>
+<li>$r$ 对 $\omega_z$ <strong>不变</strong>（第一行对应 $\omega_z$ 的元素为 $0$）；</li>
+<li>$\varphi$ 对 $v_z$ <strong>不变</strong>（第二行对应 $v_z$ 的元素为 $0$）；</li>
+<li>$\varphi$ 随 $\omega_z$ <strong>反向</strong>变化（第二行对应 $\omega_z$ 的元素为 $-1$）。</li>
+</ul>
+<p>平移子块 $\propto 1/Z$。注意 $r=0$（图像中心）处雅可比无定义。</p>
+<p><strong>画法</strong>：在 $(\bar u,\bar v)$ 平面上，对每个网格点算出 $(r,\varphi)$，再对给定 $\boldsymbol{\nu}$ 算 $(\dot r,\dot\varphi)$，把 $(\dot r,\dot\varphi)$ 用极坐标基 $(\hat{\mathbf{e}}_r,\hat{\mathbf{e}}_\varphi)$ 映射回笛卡尔平面画箭头。预期观察：</p>
+<ul>
+<li>纯 $v_z$ 运动：箭头沿径向（$\dot\varphi=0$），$r$ 越大箭头越长（$\propto 1/Z$）；</li>
+<li>纯 $\omega_z$ 运动：箭头纯切向（$\dot r=0$），且方向与 $\omega_z$ 相反；</li>
+<li>纯横向平移：径向与切向分量同时出现，中心附近 $r$ 小、雅可比病态，箭头方向对数值误差敏感。</li>
+</ul>
+<h5>第 3 步：球面流场的构造</h5>
+<p>把任意相机特征投影到单位球面 (16.10)，用最小坐标 (16.11)(16.12) 求导，代入 Eq. 15.2 与 (16.13)，得球面光学流 (16.14) 与球面雅可比 (16.15)。对 $N$ 个点堆叠：</p>
+<p>$$\mathbf{J}=\begin{bmatrix}\mathbf{J}_1\\ \vdots\\ \mathbf{J}_N\end{bmatrix}\in\mathbb{R}^{2N\times6}$$</p>
+<p>单点为 $2\times6$。控制律配比例型期望特征速度 (16.18)：</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}^*\ominus\mathbf{p})$$</p>
+<p>其中 $\theta\in[0,\pi]$、$\varphi\in[-\pi,\pi)$，角度差用 modulo 算子 $\ominus$（Toolbox 函数 <code>angdiff</code>）。</p>
+<p><strong>能否画在球面上？可以。</strong> 做法是：对球面上每个采样点 $(\theta,\varphi)$，算出 $(\dot\theta,\dot\varphi)$，再把它转成球面切平面上的三维切矢量</p>
+<p>$$\dot{\mathbf{p}}_{\text{3D}}=\dot\theta\,\hat{\mathbf{e}}_\theta+\dot\varphi\,\hat{\mathbf{e}}_\varphi$$</p>
+<p>然后用 <code>quiver3</code> 在球面网格点上画箭头。预期观察：</p>
+<ul>
+<li>纯平移：流场在球面上呈现「源/汇」式结构，赤道附近最密；</li>
+<li>纯旋转：流场沿球面「纬线」方向；</li>
+<li>南北极（$\sin\theta=0$）处雅可比无定义，是最小表示的固有奇异性（同 Sect. 2.2.1.3 欧拉角取舍）；</li>
+<li>球面上特征空间内的直线运动一般<strong>不是</strong>大圆。</li>
+</ul>
+<h5>第 4 步：可运行代码（MATLAB，基于 Corke Toolbox）</h5>
+<pre><code class="lang-matlab">%% 极坐标流场
+cam = CentralCamera('default');
+uv  = cam.meshgrid(20);          % 图像平面网格点
+J   = cam.visjac_p_polar(uv, 1); % 极坐标交互矩阵 (16.9)
+nu  = [0 0 0 0 0 1]';            % 例：绕 z 轴单位旋转
+pd  = J * nu;                    % (rdot, phidot)
+% 把 (rdot,phidot) 用极坐标基映射回笛卡尔后 quiver 画箭头
+
+%% 球面流场
+camS = SphericalCamera();
+Tc0  = transl(0.3,0.3,-2)*trotz(0.4);   % 原书 IBVS_sph 例
+vs   = IBVS_sph(camS, 'T0', Tc0);
+vs.run();
+% 对球面网格点求 (thetadot, phidot)，转成三维切矢量后用 quiver3 画在球面上</code></pre>
+<p>预期：极坐标流场中纯 $\omega_z$ 给出纯切向箭头；球面流场中纯平移给出源/汇结构，极点处箭头退化。</p>
+<h4>关键点</h4>
+<ul>
+<li>极坐标雅可比 (16.9) 的三个常数元素 $0,0,-1$ 是全部物理含义的浓缩：$r$ 对 $\omega_z$ 不变、$\varphi$ 对 $v_z$ 不变、$\varphi$ 随 $\omega_z$ 反向。</li>
+<li>极坐标与笛卡尔 IBVS 性能互补：极坐标<strong>大旋转好、大平移差</strong>；$|r|\gg|\varphi|$ 时必须归一化，否则求解相机速度出现数值问题。</li>
+<li>球面最小坐标 $(\theta,\varphi)$ 在南北极（$\sin\theta=0$）奇异，这是最小表示的固有代价，不是实现 bug。</li>
+<li>球面流场可以画在球面上：把 $(\dot\theta,\dot\varphi)$ 转成切平面三维矢量后用 <code>quiver3</code> 绘制。</li>
+<li>角度差一律用 modulo 算子 $\ominus$ / <code>angdiff</code>，否则跨 $0/2\pi$ 边界出错。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 16 章 Advanced Visual Servoing</li>
+<li>依据：</li>
+<li>极坐标定义 (16.5)(16.6)、光学流 (16.8)、雅可比 (16.9) 及 $r=0$ 奇异、$|r|\gg|\varphi|$ 归一化、与笛卡尔互补 —— 事实底座 §5 公式 1–2、§4 步骤 3–4、§7 misconceptions（对应 PDF p.484–485）</li>
+<li>球面投影 (16.10)、最小坐标 (16.11)(16.12)、光学流 (16.14)、雅可比 (16.15)、堆叠 (16.16)、控制律 (16.17)(16.18) —— 事实底座 §5 公式 3–6、§4 步骤 5–6、§7 misconceptions（对应 PDF p.487）</li>
+<li>球面示例 <code>IBVS_sph</code>、<code>SphericalCamera()</code>、<code>Tc0 = transl(0.3,0.3,-2)*trotz(0.4)</code>、$\theta\in[0,\pi]$、$\varphi\in[-\pi,\pi)$、单点 $2\times6$ —— 事实底座 §6（PDF p.487）</li>
+<li>极坐标示例 <code>IBVS_polar</code>、<code>Tc0 = transl(0,0,-2)*trotz(1)</code> —— 事实底座 §6（PDF p.485）</li>
+<li>角度 modulo 算子 $\ominus$ / <code>angdiff</code> —— 事实底座 §1、§7（PDF p.482）</li>
+<li>最小表示奇异性类比欧拉角 —— 事实底座 §7（PDF p.487，Sect. 2.2.1.3）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6. 四旋翼</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 将透视相机替换为球面相机</h5>
+<p><strong>做什么</strong>：把第 15 章经典 IBVS 中基于像素坐标 $(u,v)$ 的特征，替换为本章第 5 节的球面投影特征 $(\theta,\varphi)$。</p>
+<p><strong>为什么</strong>：透视相机在特征逼近视场边缘时失效，而球面相机把任意方向的特征都映射到单位球面上，天然覆盖全视场，从而免去显式保持特征在视场内的需要（事实底座第 3 节第 5 条）。</p>
+<p><strong>推导</strong>：设相机系下特征点 $\mathbf{P}=[X\ Y\ Z]^T$，球面投影为</p>
+<p>$$\mathbf{p}=\frac{1}{R}\mathbf{P},\qquad R=\sqrt{X^2+Y^2+Z^2}$$</p>
+<p>在单位球面 $x^2+y^2+z^2=1$ 上取最小坐标（余纬角 colatitude、方位角 azimuth）：</p>
+<p>$$\theta=\arccos\!\big(z/\sqrt{x^2+y^2+z^2}\big),\qquad \varphi=\operatorname{atan2}(y,x)$$</p>
+<p>对时间求导并代入第 15 章光学流方程 $\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu}$，得球面光学流 (16.14) 与单点雅可比 (16.15)。对 $N$ 个点堆叠：</p>
+<p>$$\mathbf{J}=\begin{bmatrix}\mathbf{J}_1\\ \vdots\\ \mathbf{J}_N\end{bmatrix}\in\mathbb{R}^{2N\times6}$$</p>
+<p>控制律取比例型期望特征速度 (16.18)：</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}^*\ominus\mathbf{p})$$</p>
+<p>其中 $\ominus$ 为 modulo 减法（Toolbox 函数 <code>angdiff</code>），$\theta\in[0,\pi]$、$\varphi\in[-\pi,\pi)$。相机速度由 $\boldsymbol{\nu}=\mathbf{J}^{+}\dot{\mathbf{p}}^*$ 求得（非方阵用 <code>pinv Jac</code>）。</p>
+<p><strong>可运行验证</strong>（对应原书 <code>IBVS_sph</code> 示例）：</p>
+<pre><code class="lang-matlab">cam = SphericalCamera();
+Tc0 = transl(0.3, 0.3, -2) * trotz(0.4);
+vs = IBVS_sph(cam, 'Tc0', Tc0);
+vs.run();</code></pre>
+<p><strong>预期观察</strong>：特征在球面上收敛到期望位置，$\theta$ 落在 $[0,\pi]$、$\varphi$ 落在 $[-\pi,\pi)$；单点雅可比为 $2\times6$，$N$ 点堆叠为 $2N\times6$。注意球面雅可比在南北极（$\sin\theta=0$）无定义，这是最小表示的固有奇异性。</p>
+<h5>b) 球面相机下跟随一系列点特征</h5>
+<p><strong>做什么</strong>：把期望特征 $\mathbf{p}^*$ 从固定值改为随时间变化的轨迹 $\mathbf{p}^*(t)$，控制器跟踪该轨迹而非收敛到常值。</p>
+<p><strong>为什么</strong>：悬停对应 $\dot{\mathbf{p}}^*\to 0$；跟随则需保留前馈项，使特征速度非零。</p>
+<p><strong>推导</strong>：将 (16.18) 改为</p>
+<p>$$\dot{\mathbf{p}}^*=\dot{\mathbf{p}}^*_{\text{ff}}+\lambda\,(\mathbf{p}^*(t)\ominus\mathbf{p})$$</p>
+<p>其中 $\dot{\mathbf{p}}^*_{\text{ff}}$ 是期望特征轨迹的前馈速度。相机速度仍为</p>
+<p>$$\boldsymbol{\nu}=\mathbf{J}^{+}\dot{\mathbf{p}}^*$$</p>
+<p><strong>可运行验证</strong>：在 <code>IBVS_sph</code> 基础上，把期望点设为时间函数（如球面上沿大圆运动），观察特征跟踪误差有界。注意球面上特征空间内的直线运动一般不是大圆，需按球面几何生成期望轨迹。</p>
+<h5>c) 一般序列点特征跟随（含视角约束）</h5>
+<p><strong>做什么</strong>：在 b) 基础上加入本章第 7 节的伺服任务分区与视角约束，保证特征始终可见、目标法向在光轴 ±40° 内。</p>
+<p><strong>为什么</strong>：目标平面不垂直光轴时，透视使面积变小、线段感知角度改变，引入不必要的 z 轴运动；该特征族仅在 ±40° 内可靠（事实底座第 7 节）。序列跟随会经过大视角变化，必须约束。</p>
+<p><strong>推导</strong>：按图像/位姿/关节子空间分区控制，配合排斥力与视角约束。排斥力按到图像边缘最短距离 $d(\mathbf{p})$、作用区宽 $d_0$、增益 $\eta$ 产生推离相机的力，并入 z 轴平移控制器；需平滑滤波与速度限幅以避免 chattering。位姿误差用 <code>tr2delta</code> 得 6 维 $\Delta$，角度差用 <code>angdiff</code>。</p>
+<p><strong>可运行验证</strong>：参考 Simulink 模型 <code>sl_partitioned</code>，初始位姿由 pose block 设定，期望图像点 $\mathbf{p}^*$ 由绿色 constant block 设定，运行 <code>sim('sl_partitioned')</code>，观察特征始终在视场内、目标法向保持在光轴 ±40° 内。</p>
+<h4>关键点</h4>
+<ul>
+<li>球面相机把特征映射到单位球面，用最小坐标 $(\theta,\varphi)$ 推导雅可比，免去显式保持特征在视场内；但南北极（$\sin\theta=0$）有固有奇异性。</li>
+<li>单点球面雅可比为 $2\times6$，$N$ 点堆叠为 $2N\times6$；控制律 $\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$，$\ominus$ 必须用 modulo 减法（<code>angdiff</code>）。</li>
+<li>悬停 → 跟随的关键是把期望特征改为时变轨迹并加入前馈速度 $\dot{\mathbf{p}}^*_{\text{ff}}$。</li>
+<li>序列跟随必须配合伺服任务分区与视角约束（目标法向在光轴 ±40° 内），否则透视畸变会引入不必要的 z 轴运动。</li>
+<li>非方阵雅可比用 <code>pinv Jac</code>（$\mathbf{J}^{+}=(\mathbf{J}^T\mathbf{J})^{-1}\mathbf{J}^T$ 或 $\mathbf{J}^T(\mathbf{J}\mathbf{J}^T)^{-1}$），方阵才用 <code>inv Jac</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 16 章</li>
+<li>依据：</li>
+<li>球面投影 (16.10)、最小坐标 (16.11)(16.12)、堆叠雅可比 (16.16)、比例控制律 (16.18)：事实底座第 5 节关键公式 3–6。</li>
+<li>球面 IBVS 概念、南北极奇异性、球面直线非大圆：事实底座第 3 节第 5 条、第 7 节 misconceptions。</li>
+<li><code>IBVS_sph</code> 示例（<code>SphericalCamera()</code>、<code>Tc0 = transl(0.3,0.3,-2)*trotz(0.4)</code>）：事实底座第 6 节。</li>
+<li>视角约束 ±40°、排斥力、chattering：事实底座第 3 节第 3 条、第 6 节、第 7 节。</li>
+<li>伺服任务分区、<code>tr2delta</code>、<code>angdiff</code>、<code>sl_partitioned</code>：事实底座第 4 节第 8 步、第 6 节。</li>
+<li><code>inv Jac</code>/<code>pinv Jac</code>：事实底座第 4 节第 7 步、第 7 节。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 2.5D 视觉伺服在本书中的定位。</strong></p>
+<p>本章事实底座第 3 节第 6 条指出：混合伺服 $\text{BVS}=\text{IBVS}+\text{PBVS}$，而 <strong>2.5D 视觉伺服（Malis et al. 1999）是其重要基础</strong>。因此本题不是要另起炉灶，而是要在第 15 章 IBVS 与本章 PBVS/混合伺服的框架之间，构造一个"部分图像、部分位姿"的中间方案。</p>
+<p><strong>第 2 步：写出 2.5D 的核心思想（按符号推导，原书未给出具体数值）。</strong></p>
+<p>经典 IBVS 直接以图像特征误差 $\mathbf{p}^*-\mathbf{p}$ 驱动，存在相机后退；PBVS 以完整位姿误差 $\Delta\in\mathbb{R}^6$ 驱动，依赖 3D 重建。2.5D 取折中：<strong>平移分量用图像特征误差驱动，旋转分量用部分位姿估计驱动</strong>。设当前图像特征 $\mathbf{p}$、期望 $\mathbf{p}^*$，则期望特征速度仍取本章比例型形式（事实底座第 5 节公式 6）：</p>
+<p>$$\dot{\mathbf{p}}^*=\lambda\,(\mathbf{p}^*\ominus\mathbf{p})$$</p>
+<p>其中 $\ominus$ 为 modulo 减法算子（Toolbox 函数 <code>angdiff</code>），保证角度跨 $0/2\pi$ 边界正确。</p>
+<p><strong>第 3 步：构造交互矩阵。</strong></p>
+<p>由第 15 章光学流方程 $\dot{\mathbf{p}}=\mathbf{J}_{\mathrm{image}}\boldsymbol{\nu}$，其中 $\boldsymbol{\nu}=[v_x\ v_y\ v_z\ \omega_x\ \omega_y\ \omega_z]^T$ 为相机速度。2.5D 方案将 $\mathbf{J}_{\mathrm{image}}$ 按平移/旋转分块：</p>
+<p>$$\mathbf{J}_{\mathrm{image}}=\begin{bmatrix}\mathbf{J}_v & \mathbf{J}_\omega\end{bmatrix}$$</p>
+<p>平移子块 $\mathbf{J}_v\propto 1/Z$（事实底座第 4 节第 3 步），旋转子块 $\mathbf{J}_\omega$ 与 $Z$ 无关。2.5D 的关键操作是：<strong>用图像误差求平移速度，用位姿误差求旋转速度</strong>，从而避免 IBVS 的相机后退，同时避免 PBVS 对完整 3D 重建的依赖。</p>
+<p><strong>第 4 步：求解相机速度。</strong></p>
+<p>对 $N$ 个特征点堆叠得 $\mathbf{J}\in\mathbb{R}^{2N\times6}$（事实底座第 5 节公式 5）。若 $\mathbf{J}$ 为方阵用 <code>inv Jac</code>（$\mathbf{J}^{-1}\boldsymbol{\nu}$，并检查条件数）；非方阵或奇异时用 <code>pinv Jac</code>（$\mathbf{J}^{+}\boldsymbol{\nu}$，$\mathbf{J}^{+}=(\mathbf{J}^T\mathbf{J})^{-1}\mathbf{J}^T$ 或 $\mathbf{J}^T(\mathbf{J}\mathbf{J}^T)^{-1}$），必要时用阻尼逆（事实底座第 4 节第 7 步）。</p>
+<p><strong>第 5 步：可运行的 MATLAB 验证代码。</strong></p>
+<p>基于本章 <code>IBVS_polar</code> / <code>IBVS_sph</code> 的仿真范式（事实底座第 6 节），可写出如下骨架：</p>
+<pre><code class="lang-matlab">% 2.5D visual servo skeleton (Malis 1999 style)
+cam = CentralCamera('default');
+Tc0 = transl(0, 0, -2) * trotz(1);   % 与 IBVS_polar 同量级初值
+vs  = IBVS(cam, 'T0', Tc0, 'pstar', ...);
+% 平移：图像误差 -> Jv
+% 旋转：位姿误差 -> tr2delta -> 旋转子空间
+% 期望特征速度：lambda * angdiff(pstar, p)
+vs.run();</code></pre>
+<p><strong>预期观察</strong>：与纯 IBVS 相比，相机不再出现明显后退；与纯 PBVS 相比，不依赖完整 3D 重建。原书未给出 2.5D 的具体数值算例，故此处仅给出结构，数值需读者自行运行验证。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>2.5D = IBVS 的平移 + PBVS 的旋转</strong>：这是 Malis（1999）方案的本质，也是本章 BVS 的基石（事实底座第 3 节第 6 条）。</li>
+<li><strong>角度差必须用 $\ominus$ / <code>angdiff</code></strong>：否则跨 $0/2\pi$ 边界出错（事实底座第 7 节第 1 条）。</li>
+<li><strong>求解相机速度时区分方阵/非方阵</strong>：方阵用 <code>inv Jac</code> 并查条件数，非方阵用 <code>pinv Jac</code>，奇异时用阻尼逆（事实底座第 4 节第 7 步）。</li>
+<li><strong>期望特征速度取比例型</strong> $\dot{\mathbf{p}}^*=\lambda(\mathbf{p}^*\ominus\mathbf{p})$（事实底座第 5 节公式 6）。</li>
+<li><strong>本题为挑战题</strong>：原书未给出 2.5D 的具体数值算例，所有数值需读者自行仿真验证。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 16 章</li>
+<li>依据：</li>
+<li>2.5D 与 BVS 的关系：事实底座第 3 节第 6 条</li>
+<li>比例型期望特征速度：事实底座第 5 节公式 6</li>
+<li>堆叠雅可比：事实底座第 5 节公式 5</li>
+<li>平移子块 $\propto 1/Z$：事实底座第 4 节第 3 步</li>
+<li><code>inv Jac</code> / <code>pinv Jac</code> / 阻尼逆：事实底座第 4 节第 7 步</li>
+<li><code>angdiff</code> / $\ominus$：事实底座第 1 节、第 7 节第 1 条</li>
+<li>仿真范式参考 <code>IBVS_polar</code> / <code>IBVS_sph</code>：事实底座第 6 节</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

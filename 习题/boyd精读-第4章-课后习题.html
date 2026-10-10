@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>boyd 第 4 章「Duality」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>boyd 第 4 章「Duality」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 凹函数及其原因</strong></p>
+<p>对偶函数定义为</p>
+<p>$$
+g(\lambda,\nu)=\inf_{x\in D}L(x,\lambda,\nu),
+$$</p>
+<p>其中</p>
+<p>$$
+L(x,\lambda,\nu)=f_0(x)+\sum_{i=1}^m\lambda_i f_i(x)+\sum_{j=1}^p\nu_j h_j(x).
+$$</p>
+<p>固定 $x$ 时，$L(x,\lambda,\nu)$ 是 $(\lambda,\nu)$ 的<strong>仿射函数</strong>。而 $g$ 是这一族仿射函数关于 $x$ 的逐点下确界：</p>
+<p>$$
+g(\lambda,\nu)=\inf_{x\in D}\big\{\text{关于 }(\lambda,\nu)\text{ 的仿射函数}\big\}.
+$$</p>
+<p>仿射函数族的下确界总是<strong>凹函数</strong>。因此 $g$ 是凹函数。</p>
+<p>这一性质<strong>不依赖原问题的凸性</strong>。事实底座明确指出：图 5.2 中 $f_0,f_1$ 均非凸，但 $g(\lambda)$ 仍为凹函数。所以即使原问题非凸，$g$ 仍然凹。</p>
+<p><strong>2. 下界性质与“空洞”的含义</strong></p>
+<p>对任意可行 $\tilde x$（即 $f_i(\tilde x)\le0$、$h_j(\tilde x)=0$）和 $\lambda\succeq0$，有</p>
+<p>$$
+\sum_i\lambda_i f_i(\tilde x)+\sum_j\nu_j h_j(\tilde x)\le0,
+$$</p>
+<p>因此</p>
+<p>$$
+L(\tilde x,\lambda,\nu)\le f_0(\tilde x).
+$$</p>
+<p>对 $x$ 取下确界得 $g(\lambda,\nu)\le f_0(\tilde x)$，再对所有可行 $\tilde x$ 取下确界得</p>
+<p>$$
+g(\lambda,\nu)\le p^\star.
+$$</p>
+<p>当 $g(\lambda,\nu)=-\infty$ 时，不等式 $-\infty\le p^\star$ 虽然形式上成立，但它没有给出任何关于 $p^\star$ 的有限信息，因此是“空洞”的。只有满足 $\lambda\succeq0$ 且 $g(\lambda,\nu)>-\infty$ 的 $(\lambda,\nu)$（即 dual feasible）才给出非平凡下界。</p>
+<p><strong>3. 对偶问题的凸性</strong></p>
+<p>对偶问题</p>
+<p>$$
+\max_{\lambda,\nu}\ g(\lambda,\nu)\quad \mathrm{s.t.}\quad \lambda\succeq0
+$$</p>
+<p>是<strong>凸问题</strong>。原因是：目标函数 $g$ 是凹函数，最大化凹函数等价于最小化凸函数；约束 $\lambda\succeq0$ 是凸集。因此对偶问题总是凸的，<strong>与原问题是否凸无关</strong>。这正是对偶方法的重要价值：即使原问题非凸，其对偶问题仍是凸问题。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 错误。</strong> 凸性只是“通常（但不总是）”保证强对偶，还需要 Slater 等约束资格条件。事实底座明确指出：强对偶并非总成立，凸性只是通常但不总是保证，还需 Slater 等条件。</p>
+<p><strong>2. 错误。</strong> Slater 条件中，等式约束 $Ax=b$ 仍须严格满足，但只有不等式约束要求严格不等式 $f_i(x)<0$；前 $k$ 个仿射不等式还可以放宽为 $\le0$。因此并非“所有约束都严格满足”。</p>
+<p><strong>3. 错误。</strong> 弱对偶在无穷值时仍成立。事实底座指出：$p^\star=-\infty\Rightarrow d^\star=-\infty$（对偶不可行），$d^\star=+\infty\Rightarrow p^\star=+\infty$（原问题不可行）。所以 $p^\star=-\infty$ 时仍有 $d^\star\le p^\star$。</p>
+<p><strong>4. 错误。</strong> trust region 问题 (5.32) 虽然非凸，却具有零对偶间隙。事实底座将其列为“稀有但存在”的例子，提醒不要误以为非凸一定有正间隙。</p>
+<p><strong>5. 错误。</strong> 互补松弛推导中“取等”只推出 $x^\star$ 是 $L(x,\lambda^\star,\nu^\star)$ 的极小点之一，$L$ 可能有其他极小点。因此不能断言唯一性。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 拉格朗日函数</strong></p>
+<p>将约束写成标准形式：$f_i(x)=-x_i\le0$（$i=1,\dots,n$），$h_j(x)=a_j^Tx-b_j=0$（$j=1,\dots,p$，$a_j^T$ 为 $A$ 的第 $j$ 行）。拉格朗日函数为</p>
+<p>$$
+L(x,\lambda,\nu)=c^Tx-\sum_{i=1}^n\lambda_i x_i+\sum_{j=1}^p\nu_j(a_j^Tx-b_j).
+$$</p>
+<p>整理得</p>
+<p>$$
+L(x,\lambda,\nu)=(c-\lambda+A^T\nu)^Tx-b^T\nu,
+$$</p>
+<p>其中 $\lambda\succeq0$。</p>
+<p><strong>2. 对偶函数</strong></p>
+<p>对偶函数为</p>
+<p>$$
+g(\lambda,\nu)=\inf_x L(x,\lambda,\nu)=\inf_x\big\{(c-\lambda+A^T\nu)^Tx-b^T\nu\big\}.
+$$</p>
+<p>这是关于 $x$ 的仿射函数的下确界。若系数向量非零，则令 $x$ 沿负方向趋于无穷可使 $L\to-\infty$；只有当系数向量为零时，下确界才有限。因此</p>
+<p>$$
+g(\lambda,\nu)=
+\begin{cases}
+-b^T\nu, & A^T\nu-\lambda+c=0,\\[2pt]
+-\infty, & \text{否则}.
+\end{cases}
+$$</p>
+<p>这与事实底座中“标准形式 LP（5.6）：$g(\lambda,\nu)=-b^T\nu$ 当 $A^T\nu-\lambda+c=0$，否则 $-\infty$”一致。</p>
+<p><strong>3. 对偶问题</strong></p>
+<p>对偶问题为</p>
+<p>$$
+\max_{\lambda,\nu}\ -b^T\nu\quad \mathrm{s.t.}\quad A^T\nu-\lambda+c=0,\ \lambda\succeq0.
+$$</p>
+<p>消去 $\lambda=c+A^T\nu$，并利用 $\lambda\succeq0$ 得</p>
+<p>$$
+\max_{\nu}\ -b^T\nu\quad \mathrm{s.t.}\quad A^T\nu+c\succeq0.
+$$</p>
+<p>这是凸问题：目标 $-b^T\nu$ 关于 $\nu$ 是仿射（既凸又凹），约束 $A^T\nu+c\succeq0$ 是仿射不等式，构成凸可行集。因此对偶问题总是凸的。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 拉格朗日函数与对偶函数</strong></p>
+<p>拉格朗日函数为</p>
+<p>$$
+L(x,\nu)=\tfrac12 x^TPx+q^Tx+r+\nu^T(Ax-b).
+$$</p>
+<p>对偶函数为</p>
+<p>$$
+g(\nu)=\inf_x L(x,\nu).
+$$</p>
+<p>由于 $P\succ0$，$L$ 关于 $x$ 是严格凸二次函数，极小点满足</p>
+<p>$$
+\nabla_x L=Px+q+A^T\nu=0\quad\Longrightarrow\quad x=-P^{-1}(q+A^T\nu).
+$$</p>
+<p>代入得</p>
+<p>$$
+g(\nu)=-\tfrac12(q+A^T\nu)^TP^{-1}(q+A^T\nu)+r-b^T\nu.
+$$</p>
+<p>这是关于 $\nu$ 的凹二次函数。</p>
+<p><strong>2. KKT 稳定条件推导</strong></p>
+<p>KKT 稳定条件为</p>
+<p>$$
+\nabla f_0(x^\star)+A^T\nu^\star=0,
+$$</p>
+<p>即</p>
+<p>$$
+Px^\star+q+A^T\nu^\star=0.
+$$</p>
+<p>原始可行性为</p>
+<p>$$
+Ax^\star=b.
+$$</p>
+<p>将两式写成块矩阵形式：</p>
+<p>$$
+\begin{cases}
+Px^\star+A^T\nu^\star=-q,\\
+Ax^\star=b.
+\end{cases}
+$$</p>
+<p>即</p>
+<p>$$
+\begin{pmatrix}P&A^T\\A&0\end{pmatrix}\begin{pmatrix}x^\star\\\nu^\star\end{pmatrix}=\begin{pmatrix}-q\\b\end{pmatrix}.
+$$</p>
+<p>这与事实底座中 Example 5.1（5.50）的 KKT 块方程一致。</p>
+<p><strong>3. 方程数与未知量</strong></p>
+<p>未知量为 $x^\star\in\mathbb{R}^n$ 和 $\nu^\star\in\mathbb{R}^p$，共 $n+p$ 个。方程组第一块有 $n$ 个方程，第二块有 $p$ 个方程，共 $n+p$ 个方程。由于 $P\succ0$ 且 $\mathrm{rank}\,A=p$，系数矩阵可逆，方程组有唯一解。事实底座指出该方程组有 $m+n$ 个方程（此处 $m$ 对应 $p$）。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合应用 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 拉格朗日函数与对偶函数</strong></p>
+<p>约束 $x_i^2=1$ 对应 $h_i(x)=x_i^2-1=0$。拉格朗日函数为</p>
+<p>$$
+L(x,\nu)=x^TWx+\sum_{i=1}^n\nu_i(x_i^2-1)=x^T(W+\operatorname{diag}(\nu))x-\mathbf 1^T\nu.
+$$</p>
+<p>对偶函数为</p>
+<p>$$
+g(\nu)=\inf_x\big\{x^T(W+\operatorname{diag}(\nu))x-\mathbf 1^T\nu\big\}.
+$$</p>
+<p>若 $W+\operatorname{diag}(\nu)\succeq0$，则二次型非负，下确界在 $x=0$ 处取得，$g(\nu)=-\mathbf 1^T\nu$；若 $W+\operatorname{diag}(\nu)\not\succeq0$，则存在方向使二次型趋于 $-\infty$，$g(\nu)=-\infty$。因此</p>
+<p>$$
+g(\nu)=
+\begin{cases}
+-\mathbf 1^T\nu, & W+\operatorname{diag}(\nu)\succeq0,\\
+-\infty, & \text{否则}.
+\end{cases}
+$$</p>
+<p>这与事实底座一致。</p>
+<p><strong>2. 取 $\nu=-\lambda_{\min}(W)\mathbf 1$ 证明下界</strong></p>
+<p>令 $\nu=-\lambda_{\min}(W)\mathbf 1$，则</p>
+<p>$$
+W+\operatorname{diag}(\nu)=W-\lambda_{\min}(W)I\succeq0,
+$$</p>
+<p>因为 $\lambda_{\min}(W)$ 是 $W$ 的最小特征值。因此该 $\nu$ 是 dual feasible，给出下界</p>
+<p>$$
+g(\nu)=-\mathbf 1^T\nu=-\sum_{i=1}^n(-\lambda_{\min}(W))=n\lambda_{\min}(W).
+$$</p>
+<p>由弱对偶 $g(\nu)\le p^\star$，得</p>
+<p>$$
+p^\star\ge n\lambda_{\min}(W).
+$$</p>
+<p>这与事实底座中 (5.8) 一致。</p>
+<p><strong>3. Python 数值验证</strong></p>
+<pre><code class="lang-python">import numpy as np
+from itertools import product
+
+np.random.seed(0)
+n = 5
+W = np.random.randn(n, n)
+W = (W + W.T) / 2  # 对称化
+
+# 穷举求 p_star
+best = np.inf
+for bits in product([-1, 1], repeat=n):
+    x = np.array(bits, dtype=float)
+    val = x @ W @ x
+    if val < best:
+        best = val
+p_star = best
+
+# 对偶下界
+lambda_min = np.linalg.eigvalsh(W).min()
+dual_lb = n * lambda_min
+
+print(f"p_star      = {p_star:.6f}")
+print(f"n*lambda_min= {dual_lb:.6f}")
+print(f"duality gap >= {p_star - dual_lb:.6f}")</code></pre>
+<p><strong>预期观察</strong>：运行后应看到 $p^\star\ge n\lambda_{\min}(W)$，即 <code>p_star</code> 不小于 <code>dual_lb</code>，两者之差为非负的对偶间隙。由于该问题非凸，间隙通常为正；但事实底座指出对偶 SDP 即使 $n=1000$ 也能高效求解，而穷举仅 $n\le30$ 可行、$n>50$ 很难。本实验取 $n=5$ 仅用于验证下界性质，不涉及大规模求解。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

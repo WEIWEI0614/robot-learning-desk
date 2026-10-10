@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>论文库 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">论文库<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+
+<h1>论文库 · 高影响力清单</h1>
+<p class="sub">
+按主题建立的精选集，<b>不是</b>全领域穷尽清单——在快速增长的学科里"所有"没有可验证的静态边界。<br>
+引用数取 Crossref 与 OpenAlex 的较大值（跨库口径不同，均为快照值）。生成于 2026-10-05。
+</p>
+
+<div class="stats">
+<div class="st"><div class="n">21</div><div class="l">收录总数</div></div>
+<div class="st"><div class="n">20</div><div class="l">公开原文</div></div>
+<div class="st"><div class="n">21</div><div class="l">产业链底层线</div></div>
+<div class="st"><div class="n">14</div><div class="l">论文精读线</div></div>
+<div class="st"><div class="n">0</div><div class="l">近期新收录</div></div>
+</div>
+
+<div class="note key">
+<b>两条线怎么用</b><br>
+<span class="bd frontier" style="display:inline-block">产业链底层</span>
+补底层结构——模型架构、算力与存储、先进封装、数据规模。算法之上还有一整层工程与产业链现实。<br>
+<span class="bd paper" style="display:inline-block">论文精读</span>
+建知识体系。经典原理与基础算法，读的是"为什么这样设计"。
+</div>
+
+<div class="note key">
+<b>配套：论文地图（顶部新页签）</b><br>
+切到页签 <b>「论文地图」</b>：李飞飞研究脉络 2009→2026（ImageNet → 具身智能 → 空间智能）、
+43 个 GitHub 高星论文仓库的实测星数、具身智能 / 世界模型 / 人形 / 脑机接口高分论文与建议阅读顺序。<br>
+<b>两者分工</b>：本清单 21 篇是<i>按主题精选</i>（打知识底座，配公开原文链接）；
+论文地图是<i>按来源与脉络检索</i>（找新东西、看 GitHub 社区热度、查 arXiv 与 DOI 原文）。先用本清单打底，再用论文地图扩展。
+</div>
+
+<div class="note">
+<b>引用纪律</b>：闭源论文只保留元数据，不做访问绕过；未发现公开直链的标注为"无公开 PDF"，
+不猜链接。标注"引用数未取到"的是快照接口当时没返回，不是零引用。
+</div>
+
+<h2>全部论文（底层线优先）</h2>
+<div class="grid">
+<article class="card">
+<header>
+<h4>Continuous control with deep reinforcement learning</h4>
+<div class="meta"><span class="yr">2015</span><span class="ct">5,337</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1509.02971" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">连续动作控制的经典 DDPG 方法。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人学习</span><span class="tg">强化学习</span><span class="tg">控制</span></div>
+<div class="auth">Timothy Lillicrap、Jonathan J. Hunt、Alexander Pritzel等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>MuJoCo: A physics engine for model-based control</h4>
+<div class="meta"><span class="yr">2012</span><span class="ct">4,605</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.1109/iros.2012.6386109" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">机器人动力学与基于模型控制的经典物理引擎。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人原理</span><span class="tg">仿真</span><span class="tg">物理AI</span></div>
+<div class="auth">Emanuel Todorov、Tom Erez、Yuval Tassa</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>MonoSLAM: Real-Time Single Camera SLAM</h4>
+<div class="meta"><span class="yr">2007</span><span class="ct">4,352</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.1109/tpami.2007.1049" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">单目视觉 SLAM，奠定移动机器人感知定位基础。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人原理</span><span class="tg">感知</span><span class="tg">SLAM</span></div>
+<div class="auth">Andrew J. Davison、Ian D. Reid、Nicholas Molton等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Trust Region Policy Optimization</h4>
+<div class="meta"><span class="yr">2015</span><span class="ct">3,093</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1502.05477" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">策略优化的理论基础，衔接机器人策略学习。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人学习</span><span class="tg">强化学习</span><span class="tg">控制</span></div>
+<div class="auth">John Schulman、Sergey Levine、Philipp Moritz等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Domain randomization for transferring deep neural networks from simulation to the real world</h4>
+<div class="meta"><span class="yr">2017</span><span class="ct">2,937</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.1109/iros.2017.8202133" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">Sim2Real 与域随机化的奠基性方法。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">迁移与sim2real</span><span class="tg">物理AI</span><span class="tg">机器人学习</span></div>
+<div class="auth">Josh Tobin、Rachel Fong、Alex Ray等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Zero-Moment Point - Thirty Five Years of its Life</h4>
+<div class="meta"><span class="yr">2004</span><span class="ct">2,295</span> <span class="cl">被引</span><span class="btn none" >无公开 PDF</span></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">人形双足稳定性的 ZMP 理论综述。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">人形机器人</span><span class="tg">机器人原理</span><span class="tg">运动</span></div>
+<div class="auth">MIOMIR K. VUKOBRATOVIC、Branislav Borovać</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Series elastic actuators</h4>
+<div class="meta"><span class="yr">1995</span><span class="ct">2,219</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.1109/iros.1995.525827" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">力/柔顺控制与人形机器人的关键执行器原理。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人原理</span><span class="tg">人形机器人</span><span class="tg">硬件</span></div>
+<div class="auth">Gill A. Pratt、Matthew M. Williamson</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Asynchronous Methods for Deep Reinforcement Learning</h4>
+<div class="meta"><span class="yr">2016</span><span class="ct">1,689</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1602.01783" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">异步深度强化学习，影响后续机器人控制训练范式。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人学习</span><span class="tg">强化学习</span></div>
+<div class="auth">Volodymyr Mnih、Adrià Puigdomènech Badia、Mehdi Mirza等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Habitat: A Platform for Embodied AI Research</h4>
+<div class="meta"><span class="yr">2019</span><span class="ct">1,082</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1904.01201" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">大规模具身智能仿真平台与基准。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">仿真</span><span class="tg">基准与评测</span></div>
+<div class="auth">Manolis Savva、Abhishek Kadian、Oleksandr Maksymets等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Vision-and-Language Navigation: Interpreting Visually-Grounded Navigation Instructions in Real Environments</h4>
+<div class="meta"><span class="yr">2018</span><span class="ct">881</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1711.07280" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">具身视觉-语言导航基准。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">视觉-语言</span><span class="tg">导航</span></div>
+<div class="auth">Peter Anderson、Qi Wu、Damien Teney等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Sim-to-Real: Learning Agile Locomotion For Quadruped Robots</h4>
+<div class="meta"><span class="yr">2018</span><span class="ct">702</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.15607/rss.2018.xiv.010" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">四足敏捷运动的 Sim2Real 学习。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">迁移与sim2real</span><span class="tg">运动</span><span class="tg">机器人学习</span></div>
+<div class="auth">Jie Tan、Tingnan Zhang、Erwin Coumans等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware</h4>
+<div class="meta"><span class="yr">2023</span><span class="ct">659</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.15607/rss.2023.xix.016" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">低成本双臂精细操作与模仿学习。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">人形机器人</span><span class="tg">操作</span><span class="tg">机器人学习</span></div>
+<div class="auth">Tony Z. Zhao、Vikas Kumar、Sergey Levine等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Diffusion Policy: Visuomotor Policy Learning via Action Diffusion</h4>
+<div class="meta"><span class="yr">2023</span><span class="ct">596</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/2303.04137" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">扩散模型驱动视觉运动策略的代表作。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">机器人学习</span><span class="tg">操作</span><span class="tg">策略学习</span></div>
+<div class="auth">Cheng Chi、Zhenjia Xu、Siyuan Feng等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Do As I Can, Not As I Say: Grounding Language in Robotic Affordances</h4>
+<div class="meta"><span class="yr">2022</span><span class="ct">524</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/2204.01691" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">语言规划与机器人可行能力接地的代表作。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">视觉-语言</span><span class="tg">操作</span></div>
+<div class="auth">Ahn, Michael、Anthony Brohan、Noah Brown等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Learning Model Predictive Control for Quadrotor Navigation</h4>
+<div class="meta"><span class="yr">2020</span><span class="ct">477</span> <span class="cl">被引</span><span class="btn none">无公开原文</span></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">可学习模型预测控制与四旋翼导航。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">世界模型</span><span class="tg">控制</span><span class="tg">机器人学习</span></div>
+<div class="auth">Grady Williams、Nolan Wagener、Brian Goldfain等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Learning to Walk Via Deep Reinforcement Learning</h4>
+<div class="meta"><span class="yr">2019</span><span class="ct">444</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.15607/rss.2019.xv.011" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">学习式双足/多足行走控制的高引用代表作。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">人形机器人</span><span class="tg">运动</span><span class="tg">机器人学习</span></div>
+<div class="auth">Tuomas Haarnoja、Sehoon Ha、Aurick Zhou等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Embodied Question Answering</h4>
+<div class="meta"><span class="yr">2018</span><span class="ct">351</span> <span class="cl">被引</span><a class="btn local" href="https://doi.org/10.1109/cvpr.2018.00008" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">具身代理主动探索与问答的任务定义。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">基准与评测</span><span class="tg">视觉-语言</span></div>
+<div class="auth">Abhishek Kumar Das、Samyak Datta、Georgia Gkioxari等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control</h4>
+<div class="meta"><span class="yr">2023</span><span class="ct">273</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/2307.15818" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">视觉-语言-动作模型将网络知识迁移到控制。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">视觉-语言-动作</span><span class="tg">机器人学习</span></div>
+<div class="auth">Anthony Brohan、Noah Brown、Justice Carbajal等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Dream to Control: Learning Behaviors by Latent Imagination</h4>
+<div class="meta"><span class="yr">2018</span><span class="ct">134</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/1912.01603" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span><span class="bd paper">论文精读</span></div>
+<p class="why">潜在世界模型与想象 rollout 控制。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">世界模型</span><span class="tg">机器人学习</span><span class="tg">规划</span></div>
+<div class="auth">Danijar Hafner、Timothy Lillicrap、Jimmy Lei Ba等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>OpenVLA: An Open-Source Vision-Language-Action Model</h4>
+<div class="meta"><span class="yr">2024</span><span class="ct">43</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/2406.09246" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">开放源代码的通用视觉-语言-动作模型。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">具身智能</span><span class="tg">视觉-语言-动作</span><span class="tg">机器人学习</span></div>
+<div class="auth">Moo Jin Kim、Karl Pertsch、Siddharth Karamcheti等</div>
+</div>
+</article>
+<article class="card">
+<header>
+<h4>Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation</h4>
+<div class="meta"><span class="yr">2024</span><span class="ct">31</span> <span class="cl">被引</span><a class="btn local" href="https://arxiv.org/abs/2401.02117" target="_blank" rel="noopener">原文</a></div>
+</header>
+<div class="badges"><span class="bd frontier">产业链底层</span></div>
+<p class="why">低成本全身遥操作与移动双臂操作。</p>
+<div class="foot">
+<div class="tg-wrap"><span class="tg">人形机器人</span><span class="tg">操作</span><span class="tg">机器人学习</span></div>
+<div class="auth">Zipeng Fu、Tony Z. Zhao、Chelsea Finn</div>
+</div>
+</article>
+</div>
+
+</div>
+
+</div>
+<nav class="pager" data-for="papers"></nav>
+
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 5 章「Multifingered Hand Kinematics」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 5 章「Multifingered Hand Kinematics」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本章第 3 节核心概念清单第 1 条指出，接触模型由两部分组成：</p>
+<ol>
+<li><strong>$B_{ci}\in\mathbb{R}^{p\times m_i}$</strong>：可传力的方向基（wrench basis），描述接触点处能够传递的力旋量的方向；</li>
+<li><strong>$FC_{ci}\subset\mathbb{R}^{m_i}$</strong>：摩擦锥（friction cone），描述这些方向上力的大小范围。</li>
+</ol>
+<p>接触力写作</p>
+<p>$$
+\mathcal{F}_{ci}=B_{ci}f_{ci},\qquad f_{ci}\in FC_{ci}.
+$$</p>
+<p><strong>为什么仅有 $G$ 不够</strong>：抓取映射 $G$ 只描述了「接触力如何线性映射到物体总 wrench」这一<strong>方向/线性结构</strong>，即</p>
+<p>$$
+F_o=Gf_c.
+$$</p>
+<p>但 $G$ 本身不包含「$f_c$ 允许取哪些值」的信息。例如，同一个 $G$ 在不同摩擦锥下，可能一个抓取是 force-closure，另一个不是。因此必须同时给出 $FC$。</p>
+<p><strong>Definition 5.1</strong>（事实底座第 3 节第 2 条）：一个抓取由 $(G,FC)$ 完整刻画，其中</p>
+<p>$$
+FC=FC_{c1}\times\cdots\times FC_{ck}.
+$$</p>
+<p>即抓取 = 抓取映射 + 各接触点摩擦锥的笛卡尔积。漏掉 $FC$ 就会漏掉摩擦锥侧的信息，导致 force-closure 判定错误。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>Force-closure 定义（Prop 5.1）</strong>：对任意外力旋量 $F_e\in\mathbb{R}^p$，存在接触力 $f_c\in FC$ 使得</p>
+<p>$$
+Gf_c=-F_e,
+$$</p>
+<p>等价地</p>
+<p>$$
+G(FC)=\mathbb{R}^p.
+$$</p>
+<p><strong>Prop 5.2</strong> 给出等价刻画：</p>
+<p>$$
+\text{Force-closure}\iff \big(G\text{ 满射}\ \wedge\ \exists f_N\in\mathcal{N}(G)\cap\mathrm{int}(FC)\big).
+$$</p>
+<p><strong>为什么必须是严格内力</strong>：</p>
+<ul>
+<li>$f_N\in\mathcal{N}(G)$ 意味着 $Gf_N=0$，即该接触力不产生净物体 wrench，称为<strong>内力</strong>（internal force）。内力用于「捏紧」物体而不移动它。</li>
+<li>若只要求 $f_N\in FC$，则 $f_N$ 可能落在摩擦锥的<strong>边界</strong>上。边界上的力意味着某个接触方向已经达到滑动临界，此时抓取处于「勉强维持」状态，无法保证对任意 $F_e$ 都能抵抗。</li>
+<li>要求 $f_N\in\mathrm{int}(FC)$（严格内力），意味着存在一个「安全裕度」：可以在摩擦锥内部主动施加一个净内力，从而在抵抗任意外力时仍有剩余能力。这正是 force-closure 的鲁棒性来源。</li>
+</ul>
+<p>事实底座第 7 节 misconception 4 明确指出：$f_N\in\mathcal{N}(G)\cap FC$ 只是内力，必须 $f_N\in\mathrm{int}(FC)$ 才是严格内力；Prop 5.2 与习题 6 都要求严格内力。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第一步：固定接触速度约束</strong></p>
+<p>接触系 $C_i$ 的 $z$ 轴沿内法线，接触点处指尖相对物体的速度在可施力方向上必须为零。一般式 (5.9)：</p>
+<p>$$
+B_{ci}^TV^b_{f_ic_i}=0,
+$$</p>
+<p>其中 $V^b_{f_ic_i}$ 是接触系 $C_i$ 下指尖相对物体的速度旋量。</p>
+<p><strong>第二步：展开 $V^b_{f_ic_i}$</strong></p>
+<p>利用 Adjoint 变换把各坐标系速度串起来。指尖系 $F_i$ 随手指运动，接触系 $C_i$ 随物体运动。通过坐标变换链</p>
+<p>$$
+S_i\to F_i\to C_i\to P\to O
+$$</p>
+<p>可将 $V^b_{f_ic_i}$ 用关节速度 $\dot\theta$ 与物体速度 $V^b_{po}$ 表示。关键恒等式</p>
+<p>$$
+\mathrm{Ad}^{-1}_{g_{pci}}\mathrm{Ad}_{g_{pfi}}\mathrm{Ad}^{-1}_{g_{sifi}}=\mathrm{Ad}^{-1}_{g_{sici}}
+$$</p>
+<p>的作用是：把「palm 系 → 接触系」与「palm 系 → 指尖系」的变换复合，化简为「基座系 $S_i$ → 接触系 $C_i$」的单一变换，从而消去中间坐标系，使第 $i$ 指的速度约束可以写成只含 $\dot\theta_i$ 与 $V^b_{po}$ 的形式。</p>
+<p><strong>第三步：第 $i$ 指约束</strong></p>
+<p>经上述展开，第 $i$ 指得到式 (5.13) 形式：</p>
+<p>$$
+J_{h_i}(\theta,x_o)\dot\theta_i=G_i^TV^b_{po},
+$$</p>
+<p>其中 $G_i=\mathrm{Ad}^T_{g_{oci}^{-1}}B_{ci}$ 是第 $i$ 指的抓取映射块。</p>
+<p><strong>第四步：块对角堆叠</strong></p>
+<p>将 $k$ 个手指的约束按块对角方式堆叠：</p>
+<p>$$
+J_h=\begin{bmatrix}J_{h_1}&&\\&\ddots&\\&&J_{h_k}\end{bmatrix},\qquad
+G=\begin{bmatrix}G_1&\cdots&G_k\end{bmatrix},
+$$</p>
+<p>得到<strong>基本抓取约束</strong> (5.15)：</p>
+<p>$$
+J_h(\theta,x_o)\dot\theta=G^TV^b_{po}.
+$$</p>
+<p>力侧由做功相等得对偶式 (5.16)：</p>
+<p>$$
+\tau=J_h^Tf_c.
+$$</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>几何含义</strong>：$\mathcal{R}(G^T)$ 是抓取映射转置的像空间，代表「物体运动能够通过接触约束传递到关节空间的方向集合」。$\mathcal{R}(J_h)$ 是 hand Jacobian 的像空间，代表「关节速度能够产生的接触点速度集合」。条件 $\mathcal{R}(G^T)\subset\mathcal{R}(J_h)$ 意味着：物体任意允许的运动方向，都能被手指关节速度实现，即手指能「跟上」物体。</p>
+<p><strong>为什么不要求 $J_h$ 单射</strong>：$J_h$ 单射意味着关节速度到接触速度的映射无零空间。但可操作性只关心「像空间是否覆盖 $G^T$ 的像」，不关心是否有冗余。事实上，当 $n>m$（关节数多于接触约束维数）且 $J_h$ 满行秩时，$\mathcal{N}(J_h)$ 非平凡，产生 <strong>internal motion</strong>——手指可以运动而不改变接触点速度。这恰恰是可操作抓取的常见情形。事实底座 misconception 11 明确指出：可操作不要求 $J_h$ 单射，恰在 $n>m$、$J_h$ 满行秩时出现 internal motion。</p>
+<p><strong>SCARA 双指抓箱例（§5.3）</strong>：</p>
+<ul>
+<li>结论：<strong>force-closure 但 not manipulable</strong>。</li>
+<li>原因：绕 $y$ 轴的运动方向 $G^T(0,0,1,0,0,0)^T\notin\mathcal{R}(J_h)$，即手指无法实现物体绕 $y$ 轴的转动。</li>
+<li>Internal motions：</li>
+</ul>
+<p>$$
+\dot\theta_{N1}=(0,0,0,0,1,0)^T,\qquad
+\dot\theta_{N2}=(0,0,0,0,0,1)^T.
+$$</p>
+<p>当 $l_3\ne0$ 时，三个转动副速度均非零。</p>
+<p>此例说明 force-closure 与 manipulable 相互独立（Table 5.4、Figure 5.16），不能由力封闭推出可操作。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>理论依据</strong>：Prop 5.3 条件 (4)：无摩擦时，force-closure ⟺ 不存在 $v\ne0$ 使 $v\cdot G_i\ge0$（$\forall i$）。注意这里用<strong>非严格</strong>不等式 $\ge0$（含为零），只有所有点积同号（含 0）才能判定<strong>不</strong>力封闭（misconception 5）。</p>
+<p><strong>代码</strong>：</p>
+<pre><code class="lang-python">import numpy as np
+from itertools import product
+
+def check_force_closure(G, candidates):
+    """
+    检查是否存在 v != 0 使得 v @ G_i >= 0 对所有列成立。
+    若不存在，返回 True（force-closure）。
+    """
+    for v in candidates:
+        v = np.array(v, dtype=float)
+        if np.linalg.norm(v) < 1e-12:
+            continue
+        dots = v @ G
+        if np.all(dots >= -1e-12):  # 允许数值误差
+            print(f"找到反例 v = {v}, v@G = {dots}")
+            return False
+    return True
+
+# Example 5.4: a = b = 1
+a, b = 1.0, 1.0
+G = np.array([
+    [1, 0, 0, -1],
+    [0, 1, 0,  0],
+    [-a, b, -a, b]
+], dtype=float)
+
+# 六组候选向量（事实底座给出）
+candidates = [
+    [a, b, 1],
+    [a, b, -1],
+    [a, -b, 1],
+    [a, -b, -1],
+    [-a, b, 1],
+    [-a, b, -1],
+]
+
+result = check_force_closure(G, candidates)
+print(f"Force-closure: {result}")</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>对 $a=b=1$，六组候选向量逐一检查，均不满足 $v\cdot G_i\ge0$（对所有列）。</li>
+<li>程序输出 <code>Force-closure: True</code>，与 Example 5.4 结论一致。</li>
+<li>若取 $a=b=0$（第二例），$G$ 的第三行为零，取 $v=(0,0,1)$ 得 $v^TG=[0,0,0,0]$，满足 $\ge0$，程序输出 <code>Force-closure: False</code>，与事实底座中「第二例不 force-closure」一致。</li>
+</ul>
+<p><strong>注意</strong>：候选向量集合来自事实底座对 Example 5.4 的描述（枚举 $v_{12}^T=[a,b,1]$ 至 $v_{34}^T=[a,b,-1]$ 六组）。实际完整验证需覆盖所有可能的 $v$ 方向，但该六组是原书给出的候选集，足以展示判定逻辑。</p>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

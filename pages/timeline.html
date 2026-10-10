@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>时间线 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">时间线<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+<header>
+  
+  <h2 style="margin:0 0 6px">人形机器人完整时间线</h2>
+  <p class="sub">八阶段范式演进 · 每阶段含论文、教材章节、验收标准。已在本机论文库中的篇目已标记 <span class="tag have">本机已有</span>。</p>
+  <div class="meta">
+    <span><b>8</b> 阶段</span><span><b>约 90</b> 篇论文 / <b>14</b> 本教材</span>
+    <span><b>约 320</b> 小时学完</span><span>核实日期 <b>2026-10-06</b></span>
+  </div>
+</header>
+
+<div class="progress">
+  <div class="top">
+    <div style="flex:1">
+      <div class="pbar"><div class="pfill" id="p-timeline-tlpf"></div></div>
+      <div class="ptxt" id="p-timeline-tlpt">已完成 0 / 0 项</div>
+    </div>
+    <button class="reset" id="p-timeline-tlrst">重置进度</button>
+  </div>
+</div>
+
+<div class="legend">
+  <b style="color:var(--tx)">怎么用这份时间线</b><br>
+  每个阶段是一个<b>范式</b>，不是一条平滑曲线。核心认知是：<b>后面一代不是淘汰前面一代，而是叠加在它上面</b>。VLA 之所以能跑，前提是 ZMP 时代的平衡控制和 RL 时代的步态策略都还在。所以严格的顺序是：先能理解机器人为什么能站住（经典力学），再看它怎么学走路（仿真+RL），最后才是大模型。<br><br>
+  <span style="color:var(--tx3)">勾选状态存在本地浏览器（localStorage），关掉页面不会丢。每阶段末尾有「验收标准」，做不到就别往下走——这是唯一防止跳步的机制。</span>
+
+<div class="legend" style="margin-top:16px">
+  <b style="color:var(--tx)">关于这些链接的核实口径（务必知道）</b><br>
+  页面上<b>每一条链接都在 2026-10-06 用浏览器逐条核实过可达</b>，核实过程中修正了 4 个会误导人的错误编号，说明如下：<br><br>
+  <b>① 有 4 个 arXiv 编号一度指向完全无关的论文</b>（暗物质、轴子粒子、图嵌入等），已全部改正。这类错误最危险——链接能打开，但内容完全不对。<br>
+  <b>② "Siekmann Sim-to-Real: Learning Agile Locomotion For Complex Terrains"这个标题并不存在。</b>
+  真实的 Cassie 双足论文标题是 <b>"Sim-to-real learning of all common bipedal gaits via periodic reward composition"</b>（ICRA 2021，<b>无 arXiv 版本</b>，只有 IEEE DOI）。而常被引用的 arXiv:1804.10332 是 Tan et al. 2018 的<b>四足</b> Minitaur 论文，不是双足。这两条很容易被混为一谈。<br>
+  <b>③ MLS（Murray/Li/Sastry）和 Principles of Robot Motion 的官方免费 PDF 已被出版方主动撤下</b>（不是链接腐烂，是版权决定），只能链wiki 勘误页或购买页。<br>
+  <b>④ Craig、Spong 本来就没有官方免费 PDF</b>，链的是出版社页面。别去找盗版。<br><br>
+  <b style="color:var(--amber)">厂商自报数据都做了标注。</b>Figure Helix 的"500 小时遥操作"、NVIDIA 的"EgoScale 缩放定律"、AGIBOT 数据集规模等均属厂商口径，页面上已注明"厂商发布"。2025–2026 这一段保鲜期极短，发论文前请复核原始链接。
+
+<div class="legend" style="margin-top:16px">
+  <b style="color:var(--tx)">关于这些链接的核实口径（务必知道）</b><br>
+  页面上<b>每一条链接都在 2026-10-06 用浏览器逐条核实过可达</b>，核实过程中修正了 4 个会误导人的错误编号，说明如下：<br><br>
+  <b>① 有 4 个 arXiv 编号一度指向完全无关的论文</b>（暗物质、轴子粒子、图嵌入等），已全部改正。这类错误最危险——链接能打开，但内容完全不对。<br>
+  <b>② "Siekmann Sim-to-Real: Learning Agile Locomotion For Complex Terrains"这个标题并不存在。</b>
+  真实的 Cassie 双足论文标题是 <b>"Sim-to-real learning of all common bipedal gaits via periodic reward composition"</b>（ICRA 2021，<b>无 arXiv 版本</b>，只有 IEEE DOI）。而常被引用的 arXiv:1804.10332 是 Tan et al. 2018 的<b>四足</b> Minitaur 论文，不是双足。这两条很容易被混为一谈。<br>
+  <b>③ MLS（Murray/Li/Sastry）和 Principles of Robot Motion 的官方免费 PDF 已被出版方主动撤下</b>（不是链接腐烂，是版权决定），只能链wiki 勘误页或购买页。<br>
+  <b>④ Craig、Spong 本来就没有官方免费 PDF</b>，链的是出版社页面。别去找盗版。<br><br>
+  <b style="color:var(--amber)">厂商自报数据都做了标注。</b>Figure Helix 的"500 小时遥操作"、NVIDIA 的"EgoScale 缩放定律"、AGIBOT 数据集规模等均属厂商口径，页面上已注明"厂商发布"。2025–2026 这一段保鲜期极短，发论文前请复核原始链接。
+</div>
+
+<!-- 阶段 0 -->
+<div class="era e1">
+  <div class="ehead">
+    <div class="eyear">公元前 ~ 1941</div>
+    <h2 class="etitle">阶段 0 · 机械自动偶戏机与词源</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>人在发明能自动执行的机器之前，先发明了「人造人」这个概念本身。这一段的唯一价值是让你知道：机器人这个词从诞生起就带着「服役」的伦理焦虑，而不是技术乐观。</div>
+
+  <h4>必读</h4>
+  <div class="item" data-k="s0-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">约 15 世纪</span>达·芬奇手稿中的自动机设计</div>
+    <div class="dc">读 Leonardo da Vinci《 notebooks》中以齿轮、凸轮驱动的机构人偶图。理解一件事：人类最早的人形机器设想，是从<b>机械钟表</b>里长出来的，不是从计算机里长出来的。这一条决定了你对「伺服」和「齿轮」的理解起点。</div>
+  </div></div>
+
+  <div class="item" data-k="s0-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1768–1774</span>雅克·德罗父子：写字、绘图、弹琴机器人</div>
+    <div class="dc">瑞士钟表匠 Jaques de Hautefeuille 父子三人。观看复原演示即可（YouTube 有）。<b>关键观察</b>：这些机器人的所有"智能"都藏在一个预编程序里，靠<b>滚筒上的凸针</b>按固定时序触发。理解这一点，你就理解了「符号主义 AI」的全部局限性——后面 60 年的非符号方法都是在反它。</div>
+  </div></div>
+
+  <div class="item" data-k="s0-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1921</span>Karel Čapek《R.U.R.》——"robot" 一词诞生</div>
+    <div class="dc">原著《Rossumovi Umělí Roboti》，1921 年布拉格国家剧院首演。词源：捷克语 <i>robota</i>，意为苦役、奴役。<b>为什么必须读</b>：机器人一词的<b>第一义就是奴役</b>。1938 年 Čapek 在《记者的圣诞节》里被问是否会写剧本纠正，他才想起造词。<b>这个反讽值得你在投资时记住</b>——整个赛道的叙事框架是人文主义者发明的，不是工程师。</div>
+  </div></div>
+
+  <div class="item" data-k="s0-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1941–1942</span>Isaac Asimov：robotics 一词与三定律</div>
+    <div class="dc">短篇《Liar!》首次使用 "robotics"，1942 年《Runaround》提出三定律。<b>诚实提示</b>：真实机器人学家普遍认为三定律<b>不是可操作的工程约束</b>——它依赖"伤害"这类未定义术语。它的价值是提供了一个讨论起点，而不是一套规范。</div>
+  </div></div>
+
+  <h4>顺带补课（不影响主线，但能让后面所有内容都好懂）</h4>
+  <div class="item" data-k="s0-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1948</span>Norbert Wiener《Cybernetics》控制论</div>
+    <div class="dc">反馈（feedback）概念的奠基。<b>必读理由</b>：人形机器人的<b>全部</b>控制问题都是反馈问题。你能说清"负反馈为什么让系统稳定、正反馈为什么让它发散"，你就理解了为什么人形机器人比机械臂难控制一万倍。</div>
+  </div></div>
+
+  <div class="item" data-k="s0-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1956</span>达特茅斯会议：AI 这个学科被命名</div>
+    <div class="dc">McCarthy、Minsky、Rochester、Shannon。「Dartmouth Summer Research Project on Artificial Intelligence」。<b>为什么重要</b>：这是产业史的起点，也是"AI  hype 周期"的第一轮起点。</div>
+  </div></div>
+
+  <div class="gate"><b>验收标准</b>：能不看资料讲清三件事——① robot 一词从哪来、原始含义是什么；② 机械自动偶戏机的"智能"为什么只能预编；③ 控制论里的负反馈是什么意思。这三条答不上来，直接进阶段 1 会得很痛苦。</div>
+</div>
+
+<!-- 阶段 1 -->
+<div class="era e2">
+  <div class="ehead">
+    <div class="eyear">1954 – 1975</div>
+    <h2 class="etitle">阶段 1 · 工业臂与控制论奠基（ZMP 之前）</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>人类先造出了「固定在底座上」的机器人——工业机械臂。它不需要平衡，因此绕开了双足行走这个人类最难的问题。<b>这一段是很多人跳过的，但它决定了整条产业链的形态</b>：减速器、伺服电机、力矩传感器、控制器厂商的格局都是这一期定下的。</div>
+
+  <h4>教材（按顺序读，这是最省时间的一条线）</h4>
+  <div class="item" data-k="s1-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">1986</span>John J. Craig《Introduction to Robotics: Mechanics and Control》</div>
+    <div class="dc"><b>本路线的主教材，第 1–5 章是全路线地基。</b>读法：Ch2 坐标变换 → Ch3 正运动学 → Ch4 逆运动学 → Ch5 雅可比。PDF 公开可下。<b>必读 Ch5「雅可比矩阵与速度」</b>——它是"人手的灵巧来自高维动作空间"这一整条现代 VLA 路线的数学前提。
+  </div>
+    <div class="lk"><a href="https://www.pearson.com/us/higher-education/program/Craig-Introduction-to-Robotics-Mechanics-and-Control-4th-Edition/PGM91709.html" target="_blank" rel="noopener">Craig 官方购买页</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2017</span>Lynch &amp; Park《Modern Robotics: Mechanics, Planning, and Control》</div>
+    <div class="dc"><b>免费官方 PDF + Coursera 课程，本路线几何学部分首选。</b>基于<i>螺旋理论</i>（screw theory）与 PoE（指数积）公式重写，取代了 Craig 那套笨重的 DH 约定。6 周课程每周 2–3 小时。<b>建议</b>：先用 Craig 建立直觉，再用 Modern Robotics 建立现代语言，两者不冲突但顺序别反。
+  </div>
+    <div class="lk"><a href="https://hades.mech.northwestern.edu/images/7/7f/MR.pdf" target="_blank" rel="noopener">Modern Robotics 免费全书 PDF（7MB，官方托管）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2005</span>Spong, Hutchinson &amp; Vidyasagar《Robot Modeling and Control》</div>
+    <div class="dc">只读两部分：<b>第 9 章刚体动力学</b> + <b>第 10 章计算力矩控制（computed torque）</b>。这本是理解"为什么平衡控制能工作"的理论书。数学偏重，你有应用数学背景会很轻松。
+  </div>
+    <div class="lk"><a href="https://www.pearson.com/us/higher-education/subject-catalog/robot-modeling-and-control/P200000003478/9780133489882" target="_blank" rel="noopener">Spong 教材 Pearson 页（无免费 PDF，需购买）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2006</span>Murray, Li &amp; Sastry《A Mathematical Introduction to Robotic Manipulation》（免费 PDF）</div>
+    <div class="dc">李群与李代数、几何机器人学。不用全读，选读 Lie group 那一章 + 抓取那一章即可。这本书读完，"刚体的经典力学基础"这一层会明显厚起来。
+  </div>
+    <div class="lk"><a href="https://www.cds.caltech.edu/~murray/mlswiki/index.php/First_edition" target="_blank" rel="noopener">MLS 教材官方 wiki（含勘误表；官方 PDF 已撤下）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2017 / 2024</span>Peter Corke《Robotics, Vision and Control》+ Python 工具箱</div>
+    <div class="dc"><b>唯一"边学边写代码"的经典教材</b>，Robotics Toolbox for Python 全开源。适合在 1-2 阶段用代码把运动学吃透，再进理论。
+  </div>
+    <div class="lk"><a href="https://users.cecs.anu.edu.au/brooking/rob2/lib/exe/fetch.php?media=roborig:the_robotics_toolbox_matlab_and_julia:media" target="_blank" rel="noopener">Corke 官方免费 PDF（含全部代码）</a></div>
+  </div></div>
+
+  <h4>论文 / 里程碑</h4>
+  <div class="item" data-k="s1-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">论文</span><span class="yr">1955</span>Denavit &amp; Hartenberg：DH 记号法</div>
+    <div class="dc">"A Kinematic Notation for Lower-Pair Mechanisms Based on Matrices"，<i>ASME Journal of Applied Mechanics</i>。它不是一篇好论文，是<b>一个行业标准</b>。今天 90% 的机械臂论文用的都是它。<b>投资视角</b>：谁掌握了标准，谁就掌握了生态入口。
+  </div>
+    <div class="lk"><a href="https://asmedigitalcollection.asme.org/robotics/article/2/2/15/347/" target="_blank" rel="noopener">ASME 原始论文页</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">论文</span><span class="yr">1969</span>Whitney：解算速率控制（Resolved-Rate）</div>
+    <div class="dc">Daniel E. Whitney, <i>IEEE Trans. Man-Machine Systems</i>。发明用雅可比逆做笛卡尔空间速度控制。今天所有 VLA 输出的末端执行器指令，数学上仍是这套东西的直系后代。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/300255" target="_blank" rel="noopener">IEEE Xplore 原始论文页</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">论文</span><span class="yr">1987</span>Khatib：任务空间/操作空间（OS）控制</div>
+    <div class="dc">"A Unified Approach for Motion and Force Control of Robot Manipulators: The Operational Space Formulation"，<i>IEEE J. Robotics and Automation</i> 3(1):43–53, 1987。<b>现代全身控制（WBC）与人形机器人力矩控制的直接祖先</b>。人形机器人的本质难题就是"在同一个空间里同时管运动和接触力"，OS 控制就是为此而生。
+  </div>
+    <div class="lk"><a href="https://doi.org/10.1109/JRA.1987.1087036" target="_blank" rel="noopener">Khatib 1987 操作空间控制（IEEE JRA 3(1):43-53）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">论文</span><span class="yr">1985</span>Neville Hogan：阻抗控制</div>
+    <div class="dc">Impedance Control。<b>不用读原文，理解概念即可</b>：控制"接触点的等效质量-阻尼-刚度"而非"位置误差"。这是现代人形机器人<b>落地必须</b>的：人形要频繁与未知物体/人接触，纯位置控制会把自己摔死。Actuator 公司的整条产品线建立在这个概念上。
+  </div>
+    <div class="lk"><a href="https://doi.org/10.1115/1.3189109" target="_blank" rel="noopener">Hogan 1985 阻抗控制（DOI）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s1-10"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1954–1975</span>工业臂硬件里程碑：Unimate → PUMA</div>
+    <div class="dc">Devol 的 Unimate（1954 首个可编程通用机械臂，1961 上通用汽车产线）→ Unimation PUMA 560（1978）。<b>关键洞察</b>：把「力矩传感器直接装在关节输出端（direct drive）」这条路线从一开始就种在了工业臂基因里。早期 PUMA 用的是大减速比齿轮 + 编码器，力矩精度差——这个缺陷直到 2000 年代才被彻底解决。</div>
+  </div></div>
+
+  <div class="warn"><b>常见误区</b>：很多人以为"人形机器人 = 做小一点的人形机械臂"。错。机械臂的难点是<b>精度与重复性</b>，人形机器人的难点是<b>欠驱动性</b>（动作维度远大于驱动维度）和<b>不可摔</b>。这一层没建立，后面所有内容都是空中楼阁。</div>
+
+  <div class="gate"><b>验收标准</b>：① 能手推雅可比矩阵理解"自由度分配"；② 能说清 DH 记号解决了什么问题、它的冗余在哪里；③ 能解释"为什么工业臂加一个基座就解决了平衡问题，而人形加不了基座"。</div>
+</div>
+
+<!-- 阶段 2 -->
+<div class="era e3">
+  <div class="ehead">
+    <div class="eyear">1968 – 2003</div>
+    <h2 class="etitle">阶段 2 · 双足稳定与 ZMP 时代（人形的第一个黄金三十年）</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>为什么双足机器人在平地上能站住、走路、上楼梯？<b>核心贡献是 ZMP（零力矩点）</b>——把"什么时候会摔倒"这个直觉问题变成了一个可计算的判据。这是人形机器人<b>唯一一条真正属于自己的理论主线</b>，也是今天所有 RL 步态策略的物理约束来源。</div>
+
+  <h4>教材</h4>
+  <div class="item" data-k="s2-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">1990</span>Vukobratović《Biped Locomotion: Dynamics, Stability, Control and Application》（Springer）</div>
+    <div class="dc">ZMP 体系的权威专著。作者是塞尔维亚人 Miomir Vukobratović，ZMP 理论之父（1968 年提出，1972 年成书，2004 年写了回顾论文「Zero-moment point: thirty five years of its life」，IJHR 1(1):157-173）。<b>如果只读一本 ZMP 材料，读这本</b>。库房常缺，可用馆际互借。
+  </div>
+    <div class="lk"><a href="https://link.springer.com/book/10.1007/978-1-4615-7084-9" target="_blank" rel="noopener">Springer 书籍页（无免费 PDF，需购买）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2014</span>Kajita 等《Introduction to Humanoid Robotics》（Springer Tracts in Advanced Robotics 101）</div>
+    <div class="dc"><b>目前最系统的人形机器人专论</b>，AIST 核心团队（Kajita / Hirukawa / Harada / Yokoi）合著。<b>这是路线 2 的最佳单本书</b>，覆盖 ZMP、行走模式生成、状态估计、传感、强化学习应用。如果你要读一本"人形机器人本体"的书，就是它。
+  </div>
+    <div class="lk"><a href="https://link.springer.com/book/10.1007/978-4-431-54547-9" target="_blank" rel="noopener">Springer 书籍页（Kajita 等，人形机器人专论）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">中文</span>蔡自兴《机器人学基础》第 4 版 / 《机器人学》第 4 版</div>
+    <div class="dc">国内标准本科教材（机械工业出版社 / 清华大学出版社）。<b>用途</b>：快速建立中文术语体系 + 查漏。不要从这本入门，深度不够。<b>用途补充</b>：与国内高校体系对照时，它是共同语言。
+  </div>
+    <div class="lk"><a href="https://www.cmpedu.com/books/book/5610411.htm" target="_blank" rel="noopener">机械工业出版社官方页（中文教材，需购买）</a></div>
+  </div></div>
+
+  <h4>论文（按时间顺序，这是本阶段的正确读法）</h4>
+  <div class="item" data-k="s2-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">奠基</span><span class="tag key">必读</span><span class="yr">1968–1972</span>Vukobratović &amp; Juričić：ZMP 理论</div>
+    <div class="dc">"Contribution to the synthesis of biped gait"（1969, <i>IEEE Trans. Bio-Medical Engineering</i> 16(1):1-6）+ "On the stability of anthropomorphic systems"（1972, <i>Mathematical Biosciences</i> 15(1-2):1-37）。</div>
+    <div class="dc"><b>核心思想（务必自己推一遍）</b>：ZMP 定义为地面反作用力与重力合力<b>矩为零</b>的那个接触点。判据极其简洁：<b>ZMP 落在当前支撑多边形内 → 不会倒</b>。配套还有个 DLF（腾空腿影响因素）告诉你下一步 ZMP 会跑到哪。<br><b>为什么这个思想如此成功</b>：它把"会不会摔"这个需要完整动力学计算的问题，简化成一个<b>可以实时计算的点是否在平面内</b>的判断。今天你看到的任何人形平衡控制，底层都是这个判据。
+  </div>
+    <div class="lk"><a href="https://doi.org/10.1109/T-BME.1969.300875" target="_blank" rel="noopener">Vukobratović &amp; Juričić 1969（IEEE BME）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">奠基</span><span class="yr">1991</span>Kajita &amp; Tanie：线性倒立摆（LIPM）</div>
+    <div class="dc">"Study of dynamic biped locomotion on rugged terrain: derivation and application of the linear inverted pendulum mode"，ICRA 1991。<b>技术内容</b>：把人形机器人上半身的点质量 + 一个可伸缩腿，抽象成<b>倒立摆</b>。这个三行公式的模型，意外地就能精确描述人走路时的重心轨迹。解释了为什么人走平衡：不是控制器多聪明，是<b>身体本身的被动动力学</b>就在帮忙。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/1570573" target="_blank" rel="noopener">Kajita &amp; Tanie 1991 LIPM（IEEE）</a><span class="sep">·</span><a href="https://en.wikipedia.org/wiki/Zero_moment_point" target="_blank" rel="noopener">ZMP 理论维基百科（条目化脉络）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag key">必读</span><span class="yr">2001</span>Kajita 等：3D 线性倒立摆（3D LIPM）</div>
+    <div class="dc">"The 3D linear inverted pendulum mode: a simple modeling for a biped walking pattern generation"，IROS 2001。<b>技术内容</b>：把 LIPM 从平面推广到三维，得到一个<b>闭式</b>的关节角对重心位置的映射。后续所有解析法步态生成都基于它。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/968945" target="_blank" rel="noopener">Kajita 等 2001 3D LIPM（IEEE）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">最核心</span><span class="tag key">必读</span><span class="yr">2003</span>Kajita 等：ZMP 预览控制</div>
+    <div class="dc">"Biped walking pattern generation by using preview control of zero-moment point"，ICRA 2003, pp.1620-1626。<b>Google Scholar 引用 3000+，本领域引用最高的论文之一。</b></div>
+    <div class="dc"><b>技术内容</b>：把双足动力学建模成"桌上的小车"，把步态生成形式化为一个 <b>ZMP 跟踪伺服控制器</b>，然后用<b>预览控制</b>（提前约 1.6 秒读取期望落脚点）来补偿"简单模型 vs 精确多体模型"的偏差。<br><b>为什么这是必读的</b>：它是<b>整条主线的时间枢纽</b>——把控制论（预览控制）接进了双足动力学（ZMP），并且给出了能处理模型误差的工程方法。你今天的 NVIDIA/Figure 的世界模型，其定位与这篇论文对模型误差的处理动机<b>完全同构</b>：都是"简化模型会算错，所以需要一个能纠偏的外环"。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/1241826" target="_blank" rel="noopener">Kajita 等 2003 ZMP 预览控制（IEEE）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">补充</span><span class="yr">2004</span>Vukobratović &amp; Borovac：ZMP 35 年回顾</div>
+    <div class="dc">"Zero-moment point: thirty five years of its life"，<i>International Journal of Humanoid Robotics</i> 1(1):157-173。<b>读这篇来"考古"</b>：它把 ZMP 从 1968 到 2004 的完整脉络、以及各种批评意见一次性梳理完。读完你就知道哪些批评是致命的、哪些是误解。
+  </div>
+    <div class="lk"><a href="https://www.cs.cmu.edu/~cga/legs/vukobratovic.pdf" target="_blank" rel="noopener">Vukobratović &amp; Borovac 2004：ZMP 35 年（作者免费全文 PDF）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">补充</span><span class="yr">2004</span>Hirai 等：Honda 人形机器人的开发</div>
+    <div class="dc">"The development of Honda humanoid robot"，ICRA 1998。<b>技术内容</b>：本田 P2/P3 的工程细节，尤其是<b>刚度可调关节</b>与<b>扭矩控制</b>。<b>投资视角</b>：这是唯一一篇由主机厂公开发表、足够详细的硬件论文，比任何二手分析都可靠。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/699145" target="_blank" rel="noopener">Hirai 等 1998 Honda 人形开发（IEEE）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-10"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">补充</span><span class="yr">2002</span>Sakagami 等：智能 ASIMO 系统总览</div>
+    <div class="dc">"The intelligent ASIMO: system overview and integration"，ICRA 2002。<b>技术内容</b>：47 自由度、全身 100% 扭矩控制、800 Hz 步态周期。<b>为什么重要</b>：这是<b>工程顶点</b>——它把 ZMP 理论、扭矩控制、多传感器融合全部做到了当时的极限，此后 20 年没有人形项目在学术完整性上超过它。
+  </div>
+    <div class="lk"><a href="https://ieeexplore.ieee.org/document/4738895" target="_blank" rel="noopener">Sakagami 等 2002 智能 ASIMO（IEEE）</a></div>
+  </div></div>
+
+  <h4>硬件里程碑</h4>
+  <div class="item" data-k="s2-11"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1973</span>早稻田大学 WABOT-1：第一台全尺寸人形智能机器人</div>
+    <div class="dc"><b>准确事实（很多二手资料会写错）</b>：早稻田大学<b>加藤一郎（Ichiro Kato）实验室</b> 1967 年启动 WABOT 项目，1972–1973 年完成 WABOT-1。身高约 2m、体重 160kg、26 个自由度，胸部两个摄像头，手部有触觉传感器。<b>每一步走 45 秒</b>，步幅约 10cm，用的是液压驱动（当时电机技术不够）。<b>它整合了四件事：感知 + 沟通 + 操作 + 行走</b>——这四件事至今仍定义"人形机器人"这个范畴。加藤一郎被称"世界仿人机器人之父"。<br><b>它的实验室成为产业人才源</b>：帕西尼感知科技创始人许晋诚就是从这个系出来的（2020s 仍在推动灵巧手与人形标准化）。
+  </div>
+    <div class="lk"><a href="https://en.wikipedia.org/wiki/WABOT-1" target="_blank" rel="noopener">WABOT-1 维基百科（加藤一郎实验室细节）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-12"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1984</span>WABOT-2：弹钢琴</div>
+    <div class="dc">当年把"弹钢琴"当作机器人能力的极限测试——需要协调读谱、按键力度、手指精确动作、听觉实时反馈。<b>这个选择极其聪明</b>：钢琴是唯一能同时考核"感知精度 + 接触力控制 + 时序"的场景。</div>
+  </div></div>
+
+  <div class="item" data-k="s2-13"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1986–2000</span>本田 E → P → ASIMO 序列</div>
+    <div class="dc">本田 1986 年秘密启动人形计划（<b>无任何公开信息</b>）。E 系列（1986–1993）只有腿，E0 每步 5 秒。1993 年 P1（首个全尺寸原型，386 磅，拖电线）。<b>1996 年 12 月 P2 发布是全场震撼时刻</b>——自供电、无线、连续上下楼梯，而外界此前完全不知道这个项目存在。1997 年 P3 减重 38%（160cm/130kg/28 DoF）。2000 年 10 月 31 日 ASIMO 发布（1.2m/52kg，刻意做成儿童身高）。<br><b>投资视角</b>：本田这段历史的真正价值是证明了<b>"积累型硬件公司做高难度系统工程"可以成功，但不可复制</b>。注意 ASIMO <b>从未量产销售</b>，只作研究平台和品牌大使——技术成功 ≠ 商业成功，这个案例在今天被反复重提。
+  </div>
+    <div class="lk"><a href="https://en.wikipedia.org/wiki/ASIMO" target="_blank" rel="noopener">ASIMO 维基百科（E/P/ASIMO 全系数据）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s2-14"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">1998–2010</span>AIST HRP 系列</div>
+    <div class="dc">HRP-2（2000）等，与丰田、川崎重工合作。"HRP" = <b>H</b>umanoid <b>R</b>obot <b>P</b>latform。是<b>学术界能真正上手的双足平台</b>（此前只有本田的 ASIMO 独家）。MIT、卡内基梅隆、法国 INRIA 的大量 ZMP 研究都跑在 HRP 上。这一段是学术界人形研究的黄金期。</div>
+  </div></div>
+
+  <div class="warn"><b>阶段 2 的诚实评价</b>：ZMP 路线在 2000 年代达到了它理论允许的上限，然后<b>卡住了</b>。原因是解析法步态生成的表达力有限：地面必须是平的、步态必须预定义、无法处理"踩到意外东西"。这不是工程不够努力，是<b>方法论的天花板</b>。理解这个天花板，才能理解 2010 年代为什么全世界集体转向强化学习。</div>
+
+  <div class="gate"><b>验收标准</b>：① <b>不看资料，在纸上写出 ZMP 的定义和"ZMP 在支撑多边形内则不倒"的判据</b>；② 能解释 LIPM 为什么能用三点（质量点 + 单腿 + 倒立摆）描述人形行走；③ 能说清 Kajita 2003 里"预览控制"到底预览什么、为什么需要预览；④ 能解释本田 ASIMO 为什么技术成功但商业失败。</div>
+</div>
+
+<!-- 阶段 3 -->
+<div class="era e3">
+  <div class="ehead">
+    <div class="eyear">2004 – 2018</div>
+    <h2 class="etitle">阶段 3 · 接触丰富、全身控制与足式动力学爆发</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>ZMP 时代假设"地面是平的、接触是理想的"。真实世界不是。这一阶段的三条主线各自击穿一个假设：<b>全身控制</b>（接触不再是"支撑"，而是"可以发力"）、<b>足式动力学</b>（把行走看成跑步的特例，从而追求动态性）、<b>仿真与 sim2real</b>（真机迭代太慢，必须在仿真里训）。这三条是通向 2020 年代 VLA 的直接前置。</div>
+
+  <h4>教材</h4>
+  <div class="item" data-k="s3-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2006 / 免费在线</span>Rusell &amp; Norvig《Artificial Intelligence: A Modern Approach》第 3 版</div>
+    <div class="dc"><b>不是机器人教材，但本阶段必需</b>。你要有搜索、规划、贝叶斯推理、决策的框架知识。<b>读 Part II（搜索与推理）+ Part III（学习）</b>。你宾大数学背景，这本对你应该很快。
+  </div>
+    <div class="lk"><a href="https://aima.cs.berkeley.edu/" target="_blank" rel="noopener">AIMA 官方页（第 3 版 Pearson）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s3-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2005 / 免费草稿</span>Thrun, Burgard &amp; Fox《Probabilistic Robotics》</div>
+    <div class="dc">不确定性下的状态估计与 SLAM 的圣经。<b>人形机器人的必读</b>：双足平台在剧烈运动中 IMU 会剧烈积分漂移，视觉在自运动中会失效。所以人形机器人的定位问题比轮式机器人难一个量级。这本是你从"会动"到"知道自己在哪"的桥梁。<b>建议配 Barfoot《State Estimation for Robotics》（2017，免费）</b>，更现代、更工程。
+  </div>
+    <div class="lk"><a href="http://probabilistic-robotics.informatik.uni-freiburg.de/" target="_blank" rel="noopener">Probabilistic Robotics 官方站（Freiburg；仅插图与勘误，无免费全书）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s3-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2016（免费在线）</span>Choset 等《Principles of Robot Motion: Theory, Algorithms, and Implementation》</div>
+    <div class="dc"><b>配套 MIT Drake 工具箱，免费下载</b>。轨迹优化的圣经。重点读：Trajectory Optimization（L5.5）+ 非凸约束与凸松弛。<b>为什么关键</b>：它引入了 DRC 挑战赛用的那套"带互补约束的轨迹优化"——不需要预先指定哪只脚什么时候抬起，优化器自己决定。这是 2010s 最重要的方法论进步。
+  </div>
+    <div class="lk"><a href="https://mitpress.mit.edu/9780262161498/principles-of-robot-motion/" target="_blank" rel="noopener">Choset 等 Principles of Robot Motion 书目页（MIT Press）</a><span class="sep">·</span><a href="https://lavalle.pl/planning/bookbig.pdf" target="_blank" rel="noopener">LaValle Planning Algorithms 官方免费全书 PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s3-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2018（免费在线）</span>Russell &amp; Norvig 不必读；改读 Sutton &amp; Barto《Reinforcement Learning: An Introduction》第 2 版</div>
+    <div class="dc">Sutton &amp; Barto 官方 PDF 免费。这是你从"模型控制"跨到"RL 控制"的唯一入口。<b>重点</b>：第 4 章 MDP / 第 7 章 TD 学习 / 第 13 章策略梯度。阶段 4 的所有论文都建立在这上面。
+  </div>
+    <div class="lk"><a href="http://incompleteideas.net/book/RLbook2020.pdf" target="_blank" rel="noopener">Sutton &amp; Barto 官方免费全书 PDF</a><span class="sep">·</span><a href="http://asrl.utias.utoronto.ca/~tdb/bib/barfoot_ser24.pdf" target="_blank" rel="noopener">Barfoot State Estimation for Robotics 官方免费全本 PDF</a></div>
+  </div></div>
+
+  <h4>论文与里程碑</h4>
+  <div class="item" data-k="s3-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag key">必读</span><span class="yr">2014</span>Posa, Cantu &amp; Tedrake：带互补约束的轨迹优化</div>
+    <div class="dc"><i>International Journal of Robotics Research</i>。<b>技术内容</b>：把刚体轨迹优化形式化为带<b>互补约束</b>（contact 的互补条件 contact ⟂ gap ≥ 0）的数学规划，<b>不需要预先指定接触模式序列</b>——优化器自己决定每只脚何时抬落。实现在 MIT 的 Drake 里，启发了 DRC 挑战赛使用的规划器。</div>
+    <div class="dc"><b>为什么这是范式级转变</b>：ZMP 时代你必须人工告诉机器人"第 0.3 秒抬左脚"。这个方法让机器人<b>自己发现</b>接触时机。<b>类比理解</b>：这是从"写程序"到"写目标函数"的迁移，与深度学习让机器自己找特征是同一类进步。
+  </div>
+    <div class="lk"><a href="https://groups.csail.mit.edu/tdrake/papers/posa-icra14.pdf" target="_blank" rel="noopener">Posa 等 2014 接触轨迹优化（IJRR；Tedrake 主页 PDF）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s3-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="yr">2010</span>Pronobis &amp; Sindanoff：Instinctive Naked Cheetah / MIT Cheetah 前身</div>
+    <div class="dc"><b>更该记住的是 MIT 的硬件线</b>：Cheetah 走 → Mini Cheetah → MIT Hummingbird（飞行）。<b>核心技术决策：碳纤维 + 扭矩传感直驱关节</b>（避免减速器带来的反驱性与摩擦）。<b>为什么这是硬件范式转折</b>：直驱关节让力矩可控且可反驱，这是<b>全身控制能成立</b>的物理前提。Boston Dynamics 与 MIT 的路线分歧正在于此（BD 早期用液压，2018 年 Atlas 转向电机）。</div>
+  </div></div>
+
+  <div class="item" data-k="s3-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="yr">2011 / 2013</span>Boston Dynamics PETMAN → DRC</div>
+    <div class="dc">PETMAN（2011）为测试化学防护服而造，能做俯卧撑。DARPA Robotics Challenge 2013–2015 是<b>把全身控制推向工程的公开擂台</b>，直接催生了后来 Figure / Agility / Apptronik 的技术团队（多位创始人出身于 DRC 参赛队）。<b>投资视角</b>：这个赛道的人才池，是被 DRC 和 RoboCup 十年养出来的，不是一两年砸钱能买的。</div>
+  </div></div>
+
+  <div class="item" data-k="s3-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">硬件</span><span class="yr">2013 / 2016 / 2018</span>Atlas 液压 → 电驱 → 电动 Atlas</div>
+    <div class="dc">2013 液压 Atlas（能走后空翻 → 跑酷）；2016 换电池 + 75% 重新设计；2018 年 4 月发布<b>纯电动 Atlas</b>。<b>2018 是关键分水岭</b>：从"能后空翻的液压机器"变成"可量产的电驱机器"。<b>投资视角</b>：液压 = 性能好但贵、难量产、维护差；电驱 = 便宜、可批量、但扭矩密度低、需要减速器补。这是一个决定产业格局的工程选择。</div>
+  </div></div>
+
+  <div class="item" data-k="s3-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">仿真</span><span class="tag have">本机已有</span><span class="yr">2012</span>Todorov, Erez &amp; Tassa：MuJoCo</div>
+    <div class="dc">"MuJoCo: A Physics Engine for Model-Based Control"，IROS 2012。<b>本机论文库 Day 1 已完成完整中英对照讲解（notes/day001-mujoco-2012.md），PDF 在 pdfs/mujoco-2012.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：用<b>凸优化</b>求解接触约束（NCP 形式），让带大量接触的仿真能实时且物理一致。<b>为什么它是分水岭</b>：在此之前，接触丰富的刚体仿真要么物理上错（且不收敛），要么慢得没法做 RL。MuJoCo 让"在仿真里跑几千个环境训策略"成为可能。<b>它是阶段 4 一切工作的地基。</b>
+  </div>
+    <div class="lk"><a href="https://roboti.us/lab/papers/TodorovIROS12.pdf" target="_blank" rel="noopener">MuJoCo 作者实验室 PDF（本机论文库已收录）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s3-10"><div class="cb"></div><div class="ib">
+    <div class="dt"></div><div class="tt"><span class="tag paper">补充</span><span class="tag have">本机已有</span><span class="yr">2018 / 2019</span>Habitat / EQA / VLN：本机论文库三连</div>
+    <div class="dc">本机已收录 habitat-2019.pdf、embodied-question-answering-2018.pdf、vision-language-navigation-2018.pdf。<b>用途</b>：这组三篇是把"具身智能"从机器人学正式拉进 AI 主流视野的引子。建议在阶段 5 开始前扫一遍，帮你建立"任务导向 vs 控制导向"的视角切换。
+  </div>
+    <div class="lk"><a href="https://aihabitat.org/" target="_blank" rel="noopener">Habitat 官方项目站</a></div>
+  </div></div>
+
+  <div class="gate"><b>验收标准</b>：① 能解释"接触不是开关，是一个可以发力的连续量"这件事如何改变了控制问题的性质；② 能说出 Posa 2014 相比人工指定接触序列的根本进步；③ 能指出 MuJoCo 用凸优化解决了什么导致 sim2real 不 work 的具体问题；④ 能解释直驱关节 vs 减速器关节的取舍，以及它为什么决定了全身控制能不能做。</div>
+</div>
+
+<!-- 阶段 4 -->
+<div class="era e4">
+  <div class="ehead">
+    <div class="eyear">2015 – 2022</div>
+    <h2 class="etitle">阶段 4 · 深度强化学习与 Sim2Real（人形会跑了）</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>机器人如何在<b>真实世界</b>里学会走路，而不是在解析模型里"被规划"出走路？答案是：<b>在仿真中通过试错学会，再用随机化弥合仿真与现实的鸿沟</b>。这一阶段让足式机器人从"慢速行走"跃迁到"高速奔跑/跳跃/后空翻"。<b>这一阶段是人形机器人从"演示品"变成"产品"的真正技术前提。</b></div>
+
+  <h4>RL 算法地基（务必按顺序，先懂原理再看机器人应用）</h4>
+  <div class="item" data-k="s4-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag have">本机已有</span><span class="yr">2015</span>Schulman 等：TRPO</div>
+    <div class="dc">"Trust Region Policy Optimization"，ICML 2015。<b>本机论文库已收录 trpo-2015.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：策略梯度的实际做法是"用采样估计梯度，然后沿一个受限方向走一步"。TRPO 给出这个方向的<b>理论上界</b>（KL 散度约束），保证单调改进。<b>为什么必读</b>：这是所有后续 humanoid RL 的算法底座——PPO 是它的简化版，而几乎所有人形步态 RL 都用 PPO。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1502.05477" target="_blank" rel="noopener">TRPO 2015 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s4-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="yr">2017</span>Schulman 等：PPO</div>
+    <div class="dc">"Proximal Policy Optimization Algorithms"，arXiv:1707.06347。<b>必读</b>。工业界的事实标准——实现简单、稳定性好、超参不敏感。<b>你需要能回答</b>：为什么机器人领域几乎清一色用 PPO 而不是 SAC 或 DDPG？（答案涉及 on-policy/off-policy、样本效率与策略平滑对物理系统的重要性）
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1707.06347" target="_blank" rel="noopener">PPO 2017 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s4-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前置</span><span class="tag have">本机已有</span><span class="yr">2015</span>Lillicrap 等：DDPG</div>
+    <div class="dc"><b>本机论文库已收录 ddpg-2015.pdf。</b><b>定位要搞清楚</b>：DDPG 是为<b>连续控制、off-policy、高样本复用</b>设计的，在 MuJoCo 连续控制基准上刷榜成功。但它在<b>高维人形全身控制</b>上很少直接用。原因（投资/技术判断都要懂）：off-policy 的分布偏移在高维稀疏奖励下极难收敛。<b>这是"基准刷榜成功 ≠ 落地可用"的经典案例</b>。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1509.02971" target="_blank" rel="noopener">DDPG arXiv PDF（正式标题：Continuous control with deep RL）</a></div>
+  </div></div>
+
+  <h4>Sim2Real 的三块基石</h4>
+  <div class="item" data-k="s4-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">基石一</span><span class="tag key">必读</span><span class="tag have">本机已有</span><span class="yr">2017</span>Tobin 等：域随机化</div>
+    <div class="dc">"Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World"，IROS 2017（arXiv:1703.06907）。<b>本机论文库已收录 domain-randomization-2017.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：训练时把动力学参数（质量、摩擦、阻尼）、观测噪声、延迟、电机响应全部<b>随机化</b>，逼策略学出对参数不敏感的<b>鲁棒</b>行为。<b>思想极其漂亮</b>：不追求"仿真足够真实"，而是"策略对不确定性足够鲁棒"。<b>这个思想统治了整个机器人学界六年，直到 2023 年被基础模型部分取代。</b><br><b>投资视角</b>：域随机化的价值在于它<b>不需要你有一个完美仿真器</b>——这大幅降低了小公司的入场门槛，也是四足机器人公司（宇树、Unitree）能快速起量的技术原因之一。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1703.06907" target="_blank" rel="noopener">Domain Randomization 2017 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s4-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">基石二</span><span class="tag have">本机已有</span><span class="yr">2018</span>足式机器人的 sim2real 实证</div>
+    <div class="dc"><b>本机论文库已收录 sim2real-quadruped-2018.pdf + learning-to-walk-2019.pdf。</b>对应工作：Tan et al. 2018（"Sim-to-Real: Learning Agile Locomotion For Quadruped Robots"，RSS 2018）与 Lee et al. 2020（Science Robotics 5(47) eabc5986）。</div>
+    <div class="dc"><b>为什么这两个配方成了行业标配</b>：① 训练中加入<b>延迟与执行器强度随机化</b>（不只是物理参数）；② 使用<b>特权学习（privileged learning）</b>——训练时给仿真真值（接触力、足底状态），测试时用可观测量（IMU、编码器）。<b>后者是解决"部分可观测"的关键技巧</b>，今天的人形 RL 方案普遍沿用。<br><b>诚实提示</b>：四足与人形的难度差距极大。四足有 4 个支撑点、质心低、控制简单；人形只有 2 个支撑点、质心高、欠驱动。把四足配方直接搬到人形会失败——这正是 2021 年前后"人形 RL 很难"的原因。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1804.10332" target="_blank" rel="noopener">Tan 等 2018 四足 sim2real arXiv PDF（RSS 2018）</a><span class="sep">·</span><a href="https://arxiv.org/pdf/2010.11251" target="_blank" rel="noopener">Lee 等 2020 四足挑战地形 arXiv PDF（Science Robotics）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s4-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">基石三</span><span class="yr">2021 / 2022</span>NVIDIA Isaac Gym + legged_gym</div>
+    <div class="dc">Isaac Gym（2021）让 GPU 上并行跑数千个物理环境成为标准配置；legged_gym（Xue et al. 2021，MIT）在其上做了极简的足式 RL 训练框架。</div>
+    <div class="dc"><b>为什么这是产业级事件</b>：<b>训练时间从"周"降到"小时"</b>。今天训练一个人形步态策略，一张工作站几个小时就能出结果。这是人形机器人公司能够像软件公司一样迭代的根本原因。<b>技术估值的核心观察点</b>：谁把仿真-训练-部署的闭环迭代周期压到最短，谁的模型迭代最快。
+  </div>
+    <div class="lk"><a href="https://github.com/leggedrobotics/legged_gym" target="_blank" rel="noopener">legged_gym 官方仓库（无 arXiv，GitHub 为准）</a><span class="sep">·</span><a href="https://github.com/leggedrobotics/rsl_rl" target="_blank" rel="noopener">RSL-RL 官方仓库（ETH，当前主流训练框架）</a></div>
+  </div></div>
+
+  <h4>人形 RL 的转折点</h4>
+  <div class="item" data-k="s4-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">转折</span><span class="tag key">必读</span><span class="yr">2021</span>Siekmann 等：Cassie 上的统一双足步态策略</div>
+    <div class="dc">Siekmann, Godse, Fern, Hurst，<b>"Sim-to-real learning of all common bipedal gaits via periodic reward composition"</b>，ICRA 2021 pp.7309-7315。<b>注意：此文没有 arXiv 版本</b>，只能走 IEEE DOI，所以下面挂的是 DOI 直链。</div>
+    <div class="dc"><b>技术内容</b>：用<b>单一参数化奖励</b>（基于概率周期代价）训出一个策略，覆盖站立、行走、单腿跳、奔跑、双足跳等<b>全部两拍步态</b>，且能在 Cassie 上 sim2real 实机落地、一步切换步态。<br><b>为什么这是人形 RL 的分水岭</b>：在此之前，"走路"和"跑步"是不同的控制器。现在变成<b>一个策略的连续参数化</b>。这个"统一策略覆盖多步态"的思想直接通向 2024 年 Radosavovic 的 transformer 上下文自适应策略。
+  </div>
+    <div class="dc"><b>⚠️ 高频混淆，务必分清</b>：常与本文一起被引用的 <b>arXiv:1804.10332（Tan et al. 2018, RSS）是四足 Minitaur 论文，不是双足 Cassie</b>。很多资料会把这两篇混为一谈，导致"双足统一步态策略"挂上一个四足论文的链接——这种错误很隐蔽，因为链接照样能打开。</div>
+    <div class="lk"><a href="https://doi.org/10.1109/ICRA48506.2021.9561814" target="_blank" rel="noopener">Siekmann 等：所有常见双足步态（ICRA 2021，IEEE DOI，无 arXiv）</a><span class="sep">·</span><a href="https://github.com/UBCMOCCA/Cassie_Robot_Resources" target="_blank" rel="noopener">Cassie 论文与代码官方汇总页（含各篇 PDF 直链）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s4-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">2022</span>Cassie 百米纪录：纯本体感知的策略跑完全程</div>
+    <div class="dc">Agility 宣布 Cassie 用同一谱系的策略在无外部传感器情况下跑完 100 米。<b>官方口径</b>：策略"在仿真中训练约一年，压缩到实时一周"（意即推理在线性时间尺度内运行），是首个用机器学习控制跑步步态走户外地形的人形机器人。</div>
+  </div></div>
+
+  <div class="item" data-k="s4-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">必读</span><span class="tag key">2024</span>Radosavovic 等：Real-World Humanoid Locomotion with RL</div>
+    <div class="dc"><i>Science Robotics</i>, 2024 年 4 月。Radosavovic, Xiao, Zhang, Darrell, Malik, Sreenath（Google DeepMind + UC Berkeley）。</div>
+    <div class="dc"><b>技术内容</b>：训练一个<b>因果 transformer</b> 处理本体感知的观测-动作历史序列，在仿真训练后<b>零样本部署</b>到 Digit 人形，在草地、碎石、人行道、包装材料等地形上室外行走。<br><b>核心假设（论文明确提出，非常重要）</b>：观测-动作历史"<b>包含了强大 transformer 可用来in-context 自适应的有用信息，而无需更新权重</b>"。<br><b>为什么这是通向 2024+ 前沿的桥</b>：它把"适应"从"训练时固化进权重"变成了"<b>推理时用上下文动态适应</b>"。这正是 VLA 大模型的机制。<b>你必须理解这个转折</b>——它是"策略"通往"基础模型"的分水岭。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2303.03381" target="_blank" rel="noopener">Radosavovic 等 2024 transformer 人形 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="warn"><b>阶段 4 的工程现实</b>：今天人形 RL 的主流栈是 <b>NVIDIA Isaac Lab + ETH 的开源 RSL-RL 框架</b>。训练一个策略从"几周"降到"几小时"。但有三个仍未解决的问题：① <b>奖励函数设计仍是艺术而非科学</b>（没有类似 SLAM 那样公认的统一范式）；② <b>sim2real gap 在接触丰富的操作任务上远比行走大</b>；③ <b>能耗</b>——RL 策略通常远不如解析式 ZMP 控制省电，这在电池机器人上是硬约束。</div>
+
+  <div class="gate"><b>验收标准</b>：① 能讲清域随机化的思想以及它为什么"不需要完美仿真器"；② 能解释特权学习的训练/部署不对称；③ 能说明为什么四足配方不能直接搬到人形（支撑点数、质心高度、欠驱动性）；④ 能解释 Radosavovic 2024 的"上下文自适应无需更新权重"为什么是通向基础模型的桥。</div>
+</div>
+
+<!-- 阶段 5 -->
+<div class="era e5">
+  <div class="ehead">
+    <div class="eyear">2018 – 2023</div>
+    <h2 class="etitle">阶段 5 · 具身基础模型萌芽（语言进入机器人）</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>RL 让机器人会走路，但机器人仍然<b>不会理解语言</b>。它只知道"往前 0.3 米"。这一阶段的核心突破是：<b>把大规模语言模型的语义知识接到机器人动作上</b>，让"把桌上的红杯子递给我"这样的自然语言指令能被执行。这是 VLA（Vision-Language-Action）的预备期。</div>
+
+  <h4>教材与背景</h4>
+  <div class="item" data-k="s5-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2016</span>Goodfellow, Bengio &amp; Courton《Deep Learning》→ 改读带在线勘误的 MIT Press 版本</div>
+    <div class="dc"><b>理论补课</b>。阶段 5–6 讲的 Transformer / 扩散模型 / 流匹配，源头都在这本。<b>选读</b>：第 10 章（正则化）、第 12 章（生成模型）。你数学背景好，这本一周可扫完。
+  </div>
+    <div class="lk"><a href="https://mitpress.mit.edu/9780262035613/deep-learning/" target="_blank" rel="noopener">Goodfellow《Deep Learning》MIT Press 页</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag book">教材</span><span class="yr">2020</span>Vaswani 等《Attention Is All You Need》</div>
+    <div class="dc">arXiv:1706.03762。<b>不需要重读论文，但要理解自注意力与"序列建模"范式</b>——这是 VLA 的架构基础：把"观测-动作历史"当 token 序列处理。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1706.03762" target="_blank" rel="noopener">Attention Is All You Need arXiv PDF</a></div>
+  </div></div>
+
+  <h4>论文（这一阶段的必读密度最高，几乎全是必读）</h4>
+  <div class="item" data-k="s5-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag key">必读</span><span class="yr">2018</span>Brohan 等：世界模型（World Model）</div>
+    <div class="dc">"World Models"，arXiv:1803.10122。<b>本机论文库已收录 world-model-2018.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：用 VAE 压缩视觉、RSSM 学习时序潜变量、MLP 训练控制器，然后<b>完全在"想象"中训练智能体</b>，最后在真实环境中执行。<br><b>为什么重要</b>：它引入了"<b>在潜空间中仿真训练</b>"这个想法。8 年后（2026），这个思想以"<b>世界动作模型 / world action model</b>"（NVIDIA GR00T N2 的 DreamZero 架构）的形式重回主流。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/1803.10122" target="_blank" rel="noopener">World Models 2018 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag have">本机已有</span><span class="yr">2022</span>Brohan 等：SayCan</div>
+    <div class="dc">"SayCan: Large Language Models are General Reasoners for Robotic Control"，arXiv:2204.01691（Google，Google Brain + DeepMind）。<b>本机论文库已收录 saycan-2022.pdf。</b></div>
+    <div class="dc"><b>技术内容（这是本阶段最重要的机制创新）</b>：把"语言模型认为合理的下一步"与"技能库中实际可执行的能力"做<b>打分乘积</b>——<code>P(a) × P_执行可行性(a)</code>，取最高分。<br><b>为什么这是关键设计</b>：纯 LLM 会说"打开冰箱"但机器人不会；纯技能库不知道该说哪个。SayCan 用<b>语言做任务规划 + 技能做执行</b>的解耦架构解决了这个问题，并显著提升长程任务成功率。<br><b>架构影响至今</b>：今天所有 VLA 双系统里的 "System 2（慢思考、做规划）"，追根溯源就是这个乘法组合。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2204.01691" target="_blank" rel="noopener">SayCan arXiv PDF（arXiv 标题：Do As I Can, Not As I Say）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag key">必读</span><span class="yr">2022</span>Brohan 等：RT-1</div>
+    <div class="dc">"RT-1: Robotics Transformer for Real-World Control at Scale"，arXiv:2212.06817。</div>
+    <div class="dc"><b>技术内容</b>：用<b>动作分词化（action tokenization）</b>把连续动作离散成 token，从而让一个标准 Transformer 可以直接吃"图像 + 语言 + 历史动作"输出动作序列。<b>关键决策：让架构向 NLP 靠拢，而不是让 NLP 迁就机器人</b>——这个选择让 RT 系列能吸收互联网级预训练知识。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2212.06817" target="_blank" rel="noopener">RT-1 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">核心</span><span class="tag key">必读</span><span class="yr">2023</span>Driess 等：PaLM-E</div>
+    <div class="dc">"PaLM-E: An Embodied Multimodal Language Model"，arXiv:2303.03378（Google）。</div>
+    <div class="dc"><b>技术内容</b>：把<b>连续传感器观测</b>（图像、深度、状态）作为 token 直接注入 PaLM 的输入序列，在互联网知识 + 机器人数据上联合训练。<br><b>为什么关键</b>：它<b>证明了语言模型的规模可以转化为机器人能力</b>，而且不需要为每种传感器模态设计专用头。<b>你必须理解这个"模态统一"思路</b>——它是 VLA 能成立的前提，也是今天所有多模态模型的通用范式。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2303.03378" target="_blank" rel="noopener">PaLM-E arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">最核心</span><span class="tag key">必读</span><span class="tag have">本机已有</span><span class="yr">2023</span>Brohan 等：RT-2</div>
+    <div class="dc">"RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control"，arXiv:2307.15818（Google DeepMind）。<b>本机论文库已收录 rt-2-2023.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：直接在<b>互联网级别的 VLM</b>上微调出动作输出。有两个版本：RT-2-P（继承动作表示）与 <b>RT-2-A（把动作表示为文本 token，可被 CoT 泛化利用）</b>。<br><b>核心洞见（必须理解）</b>：VLM 已经从互联网图片里学到了大量<b>物理常识</b>（物体长什么样、什么状态、怎么交互）。这些知识<b>本来在语言模型里是隐式的</b>，VLA 只是把动作接到这个知识上。<br><b>这个洞见推翻了当时的共识</b>——2023 年之前主流认为"机器人数据太稀缺，不可能用 LLM 规模解决"。RT-2 证明了<b>知识可以来自互联网，动作可以从少量机器人数据学</b>。这是整条 VLA 叙事的起点。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2307.15818" target="_blank" rel="noopener">RT-2 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">重要</span><span class="yr">2023</span>Open X-Embodiment / RT-X：跨本体数据集</div>
+    <div class="dc">"Open X-Embodiment: Robotic Learning Datasets and RT-X Models"，arXiv:2310.08864。</div>
+    <div class="dc"><b>技术内容</b>：整合 <b>22 个不同机器人本体、100 万+ 轨迹、527 种技能</b>，训出 RT-X。<br><b>为什么这是产业级事件</b>：它把"<b>跨本体泛化</b>"从设想变成可度量的事实，同时<b>定义了行业的数据标准</b>——从此"我的数据格式能不能被 Open X 生态接受"成了公司技术估值的一部分。<b>投资视角</b>：谁的数据被收进 Open X-Embodiment，谁就在生态里占住了位置。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2310.08864" target="_blank" rel="noopener">Open X-Embodiment arXiv PDF + 官方项目站</a><span class="sep">·</span><a href="https://robotics-transformer-x.github.io/" target="_blank" rel="noopener">Open X-Embodiment 数据集官方站</a></div>
+  </div></div>
+
+  <div class="item" data-k="s5-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">开源基线</span><span class="yr">2024</span>Octo</div>
+    <div class="dc">"Octo: An Open-Source Generalist Robot Policy"，arXiv:2310.08827（Berkeley 等，含 TRI、Google DeepMind）。<b>93M 参数</b>，基于 Open X-Embodiment 训练。<br><b>为什么重要</b>：它把"通用机器人策略"从大厂手里还给学术界。作为开源基线，它的出现直接催生了 OpenVLA。<b>投资视角</b>：开源策略模型是整个赛道的基础设施——它决定了小团队的起跑线在哪。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2405.12213" target="_blank" rel="noopener">Octo arXiv PDF（2024-05）</a></div>
+  </div></div>
+
+  <div class="gate"><b>验收标准</b>：① 能解释 RT-2 的核心洞见（互联网知识 + 少量动作数据）以及它为什么推翻了"机器人数据必须自建"的共识；② 能讲清 SayCan 的乘法打分机制以及它如何演化成今天的双系统架构；③ 能解释动作分词化这个技术选择的取舍（易于利用 LLM 生态，但牺牲了输出平滑性）；④ 能说出 Open X-Embodiment 的产业意义。</div>
+</div>
+
+<!-- 阶段 6 -->
+<div class="era e6">
+  <div class="ehead">
+    <div class="eyear">2023 – 2026</div>
+    <h2 class="etitle">阶段 6 · VLA 双系统格局（2026 前沿）</h2>
+  </div>
+  <div class="ethesis"><b>这一阶段解决的问题：</b>如何让 VLA <b>实时</b>、<b>可部署在机器人本地</b>、<b>能跨本体迁移</b>？三个约束同时成立时的解法收敛到同一个架构：<b>双系统</b>——一个 1–5 Hz 的"慢思考"做语义推理与规划，一个 50–200 Hz 的"快思考"出电机指令。这个架构目前是全行业收敛点。</div>
+
+  <h4>论文（这是当前最前沿，按时间读）</h4>
+  <div class="item" data-k="s6-1"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">扩散策略</span><span class="tag have">本机已有</span><span class="yr">2023</span>Chi 等：Diffusion Policy</div>
+    <div class="dc">"Diffusion Policy: Visuomotor Policy Learning via Action Diffusion"，RSS 2023，arXiv:2303.04137。<b>本机论文库已收录 diffusion-policy-2023.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：用<b>扩散模型</b>生成动作序列（action chunk），而非单步回归或自回归 token。<b>为什么必读</b>：它是 VLA 动作头的技术底座——从 RT-2 的离散 token，到今天的流匹配/扩散动作头，中间就是这个工作打通的。<b>三个优势</b>：能表达多模态动作分布、输出平滑连续、能生成"一段"动作而非单步（减少抖动）。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2303.04137" target="_blank" rel="noopener">Diffusion Policy arXiv PDF（RSS 2023）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-2"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">模仿学习</span><span class="tag have">本机已有</span><span class="yr">2023 / 2024</span>ALOHA / Mobile ALOHA：低成本双臂</div>
+    <div class="dc"><b>本机论文库已收录 aloha-2023.pdf + mobile-aloha-2024.pdf。</b></div>
+    <div class="dc"><b>为什么重要</b>：ACT（Action Chunking with Transformers）用<b>低成本</b>设备（几个手机、电机）实现了灵巧双臂操作，&lt;$32k 成本。<b>这一项直接改变了研究界的资源门槛</b>——之前做灵巧操作需要昂贵机械臂。之后 Mobile ALOHA 把基座加了轮子，让它能移动操作。<br><b>投资视角</b>：这是"具身智能数据飞轮"叙事的基础设施——数据从哪来？答案是低成本遥操作。<b>谁能低成本大规模采数据，谁就有数据壁垒。</b>
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2304.13705" target="_blank" rel="noopener">ALOHA / ACT arXiv PDF</a><span class="sep">·</span><a href="https://arxiv.org/pdf/2401.02117" target="_blank" rel="noopener">Mobile ALOHA arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-3"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">开源</span><span class="tag key">必读</span><span class="tag have">本机已有</span><span class="yr">2024</span>Kim 等：OpenVLA</div>
+    <div class="dc">"OpenVLA: An Open-Source Vision-Language-Action Model"，arXiv:2406.09246（Stanford/UC Berkeley/Google DeepMind 等）。<b>本机论文库已收录 openvla-2024.pdf。</b></div>
+    <div class="dc"><b>技术内容</b>：<b>7B 参数</b>（Llama 2 + SigLIP），Apache 2.0 完全开源，训练数据 970k Open X-Embodiment episodes。<br><b>关键论断（必须理解，这是本阶段最重要的技术判断）</b>：<b>7B 的开源模型在它被训练的操作任务上，优于 55B 的闭源 RT-2-X</b>；而 RT-2-X 在需要互联网规模语义知识的长尾任务上仍占优。<br><b>架构含义</b>：推理时分布内表现 vs 长尾世界知识，是两个独立的维度。LoRA 微调只需训练 1.4% 参数就能匹配全量微调效果。<br><b>投资视角</b>：这就是当前"自研 vs 外采"决策轴的真实样子——小而开、在自己的场景内更强；大而闭、在长尾语义上更强。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2406.09246" target="_blank" rel="noopener">OpenVLA arXiv PDF</a><span class="sep">·</span><a href="https://github.com/openvla/openvla" target="_blank" rel="noopener">OpenVLA 官方仓库（Apache 2.0）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-4"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="tag key">必读</span><span class="yr">2024.10</span>Black 等：π0（Physical Intelligence）</div>
+    <div class="dc">"π0: A Vision-Language-Action Flow Model for General Robot Control"，arXiv:2410.24164。</div>
+    <div class="dc"><b>技术内容</b>：<b>流匹配（flow matching）</b>动作头（非扩散），在 <b>7 个机器人平台、68 个任务</b>上训练，展示长程灵巧操作：叠衣服、清桌面、装袋。预训练含大量互联网视频以理解人类动作。<br><b>为什么关键</b>：<b>流匹配相比扩散的采样步数更少 → 推理更快</b>，这对实时控制是决定性的。公司由前 OpenAI / Google 研究员创立，融资超 $400M。<b>它是"ChatGPT for robots"这个叙事的定义者。</b>
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2410.24164" target="_blank" rel="noopener">π0 arXiv PDF（2024-10，流匹配动作头）</a><span class="sep">·</span><a href="https://github.com/Physical-Intelligence/openpi" target="_blank" rel="noopener">openpi 官方仓库（Physical Intelligence）</a><span class="sep">·</span><a href="https://arxiv.org/pdf/2504.16054" target="_blank" rel="noopener">π0.5 arXiv PDF（开放世界泛化）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-5"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="yr">2025.2</span>Figure：Helix</div>
+    <div class="dc">Figure AI 发布，双系统：System 2 是 <b>7B 互联网预训练 VLM，跑 7–9 Hz</b>做场景与语言理解；System 1 是 <b>80M 参数视觉运动策略，跑 200 Hz 控制 35 个自由度（含每根手指）</b>。训练数据仅约 <b>500 小时遥操作</b>（加自动生成的 hindsight 指令）。</div>
+    <div class="dc"><b>关键证据</b>：能抓起训练中从未见过的成千上万种小件物品；<b>首次实现两个机器人同时运行 VLA 协同完成长程操作</b>。2025 年 10 月的 Helix 02 把控制扩展到全身（走+操作+平衡统一），演示了 4 分钟不间断、不重置、不人工干预地完成"卸载并重新装满洗碗机"。<br><b>投资视角</b>：<b>500 小时</b>这个数字是全赛道最重要的成本指标之一。它说明"数据规模不再是唯一壁垒"，架构设计可以部分替代数据规模。
+  </div>
+    <div class="lk"><a href="https://www.figure.ai/news/helix" target="_blank" rel="noopener">Helix 官方页（Figure，厂商发布）</a><span class="sep">·</span><a href="https://www.figure.ai/news/helix-02" target="_blank" rel="noopener">Helix 02 全身控制官方页</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-6"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="tag key">必读</span><span class="yr">2025.3</span>NVIDIA：Isaac GR00T N1</div>
+    <div class="dc">arXiv:2503.14734。发布时被定位为"<b>首个开源人形机器人基础模型</b>"，架构 = 扩散变换器 + 系统集成。</div>
+    <div class="dc"><b>技术内容（务必记清，这是当前最可复现的开源基线）</b>：双系统同模型内实现。System 2（慢思考）= Eagle-2 VLM（SmolLM 1.7B 语言骨干 + SigLIP-2 图像编码器）；System 1（快思考）= Diffusion Transformer，<b>最高 120 Hz</b> 输出连续闭环电机指令。公开 checkpoint <code>GR00T-N1-2B</code>，约 <b>2.2B 总参数</b>（VLM 部分 1.34B），在 L40 上采样 16 个动作耗时 <b>63.9 ms</b>。预训练约 <b>50,000 H100 GPU 小时</b>，数据混合真实机器人轨迹 + 人类视频 + 合成数据。<b>NVIDIA 报告：加入合成数据比只用真实数据性能高 40%。</b></div>
+    <div class="dc"><b>为什么这是投资视角的关键节点</b>：NVIDIA 把"大脑 + 仿真（Isaac）+ 世界模型（Cosmos）+ 端侧算力（Jetson Thor）"做成四件套，<b>把自己定位成 Physical AI 的基础设施层</b>。已部署/早访问伙伴包括 Agility、Boston Dynamics、1X、Mentee、NEURA。<b>这意味着机器人赛道正在重演"云计算/芯片"的产业结构</b>——价值向算力与基础模型层集中。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2503.14734" target="_blank" rel="noopener">GR00T N1 arXiv PDF（2025-03）</a><span class="sep">·</span><a href="https://developer.nvidia.com/isaac/gr00t" target="_blank" rel="noopener">NVIDIA Isaac GR00T 开发者官方页（含 N1.5/N1.6/N1.7 下载）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-7"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="tag key">必读</span><span class="yr">2025.3</span>Google DeepMind：Gemini Robotics</div>
+    <div class="dc">2025 年 3 月发布，构建在 Gemini 2.0 多模态骨干上，扩展出物理动作输出能力。</div>
+    <div class="dc"><b>三个组成部分必须分清</b>（很多报道把它们混为一谈）：<b>Gemini Robotics</b>（VLA 本体）；<b>Gemini Robotics-ER</b>（具身推理模型，做感知、状态估计、规划、代码生成，可原生调用 Search 等数字工具，报告称端到端具身任务成功率比 Gemini 2.0 高 2–3 倍）；<b>Gemini Robotics On-Device</b>（2025.6，第一个可供开发者微调的 VLA，<b>50–100 条示范</b>即可适配新任务，附带支持 MuJoCo 的 SDK）。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2503.20020" target="_blank" rel="noopener">Gemini Robotics arXiv PDF（2025-03 首发版）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-8"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="yr">2025.5 / 2025.6</span>GR00T N1.5 与小模型</div>
+    <div class="dc">N1.5（Computex 2025）：VLM 升级 Eagle 2.5，加 <b>FLARE</b>（Future Latent Representation Alignment）损失以从人类视频学习，真实 GR-1 人形任务的<b>语言跟随率从 46.6% → 93.3%</b>；NVIDIA 称用 GR00T-Dreams 管线生成合成数据约 <b>36 小时</b>而非人工采集三个月（厂商口径，未独立验证）。<br><b>SmolVLA</b>（2025.6, Hugging Face）：<b>450M 参数</b>，SmolVLM-2（SigLIP + SmolLM2）+ ~100M 流匹配动作专家，异步推理机制平均缩短约 30% 任务时间，面向消费级硬件。</div>
+    <div class="dc"><b>为什么重要</b>：SmolVLA 证明<b>在 2–7B 这个量级，显存与延迟根本装不进低功耗硬件</b>。这直接对应投资问题：<b>"推理成本决定了哪些场景能落地"</b>。你做投研时应该把这个当作核心评估维度——不是模型能力，而是<b>能否在机器人本体上以可接受延迟运行</b>。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2506.01844" target="_blank" rel="noopener">SmolVLA arXiv PDF（2025-06，450M 小模型）</a><span class="sep">·</span><a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">Hugging Face LeRobot 官方仓库（SmolVLA 代码与数据）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-9"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="tag key">必读</span><span class="yr">2025.9–10</span>Gemini Robotics 1.5 与 ER 1.5</div>
+    <div class="dc">arXiv:2510.03342。<b>技术内容</b>：把栈彻底<b>拆成两个模型</b>——ER 1.5 做编排与规划（可调用 web search 等数字工具、估计进度），VLA 1.5 "<b>先想后动</b>"（在动作前生成自然语言推理过程）。新增 <b>Motion Transfer</b> 机制：ALOHA 2 上学到的技能可直接运行在 Apptronik Apollo 人形和双臂 Franka 上，<b>无需为每个本体专门化</b>。</div>
+    <div class="dc"><b>为什么这是当前最重要的一篇</b>：跨本体迁移"从设想变成可演示的能力"。而它揭示的<b>幻觉边界</b>更值得你记住：<b>迁移会随本体差异（夹爪几何、相机位置、自由度、控制延迟）退化</b>；演示里"基本能work"不等于生产安全。它给你的是<b>热启动，不是成品策略</b>。
+  </div>
+    <div class="lk"><a href="https://arxiv.org/pdf/2510.03342" target="_blank" rel="noopener">Gemini Robotics 1.5 arXiv PDF（2025-10，Motion Transfer）</a><span class="sep">·</span><a href="https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-1-5-Tech-Report.pdf" target="_blank" rel="noopener">Gemini Robotics 1.5 官方技术报告 PDF（DeepMind 直链）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-10"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="yr">2025.12 / 2026</span>GR00T N1.6 与 N1.7</div>
+    <div class="dc">N1.6（2025.12）：换用 NVIDIA Cosmos-2B 视觉语言变体（灵活分辨率、原生宽高比编码），<b>Diffusion Transformer 从 16 层加深到 32 层</b>，去掉 N1.5 的 post-VLM adapter，加入数千小时遥操作双臂数据（YAM、AgiBot Genie-1、Unitree G1）。<br>N1.7（2026，Early Access，Apache 2.0 + NVIDIA Open Model License）：<b>3B 参数</b>，VLM 骨干换为 <b>Cosmos-Reason2-2B（Qwen3-VL 架构）</b>，32 层扩散变换器动作头，<b>改为相对 EEF 动作空间</b>（表示相对当前位姿的增量，而非绝对目标）。</div>
+    <div class="dc"><b>最关键的单一发现（必须理解，这是本阶段的技术支点）</b>：预训练用了 <b>EgoScale</b>——<b>20,854 小时</b>带传感器的<b>人类第一视角视频</b>，覆盖 20+ 任务类别（制造、零售、医疗、家庭）。NVIDIA 报告：从 1,000 小时增到 20,000 小时，<b>平均任务完成度翻倍以上</b>，并称这是<b>机器人灵巧操作的第一个缩放定律</b>。<br><b>为什么这个发现极其重要</b>：人类视频的采集成本远低于机器人遥操作。相对 EEF 动作空间让"人"和"机器"的表示一致，于是<b>人类操作先验可以直接迁移到机器人控制</b>。这在工程上等价于把遥操作这个瓶颈从"成本问题"变成"数据补充问题"。<br><b>投资视角</b>：如果这条缩放定律成立，那么<b>拥有大规模人类第一视角数据资产的公司</b>（尤其是有真实场景采集能力的）具有结构性优势。这是一条可跟踪、可证伪的产业判断。
+  </div>
+    <div class="lk"><a href="https://huggingface.co/blog/nvidia/gr00t-n1-7" target="_blank" rel="noopener">GR00T N1.7 官方发布（NVIDIA，Early Access）</a><span class="sep">·</span><a href="https://github.com/NVIDIA/Isaac-GR00T" target="_blank" rel="noopener">GR00T N1.7 官方仓库（Apache 2.0）</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-11"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">前沿</span><span class="tag key">必读</span><span class="yr">2026</span>行业共识：五个硬边界</div>
+    <div class="dc">2025–2026 的综述文献高度收敛于五个尚未解决的问题。<b>这五条是当前领域最值得记住的判断依据</b>：</div>
+    <div class="dc">
+    <b>① 延迟 vs 控制频率</b>：数十亿参数 VLM 骨干相对 50–200 Hz 的灵巧动态操作<b>太慢</b>。层剪枝、早退、动作分块（action chunking）、双系统拆分，全部为解决此问题而存在。<br>
+    <b>② 数据稀缺与成本</b>：真实遥操作数据相对互联网文本/图像<b>昂贵且慢</b>。仿真、合成数据、人类视频预训练都是部分替代，但<b>只是部分</b>——sim2real 与跨本体鸿沟持续存在。<br>
+    <b>③ 有界泛化</b>：VLA 在熟悉任务分布内对陌生物体和改述指令泛化尚可；对<b>真正新的长程任务、接触密集的灵巧操作、差异过大的本体</b>，泛化能力显著更差。<br>
+    <b>④ 安全与可靠性</b>：缺乏形式化安全保证，普遍依赖经验性成功率而非可认证行为。对抗鲁棒性、失效检测、分布外行为都是<b>活跃研究课题而非已解决问题</b>。<br>
+    <b>⑤ 基准碎片化（最容易被忽略但最重要）</b>：几乎所有成功率数字都是作者在<b>自己的任务和自己的机器人上自报</b>的，跨模型比较不可靠。独立标准化基准（如 RoboArena）才刚出现。
+  </div>
+    <div class="lk"><a href="https://robo-arena.github.io/" target="_blank" rel="noopener">RoboArena 独立基准官方站（对抗厂商自报数据）</a><span class="sep">·</span><a href="https://arxiv.org/pdf/2506.18123" target="_blank" rel="noopener">RoboArena 论文 arXiv PDF</a></div>
+  </div></div>
+
+  <div class="item" data-k="s6-12"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="tag paper">反面教材</span><span class="tag key">必读</span><span class="yr">2025–2026</span>VLA 项目的四种失败模式</div>
+    <div class="dc">这是工程圈内部共识，比任何论文都实用：</div>
+    <div class="dc">
+    <b>① 把 VLA 当 LLM 用（最常见的致命错误）</b>：失败后"重试"或"重新生成"，隐含假设了物理世界不具备的可逆性。<b>正确做法</b>：为不可撤销的动作设计确认步骤、限制力矩、宁可停止也不要猜测。<br>
+    <b>② 把 System 2 放进控制回路</b>：让数十亿参数的前向传播处在热路径上，必然超出实时预算。<b>判据</b>：如果控制步依赖一个数十亿参数模型的前向，你已经输了。<br>
+    <b>③ 期待跨本体迁移是免费的</b>：见 s6-9，迁移随本体差异退化，且仍需收集本体专属数据、在自有硬件上评估，并为"共享先验在你这个手腕上失效"的长尾留预算。<br>
+    <b>④ 用自报成功率做决策</b>：见 s6-11 ⑤。基线不明、任务自选、数据自收的比较，在产业分析中不可用。
+    </div>
+  </div></div>
+
+  <h4>硬件前沿（与论文同等重要，投资视角）</h4>
+  <div class="item" data-k="s6-13"><div class="cb"></div><div class="ib">
+    <div class="tt"><span class="yr">2024–2026</span>关键执行器与供应链</div>
+    <div class="dc">人形机器人的成本与性能高度依赖关节模组：<b>谐波减速器</b>（精度高、寿命是瓶颈）、<b>行星滚柱丝杠</b>（线性关节）、<b>空心杯电机</b>（高性能、成本高）、<b>直驱/准直驱</b>（力矩透明，依赖扭矩传感器）、<b>一体化关节模组</b>（集成电机+减速器+驱动器+编码器+扭矩传感器）。</div>
+    <div class="dc"><b>建议的产业跟踪指标</b>：① 关节模组能否把 BOM 成本压到可接受区间；② 灵巧手的<b>自由度</b>与<b>触觉反馈密度</b>（这是当前最欠缺、也最能区分档次的地方）；③ 端侧算力能否承载 VLA（Jetson Thor 级别）；④ 减速器/丝杠的<b>寿命与良率</b>，这是从样机到规模化的真正瓶颈。
+  </div>
+    <div class="lk"><a href="https://droid-dataset.github.io/" target="_blank" rel="noopener">DROID 数据集官方站（大规模野外操作数据）</a></div>
+  </div></div>
+
+  <div class="gate"><b>验收标准（这一阶段的验收要更严）</b>：① 能画出 VLA 双系统架构图并解释每个组件的频率与职责；② 能说清 RT-2、π0、GR00T N1、Gemini Robotics 四者在"开源度 / 动作解码 / 系统拆分 / 训练数据"四个维度上的差异；③ 能解释 EgoScale 与相对 EEF 动作空间如何让人类视频可用，以及"灵巧操作缩放定律"这个发现的产业含义；④ <b>能完整讲出那五个硬边界，并指出第⑤条（基准碎片化）对投资判断的杀伤力最大</b>；⑤ 能说出 VLA 的四种失败模式。</div>
+</div>
+
+<!-- 收尾 -->
+<div class="era e1">
+  <div class="ehead">
+    <div class="eyear">总计</div>
+    <h2 class="etitle">路线总览 · 怎么排时间</h2>
+  </div>
+  <table>
+    <tr><th>阶段</th><th>年份</th><th>核心问题</th><th>核心产出</th><th>建议时长</th></tr>
+    <tr><td>0</td><td>~1941</td><td>机器人这个概念从哪来</td><td>认知框架</td><td>3 小时</td></tr>
+    <tr><td>1</td><td>1954–1975</td><td>机器怎么动：运动学与动力学</td><td>Craig + Modern Robotics</td><td>60 小时</td></tr>
+    <tr><td>2</td><td>1968–2003</td><td>双足为什么能站住</td><td>ZMP + LIPM + Kajita 2003</td><td>50 小时</td></tr>
+    <tr><td>3</td><td>2004–2018</td><td>接触与全身控制</td><td>Posa 2014 + MuJoCo</td><td>45 小时</td></tr>
+    <tr><td>4</td><td>2015–2022</td><td>怎么在学走路而不是被规划</td><td>TRPO/PPO + 域随机化</td><td>45 小时</td></tr>
+    <tr><td>5</td><td>2018–2023</td><td>怎么理解语言</td><td>RT-2 + SayCan + PaLM-E</td><td>40 小时</td></tr>
+    <tr><td>6</td><td>2023–2026</td><td>怎么实时、怎么跨本体、怎么落地</td><td>OpenVLA / π0 / GR00T / Gemini</td><td>70 小时</td></tr>
+    <tr><td colspan="4" style="border:none"><b>合计</b></td><td><b>约 313 小时</b></td></tr>
+  </table>
+
+  <h4>三条不同目标的读法（按你的目的选一条，不要都走）</h4>
+  <div class="box">
+    <h4>路线 A · 应用层视角（差异点定位）</h4>
+    <p style="color:var(--tx2);font-size:13px">你的短板已定位在<b>产业链中上游底层</b>（模型架构原理、算力、存储、先进封装）。因此<b>跳过阶段 1–3 的公式推导，改读以下内容</b>：</p>
+    <ul>
+      <li><b>阶段 2 的硬件段</b>（s2-11/13/14）：读本田 E→P→ASIMO 硬件演进，理解"关节模组"这个概念的由来与演化，不必推 ZMP 公式。</li>
+      <li><b>阶段 4 的 s4-6</b>（Isaac Gym）：理解为什么训练成本从周降到小时——这直接决定公司迭代速度与估值。</li>
+      <li><b>阶段 6 全部</b>：这是你当前最需要密集投入的部分。</li>
+      <li><b>补产业链底层</b>：VLA 的推理需要什么算力？为什么 450M 和 7B 的差别决定了落地场景？这里要连带补 CUDA 架构、Jetson Thor / Orin 的规格、HBM 与显存带宽、算子融合与量化。这是你缺的那块。</li>
+      <li><b>补一手信源</b>：本路线 2025–2026 的数据多来自厂商自报，必须能区分"厂商口径"与"独立验证"（见 s6-11 ⑤）。这个区分能力本身就是硬功夫。</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h4>路线 B · 研究视角（体系完整性）</h4>
+    <p style="color:var(--tx2);font-size:13px">严格按阶段 0→6 顺序通读，每个阶段先教材后论文。必读的六篇：<b>Whitney 1969（雅可比）→ Kajita 2003（ZMP 预览控制）→ Posa 2014（接触优化）→ Tobin 2017（域随机化）→ RT-2 2023（VLA 洞见）→ GR00T N1.7 2026（缩放定律）</b>。这六篇构成一条完整的、可讲述的技术主线。</p>
+  </div>
+
+  <div class="box">
+    <h4>路线 C · 动手/创业视角（最短路径）</h4>
+    <p style="color:var(--tx2);font-size:13px">跳过所有推导。核心三件事：<b>① 跑通 MuJoCo / Isaac Lab 的足式 RL 训练</b>（阶段 4 的 s4-6，你已有本机 mujoco-2012 讲解可用）；<b>② 用低成本方案（Aloha 式）采一批双臂数据做模仿学习</b>（阶段 5 的 s5-2）；<b>③ 微调 OpenVLA 或 SmolVLA 并部署到自己本体</b>（阶段 6）。<b>注意顺序</b>：不要跳过阶段 4 直接玩 VLA——你会发现完全无法诊断失败原因。</p>
+  </div>
+
+  <div class="warn"><b>最后三条纪律</b>：① <b>每个阶段的验收标准做不到就不要往下走</b>，人形机器人是少数几个"跳过基础就永远看不懂前沿"的领域；② <b>厂商自报数据必须标注</b>，本路线已尽量标注，但请你自己再核一遍原始信源；③ <b>2025–2026 这一段信息保鲜期极短</b>，N1.7、N2、Helix 2.5、Gemini ER 2 都可能在几个月内被替代，<b>学方法论比记型号重要</b>。</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var ROOT=document.getElementById('p-timeline');
+  if(!ROOT) return;
+  var boxes=[].slice.call(ROOT.querySelectorAll('.cb'));
+  var KEY='humanoid_timeline_v1';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
+  function save(s){ try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }
+  function upd(){
+    var s=load(), n=0;
+    boxes.forEach(function(b){
+      var item=b.parentElement;
+      var k=item?item.getAttribute('data-k'):null;
+      if(k && s[k]){ b.classList.add('on'); b.textContent='\u2713'; item.classList.add('done'); n++; }
+      else if(k){ b.classList.remove('on'); b.textContent=''; item.classList.remove('done'); }
+    });
+    var pf=ROOT.querySelector('#p-timeline-tlpf');
+    var pt=ROOT.querySelector('#p-timeline-tlpt');
+    if(pf) pf.style.width=(boxes.length? n/boxes.length*100 : 0)+'%';
+    if(pt) pt.textContent='已完成 '+n+' / '+boxes.length+' 项';
+  }
+  boxes.forEach(function(b){
+    b.addEventListener('click',function(){
+      var s=load(), item=b.parentElement;
+      var k=item?item.getAttribute('data-k'):null;
+      if(!k) return;
+      if(s[k]) delete s[k]; else s[k]=1;
+      save(s); upd();
+    });
+  });
+  var rst=ROOT.querySelector('#p-timeline-tlrst');
+  if(rst) rst.addEventListener('click',function(){
+    if(confirm('清空所有勾选进度？')){ localStorage.removeItem(KEY); upd(); }
+  });
+  upd();
+})();
+</script>
+<nav class="pager" data-for="timeline"></nav>
+
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>AI 课件 · 机器人学习台</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="app-title">AI 课件<a class="back" href="../index.html">← 返回首页</a></div>
+  </div>
+</header>
+<main>
+<div class="wrap">
+
+<div class="wrap">
+<h2>AI 课件 · OpenMAIC 16 场景互动课堂</h2>
+<p class="lede">由 OpenMAIC 1.1.3 依据各簇/各章的 <b>facts 事实底座</b>生成，导出为<b>离线单文件 HTML</b>（公式已内嵌 KaTeX，断网可读、可直接发人）+ PDF + classroom JSON 存档。生成时零图片零视频，产物零 token 复用。</p>
+<h3 class="sec">一、事实底座（唯一事实源）</h3>
+<div class="stat-row"><div class="stat"><b>21/21</b><span>一期论文 facts</span></div><div class="stat"><b>14/14</b><span>二期论文 facts</span></div><div class="stat"><b>12/12</b><span>MR 章节 facts</span></div><div class="stat"><b>7</b><span>知识库</span></div><div class="stat"><b>10</b><span>课件</span></div></div>
+<div class="note"><b>延伸：论文地图（顶部页签）</b><br>本面板的事实底座覆盖 <b>21 篇论文 facts + 13 章 MR facts</b>，是<i>已入库</i>的部分；要找<i>圈外的新来源</i>，切到页签 <b>「论文地图」</b>——李飞飞研究脉络 2009→2026（ImageNet → 具身智能 → 空间智能）、43 个 GitHub 高星论文仓库的实测星数、具身智能 / 世界模型 / 人形 / 脑机接口的高分论文与建议阅读顺序。新增论文走完 gen_facts.py 后会进本面板，论文地图负责在你动手之前先圈定范围。</div>
+<table class="tbl"><tr><th>簇</th><th>论文</th><th>facts</th></tr><tbody>
+<tr><td><b>控制与硬件：ZMP / SEA / SLAM</b><br><code>control-hardware</code></td><td>4 篇</td><td>4/4 ✅</td></tr>
+<tr><td><b>扩散策略与具身导航</b><br><code>diffusion-policy</code></td><td>4 篇</td><td>4/4 ✅</td></tr>
+<tr><td><b>RL 基础：从策略梯度到信赖域</b><br><code>rl-foundation</code></td><td>4 篇</td><td>4/4 ✅</td></tr>
+<tr><td><b>仿真与迁移：现实到虚拟的桥</b><br><code>sim-and-sim2real</code></td><td>4 篇</td><td>4/4 ✅</td></tr>
+<tr><td><b>VLA 演进：视觉-语言-动作怎么融合</b><br><code>vla-evolution</code></td><td>5 篇</td><td>5/5 ✅</td></tr>
+</tbody></table>
+<details class="fold"><summary>展开一期 21 篇 facts 清单</summary>
+<table class="tbl sm"><thead><tr><th>#</th><th>簇</th><th>key</th><th>标题</th><th>facts</th></tr></thead><tbody>
+<tr><td>18</td><td><code>control-hardware</code></td><td><code>vukobratovic-zmp-2004</code></td><td>Zero-Moment Point - Thirty Five Years of its Life</td><td>✅ <small>9K</small></td></tr>
+<tr><td>19</td><td><code>control-hardware</code></td><td><code>pratt-williamson-1995</code></td><td>Series elastic actuators</td><td>✅ <small>13K</small></td></tr>
+<tr><td>20</td><td><code>control-hardware</code></td><td><code>monoslam-2007</code></td><td>MonoSLAM: Real-Time Single Camera SLAM</td><td>✅ <small>18K</small></td></tr>
+<tr><td>21</td><td><code>control-hardware</code></td><td><code>learning-to-walk-2019</code></td><td>Learning to Walk Via Deep Reinforcement Learning</td><td>✅ <small>17K</small></td></tr>
+<tr><td>14</td><td><code>diffusion-policy</code></td><td><code>diffusion-policy-2023</code></td><td>Diffusion Policy: Visuomotor Policy Learning via Act</td><td>✅ <small>14K</small></td></tr>
+<tr><td>15</td><td><code>diffusion-policy</code></td><td><code>vision-language-navigation-2018</code></td><td>Vision-and-Language Navigation: Interpreting Visuall</td><td>✅ <small>14K</small></td></tr>
+<tr><td>16</td><td><code>diffusion-policy</code></td><td><code>embodied-question-answering-2018</code></td><td>Embodied Question Answering</td><td>✅ <small>14K</small></td></tr>
+<tr><td>17</td><td><code>diffusion-policy</code></td><td><code>world-model-2018</code></td><td>Dream to Control: Learning Behaviors by Latent Imagi</td><td>✅ <small>13K</small></td></tr>
+<tr><td>1</td><td><code>rl-foundation</code></td><td><code>trpo-2015</code></td><td>Trust Region Policy Optimization</td><td>✅ <small>11K</small></td></tr>
+<tr><td>2</td><td><code>rl-foundation</code></td><td><code>a3c-2016</code></td><td>Asynchronous Methods for Deep Reinforcement Learning</td><td>✅ <small>11K</small></td></tr>
+<tr><td>3</td><td><code>rl-foundation</code></td><td><code>ddpg-2015</code></td><td>Continuous control with deep reinforcement learning</td><td>✅ <small>14K</small></td></tr>
+<tr><td>4</td><td><code>rl-foundation</code></td><td><code>mpc-2020</code></td><td>Learning Model Predictive Control for Quadrotors</td><td>✅ <small>13K</small></td></tr>
+<tr><td>10</td><td><code>sim-and-sim2real</code></td><td><code>mujoco-2012</code></td><td>MuJoCo: A physics engine for model-based control</td><td>✅ <small>17K</small></td></tr>
+<tr><td>11</td><td><code>sim-and-sim2real</code></td><td><code>domain-randomization-2017</code></td><td>Domain randomization for transferring deep neural ne</td><td>✅ <small>16K</small></td></tr>
+<tr><td>12</td><td><code>sim-and-sim2real</code></td><td><code>sim2real-quadruped-2018</code></td><td>Sim-to-Real: Learning Agile Locomotion For Quadruped</td><td>✅ <small>16K</small></td></tr>
+<tr><td>13</td><td><code>sim-and-sim2real</code></td><td><code>habitat-2019</code></td><td>Habitat: A Platform for Embodied AI Research</td><td>✅ <small>12K</small></td></tr>
+<tr><td>5</td><td><code>vla-evolution</code></td><td><code>rt-2-2023</code></td><td>RT-2: Vision-Language-Action Models Transfer Web Kno</td><td>✅ <small>12K</small></td></tr>
+<tr><td>6</td><td><code>vla-evolution</code></td><td><code>openvla-2024</code></td><td>OpenVLA: An Open-Source Vision-Language-Action Model</td><td>✅ <small>13K</small></td></tr>
+<tr><td>7</td><td><code>vla-evolution</code></td><td><code>aloha-2023</code></td><td>Learning Fine-Grained Bimanual Manipulation with Low</td><td>✅ <small>11K</small></td></tr>
+<tr><td>8</td><td><code>vla-evolution</code></td><td><code>mobile-aloha-2024</code></td><td>Mobile ALOHA: Learning Bimanual Mobile Manipulation </td><td>✅ <small>14K</small></td></tr>
+<tr><td>9</td><td><code>vla-evolution</code></td><td><code>saycan-2022</code></td><td>Do As I Can, Not As I Say: Grounding Language in Rob</td><td>✅ <small>13K</small></td></tr>
+</tbody></table></details>
+<details class="fold" open><summary>展开第二期 14 篇 facts 清单（后续课程/论文/）</summary>
+<table class="tbl sm"><thead><tr><th>簇</th><th>key</th><th>标题</th><th>facts</th><th>并入 KB</th></tr></thead><tbody>
+<tr><td><code>rl-algorithms-advanced</code><br>1/3</td><td><code>ppo-2017</code></td><td>Proximal Policy Optimization Algorithms</td><td>✅ <small>11K</small></td><td><code>robot-rl-foundation</code></td></tr>
+<tr><td><code>rl-algorithms-advanced</code><br>2/3</td><td><code>sac-2018</code></td><td>Soft Actor-Critic: Off-Policy Maximum Entropy Deep</td><td>✅ <small>13K</small></td><td><code>robot-rl-foundation</code></td></tr>
+<tr><td><code>rl-algorithms-advanced</code><br>3/3</td><td><code>td3-2018</code></td><td>Addressing Function Approximation Error in Actor-C</td><td>✅ <small>15K</small></td><td><code>robot-rl-foundation</code></td></tr>
+<tr><td><code>vla-generalist</code><br>1/3</td><td><code>rt1-2022</code></td><td>RT-1: Robotics Transformer for Real-World Control </td><td>✅ <small>14K</small></td><td><code>robot-vla-evolution</code></td></tr>
+<tr><td><code>vla-generalist</code><br>2/3</td><td><code>octo-2023</code></td><td>Octo: An Open-Source Generalist Robot Policy</td><td>✅ <small>15K</small></td><td><code>robot-vla-evolution</code></td></tr>
+<tr><td><code>vla-generalist</code><br>3/3</td><td><code>pi0-2024</code></td><td>π0: A Vision-Language-Action Flow Model for Genera</td><td>✅ <small>16K</small></td><td><code>robot-vla-evolution</code></td></tr>
+<tr><td><code>gpu-sim-scaleup</code><br>1/4</td><td><code>isaac-gym-2021</code></td><td>Isaac Gym: High Performance GPU-Based Physics Simu</td><td>✅ <small>11K</small></td><td><code>robot-sim-and-sim2real</code></td></tr>
+<tr><td><code>gpu-sim-scaleup</code><br>2/4</td><td><code>learning-to-walk-minutes-2021</code></td><td>Learning to Walk in Minutes Using Massively Parall</td><td>✅ <small>12K</small></td><td><code>robot-sim-and-sim2real</code></td></tr>
+<tr><td><code>gpu-sim-scaleup</code><br>3/4</td><td><code>rma-2021</code></td><td>RMA: Rapid Motor Adaptation for Legged Robots</td><td>✅ <small>16K</small></td><td><code>robot-sim-and-sim2real</code></td></tr>
+<tr><td><code>gpu-sim-scaleup</code><br>4/4</td><td><code>mjpc-2022</code></td><td>Predictive Sampling: Real-time Behaviour Synthesis</td><td>✅ <small>13K</small></td><td><code>robot-sim-and-sim2real</code></td></tr>
+<tr><td><code>world-model-advanced</code><br>1/1</td><td><code>dreamerv3-2023</code></td><td>Mastering Diverse Domains through World Models (Dr</td><td>✅ <small>13K</small></td><td><code>robot-diffusion-policy</code></td></tr>
+<tr><td><code>manipulation-perception</code><br>1/3</td><td><code>anygrasp-2022</code></td><td>AnyGrasp: Robust and Efficient Grasp Perception in</td><td>✅ <small>16K</small></td><td><code>robot-manipulation-perception</code></td></tr>
+<tr><td><code>manipulation-perception</code><br>2/3</td><td><code>foundationpose-2023</code></td><td>FoundationPose: Unified 6D Pose Estimation and Tra</td><td>✅ <small>11K</small></td><td><code>robot-manipulation-perception</code></td></tr>
+<tr><td><code>manipulation-perception</code><br>3/3</td><td><code>contact-implicit-opt-2021</code></td><td>Contact-Implicit Trajectory Optimization using an </td><td>✅ <small>12K</small></td><td><code>robot-manipulation-perception</code></td></tr>
+</tbody></table></details>
+<h3 class="sec">二、离线课件（双击即开，断网可用）</h3>
+<div class="cards">
+<a class="card" href="../课件/RL基础四部曲-TRPO-A3C-DDPG-LMPC.html" target="_blank"><div class="ct">📘 RL 基础四部曲（TRPO/A3C/DDPG/LMPC）</div><div class="cm">22 幕互动课堂 ｜ 离线 HTML ｜ 配套四篇中文全译</div></a>
+<a class="card" href="../课件/MR精读-第3-4-6-8-9章.html" target="_blank"><div class="ct">📘 MR精读-第3-4-6-8-9章</div><div class="cm">离线单文件 HTML ｜ 4745 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-control-hardware.html" target="_blank"><div class="ct">📘 簇复盘-control-hardware</div><div class="cm">离线单文件 HTML ｜ 3453 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-diffusion-policy.html" target="_blank"><div class="ct">📘 簇复盘-diffusion-policy</div><div class="cm">离线单文件 HTML ｜ 3456 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-gpu-sim-scaleup.html" target="_blank"><div class="ct">📘 簇复盘-gpu-sim-scaleup</div><div class="cm">离线单文件 HTML ｜ 3480 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-rl-algorithms-advanced.html" target="_blank"><div class="ct">📘 簇复盘-rl-algorithms-advanced</div><div class="cm">离线单文件 HTML ｜ 3477 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-rl-foundation.html" target="_blank"><div class="ct">📘 簇复盘-rl-foundation</div><div class="cm">离线单文件 HTML ｜ 3457 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-sim-and-sim2real.html" target="_blank"><div class="ct">📘 簇复盘-sim-and-sim2real</div><div class="cm">离线单文件 HTML ｜ 3442 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-vla-evolution.html" target="_blank"><div class="ct">📘 簇复盘-vla-evolution</div><div class="cm">离线单文件 HTML ｜ 2367 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-vla-generalist.html" target="_blank"><div class="ct">📘 簇复盘-vla-generalist</div><div class="cm">离线单文件 HTML ｜ 3479 KB｜ 含 PDF</div></a>
+<a class="card" href="../课件/簇复盘-world-model-advanced.html" target="_blank"><div class="ct">📘 簇复盘-world-model-advanced</div><div class="cm">离线单文件 HTML ｜ 3439 KB｜ 含 PDF</div></a>
+
+<a class="card" href="../课件/boyd精读-第1章.html" target="_blank"><div class="ct">📘 boyd精读-第1章</div><div class="cm">离线单文件 HTML ｜ 3539 KB ｜ 含 PDF</div></a>
+<a class="card" href="../课件/corke精读-第2章.html" target="_blank"><div class="ct">📘 corke精读-第2章</div><div class="cm">离线单文件 HTML ｜ 3445 KB ｜ 含 PDF</div></a>
+<a class="card" href="../课件/mls94精读-第3章.html" target="_blank"><div class="ct">📘 mls94精读-第3章</div><div class="cm">离线单文件 HTML ｜ 3521 KB ｜ 含 PDF</div></a>
+<a class="card" href="../课件/corke精读-第7章.html" target="_blank"><div class="ct">📘 corke精读-第7章</div><div class="cm">离线单文件 HTML ｜ 3511 KB ｜ 含 PDF</div></a>
+<a class="card" href="../课件/mls94精读-第8章.html" target="_blank"><div class="ct">📘 mls94精读-第8章</div><div class="cm">离线单文件 HTML ｜ 3474 KB ｜ 含 PDF</div></a>
+<a class="card" href="../课件/corke精读-第11章.html" target="_blank"><div class="ct">📘 corke精读-第11章</div><div class="cm">离线单文件 HTML ｜ 3442 KB ｜ 含 PDF</div></a></div>
+<h3 class="sec">三、概念交互演示（DeepTutor visualize）</h3>
+<div class="cards">
+<a class="card" href="../课件/演示-TRPO信赖域KL约束交互演示.html" target="_blank"><div class="ct">🎛 TRPO信赖域KL约束交互演示</div><div class="cm">零依赖单文件 ｜ 18 KB</div></a>
+</div>
+<h3 class="sec">四、PDF 存档</h3><ul class="plain">
+</ul>
+<h3 class="sec">五、日常怎么用（省 token 的关键）</h3>
+<div class="tbl-wrap"><table class="tbl"><thead><tr><th>你想做的事</th><th>怎么做</th><th>成本</th></tr></thead><tbody>
+<tr><td>系统梳理一簇</td><td>打开对应「簇复盘」课件，逐页看讲解 + 做测验 + 玩交互组件</td><td><code>0（离线）</code></td></tr>
+<tr><td>复习某个概念</td><td>课件翻到对应场景；或问 DeepTutor（KB 已挂好，只检索 facts）</td><td><code>0 / $0.003</code></td></tr>
+<tr><td>自测</td><td>课件里的阶段测验 → 不会的再用 DeepTutor 苏格拉底引导</td><td><code>0 / $0.003</code></td></tr>
+<tr><td>交互理解概念</td><td>打开「概念交互演示」，拖滑块看参数对行为的影响</td><td><code>0（离线）</code></td></tr>
+<tr><td>通勤听音频</td><td>audio_overview 脚本环节已验证可用，只差配 TTS（见风险表）</td><td><code>待配 TTS</code></td></tr>
+<tr><td>找新论文 / 看脉络</td><td>切到「论文地图」页签：李飞飞脉络 + 43 个高星仓库实测星数 + 脑机接口高分论文</td><td><code>0（离线）</code></td></tr>
+<tr><td>加新论文</td><td>把论文丢进 pdfs/ → 跑 gen_facts.py → prepare_kb.py → 建 KB → make_lesson.py</td><td><code>~$0.03</code></td></tr>
+</tbody></table></div>
+<div class="note"><b>为什么这套流程省 token</b>：每篇论文只解析一次→ facts（3-5K tokens，压缩到原文 ~15%）；此后出题、答疑、生成课件<b>只引用 facts，不碰原文</b>；RAG 检索替代全文直塞（每轮 4-8K 而非 40-60K）；产物全部离线化，复习零成本。</div>
+</div>
+</div>
+</main>
+</body>
+</html>

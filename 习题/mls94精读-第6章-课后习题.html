@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>mls94 第 6 章「Hand Dynamics and Control」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>mls94 第 6 章「Hand Dynamics and Control」课后习题</h1>
+<p>按本章事实底座自拟 5 道 · 含详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. Pfaffian 约束与 holonomic 的区别</strong></p>
+<p>Pfaffian 约束的一般形式为</p>
+<p>$$A(q)\dot q=0,\qquad A(q)\in\mathbb{R}^{k\times n}.$$</p>
+<p>它只限制允许的速度方向，即 $\dot q\in\mathcal{N}(A(q))$。若存在函数 $h_i(q)$ 使得 $A(q)=\partial h/\partial q$（即 $A$ 的行可积为某个标量函数的梯度），则约束等价于 $h_i(q)=0$，称为 holonomic（可积）；否则称为 nonholonomic（不可积）。抓取约束 $J_h\dot\theta=G^T\dot x$ 一般属于后者，不能简单消去变量。</p>
+<p><strong>2. $\delta q$ 与 $\dot q$ 的区别</strong></p>
+<p>$\delta q$ 是虚位移，只需满足 $A(q)\delta q=0$，即它位于约束允许的瞬时运动方向上；而真实速度 $\dot q$ 同时满足约束方程与运动方程。d'Alembert 原理断言：理想约束力对所有满足约束的瞬时运动不做虚功，即 $\Gamma\cdot\delta q=0$。因此约束力可写成 $\Gamma=A^T(q)\lambda$，其方向沿约束法线，与允许运动正交。</p>
+<p><strong>3. 不能先代入 Lagrangian 的原因</strong></p>
+<p>若先把 $J_h\dot\theta=G^T\dot x$ 代入 $L$ 得到 $L_c$，再用标准 Lagrange 方程，对 nonholonomic 约束会产生非零伪项（式 6.15）。该伪项仅在约束可积（holonomic，混合偏导可交换）时为零。正确流程是：先写无约束 $L$，代入 Lagrange-d'Alembert 方程 (6.7)–(6.8)，再重新施加约束。否则会得到错误方程，如习题 2 中滚动圆盘的反例所示。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 复合系统与抓取约束</strong></p>
+<p>手指动力学：</p>
+<p>$$M_f\ddot\theta+C_f\dot\theta+N_f=\tau,$$</p>
+<p>物体 Newton-Euler 动力学：</p>
+<p>$$M_o\ddot x+C_o\dot x+N_o=0,$$</p>
+<p>抓取约束：</p>
+<p>$$J_h(\theta,x)\dot\theta=G^T(\theta,x)\dot x.$$</p>
+<p><strong>2. 投影消去 $\theta$</strong></p>
+<p>对约束微分得 $\delta\theta=J_h^{-1}G^T\delta x$（假设 $J_h$ 可逆）。将手指方程乘以 $J_h^{-T}$ 后与物体方程组合，并对 $\delta x$ 投影，消去 $\dot\theta,\ddot\theta$，得</p>
+<p>$$\tilde M\ddot x+\tilde C\dot x+\tilde N=F,$$</p>
+<p>其中</p>
+<p>$$\tilde M=M_o+GJ_h^{-T}M_fJ_h^{-1}G^T,\qquad F=GJ_h^{-T}\tau.$$</p>
+<p>$\tilde C,\tilde N$ 由 $C_f,N_f,C_o,N_o$ 及 $J_h$ 的时间导数组合而成。</p>
+<p><strong>3. Lemma 6.1 的结构性质</strong></p>
+<p>Lemma 6.1 证明：</p>
+<ul>
+<li>$\tilde M$ 对称正定；</li>
+<li>$\dot{\tilde M}-2\tilde C$ 反对称。</li>
+</ul>
+<p>这两个性质与第 4 章开链动力学中 $M>0$、$\dot M-2C$ 反对称完全一致。因此第 4 章的任何开链控制器（如计算力矩、PD+重力补偿）可直接作用于有效动力学 $\tilde M\ddot x+\tilde C\dot x+\tilde N=F$，只需把 $F$ 视为虚拟控制输入，再通过 $\tau=J^TG^+F+J^Tf_N$ 映射回关节力矩。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 冗余增广</strong></p>
+<p>当 $J_h$ 列相关时，选 $K_h$ 的行张成 $\mathcal{N}(J_h)$，构造</p>
+<p>$$\begin{bmatrix}J_h\\K_h\end{bmatrix}\dot\theta=\begin{bmatrix}G^T&0\\0&I\end{bmatrix}\begin{bmatrix}\dot x\\v_N\end{bmatrix}.$$</p>
+<p>记 $\bar J_h=\begin{bmatrix}J_h\\K_h\end{bmatrix}$，构造上可逆。$v_N$ 为内部运动速度，对应 $\mathcal{N}(J_h)$ 方向。</p>
+<p><strong>2. 不可操作情形</strong></p>
+<p>当 $J_h$ 不满行秩时，取 $H$ 张成允许速度空间 $W$，满足</p>
+<p>$$J_h\dot\theta=G^THw,\qquad \dot x=Hw.$$</p>
+<p>用伪逆</p>
+<p>$$J_h^+=(J_h^TJ_h)^{-1}J_h^T$$</p>
+<p>得 $\dot\theta=J_h^+G^THw$。注意此时 $J_h$ 非方但满射到 $\bar G^T:=G^TH$ 的值域，必须用伪逆而非逆。</p>
+<p><strong>3. 速度参数化与可积性</strong></p>
+<p>冗余内部运动用速度 $v_N$ 参数化，因为 $K_h$ 未必是某个 $h(\theta)$ 的 Jacobian。只有当</p>
+<p>$$\frac{\partial K_{ij}}{\partial\theta_k}=\frac{\partial K_{ik}}{\partial\theta_j}$$</p>
+<p>成立时，$K_h$ 才可积为某个函数的梯度，此时内部运动可用坐标参数化；否则只能用速度描述，属于 nonholonomic 内部运动。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 能量守恒导出 $\tau=Pf$</strong></p>
+<p>设腱 $i$ 的 extension 为 $h_i(\theta)$，腱力为 $f_i$。腱做功为 $\sum_i f_i\,\delta h_i$，关节做功为 $\tau\cdot\delta\theta$。由能量守恒</p>
+<p>$$\tau\cdot\delta\theta=\sum_i f_i\,\delta h_i=\sum_i f_i\frac{\partial h_i}{\partial\theta}\delta\theta,$$</p>
+<p>故</p>
+<p>$$\tau=P(\theta)f,\qquad P(\theta)=\left(\frac{\partial h}{\partial\theta}\right)^T.$$</p>
+<p><strong>2. 弹性腱</strong></p>
+<p>弹性腱力为</p>
+<p>$$f=K(e+h(0)-h(\theta)),\qquad K=\mathrm{diag}(k_1,\dots,k_p),\ k_i>0,$$</p>
+<p>其中 $e$ 为参考伸长。代入 $\tau=Pf$ 得</p>
+<p>$$\tau=PK(e+h(0)-h(\theta)).$$</p>
+<p>定义新耦合矩阵 $Q:=PK$，则 $\tau=Q(e+h(0)-h(\theta))$。</p>
+<p><strong>3. Force-closure 条件与腱数界</strong></p>
+<p>Force-closure 充要条件：$P$ 满射，且存在严格正内力 $f_N>0$ 使 $Pf_N=0$（即 $f_N\in\mathcal{N}(P)$ 且各分量严格正）。</p>
+<p>腱数下界 $n+1$：由 Caratheodory 定理，要张成 $n$ 维力矩空间并保持严格正内力，至少需 $n+1$ 根腱。上界 $2n$：由 Steinitz 定理，超过 $2n$ 根腱则冗余，可约化而不失 force-closure。故腱数在 $n+1$ 到 $2n$ 之间。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5（综合应用 + 动手验证）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>1. 解耦机制</strong></p>
+<p>扩展控制律</p>
+<p>$$\tau=J^TG^+F+J^Tf_N,\qquad f_N\in\mathcal{N}(G)$$</p>
+<p>中，$F$ 通过 $J^TG^+$ 映射为关节力矩，负责物体/工作空间轨迹跟踪；$f_N$ 通过 $J^T$ 映射，且因 $f_N\in\mathcal{N}(G)$，满足 $Gf_N=0$，故不产生物体净力旋量，仅调节内力（接触力在摩擦锥内）。二者在物体运动层面解耦。</p>
+<p><strong>2. $f_N\neq0$ 时 quasistatic 失效</strong></p>
+<p>quasistatic 关系 $\tau=J_h^TK_h^T[F^b_{po};f_N]=\bar Gf_c$ 仅在 $f_N=0$ 时成立。当 $f_N\neq0$，内运动引发加速度与约束力，动力学项 $-M_f\ddot\theta-C_f\dot\theta-N_f$ 产生额外内力，$\lambda=J_h^{-T}\tau$ 不再成立（仅静止时成立）。必须用完整方程 (6.30) 描述。</p>
+<p><strong>3. 动手验证</strong></p>
+<pre><code class="lang-python">import numpy as np
+
+# 构造 2x2 抓取矩阵 G（满秩）
+G = np.array([[1.0, 0.5],
+              [0.0, 1.0]])
+
+# 求零空间：G f_N = 0
+# 对 2x2 满秩矩阵，零空间仅 {0}，故需构造非方阵
+G = np.array([[1.0, 0.5, 0.0],
+              [0.0, 1.0, 0.5]])  # 2x3，行满秩
+
+# 零空间基
+u, s, vh = np.linalg.svd(G)
+null_basis = vh[2:].T  # 最后一列对应零奇异值
+f_N = null_basis[:, 0]
+print("f_N =", f_N)
+print("G f_N =", G @ f_N)  # 预期接近 0
+
+# 验证 tau = J^T G^+ F + J^T f_N 中 f_N 不影响 F
+J = np.eye(3)  # 简化：J 为单位阵
+F = np.array([1.0, 2.0])
+G_pinv = np.linalg.pinv(G)
+tau_F = J.T @ G_pinv @ F
+tau_N = J.T @ f_N
+print("tau_F =", tau_F)
+print("tau_N =", tau_N)
+print("G (tau_F + tau_N) 的物体分量 =", G @ (tau_F + tau_N))
+# 预期：G tau_N = G f_N = 0，故物体分量仅由 F 决定</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><code>G @ f_N</code> 接近零向量，验证 $f_N\in\mathcal{N}(G)$。</li>
+<li><code>G @ (tau_F + tau_N)</code> 等于 <code>G @ tau_F</code>，说明 $f_N$ 不改变物体净力旋量，仅调节内力。</li>
+<li>若 $f_N$ 分量有正有负，实际腱力需满足 $f_i>0$，故应取 $f_N$ 的最小范数解并叠加正内力偏置。</li>
+</ul>
+</div></details>
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

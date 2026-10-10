@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 15 章「Vision-Based Control」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 15 章「Vision-Based Control」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：PBVS 控制律回顾</h5>
+<p>PBVS 的核心是：先由位姿网络估计目标相对相机的位姿 ${}^C\hat{\mathbf{T}}_T$，再在 $SE(3)$ 误差空间计算相对期望位姿 ${}^{C^*}\boldsymbol{\xi}_T$ 的误差变换 $\mathbf{T}_\Delta$，然后按分数 $\lambda\in(0,1)$ 分步移动相机：</p>
+<p>$$\mathbf{T}\leftarrow\texttt{trnorm}\big(\mathbf{T}\cdot\texttt{trinterp}(\mathbf{I},\mathbf{T}_\Delta,\lambda)\big)$$</p>
+<p>其中 <code>trinterp</code> 见 Eq. 3.12，<code>trnorm</code> 用于归一化旋转矩阵。$\lambda$ 越小，路径越接近直线但步数越多；$\lambda=1$ 一步到位但可能因线性化失效而偏离。</p>
+<h5>a) 运行 PBVS 示例并改变参数</h5>
+<p><strong>基准设置</strong>（来自事实底座 §6）：目标为边长 0.5 m 的正方形，位于 $xy$ 平面、中心 $(0,0,3)$：</p>
+<pre><code class="lang-matlab">P = mkgrid(2, 0.5, 'T', transl(0,0,3));
+cam = CentralCamera('default');
+pStar = bsxfun(@plus, 200*[-1 -1 1 1; -1 1 1 -1], cam.pp');
+Tc0 = transl(1,1,-3)*trotz(0.6);      % 初始相机位姿
+TcStar_t = transl(0,0,1);             % 期望相对位姿</code></pre>
+<p><strong>实验 1：改变初始相机位姿。</strong> 把 <code>Tc0</code> 改为 <code>transl(-2.1,0,-3)*trotz(5*pi/4)</code>（事实底座 §6 的 camera retreat 例子）。预期：PBVS 会使两个点跑出视野（Fig. 15.12），因为 PBVS 在笛卡尔空间走直线，图像特征路径不受约束。</p>
+<p><strong>实验 2：改变路径分数 $\lambda$。</strong> 取 $\lambda=0.1,0.3,0.5,1.0$。预期：$\lambda$ 小则路径更接近直线、迭代次数多；$\lambda$ 大则单步过大，$SE(3)$ 线性化失效，末端路径出现弯曲。</p>
+<p><strong>实验 3：添加像素噪声。</strong> 在投影点 $\mathbf{p}$ 上加高斯噪声 $\mathbf{p}\leftarrow\mathbf{p}+\mathcal{N}(0,\sigma^2)$，$\sigma$ 取 0.5、1、2 像素。预期：位姿估计 ${}^C\hat{\mathbf{T}}_T$ 抖动，最终末端位姿存在稳态误差；$\lambda$ 越大噪声放大越明显。</p>
+<h5>b) Simulink® 模型</h5>
+<p>按 PBVS 数据流搭建：</p>
+<ol>
+<li><strong>Camera 模块</strong>：输入相机位姿 $\mathbf{T}$，输出图像点 $\mathbf{p}$（用 <code>CentralCamera</code> 的投影）。</li>
+<li><strong>Pose estimation 模块</strong>：由 $\mathbf{p}$ 与目标模型估计 ${}^C\hat{\mathbf{T}}_T$。</li>
+<li><strong>Error 模块</strong>：计算 $\mathbf{T}_\Delta = {}^C\hat{\mathbf{T}}_T^{-1}\cdot{}^{C^*}\mathbf{T}_T$。</li>
+<li><strong>Interpolation 模块</strong>：<code>trinterp(I, T_delta, lambda)</code>。</li>
+<li><strong>Update 模块</strong>：$\mathbf{T}\leftarrow\texttt{trnorm}(\mathbf{T}\cdot\Delta^{-1})$，反馈回 Camera。</li>
+</ol>
+<p>用 <code>Interpreted MATLAB Function</code> 或 <code>MATLAB Function</code> 块封装 <code>trinterp</code>/<code>trnorm</code>。采样时间取 0.05 s，$\lambda$ 作为可调增益。</p>
+<h5>c) 相机模型失配的影响</h5>
+<p>位姿估计使用与真实相机不同的内参：焦距 $f'=f+\delta f$ 或主点 $\mathbf{c}'=\mathbf{c}+\delta\mathbf{c}$。</p>
+<p>由透视投影 $x=X/Z,\ y=Y/Z$ 及 $\bar u=fx+u_0$，若估计用 $f'$ 而真实为 $f$，则估计的归一化坐标 $\hat x=\bar u/f'$ 与真值 $x=\bar u/f$ 相差因子 $f/f'$。这等价于对深度 $Z$ 的系统性缩放：$\hat Z = Z\cdot f'/f$。因此：</p>
+<ul>
+<li><strong>焦距失配</strong> → 深度估计成比例偏差 → 最终末端位姿在 $z$ 方向有稳态偏移，且偏移量与目标距离成正比。</li>
+<li><strong>主点失配</strong> → 图像坐标平移偏差 → 位姿估计在 $x,y$ 方向有常值偏移，最终末端位置平移。</li>
+</ul>
+<p>由于 PBVS 闭环会驱动图像特征到 $\mathbf{p}^*$，若 $\mathbf{p}^*$ 也是用错误内参生成的，则末端会收敛到"错误内参下正确"的位姿；若 $\mathbf{p}^*$ 用真实内参，则存在稳态误差。原书未给出具体数值，按符号推导。</p>
+<h5>d) 基于 EKF 的 PBVS</h5>
+<p>Westmore 与 Wilson (1991) 的思路：把目标相对相机的位姿 ${}^C\boldsymbol{\xi}_T$ 作为状态，用 EKF 融合图像观测与运动模型。</p>
+<p><strong>状态</strong>：$\mathbf{x}={}^C\boldsymbol{\xi}_T\in\mathbb{R}^6$（或四元数+平移，7 维）。</p>
+<p><strong>预测</strong>：由相机空间速度 $\boldsymbol{\nu}$ 驱动，</p>
+<p>$$\mathbf{x}_{k+1}=\mathbf{x}_k\oplus\boldsymbol{\nu}_k\Delta t$$</p>
+<p>其中 $\oplus$ 为 $SE(3)$ 上的指数映射更新。</p>
+<p><strong>观测</strong>：图像点 $\mathbf{p}=h(\mathbf{x})$，$h$ 为透视投影（Eq. 11.7）。观测雅可比即图像雅可比 $\mathbf{J}_p$（Eq. 15.7），但此处对状态 $\mathbf{x}$ 求导而非对 $\boldsymbol{\nu}$。</p>
+<p><strong>EKF 更新</strong>：</p>
+<p>$$\mathbf{K}=\mathbf{P}^-{\mathbf{H}}^T(\mathbf{H}\mathbf{P}^-{\mathbf{H}}^T+\mathbf{R})^{-1},\quad \mathbf{x}^+=\mathbf{x}^-+\mathbf{K}(\mathbf{p}_{\text{meas}}-h(\mathbf{x}^-))$$</p>
+<p><strong>控制</strong>：由 $\mathbf{x}^+$ 与期望 ${}^{C^*}\boldsymbol{\xi}_T$ 计算 $\mathbf{T}_\Delta$，按分数 $\lambda$ 更新相机位姿（同 PBVS 主循环）。</p>
+<p>EKF 相比直接位姿估计的优势：显式建模噪声、可处理特征丢失、给出协方差用于增益调度。原书未给出具体数值，按符号推导。</p>
+<h4>关键点</h4>
+<ul>
+<li>PBVS 在笛卡尔空间走直线，但图像特征可能出视野；$\lambda$ 控制路径直线度与迭代次数的权衡。</li>
+<li>相机内参失配会转化为深度/位置的系统性偏差：焦距误差 → $z$ 方向缩放，主点误差 → $x,y$ 方向平移。</li>
+<li>PBVS 的位姿估计环节可用 EKF 替代，状态为 ${}^C\boldsymbol{\xi}_T$，观测雅可比即图像雅可比 $\mathbf{J}_p$。</li>
+<li>像素噪声下 $\lambda$ 越大噪声放大越严重，需在收敛速度与稳态精度间折中。</li>
+<li>所有实验的数值结论需以实际运行结果为准；原书仅给出基准设置与定性现象。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 15 章</li>
+<li>依据：</li>
+<li>PBVS 控制律与 $\lambda$ 分数步更新：事实底座 §3 概念 1、§5 公式（PBVS 分数步更新）</li>
+<li>基准目标与初始位姿：事实底座 §6（<code>P = mkgrid(2,0.5,'T',transl(0,0,3))</code>、<code>Tc0 = transl(1,1,-3)*trotz(0.6)</code>、<code>TcStar_t = transl(0,0,1)</code>）</li>
+<li>camera retreat 例子：事实底座 §6（<code>T0 = transl(-2.1,0,-3)*trotz(5*pi/4)</code>）</li>
+<li>图像雅可比 $\mathbf{J}_p$ 与透视投影：事实底座 §5（Eq. 15.7）、§4 步骤 1–4</li>
+<li>内参失配分析：事实底座 §1（$x=\bar u/f$）、§7（$\mathbf{J}_p$ 前三列随 $Z$ 变化）</li>
+<li>EKF-PBVS：事实底座 §0（第 11 章位姿估计）、§3 概念 1（PBVS 需位姿估计）；Westmore and Wilson (1991) 为题干指定文献，原书未展开细节，按符号推导</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是第 15 章开篇的"热身"题，目的是让读者在正式推导图像雅可比 $\mathbf{J}_p$ 之前，先用<strong>光流场</strong>（optical flow field）直观感受"相机运动 → 图像速度"的映射。第 14 章已给出光流概念与计算方法（Sect. 14.8），本章 Eq. 15.7 的 $\mathbf{J}_p$ 正是这一映射的解析形式。</p>
+<h5>第 0 步：光流场与图像雅可比的关系</h5>
+<p>光流场就是图像平面上每个像素点 $\mathbf{p}=(\bar u,\bar v)$ 处的图像速度 $\dot{\mathbf{p}}$ 的矢量场。由本章 Eq. 15.7：</p>
+<p>$$\begin{bmatrix}\dot{\bar u}\\ \dot{\bar v}\end{bmatrix}=\mathbf{J}_p(\bar u,\bar v,Z)\,\boldsymbol{\nu},\qquad \mathbf{J}_p\in\mathbb{R}^{2\times6}$$</p>
+<p>其中 $\boldsymbol{\nu}=(v_x,v_y,v_z,\omega_x,\omega_y,\omega_z)$ 是相机空间速度（Sect. 8.1）。<strong>给定 $\boldsymbol{\nu}$ 与深度 $Z$，逐像素计算 $\mathbf{J}_p\boldsymbol{\nu}$ 即得光流场。</strong> 这正是本题的作图原理。</p>
+<h5>第 1 步：写出 $\mathbf{J}_p$ 的显式形式</h5>
+<p>由事实底座 Eq. 15.7（像素坐标相对主点 $\bar u=u-u_0,\ \bar v=v-v_0$）：</p>
+<p>$$\mathbf{J}_p=\begin{bmatrix}-\dfrac{f}{Z}&0&\dfrac{\bar u}{Z}&\dfrac{\bar u\bar v}{f}&-\dfrac{f^2+\bar u^2}{f}&\bar v\\[6pt] 0&-\dfrac{f}{Z}&\dfrac{\bar v}{Z}&\dfrac{f^2+\bar v^2}{f}&-\dfrac{\bar u\bar v}{f}&-\bar u\end{bmatrix}$$</p>
+<p><strong>关键观察（对应 a 小题）</strong>：$\mathbf{J}_p$ 中 $f$ 出现在两类位置——平移列（第 1、2、3 列）含 $f/Z$ 或 $\bar u/Z$，旋转列（第 4、5、6 列）含 $f$、$f^2/f=f$ 或 $\bar u\bar v/f$。因此<strong>改变 $f$ 会同时改变平移与旋转对图像速度的贡献比例</strong>，这正是 a 小题要展示的。</p>
+<h5>第 2 步：a) 不同焦距的光流场</h5>
+<p>固定一个纯平移运动（例如 $\boldsymbol{\nu}=(v_x,0,0,0,0,0)$），则</p>
+<p>$$\dot{\bar u}=-\frac{f}{Z}v_x,\qquad \dot{\bar v}=0.$$</p>
+<p><strong>整个图像上光流是均匀的水平矢量场</strong>，大小正比于 $f$。焦距越大，同样的 $x$ 平移产生的像素速度越大（视场越窄、放大率越高）。</p>
+<p>再看纯 $y$ 轴旋转 $\boldsymbol{\nu}=(0,0,0,0,\omega_y,0)$：</p>
+<p>$$\dot{\bar u}=-\frac{f^2+\bar u^2}{f}\omega_y,\qquad \dot{\bar v}=-\frac{\bar u\bar v}{f}\omega_y.$$</p>
+<p>这是<strong>绕图像中心附近的旋转流场</strong>，其空间变化率由 $f$ 与 $\bar u$ 共同决定。事实底座记录：默认 $f=8$ mm；当 $f=20$ mm 时，绕 $y$ 轴旋转的流场<strong>近似等于 $x$ 平移的流场</strong>（因为第 5 列趋近第 1 列的标量倍，见 facts 第 7 节）；当 $f=4$ mm 时流场曲率更明显。这解释了为什么长焦相机下"旋转"与"平移"在图像上难以区分——这正是视觉伺服中需要 derotating optical flow（Eq. 15.12/15.13）的动机。</p>
+<p><strong>作图方法</strong>：对每个像素 $(\bar u,\bar v)$，代入上式得 $(\dot{\bar u},\dot{\bar v})$，用 <code>quiver</code> 画出。改变 $f$ 重复即可。</p>
+<h5>第 3 步：b) 复合运动的光流场</h5>
+<p>复合运动即把两个基元运动的 $\mathbf{J}_p$ 列相加。设 $\boldsymbol{\nu}=\boldsymbol{\nu}_1+\boldsymbol{\nu}_2$，由线性性 $\dot{\mathbf{p}}=\mathbf{J}_p\boldsymbol{\nu}_1+\mathbf{J}_p\boldsymbol{\nu}_2$，光流场是两场的<strong>矢量叠加</strong>。</p>
+<p><strong>(i) $x$ 与 $y$ 平移</strong>：$\boldsymbol{\nu}=(v_x,v_y,0,0,0,0)$</p>
+<p>$$\dot{\bar u}=-\frac{f}{Z}v_x,\qquad \dot{\bar v}=-\frac{f}{Z}v_y.$$</p>
+<p>全场仍是<strong>均匀平移场</strong>，方向为 $(v_x,v_y)$，大小 $\dfrac{f}{Z}\sqrt{v_x^2+v_y^2}$。深度 $Z$ 越大，流越小（远物移动慢）。</p>
+<p><strong>(ii) $x$ 与 $z$ 平移</strong>：$\boldsymbol{\nu}=(v_x,0,v_z,0,0,0)$</p>
+<p>$$\dot{\bar u}=-\frac{f}{Z}v_x+\frac{\bar u}{Z}v_z,\qquad \dot{\bar v}=\frac{\bar v}{Z}v_z.$$</p>
+<p>这是<strong>径向膨胀/收缩场叠加水平平移</strong>：$v_z>0$（相机后退）时，$\dot{\bar v}=\bar v v_z/Z$ 使流场从主点向外辐射（膨胀），$\dot{\bar u}$ 中 $\bar u v_z/Z$ 项使水平分量随 $\bar u$ 线性变化。<strong>主点处（$\bar u=\bar v=0$）只剩 $x$ 平移分量</strong>，这是"膨胀中心"（focus of expansion）概念的来源。</p>
+<p><strong>(iii) $x$ 平移与 $z$ 轴旋转</strong>：$\boldsymbol{\nu}=(v_x,0,0,0,0,\omega_z)$</p>
+<p>$$\dot{\bar u}=-\frac{f}{Z}v_x+\bar v\,\omega_z,\qquad \dot{\bar v}=-\bar u\,\omega_z.$$</p>
+<p>这是<strong>均匀水平平移场 + 绕主点的旋转场</strong>。旋转分量 $(\bar v\omega_z,-\bar u\omega_z)$ 是纯切向的，大小正比于到主点的距离。<strong>注意</strong>：$z$ 轴旋转不改变图像尺度（不产生径向流），这正是 facts 第 4 节所说"绕光轴旋转属于 $\mathbf{J}_p$ 零空间的一部分"——单点无法区分 $z$ 旋转与 $x$ 平移，需要多点堆叠。</p>
+<h5>第 4 步：可运行验证代码（MATLAB，遵循原书工具箱）</h5>
+<pre><code class="lang-matlab">% 光流场作图：不同焦距 + 复合运动
+cam = CentralCamera('default');           % f=8mm, 主点见 cam.pp
+Z = 5;                                     % 深度
+[u,v] = meshgrid(1:64:1024, 1:64:768);     % 稀疏网格
+p = [u(:)'; v(:)'];
+
+% a) 不同焦距：纯 x 平移
+for f = [4 8 20]
+    cam.f = f*1e-3;                        % 焦距（米）
+    J = cam.visjac_p(p, Z);                % 2N x 6
+    nu = [0.1;0;0;0;0;0];                  % x 平移
+    dp = reshape(J*nu, 2, []);
+    quiver(u(:), v(:), dp(1,:)', dp(2,:)'); title(sprintf('f=%d mm, x-trans',f));
+    pause;
+end
+
+% b) 复合运动
+cam.f = 8e-3;
+motions = {[0.1;0.1;0;0;0;0], ...          % x+y 平移
+           [0.1;0;0.1;0;0;0], ...          % x+z 平移
+           [0.1;0;0;0;0;0.1]};             % x 平移 + z 旋转
+for k = 1:3
+    J = cam.visjac_p(p, Z);
+    dp = reshape(J*motions{k}, 2, []);
+    quiver(u(:), v(:), dp(1,:)', dp(2,:)'); pause;
+end</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li>a) $f$ 增大时，同一 $x$ 平移的箭头整体变长；$f=20$ mm 时绕 $y$ 旋转的流场与 $x$ 平移几乎重合（facts 第 7 节）。</li>
+<li>b) (i) 均匀平移场；(ii) 从主点向外辐射的膨胀场叠加水平平移；(iii) 水平平移场叠加绕主点的切向旋转场。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>光流场 = $\mathbf{J}_p\boldsymbol{\nu}$ 的逐像素可视化</strong>：$\mathbf{J}_p$ 是"相机速度 → 图像速度"的线性映射，光流场就是它在图像平面上的"箭头图"。</li>
+<li><strong>焦距 $f$ 同时缩放平移与旋转贡献</strong>：$f$ 越大视场越窄、放大率越高，导致旋转流场趋近平移流场（$f=20$ mm 时 $y$ 旋转 ≈ $x$ 平移），这是视觉伺服中旋转/平移解耦困难的根源。</li>
+<li><strong>复合运动的光流场是各基元场的矢量叠加</strong>（$\mathbf{J}_p$ 对 $\boldsymbol{\nu}$ 线性）。</li>
+<li><strong>$z$ 轴旋转不产生径向流</strong>，与 $x$ 平移在单点上不可区分——这正是 $\mathbf{J}_p$ 零空间维数为 4、单点无法约束 6 自由度的直观体现（facts 第 4 节）。</li>
+<li><strong>深度 $Z$ 只缩放平移分量</strong>：$Z$ 越大流越小，对应 facts 第 5 节"平移时图像速度与深度成反比，旋转则远近物体等速移动"。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 15 章 "Vision-Based Control"</li>
+<li>依据：</li>
+<li>光流概念与计算：第 14 章 Sect. 14.8（本章前置依赖，facts 第 0 节）</li>
+<li>图像雅可比 $\mathbf{J}_p$ 显式形式：facts 第 5 节 Eq. 15.7；推导链条第 1–4 步</li>
+<li>焦距对比（$f=8$ mm 默认、$f=20$ mm 旋转≈平移、$f=4$ mm 曲率更明显）：facts 第 6 节"焦距对比"、第 7 节</li>
+<li>$z$ 轴旋转属零空间、单点秩为 2：facts 第 4 节、第 7 节</li>
+<li>深度 $Z$ 对平移/旋转的不同作用：facts 第 7 节"$\mathbf{J}_p$ 不依赖世界坐标 $X,Y$"</li>
+<li>相机空间速度 $\boldsymbol{\nu}$ 定义：Sect. 8.1（facts 第 1 节记号约定）</li>
+<li>数值例子（默认相机、$\mathbf{P}=[1\ 1\ 5]^T$、$\mathbf{p}_0=[672\ 672]^T$、敏感度 $-160$ px/m 等）：facts 第 6 节，可用于校验代码输出</li>
+<li>原书未给出本题具体数值，光流场按上述符号推导与代码生成</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确问题设定。</strong> 两个点特征 $\mathbf{p}_1,\mathbf{p}_2$ 各贡献一个 2×6 的图像雅可比 $\mathbf{J}_{p_1},\mathbf{J}_{p_2}$，堆叠得</p>
+<p>$$\mathbf{J}=\begin{bmatrix}\mathbf{J}_{p_1}\\ \mathbf{J}_{p_2}\end{bmatrix}\in\mathbb{R}^{4\times6}.$$</p>
+<p>由本章事实底座第 4 条，单点 $\mathbf{J}_p$ 的秩恒为 2（即使 $Z\to\infty$），零空间维数为 4。两个点堆叠后秩最多为 4，故零空间维数至少为 $6-4=2$，即题干所说的两列。</p>
+<p><strong>第 2 步：零空间的物理含义。</strong> 零空间中的相机空间速度 $\boldsymbol{\nu}$ 满足 $\mathbf{J}\boldsymbol{\nu}=\mathbf{0}$，即该运动<strong>不产生任何图像运动</strong>（两个特征点在图像上瞬时静止）。因此要找的是：哪些相机运动使两个点都"看起来不动"。</p>
+<p><strong>第 3 步：第一个零空间方向——绕两特征点连线的旋转。</strong> 设两特征点对应的空间点为 $\mathbf{P}_1,\mathbf{P}_2$。若相机绕通过 $\mathbf{P}_1,\mathbf{P}_2$ 的直线（即两点连线）旋转，则：</p>
+<ul>
+<li>点 $\mathbf{P}_1,\mathbf{P}_2$ 本身位于旋转轴上，旋转不改变它们相对相机的位置，故图像投影不变；</li>
+<li>由本章事实底座第 4 条，单点零空间包含"沿视线平移"与"绕光轴旋转"等不产生图像运动的运动；绕两点连线旋转正是这类运动的组合。</li>
+</ul>
+<p>因此该旋转属于零空间。这是两个点情形<strong>特有的</strong>零空间方向（单点时不存在，因为单点无法定义一条连线）。</p>
+<p><strong>第 4 步：第二个零空间方向——沿两特征点连线方向的平移。</strong> 若相机沿 $\mathbf{P}_1\mathbf{P}_2$ 连线方向平移，则：</p>
+<ul>
+<li>两点沿各自视线方向的深度变化与横向位移相互抵消，图像投影保持不变（这是单点"沿视线平移"零空间方向在两点的推广）；</li>
+<li>更严格地，由本章事实底座第 4 条，单点零空间含"沿视线平移"；当两点连线方向与各自视线方向一致时，该平移同时属于两点的零空间。</li>
+</ul>
+<p>因此沿两点连线的平移也属于零空间。</p>
+<p><strong>第 5 步：与单点零空间的对照。</strong> 由事实底座第 6 节，光轴上点 <code>visjac_p([512;512],1)</code> 的 <code>null(J)</code> 四列为</p>
+<p>$$[0,0,1,0,0,0]^T,\ [0,0.7071,0,0.7071,0,0]^T,\ [-0.7071,0,0,0,0.7071,0]^T,\ [0,0,0,0,0,1]^T.$$</p>
+<p>这四列分别对应：沿光轴平移、绕 $y$ 轴平移+绕 $x$ 轴旋转的组合、绕 $x$ 轴平移+绕 $y$ 轴旋转的组合、绕光轴旋转。两个点堆叠后，这 4 维零空间被约束到 2 维，剩下的正是<strong>绕两点连线的旋转</strong>与<strong>沿两点连线的平移</strong>这两个方向。</p>
+<p><strong>第 6 步：结论。</strong> 两个点特征的 4×6 图像雅可比，其零空间的两列对应：</p>
+<ol>
+<li><strong>绕两特征点连线的旋转</strong>；</li>
+<li><strong>沿两特征点连线方向的平移</strong>。</li>
+</ol>
+<p>这两个运动都不改变两点在图像上的投影位置，因此无法被图像误差观测到，也就无法由 IBVS 控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$ 约束。</p>
+<p><strong>第 7 步（可选验证）。</strong> 可用本章默认相机验证：取两个不重合、不共线的点，计算堆叠雅可比并求零空间，观察两列是否分别对应上述运动。原书未给出该验证的具体数值，按符号推导即可。</p>
+<h4>关键点</h4>
+<ul>
+<li>单点 $\mathbf{J}_p$ 秩恒为 2，零空间维数 4；两点堆叠后秩最多 4，零空间维数至少 2。</li>
+<li>零空间方向 = 不产生图像运动的相机运动，即"看不见的运动"。</li>
+<li>两点情形特有的零空间方向：<strong>绕两点连线的旋转</strong>、<strong>沿两点连线的平移</strong>。</li>
+<li>这两个方向无法由图像误差约束，故两点不足以唯一确定 6 自由度相机速度；至少需要 3 个不共线、不重合的点才能得到满秩 6×6 的 $\mathbf{J}$（对应 Eq. 15.9）。</li>
+<li>该结论与事实底座第 4 条"两点堆叠后零空间仍有 2 列（绕两点连线旋转）"一致。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 15 章</li>
+<li>依据：</li>
+<li>事实底座第 4 条（Null-space 与秩）：单点 $\mathbf{J}_p$ 秩恒为 2，零空间维数 4；两点堆叠后零空间仍有 2 列，对应绕两点连线旋转。</li>
+<li>事实底座第 5 节（关键公式）：Eq. 15.7 的 $\mathbf{J}_p$ 定义、Eq. 15.9 的三点堆叠求逆。</li>
+<li>事实底座第 6 节（例题与数值例子）：光轴上点 <code>visjac_p([512;512],1)</code> 的 <code>null(J)</code> 四列，用于对照单点零空间结构。</li>
+<li>事实底座第 7 节（常见困惑）：$\mathbf{J}_p$ 的秩不能小于 2，零空间维数恒为 4。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 改变增益 λ</strong></p>
+<p>控制律为 Eq. 15.11：$\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$，其中 $\mathbf{e}=\mathbf{p}^*-\mathbf{p}$。λ 为标量时，所有 6 个自由度共享同一增益；λ 为对角矩阵 $\boldsymbol{\Lambda}=\mathrm{diag}(\lambda_1,\dots,\lambda_6)$ 时，可对每个自由度单独设定增益，即 $\boldsymbol{\nu}=\boldsymbol{\Lambda}\mathbf{J}^{+}\mathbf{e}$。</p>
+<p>为什么：$\mathbf{J}_p$ 是高度非线性系统的线性化（见 facts 第 7 节），λ 过大时单步运动过大，线性化失效，特征走曲线甚至发散；λ 过小则收敛慢。原书默认示例中，camera retreat 例子用 <code>'lambda',0.002,'niter',Inf,'eterm',0.5</code> 才保持在图内（PDF p.471），说明大旋转场景需要小增益。对角增益的用途：对平移与旋转通道分别调参，例如抑制 $z$ 轴平移（camera retreat 相关）而加快 $x,y$ 平移。</p>
+<p><strong>b) 限制指令速度最大范数</strong></p>
+<p>在每步计算 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$ 后，若 $\|\boldsymbol{\nu}\|>\nu_{\max}$，则缩放：</p>
+<p>$$\boldsymbol{\nu}\leftarrow\frac{\nu_{\max}}{\|\boldsymbol{\nu}\|}\boldsymbol{\nu}$$</p>
+<p>为什么：facts 第 7 节指出「单步运动过大或 λ 过高时线性化失效，特征走曲线；可用限幅 $\|\boldsymbol{\nu}\|$ 缓解」。MATLAB 实现要点：</p>
+<pre><code class="lang-matlab">function nu = limit_nu(nu, numax)
+    n = norm(nu);
+    if n > numax
+        nu = nu * (numax / n);
+    end
+end</code></pre>
+<p>预期观察：加入限幅后，大初始误差下特征路径更平滑，不再出现锯齿或过冲。</p>
+<p><strong>c) 像素噪声</strong></p>
+<p>在相机输出 $\mathbf{p}$ 上加零均值高斯噪声 $\mathbf{p}\leftarrow\mathbf{p}+\boldsymbol{\eta}$，$\boldsymbol{\eta}\sim\mathcal{N}(0,\sigma^2\mathbf{I})$。为什么：$\mathbf{e}=\mathbf{p}^*-\mathbf{p}$ 被污染，$\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$ 随之抖动。预期观察：末端在期望位姿附近小幅振荡，无法精确收敛；$\sigma$ 越大振荡幅度越大。缓解手段是降低 λ 或在误差足够小时停止迭代（<code>eterm</code>）。</p>
+<p><strong>d) 不同初始位姿与期望图像坐标</strong></p>
+<p>改变 <code>Tc0</code> 与 <code>pStar</code>。为什么：IBVS 的收敛域受线性化限制。原书给出 <code>Tc0 = transl(1,1,-3)*trotz(0.6)</code>、<code>pStar</code> 为 400×400 正方形（PDF p.466）。预期观察：初始位姿离期望越远、旋转越大，越容易触发 camera retreat（facts 第 7 节）；期望图像点越靠近图像边缘，越容易出视野。</p>
+<p><strong>e) N 个点：伪逆 vs 三点子集</strong></p>
+<p>N > 3 时 $\mathbf{J}\in\mathbb{R}^{2N\times6}$，用伪逆 $\mathbf{J}^{+}$（Eq. 15.11）。若只取三点，$\mathbf{J}\in\mathbb{R}^{6\times6}$，用 $\mathbf{J}^{-1}$（Eq. 15.9）。为什么：facts 第 3 节指出伪逆最小化不一致特征速度误差范数；三点子集要求点不重合不共线，否则 $\mathbf{J}$ 奇异。</p>
+<p>最佳条件数子集算法：枚举所有 $\binom{N}{3}$ 个三点组合，对每个组合计算堆叠雅可比 $\mathbf{J}_3$ 的条件数 $\kappa(\mathbf{J}_3)=\sigma_{\max}/\sigma_{\min}$，选 $\kappa$ 最小者。为什么：facts 第 6 节指出条件数衡量特征运动各向异性，与机械臂灵巧度类比，点近重合或共线时病态。</p>
+<pre><code class="lang-matlab">best = inf; bestSet = [];
+for i = 1:N-2
+  for j = i+1:N-1
+    for k = j+1:N
+      J3 = [Jp(:,:,i); Jp(:,:,j); Jp(:,:,k)];
+      c = cond(J3);
+      if c < best, best = c; bestSet = [i j k]; end
+    end
+  end
+end</code></pre>
+<p>预期观察：伪逆路径通常更平滑；随机三点子集性能波动大；最佳条件数子集接近伪逆性能。</p>
+<p><strong>f) 期望点构成矩形</strong></p>
+<p>正方形无法透视成矩形（非正方形）。IBVS 仍会驱动 $\mathbf{e}\to0$，即把当前投影点驱向这组矩形期望点。为什么：IBVS 不检查期望点是否对应某个真实 3D 构型，只做图像平面上的误差收敛。预期观察：系统收敛到某个使投影为矩形的相机位姿（若存在），或停在最小二乘意义下的最近点；若该矩形不可达，$\mathbf{e}$ 不趋于零，相机停在使 $\|\mathbf{e}\|$ 最小的位姿。</p>
+<p><strong>g) 不可达期望点（交换相邻点）</strong></p>
+<p>交换两个相邻世界点或图像点后，期望点集与初始点集的对应关系被打乱。为什么：IBVS 依赖 correspondence（facts 第 3 节核心概念 8）。预期观察：系统试图把点 1 驱向原属点 2 的位置，导致相机大幅运动甚至发散；若交换后仍存在某相机位姿使投影匹配，则收敛到该位姿，否则 $\mathbf{e}$ 不收敛。</p>
+<p><strong>h) 不同相机模型</strong></p>
+<p>在 $\mathbf{J}_p$ 中用略有偏差的 $f$ 或主点 $(u_0,v_0)$，而真实相机用默认参数。为什么：$\mathbf{J}_p$ 依赖 $(u,v)$ 与 $Z$（facts 第 7 节），$f$ 与主点偏差使 $\mathbf{J}^{+}$ 不精确。预期观察：图像误差仍能收敛（IBVS 对模型误差鲁棒），但最终末端执行器位姿与期望有偏差；偏差越大，稳态位姿误差越大。</p>
+<p><strong>i) 正弦侧向轨迹</strong></p>
+<p>用轨迹生成器让 $\mathbf{p}^*(t)$ 沿正弦波从初始到期望，而非直线。为什么：facts 第 7 节指出「IBVS 一般强制点走直线只是方便」。控制律变为 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}(\mathbf{p}^*(t)-\mathbf{p})$。预期观察：相机笛卡尔运动不再是直线，而是跟随图像轨迹的弯曲路径；正弦幅度越大，笛卡尔路径弯曲越明显，可能触发更大的 $z$ 轴平移（尺度变化）。</p>
+<h4>关键点</h4>
+<ul>
+<li>IBVS 控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$，$\mathbf{e}=\mathbf{p}^*-\mathbf{p}$；λ 可标量或对角矩阵，过大导致线性化失效，过小收敛慢。</li>
+<li>速度限幅 $\|\boldsymbol{\nu}\|\le\nu_{\max}$ 是缓解大误差下发散的标准手段。</li>
+<li>N > 3 用伪逆；三点子集用逆，但需点不重合不共线；最佳条件数子集可通过枚举 $\binom{N}{3}$ 组合选取。</li>
+<li>IBVS 不检查期望点的几何可达性：矩形期望、交换点、不可达点都会导致误差不收敛或相机大幅运动。</li>
+<li>IBVS 对相机模型误差鲁棒（图像误差仍收敛），但末端位姿有稳态偏差；图像轨迹形状直接影响相机笛卡尔路径。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 15 章</li>
+<li>依据：</li>
+<li>控制律 Eq. 15.10、15.11 与伪逆性质：facts 第 4 节推导链条第 6–7 步、第 5 节关键公式</li>
+<li>λ 与线性化失效、限幅：facts 第 7 节 misconceptions「$\mathbf{J}_p$ 是高度非线性系统的线性化」</li>
+<li>条件数与最佳子集：facts 第 3 节核心概念 6、第 7 节</li>
+<li>camera retreat 与 λ=0.002 例子：facts 第 6 节例题、第 7 节</li>
+<li>correspondence 与不可达期望点：facts 第 3 节核心概念 8</li>
+<li>相机模型误差鲁棒性：facts 第 7 节「IBVS 不需要相机/目标位姿」</li>
+<li>图像轨迹形状影响笛卡尔路径：facts 第 7 节「camera retreat 不是 bug 而是直线图像路径 + 旋转的必然」</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 pan/tilt 云台的运动学约束。</strong></p>
+<p>pan/tilt 云台只有两个转动自由度：绕竖直轴（pan，记角速度 $\omega_y$）和绕水平轴（tilt，记角速度 $\omega_x$）。相机本身不能平移，也不能绕光轴滚转。因此相机空间速度 $\boldsymbol{\nu}=(v_x,v_y,v_z,\omega_x,\omega_y,\omega_z)$ 中只有 $\omega_x,\omega_y$ 非零：</p>
+<p>$$\boldsymbol{\nu}=\big(0,\ 0,\ 0,\ \omega_x,\ \omega_y,\ 0\big)^T .$$</p>
+<p><strong>第 2 步：写出一般点特征的图像雅可比 $\mathbf{J}_p$。</strong></p>
+<p>由本章 Eq. 15.7，像素坐标（相对主点 $\bar u=u-u_0,\ \bar v=v-v_0$）下</p>
+<p>$$\begin{bmatrix}\dot{\bar u}\\ \dot{\bar v}\end{bmatrix}=\mathbf{J}_p\,\boldsymbol{\nu},\qquad \mathbf{J}_p\in\mathbb{R}^{2\times6}.$$</p>
+<p>其显式形式（本章 Eq. 15.7 的展开）为</p>
+<p>$$\mathbf{J}_p=\begin{bmatrix}
+-\dfrac{f}{Z} & 0 & \dfrac{\bar u}{Z} & \dfrac{\bar u\bar v}{f} & -\Big(f+\dfrac{\bar u^2}{f}\Big) & \bar v\\[6pt]
+0 & -\dfrac{f}{Z} & \dfrac{\bar v}{Z} & f+\dfrac{\bar v^2}{f} & -\dfrac{\bar u\bar v}{f} & -\bar u
+\end{bmatrix}.$$</p>
+<p><strong>第 3 步：代入云台约束，只保留第 4、5 列。</strong></p>
+<p>因为 $\boldsymbol{\nu}$ 只有第 4 分量 $\omega_x$ 与第 5 分量 $\omega_y$ 非零，把 $\mathbf{J}_p$ 中对应的第 4、5 列取出，得到 $2\times2$ 的云台图像雅可比：</p>
+<p>$$\mathbf{J}_{\text{pan/tilt}}=\begin{bmatrix}
+\dfrac{\bar u\bar v}{f} & -\Big(f+\dfrac{\bar u^2}{f}\Big)\\[8pt]
+f+\dfrac{\bar v^2}{f} & -\dfrac{\bar u\bar v}{f}
+\end{bmatrix}.$$</p>
+<p>于是</p>
+<p>$$\begin{bmatrix}\dot{\bar u}\\ \dot{\bar v}\end{bmatrix}=\mathbf{J}_{\text{pan/tilt}}\begin{bmatrix}\omega_x\\ \omega_y\end{bmatrix}.$$</p>
+<p><strong>第 4 步：解释各项的物理意义（为什么这样取列）。</strong></p>
+<ul>
+<li>第 4 列对应 $\omega_x$（tilt，绕相机 $x$ 轴转动）：它使图像产生竖直方向的平移流（$f+\bar v^2/f$ 项）以及由 $\bar u\bar v/f$ 描述的耦合项。</li>
+<li>第 5 列对应 $\omega_y$（pan，绕相机 $y$ 轴转动）：它使图像产生水平方向的平移流（$f+\bar u^2/f$ 项）以及同样的耦合项。</li>
+<li>注意 $\mathbf{J}_{\text{pan/tilt}}$ 与深度 $Z$ 无关：纯旋转引起的图像运动与场景深度无关（本章 facts 第 7 节明确指出「旋转则远近物体等速移动」），这正是云台雅可比不含 $Z$ 的原因。</li>
+</ul>
+<p><strong>第 5 步：控制律形式。</strong></p>
+<p>沿用本章线性图像误差控制律 Eq. 15.10–15.11，令 $\mathbf{e}=\mathbf{p}^*-\mathbf{p}$，则</p>
+<p>$$\begin{bmatrix}\omega_x\\ \omega_y\end{bmatrix}=\lambda\,\mathbf{J}_{\text{pan/tilt}}^{+}\,\mathbf{e},$$</p>
+<p>其中 $\mathbf{J}_{\text{pan/tilt}}^{+}$ 为 $2\times2$ 伪逆（当 $\det\mathbf{J}_{\text{pan/tilt}}\neq0$ 时即普通逆）。由于只有两个自由度，单个点特征即可确定 $\omega_x,\omega_y$；若用 $N>1$ 个点，则堆叠成 $2N\times2$ 矩阵后用伪逆。</p>
+<p><strong>第 6 步（可选验证）。</strong></p>
+<p>可用本章默认相机 <code>CentralCamera('default')</code> 验证：取世界点 $\mathbf{P}=[1\ 1\ 5]^T$，投影 $\mathbf{p}_0=[672\ 672]^T$（facts 第 6 节）。原书未给出云台雅可比的具体数值，按符号推导即可；若在 MATLAB 中取 <code>cam.visjac_p([672;672],5)</code> 的第 4、5 列，应得到与上式一致的 $2\times2$ 子块。</p>
+<h4>关键点</h4>
+<ul>
+<li>pan/tilt 云台只有 $\omega_x,\omega_y$ 两个自由度，故图像雅可比是<strong>从 $2\times6$ 的 $\mathbf{J}_p$ 中抽取第 4、5 列</strong>得到的 $2\times2$ 矩阵。</li>
+<li>抽取后的雅可比<strong>不含深度 $Z$</strong>：纯旋转的图像运动与场景深度无关，这是旋转与平移的本质区别（facts 第 7 节）。</li>
+<li>对角元 $f+\bar u^2/f$、$f+\bar v^2/f$ 是主平移流项，非对角元 $\bar u\bar v/f$ 是 pan/tilt 之间的耦合项。</li>
+<li>控制律仍为 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$，只是 $\boldsymbol{\nu}$ 退化为 $(\omega_x,\omega_y)$，$\mathbf{J}$ 退化为 $2\times2$。</li>
+<li>单点即可解出两个角速度；多点时堆叠后用伪逆，与本章 Eq. 15.11 一致。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 15 章</li>
+<li>依据：</li>
+<li>点特征图像雅可比 $\mathbf{J}_p$ 的显式形式与像素坐标约定：facts 第 5 节「关键公式」Eq. 15.7，及第 1 节记号约定（$\bar u=u-u_0$，$\bar v=v-v_0$）。</li>
+<li>空间速度 $\boldsymbol{\nu}=(v_x,v_y,v_z,\omega_x,\omega_y,\omega_z)$ 的定义：facts 第 1 节记号约定（Sect. 8.1）。</li>
+<li>旋转图像运动与深度无关、平移图像速度与深度成反比：facts 第 7 节 misconceptions。</li>
+<li>线性图像误差控制律与伪逆：facts 第 5 节 Eq. 15.10、15.11，及第 4 节推导链条第 6–7 步。</li>
+<li>默认相机与示例点 $\mathbf{P}=[1\ 1\ 5]^T$、$\mathbf{p}_0=[672\ 672]^T$：facts 第 6 节例题。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确符号与前提。</strong></p>
+<p>设 $\mathbf{J}_p \in \mathbb{R}^{2\times 6}$ 为单点特征的图像雅可比（interaction matrix），其奇异值分解为</p>
+<p>$$\mathbf{J}_p = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\mathsf{T}},$$</p>
+<p>其中 $\mathbf{U}\in\mathbb{R}^{2\times 2}$、$\mathbf{V}\in\mathbb{R}^{6\times 6}$ 均为正交矩阵，$\boldsymbol{\Sigma}\in\mathbb{R}^{2\times 6}$ 为对角（矩形）奇异值矩阵。由于 $\mathbf{J}_p$ 秩恒为 2（见 facts 第 4 节：即使 $Z\to\infty$ 秩仍为 2），两个奇异值均非零，故 $\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}}$ 可逆，右端 $(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1}$ 有意义。</p>
+<p><strong>第 2 步：写出 Moore–Penrose 伪逆。</strong></p>
+<p>对满行秩矩阵 $\mathbf{J}_p$（行数 2 < 列数 6，秩 = 行数），伪逆有闭式</p>
+<p>$$\mathbf{J}_p^{+} = \mathbf{J}_p^{\mathsf{T}}(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1}.$$</p>
+<p>这是本题要证的恒等式所依赖的标准结果，也是本章 Eq. 15.11 中 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$ 使用伪逆的依据。</p>
+<p><strong>第 3 步：用 SVD 表示伪逆。</strong></p>
+<p>将 SVD 代入上式。先算</p>
+<p>$$\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\mathsf{T}}\mathbf{V}\boldsymbol{\Sigma}^{\mathsf{T}}\mathbf{U}^{\mathsf{T}} = \mathbf{U}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{\mathsf{T}}\mathbf{U}^{\mathsf{T}},$$</p>
+<p>这里用了 $\mathbf{V}^{\mathsf{T}}\mathbf{V}=\mathbf{I}$（$\mathbf{V}$ 正交）。记 $\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{\mathsf{T}} = \mathbf{D}\in\mathbb{R}^{2\times 2}$ 为对角矩阵，其对角元是两个奇异值的平方，均非零，故</p>
+<p>$$(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1} = \mathbf{U}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}}.$$</p>
+<p>于是</p>
+<p>$$\mathbf{J}_p^{+} = \mathbf{J}_p^{\mathsf{T}}(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1} = \mathbf{V}\boldsymbol{\Sigma}^{\mathsf{T}}\mathbf{U}^{\mathsf{T}}\,\mathbf{U}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}} = \mathbf{V}\boldsymbol{\Sigma}^{\mathsf{T}}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}}.$$</p>
+<p>注意 $\boldsymbol{\Sigma}^{\mathsf{T}}\mathbf{D}^{-1} = \boldsymbol{\Sigma}^{+}$（把非零奇异值取倒数、零奇异值保持零），故</p>
+<p>$$\mathbf{J}_p^{+} = \mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\mathsf{T}}.$$</p>
+<p><strong>第 4 步：计算 $(\mathbf{J}_p^{+})^{\mathsf{T}}\mathbf{J}_p^{+}$。</strong></p>
+<p>转置：</p>
+<p>$$(\mathbf{J}_p^{+})^{\mathsf{T}} = (\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\mathsf{T}})^{\mathsf{T}} = \mathbf{U}(\boldsymbol{\Sigma}^{+})^{\mathsf{T}}\mathbf{V}^{\mathsf{T}}.$$</p>
+<p>相乘：</p>
+<p>$$(\mathbf{J}_p^{+})^{\mathsf{T}}\mathbf{J}_p^{+} = \mathbf{U}(\boldsymbol{\Sigma}^{+})^{\mathsf{T}}\mathbf{V}^{\mathsf{T}}\,\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\mathsf{T}} = \mathbf{U}(\boldsymbol{\Sigma}^{+})^{\mathsf{T}}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\mathsf{T}},$$</p>
+<p>再次用了 $\mathbf{V}^{\mathsf{T}}\mathbf{V}=\mathbf{I}$。而 $(\boldsymbol{\Sigma}^{+})^{\mathsf{T}}\boldsymbol{\Sigma}^{+} = \mathbf{D}^{-1}$（对角元为奇异值平方的倒数），所以</p>
+<p>$$(\mathbf{J}_p^{+})^{\mathsf{T}}\mathbf{J}_p^{+} = \mathbf{U}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}}.$$</p>
+<p><strong>第 5 步：与右端比较。</strong></p>
+<p>由第 3 步已得</p>
+<p>$$(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1} = \mathbf{U}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}}.$$</p>
+<p>两式右端完全相同，故</p>
+<p>$$(\mathbf{J}_p^{+})^{\mathsf{T}}\mathbf{J}_p^{+} = (\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1}. \qquad \blacksquare$$</p>
+<p><strong>第 6 步：为什么这个恒等式与「运动可感知性」有关。</strong></p>
+<p>本章用堆叠雅可比 $\mathbf{J}\in\mathbb{R}^{2N\times 6}$ 的条件数衡量特征运动各向异性（facts 第 3 节第 6 条，与机械臂灵巧度 Sect. 8.1.4 类比）。对满行秩的 $\mathbf{J}$，$\mathbf{J}\mathbf{J}^{\mathsf{T}}$ 的特征值即奇异值平方，$(\mathbf{J}\mathbf{J}^{\mathsf{T}})^{-1}$ 的特征值即 $1/\sigma_i^2$；恒等式说明 $(\mathbf{J}^{+})^{\mathsf{T}}\mathbf{J}^{+}$ 与 $(\mathbf{J}\mathbf{J}^{\mathsf{T}})^{-1}$ 是同一个矩阵，因此可以用它（或其迹、条件数）来量化「单位相机速度能产生多大图像运动」以及哪些方向运动几乎不可感知（对应小奇异值、大特征值方向）。这正是「perceptibility」讨论中把伪逆与条件数联系起来的代数基础。</p>
+<h4>关键点</h4>
+<ul>
+<li>恒等式成立的前提是 $\mathbf{J}_p$ <strong>满行秩</strong>（秩 = 2），此时 $\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}}$ 可逆、伪逆有闭式 $\mathbf{J}_p^{+}=\mathbf{J}_p^{\mathsf{T}}(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1}$；本章 $\mathbf{J}_p$ 秩恒为 2，条件满足。</li>
+<li>证明的核心是 SVD 下 $\mathbf{V}^{\mathsf{T}}\mathbf{V}=\mathbf{I}$ 消去 $\mathbf{V}$，把伪逆化为 $\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\mathsf{T}}$，再转置相乘即得 $\mathbf{U}\mathbf{D}^{-1}\mathbf{U}^{\mathsf{T}}$。</li>
+<li>左端 $(\mathbf{J}_p^{+})^{\mathsf{T}}\mathbf{J}_p^{+}$ 与右端 $(\mathbf{J}_p\mathbf{J}_p^{\mathsf{T}})^{-1}$ 都是 $6\times 6$ 对称矩阵，其非零特征值对应 $1/\sigma_i^2$，直接联系到条件数与运动可感知性。</li>
+<li>该恒等式对任意满行秩矩阵成立，不限于 $2\times 6$；本章 $N$ 点堆叠的 $\mathbf{J}\in\mathbb{R}^{2N\times 6}$ 在 $2N\ge 6$ 且满列秩时，对偶形式 $(\mathbf{J}^{+})^{\mathsf{T}}\mathbf{J}^{+}=(\mathbf{J}^{\mathsf{T}}\mathbf{J})^{-1}$ 亦成立。</li>
+<li>原书未给出具体数值，本题为纯符号推导。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 15 章 Vision-Based Control，习题 6。</li>
+<li>依据：</li>
+<li>伪逆控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$（Eq. 15.11）及伪逆最小化特征速度误差范数的性质 —— facts 第 4 节第 7 步、第 5 节。</li>
+<li>$\mathbf{J}_p$ 秩恒为 2、零空间维数 4 —— facts 第 3 节第 4 条、第 7 节「$\mathbf{J}_p$ 的秩不能小于 2」。</li>
+<li>条件数与运动可感知性（perceptibility）、与机械臂灵巧度类比 —— facts 第 3 节第 6 条。</li>
+<li>符号约定 $\mathbf{J}_p$、$\mathbf{J}$、$\boldsymbol{\nu}$、$\mathbf{e}$ —— facts 第 1 节。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>背景说明（做什么 + 为什么）。</strong> 本题要求把第 15 章的两大范式从"相机看目标"推广到"相机同时看末端点与目标点"。所谓<strong>端点开环</strong>，指控制律中不显式使用末端执行器与目标之间的相对位姿反馈，而是把末端点当作图像中的一组特征，与目标点特征一起送入伺服回路；末端相对目标的位姿只在最后被"读出"用于评估，不进入控制内环。这与本章 Eq. 15.11 的 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$ 结构一致，只是特征集合 $\mathbf{p}$ 由两组点堆叠而成。</p>
+<p><strong>a) 端点开环 PBVS 系统。</strong></p>
+<p>PBVS 的核心是先估计目标相对相机的位姿 ${}^C\hat{\mathbf{T}}_T$（Sect. 11.2.3），再在 $SE(3)$ 上构造误差并按分数步更新（本章事实底座第 5 节）：</p>
+<p>$$\mathbf{T}\leftarrow\texttt{trnorm}\big(\mathbf{T}\cdot\texttt{trinterp}(\mathbf{I},\mathbf{T}_\Delta,\lambda)\big),\ \lambda\in(0,1).$$</p>
+<p>端点开环版本的做法是：把末端执行器上的点集 $\{P_e\}$ 与目标物体上的点集 $\{P_t\}$ 都投影到图像，用同一相机模型分别做位姿估计，得到 ${}^C\hat{\mathbf{T}}_E$ 与 ${}^C\hat{\mathbf{T}}_T$；控制目标是让末端点集在图像中与目标点集重合，等价于令 ${}^E\hat{\mathbf{T}}_T\to\mathbf{I}$。由于是开环，控制律不把 ${}^E\hat{\mathbf{T}}_T$ 反馈回内环，而是按 PBVS 的分数步直接驱动相机/机器人，使两组图像点逐步对齐。原书未给出该变体的具体数值，按符号推导。</p>
+<p><strong>b) 相机模型扰动对 PBVS 的影响。</strong></p>
+<p>PBVS 的位姿估计依赖相机内参 $\mathbf{K}$（焦距 $f$、主点 $\mathbf{c}=(u_0,v_0)$）。若用略有偏差的 $f$ 或 $\mathbf{c}$ 做位姿估计，估计出的 ${}^C\hat{\mathbf{T}}_T$ 会有系统偏差，进而使 $\mathbf{T}_\Delta$ 偏离真值。由于 PBVS 是<strong>先估计再控制</strong>，误差会直接进入笛卡尔误差空间，最终末端相对位姿出现稳态偏差；偏差量级与内参误差同阶。原书未给出具体数值，按符号推导。</p>
+<p><strong>c) 端点开环 IBVS 系统。</strong></p>
+<p>IBVS 直接在图像空间控制（本章事实底座第 5 节）：</p>
+<p>$$\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e},\quad \mathbf{e}=\mathbf{p}^*-\mathbf{p}.$$</p>
+<p>端点开环版本把末端点特征 $\mathbf{p}_e$ 与目标点特征 $\mathbf{p}_t$ 堆叠为 $\mathbf{p}=[\mathbf{p}_e;\mathbf{p}_t]$，期望特征 $\mathbf{p}^*$ 取为目标点当前图像位置（即让末端点"贴"到目标点上）。图像雅可比 $\mathbf{J}_p$ 按 Eq. 15.7 对每个点计算后堆叠成 $\mathbf{J}$，再用伪逆求 $\boldsymbol{\nu}$。控制全程只用图像平面可测量量，唯一 3D 输入是深度 $Z$（本章事实底座第 7 节）。原书未给出该变体的具体数值，按符号推导。</p>
+<p><strong>d) 相机模型扰动对 IBVS 的影响。</strong></p>
+<p>IBVS 的控制律中 $\mathbf{J}_p$ 依赖 $(u,v)$ 与 $Z$，而 $(u,v)$ 的像素坐标依赖 $f$ 与 $\mathbf{c}$。若用偏差的 $f$ 或 $\mathbf{c}$ 计算 $\mathbf{J}_p$，则 $\mathbf{J}^{+}$ 有偏，控制方向偏离真实下降方向，收敛路径改变、可能变慢或出现稳态误差。但 IBVS 的误差 $\mathbf{e}$ 是图像量，最终图像误差仍可趋近零，只是末端相对位姿的精度受 $\mathbf{J}_p$ 偏差影响。原书未给出具体数值，按符号推导。</p>
+<p><strong>可运行验证（MATLAB，基于本章默认相机）。</strong> 用本章默认相机 <code>CentralCamera('default')</code>，世界点 $\mathbf{P}=[1\ 1\ 5]^T$，投影 $\mathbf{p}_0=[672\ 672]^T$；<code>cam.visjac_p([672;672],5)</code> 给出</p>
+<p>$$\mathbf{J}=\begin{bmatrix}-160&0&32&32&-832&160\\ 0&-160&32&832&-32&-160\end{bmatrix}.$$</p>
+<p>把 <code>cam</code> 的焦距改为 $f=20$ mm 或 $f=4$ mm 后重算 <code>visjac_p</code>，可观察到第 1、5 列（及 2、4 列）的近似关系随 $f$ 变化（本章事实底座第 7 节：$f$ 增大时第 5 列趋近第 1 列的标量倍）。预期：$f$ 偏差使 $\mathbf{J}$ 的列比例改变，从而改变 $\boldsymbol{\nu}$ 的方向与幅值。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>端点开环 = 把末端点与目标点都当图像特征</strong>，控制律仍用本章 Eq. 15.11 的 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$，只是特征集合堆叠了两组点。</li>
+<li><strong>PBVS 对相机内参敏感</strong>：位姿估计依赖 $\mathbf{K}$，$f$ 或 $\mathbf{c}$ 偏差直接进入笛卡尔误差，造成末端相对位姿稳态偏差。</li>
+<li><strong>IBVS 对相机内参较鲁棒</strong>：误差是图像量，$\mathbf{J}_p$ 偏差主要改变收敛路径与速度，图像误差仍可趋零。</li>
+<li><strong>深度 $Z$ 是 IBVS 唯一 3D 输入</strong>（本章事实底座第 7 节），端点开环时两组点的深度都需处理。</li>
+<li><strong>$\mathbf{J}_p$ 的秩恒为 2</strong>（本章事实底座第 7 节），单点无法约束 6 自由度；两组点堆叠后仍需检查条件数与零空间。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 15 章</li>
+<li>依据：</li>
+<li>PBVS 分数步更新与 $SE(3)$ 误差：本章事实底座第 5 节（PBVS 分数步更新公式）。</li>
+<li>IBVS 控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$：本章事实底座第 5 节（Eq. 15.11）。</li>
+<li>图像雅可比 $\mathbf{J}_p$ 与 Eq. 15.7：本章事实底座第 5 节。</li>
+<li>相机内参 $f$、$\mathbf{c}$ 与 $\mathbf{J}_p$ 的关系：本章事实底座第 7 节（$f$ 增大时第 5 列趋近第 1 列标量倍）。</li>
+<li>默认相机数值 $\mathbf{P}=[1\ 1\ 5]^T$、$\mathbf{p}_0=[672\ 672]^T$、$\mathbf{J}$ 矩阵：本章事实底座第 6 节。</li>
+<li>深度 $Z$ 为 IBVS 唯一 3D 输入：本章事实底座第 7 节。</li>
+<li>$\mathbf{J}_p$ 秩恒为 2：本章事实底座第 7 节。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确题目要求。</strong></p>
+<p>本题是动手验证题，要求读者在 MATLAB（Corke 工具箱）中实际运行第 15 章给出的<strong>线特征（line-based）IBVS</strong> 示例，观察线特征参数 $(\rho,\theta)$ 如何被驱动到期望值，并理解线特征雅可比 $\mathbf{J}_l$ 的构造与使用方式。原书未给出该示例的逐行代码，但给出了构造场景的关键语句与参数，据此可复现。</p>
+<p><strong>第 2 步：构造目标场景。</strong></p>
+<p>原书用三条位于平面 $Z=3$ 上的圆/线特征构造目标（PDF p.473）：</p>
+<pre><code class="lang-matlab">P = circle([0 0 3], 0.5, 'n', 3);   % 三条线，位于平面 Z=3</code></pre>
+<p>这里 <code>circle</code> 生成一个半径为 0.5 m、中心在 $(0,0,3)$ 的圆，<code>'n',3</code> 表示用 3 条线段近似该圆。每条线在图像平面中被参数化为 $(\rho,\theta)$：$\rho$ 是图像原点到直线的垂距，$\theta$ 是该垂线的方向角。</p>
+<p><strong>第 3 步：建立相机与期望特征。</strong></p>
+<p>默认相机 <code>CentralCamera('default')</code>（$f=8$ mm，主点 $\mathbf{c}=(u_0,v_0)$）。将相机置于某个初始位姿，使三条线投影到图像上，得到初始线参数 $\mathbf{p}$；再指定期望线参数 $\mathbf{p}^*$（对应相机位于期望位姿时的投影）。误差定义为</p>
+<p>$$\mathbf{e}=\mathbf{p}^*-\mathbf{p},\qquad \mathbf{p}=(\rho_1,\theta_1,\rho_2,\theta_2,\rho_3,\theta_3)^T\in\mathbb{R}^6 .$$</p>
+<p><strong>第 4 步：线特征雅可比 $\mathbf{J}_l$。</strong></p>
+<p>对每条线，$(\rho,\theta)$ 对相机空间速度 $\boldsymbol{\nu}$ 求导得到 $2\times 6$ 的 $\mathbf{J}_l$。与点特征不同，线特征的雅可比<strong>依赖该线所在平面的方程</strong>（原书 facts 第 3 节第 8 条、第 4 节第 10 步）。三条线堆叠得</p>
+<p>$$\mathbf{J}=\begin{bmatrix}\mathbf{J}_{l_1}\\\mathbf{J}_{l_2}\\\mathbf{J}_{l_3}\end{bmatrix}\in\mathbb{R}^{6\times 6}.$$</p>
+<p>因为每条线提供 2 个约束，至少需要 <strong>3 条线</strong>才能凑成 6 维、使 $\mathbf{J}$ 可逆（facts 第 3 节第 8 条）。</p>
+<p><strong>第 5 步：控制律。</strong></p>
+<p>沿用本章统一的线性图像误差控制律（Eq. 15.10、15.11）：</p>
+<p>$$\dot{\mathbf{p}}=\lambda(\mathbf{p}^*-\mathbf{p})=\lambda\mathbf{e},\qquad
+\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e},$$</p>
+<p>其中 $\mathbf{J}^{+}$ 为伪逆。相机位姿按</p>
+<p>$$\mathbf{T}\leftarrow\texttt{trnorm}\big(\mathbf{T}\cdot\Delta^{-1}(\boldsymbol{\nu})\big)$$</p>
+<p>迭代更新（facts 第 4 节第 8 步，$\Delta^{-1}$ 见 Eq. 3.12）。</p>
+<p><strong>第 6 步：可运行代码与预期观察。</strong></p>
+<p>原书未给出该示例的完整代码，下面按本章 API 复现（符号与函数名遵循原书）：</p>
+<pre><code class="lang-matlab">% 1. 场景：三条线位于平面 Z=3
+P = circle([0 0 3], 0.5, 'n', 3);
+
+% 2. 相机
+cam = CentralCamera('default');
+
+% 3. 初始与期望位姿
+T0     = transl(0, 0, -3) * trotx(0.3);   % 初始相机位姿
+Tstar  = transl(0, 0, -3);                % 期望相机位姿
+
+% 4. 初始/期望线特征
+p0    = cam.project(P, 'T', T0);          % 初始线参数 (rho,theta)
+pStar = cam.project(P, 'T', Tstar);       % 期望线参数
+
+% 5. 线特征 IBVS 迭代
+T = T0;
+for k = 1:200
+    p = cam.project(P, 'T', T);           % 当前线参数
+    e = pStar - p;                        % 图像误差
+    if norm(e) < 1e-3, break; end
+    J = cam.visjac_l(p, plane);           % 线特征雅可比 6x6
+    nu = 0.5 * pinv(J) * e;               % 控制律 nu = lambda * J^+ * e
+    T  = trnorm( T * delta2tr(nu) );      % 位姿更新
+end</code></pre>
+<p>预期观察：</p>
+<ul>
+<li>三条线的 $(\rho,\theta)$ 单调收敛到 $\mathbf{p}^*$，误差范数 $\|\mathbf{e}\|$ 指数下降；</li>
+<li>相机位姿 $\mathbf{T}$ 收敛到 $\mathbf{T}^*$；</li>
+<li>若只给 2 条线（4 个约束），$\mathbf{J}\in\mathbb{R}^{4\times 6}$ 秩不足，无法唯一确定 $\boldsymbol{\nu}$，需补一个点特征凑成 $6\times 6$（与椭圆特征需补点特征的思路一致，facts 第 3 节第 8 条）。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>线特征参数化</strong>：每条线用 $(\rho,\theta)$ 表示，提供 2 个约束；至少 3 条线才能堆叠出 $6\times 6$ 可逆的 $\mathbf{J}$。</li>
+<li><strong>线雅可比依赖平面方程</strong>：$\mathbf{J}_l$ 的推导需要该线所在平面的方程，这是与点特征 $\mathbf{J}_p$ 的关键区别。</li>
+<li><strong>控制律统一</strong>：线特征与点特征共用同一控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$，只是 $\mathbf{J}$ 换成 $\mathbf{J}_l$。</li>
+<li><strong>秩与可解性</strong>：约束数不足 6 时 $\mathbf{J}$ 秩亏，需补特征（如点特征）才能唯一求解相机速度。</li>
+<li><strong>验证方式</strong>：运行示例应看到线参数与相机位姿均收敛，误差范数指数衰减。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 15 章</li>
+<li>依据：</li>
+<li>线特征场景构造 <code>P = circle([0 0 3],0.5,'n',3)</code>、平面 $Z=3$：facts 第 6 节「线特征例子」（PDF p.473）</li>
+<li>线特征雅可比 $\mathbf{J}_l$、参数 $(\rho,\theta)$、至少 3 条线：facts 第 3 节第 8 条、第 4 节第 10 步</li>
+<li>控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^{+}\mathbf{e}$（Eq. 15.11）：facts 第 5 节</li>
+<li>位姿更新 $\mathbf{T}\leftarrow\texttt{trnorm}(\mathbf{T}\cdot\Delta^{-1}(\boldsymbol{\nu}))$：facts 第 4 节第 8 步</li>
+<li>椭圆特征需补点特征凑 $7\times 6$ 的类比：facts 第 3 节第 8 条、第 6 节「椭圆特征例子」（PDF p.474–475）</li>
+<li>原书未给出线特征示例的完整代码与具体数值，代码按本章 API 复现，数值按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9. 基于椭圆的视觉伺服</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>预备：椭圆特征与雅可比</h5>
+<p>原书用 5 个参数描述椭圆（式 15.14 的系数形式），记作 $\mathbf{e}_\text{ell}\in\mathbb{R}^5$。其图像雅可比为</p>
+<p>$$\dot{\mathbf{e}}_\text{ell}=\mathbf{J}_e\,\boldsymbol{\nu},\qquad \mathbf{J}_e\in\mathbb{R}^{5\times6}$$</p>
+<p><strong>为什么是 5 行</strong>：椭圆只有 5 个独立几何参数（中心 2 个 + 轴长 2 个 + 朝向 1 个），因此 $\mathbf{J}_e$ 最多只有 5 个独立行，秩 $\le 5$。</p>
+<p><strong>为什么秩最多 5</strong>：$\mathbf{J}_e$ 的零空间至少 1 维，意味着存在一个相机运动方向不改变椭圆参数。原书指出：需删去第 6 列（固定 $\omega_z=0$）或补一个点特征凑成 $7\times6$ 才能唯一解出 6 维相机速度。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>a) 运行椭圆视觉伺服示例</h5>
+<p>按原书设置（PDF p.474–475）：</p>
+<pre><code class="lang-matlab">% 目标：半径 0.5 m 的圆，位于平面 Z=3，用 10 个点近似
+P = circle([0 0 3], 0.5, 'n', 10);
+plane = [0 0 1 -3];          % 椭圆所在平面方程
+
+% 期望图像特征：以主点为中心的椭圆
+% 初始相机位姿与期望位姿按原书示例设定
+% 调用椭圆特征 IBVS，控制律 nu = lambda * Je^+ * e</code></pre>
+<p><strong>预期观察</strong>：椭圆参数（中心、轴长、朝向）逐步收敛到期望值 $\mathbf{e}_\text{ell}^*$，图像误差 $\|\mathbf{e}\|\to 0$。由于 $\mathbf{J}_e$ 秩最多 5，单独用椭圆只能约束 5 个自由度，第 6 个自由度（对应零空间方向）不受控。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>b) 仅用椭圆参数伺服五个自由度</h5>
+<p><strong>做法</strong>：将控制律限制在 5 维子空间。由于 $\mathbf{J}_e\in\mathbb{R}^{5\times6}$ 秩为 5，其伪逆 $\mathbf{J}_e^+\in\mathbb{R}^{6\times5}$ 给出的 $\boldsymbol{\nu}=\lambda\mathbf{J}_e^+\mathbf{e}$ 落在 $\mathbf{J}_e$ 的行空间内，零空间方向自动不被激励。</p>
+<p><strong>为什么可行</strong>：$\mathbf{J}_e$ 的 5 个独立行张成 5 维约束空间，伪逆解是满足 $\mathbf{J}_e\boldsymbol{\nu}=\lambda\mathbf{e}$ 的最小范数解，恰好只驱动 5 个有效自由度。</p>
+<p><strong>为什么不能唯一确定 6 维速度</strong>：$\dim(\text{null}(\mathbf{J}_e))\ge 1$，存在非零 $\boldsymbol{\nu}_0$ 使 $\mathbf{J}_e\boldsymbol{\nu}_0=0$，即该运动不改变椭圆参数。原书建议删去第 6 列（固定 $\omega_z=0$）来消除这一不确定性。</p>
+<pre><code class="lang-matlab">% 仅用椭圆，固定 omega_z = 0
+Je5 = Je(:, [1 2 3 4 5]);    % 删去第 6 列
+nu5 = lambda * pinv(Je5) * e;
+nu = [nu5; 0];               % 补回 omega_z = 0</code></pre>
+<p><strong>预期观察</strong>：相机在 5 个自由度上收敛，$\omega_z$ 保持为零；若初始误差需要绕光轴旋转，则无法完全消除。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>c) 由惯量矩阵和质心确定椭圆参数</h5>
+<p>任意形状的等效椭圆由<strong>质心</strong> $\mathbf{c}=(c_u,c_v)$ 和<strong>二阶惯量矩阵</strong> $\mathbf{M}$ 描述。椭圆参数（式 15.14 的系数）与 $(\mathbf{c},\mathbf{M})$ 的关系为：</p>
+<p>设 $\mathbf{M}=\begin{bmatrix}m_{20}&m_{11}\\ m_{11}&m_{02}\end{bmatrix}$（二阶中心矩矩阵），则椭圆方程可写为</p>
+<p>$$(\mathbf{x}-\mathbf{c})^T\mathbf{M}^{-1}(\mathbf{x}-\mathbf{c})=1$$</p>
+<p><strong>推导思路</strong>：</p>
+<ol>
+<li>质心直接给出椭圆中心：$\mathbf{e}_\text{ell}$ 的前两个分量 = $\mathbf{c}$。</li>
+<li>对 $\mathbf{M}$ 做特征分解 $\mathbf{M}=\mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^T$，特征值 $\lambda_1,\lambda_2$ 对应半轴长的平方，特征向量 $\mathbf{V}$ 给出椭圆朝向角 $\phi$。</li>
+<li>半轴长 $a=\sqrt{\lambda_1}$，$b=\sqrt{\lambda_2}$；朝向 $\phi=\arctan2(V_{21},V_{11})$。</li>
+<li>将 $(c_u,c_v,a,b,\phi)$ 转换为式 15.14 的 5 个系数。</li>
+</ol>
+<p><strong>为什么有挑战性</strong>：等效椭圆的参数提取依赖形状分割与矩计算，且 $\mathbf{J}_e$ 秩为 5，需补一个点特征（如质心）凑成 $7\times6$ 才能完整约束 6 自由度。</p>
+<pre><code class="lang-matlab">% 由惯量矩阵 M 和质心 c 计算椭圆参数
+[V, D] = eig(M);
+lambda = diag(D);
+a = sqrt(lambda(1));  b = sqrt(lambda(2));
+phi = atan2(V(2,1), V(1,1));
+% 组装 5 维椭圆特征，补一个点特征（质心）得 7x6 雅可比</code></pre>
+<p><strong>预期观察</strong>：相机运动到使任意形状的等效椭圆匹配期望视图；补点特征后 6 个自由度均可控。</p>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>关键点</h4>
+<ul>
+<li><strong>椭圆雅可比 $\mathbf{J}_e\in\mathbb{R}^{5\times6}$ 秩最多 5</strong>：5 个椭圆参数无法唯一确定 6 维相机速度，零空间至少 1 维。必须删列（固定 $\omega_z=0$）或补一个点特征凑成 $7\times6$。</li>
+<li><strong>仅用椭圆伺服 5 自由度</strong>：伪逆解自动落在行空间，零空间方向不被激励，因此只驱动 5 个有效自由度。</li>
+<li><strong>等效椭圆 = 质心 + 惯量矩阵</strong>：质心给中心，惯量矩阵特征分解给半轴长与朝向，再转换为式 15.14 的 5 个系数。</li>
+<li><strong>控制律统一形式</strong>：$\boldsymbol{\nu}=\lambda\mathbf{J}_e^+\mathbf{e}$，与点特征 IBVS 的 Eq. 15.11 同构，只是雅可比换成 $\mathbf{J}_e$。</li>
+<li><strong>秩亏是本质而非数值问题</strong>：椭圆参数只有 5 个独立量，这是几何事实，不能靠增加椭圆数量解决（多个椭圆仍共享同一零空间方向）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 15 章</li>
+<li>依据：</li>
+<li>椭圆特征雅可比 $\mathbf{J}_e\in\mathbb{R}^{5\times6}$、秩最多 5、需补点特征凑 $7\times6$：事实底座 §3 第 8 条、§7「椭圆 Jacobian 秩最多 5」</li>
+<li>椭圆示例设置（<code>circle([0 0 3],0.5,'n',10)</code>、<code>plane=[0 0 1 -3]</code>）：事实底座 §6「椭圆特征例子」</li>
+<li>控制律 $\boldsymbol{\nu}=\lambda\mathbf{J}^+\mathbf{e}$：事实底座 §5 Eq. 15.11</li>
+<li>线/椭圆特征雅可比推导链条：事实底座 §4 第 10 步</li>
+<li>式 15.14 椭圆参数：题干引用，原书未在事实底座中给出具体系数形式，按符号推导</li>
+<li>惯量矩阵与质心关系：原书未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 12 章「Image Processing」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 12 章「Image Processing」课后习题</h1>
+<p>原书课后习题 9 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是操作型练习，目的是让读者亲手建立"图像即矩阵"的直觉，并熟悉 Corke 工具箱的交互式显示工具 <code>idisp</code>。下面按步骤给出可运行的 MATLAB 代码与预期观察。</p>
+<h5>步骤 1：读入图像并查看基本信息</h5>
+<pre><code class="lang-matlab">street = iread('street.png');   % 读入灰度图像
+about(street)</code></pre>
+<p><strong>为什么</strong>：<code>iread</code> 返回一个矩阵，<code>about</code> 报告其类型与尺寸。按本章事实底座，预期输出形如</p>
+<pre><code>street [uint8] : 851x1280 (1089280 bytes)</code></pre>
+<p>注意尺寸按 <strong>width × height</strong> 报告，即 1280×851；而 MATLAB 矩阵是 <strong>rows × cols</strong> = 851×1280，二者顺序相反。像素值是与亮度成正比的 <code>uint8</code> 整数，范围 $[0,255]$。</p>
+<h5>步骤 2：用 <code>idisp</code> 显示灰度图像</h5>
+<pre><code class="lang-matlab">idisp(street);</code></pre>
+<p><strong>为什么</strong>：<code>idisp</code> 是本章推荐的交互式显示函数。它会弹出一个窗口，窗口上带有若干按钮，正是题干要求探索的 zoom、line、histogram。</p>
+<h5>步骤 3：探索像素值</h5>
+<pre><code class="lang-matlab">street(200,300)      % 取第 200 行、第 300 列的像素</code></pre>
+<p><strong>为什么</strong>：MATLAB 索引是 $(v,u)$ 顺序，即先行后列，与像素坐标 $(u,v)$ 相反。按事实底座，预期得到</p>
+<pre><code>ans = 42</code></pre>
+<p>这说明该点灰度值为 42（<code>uint8</code>，$[0,255]$）。读者可多取几个点，体会"图像就是一张数值表"。</p>
+<h5>步骤 4：探索 zoom 按钮</h5>
+<p>在 <code>idisp</code> 窗口中点击 <strong>zoom</strong> 按钮，然后在图像上框选一小块区域。</p>
+<p><strong>为什么</strong>：zoom 放大后可以观察单个像素的方块形状，直观看到图像是离散采样网格，而不是连续画面。这对理解后续卷积窗口 $W$（$w\times w$ 奇数方块）非常关键。</p>
+<h5>步骤 5：探索 line 按钮</h5>
+<p>点击 <strong>line</strong> 按钮，在图像上拖出一条线段。</p>
+<p><strong>为什么</strong>：line 工具会绘制该线段上的灰度剖面（intensity profile）。按事实底座，本章后面用 <code>p = castle(360,:)</code> 取一行剖面，观察到背景灰度 ≈0.3、亮区 ≈0.9。这里用 line 按钮做的是同一件事：把二维图像沿一条线降为一维信号，便于观察边缘处的灰度跳变——这正是第 4 节"边缘 = 灰度的快速变化"的直观来源。</p>
+<h5>步骤 6：探索 histogram 按钮</h5>
+<p>点击 <strong>histogram</strong> 按钮。</p>
+<p><strong>为什么</strong>：直方图显示整幅图像的灰度分布。注意事实底座中的提醒：<code>ihist</code> <strong>不是</strong> monadic 算子（它的输出不是图像），而属于特征提取；直方图峰值的显著性依赖 <code>scale</code> 参数。例如 <code>peak(n,v)</code> 在 <code>'scale',25</code> 时得到 8, 40, 197 三个峰。直方图是后续阈值分割（如 <code>street >= 30 & street <= 80</code>）的依据。</p>
+<h5>步骤 7：对彩色图像重复上述操作</h5>
+<pre><code class="lang-matlab">flowers = iread('flowers.png');   % 彩色图像
+about(flowers)</code></pre>
+<p><strong>为什么</strong>：按事实底座，预期输出</p>
+<pre><code>flowers [uint8] : 426x640x3</code></pre>
+<p>即 640×426 的三通道图像，第三维是颜色平面索引（1=R, 2=G, 3=B）。取一个像素：</p>
+<pre><code class="lang-matlab">pix = flowers(276,318,:);
+squeeze(pix)'</code></pre>
+<p>预期得到</p>
+<pre><code>ans = 57  91  198</code></pre>
+<p>即该像素的 R=57, G=91, B=198。<code>squeeze</code> 去掉长度为 1 的维度，转置后按 R G B 顺序显示。</p>
+<pre><code class="lang-matlab">idisp(flowers);</code></pre>
+<p><strong>为什么</strong>：<code>idisp</code> 对彩色图像同样显示 zoom、line、histogram 按钮。彩色图像的直方图通常按三个颜色平面分别统计，可用来做色键分割——事实底座给出色键例子：g 峰约 0.55，阈值取 <code>g < 0.45</code>。</p>
+<h5>步骤 8：注意数据类型对显示的影响</h5>
+<pre><code class="lang-matlab">idisp(street/64)</code></pre>
+<p><strong>为什么</strong>：<code>street</code> 是 <code>uint8</code>，除以 64 后仍按整数运算，得到 $[0,3]$ 四个灰阶。这说明 <code>idisp</code> 会根据数据类型自动确定显示范围：<code>uint8</code> 按 $[0,255]$，<code>double</code> 按 $[0,1]$。若想手动控制，可先 <code>idouble</code> 转成 $[0,1]$ 浮点。事实底座提醒：<code>uint8</code> 相减会把负值钳为 0、相加超 255 钳为 255，所以做差分或梯度前必须先 <code>cast</code> 或 <code>idouble</code>。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>图像即矩阵</strong>：<code>iread</code> 返回矩阵，<code>about</code> 报告 <code>[uint8] : 851x1280</code>；像素值是与亮度成正比的 $[0,255]$ 整数。一切算子都是矩阵运算。</li>
+<li><strong>坐标顺序陷阱</strong>：像素坐标 $(u,v)$ 是水平/垂直，左上角为 $(1,1)$；MATLAB 索引是 $(v,u)$，顺序相反；图像尺寸按 width×height 报告，矩阵按 rows×cols，二者相反。</li>
+<li><strong><code>idisp</code> 的三个按钮</strong>：zoom 看离散像素网格，line 看一维灰度剖面（边缘处跳变），histogram 看灰度分布（阈值分割依据）。</li>
+<li><strong><code>ihist</code> 不是 monadic 算子</strong>：直方图输出不是图像，属特征提取；峰值显著性依赖 <code>scale</code> 参数。</li>
+<li><strong>数据类型决定显示范围</strong>：<code>uint8</code> 按 $[0,255]$，<code>double</code> 按 $[0,1]$；<code>uint8</code> 运算会钳位，做差分/梯度前须 <code>idouble</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li><code>iread</code>/<code>about</code>/<code>idisp</code> 与 <code>street [uint8] : 851x1280</code>、<code>street(200,300)=42</code>：事实底座第 3 节概念 1、第 6 节例题</li>
+<li>像素坐标 $(u,v)$ vs MATLAB 索引 $(v,u)$、width×height vs rows×cols：事实底座第 1 节记号约定、第 7 节 misconceptions</li>
+<li><code>flowers [uint8] : 426x640x3</code>、<code>flowers(276,318,:)=(57,91,198)</code>：事实底座第 6 节例题</li>
+<li><code>ihist</code> 非 monadic、<code>peak</code> 与 <code>scale</code> 参数：事实底座第 7 节 misconceptions、第 6 节例题</li>
+<li><code>idisp(street/64)</code> 得 $[0,3]$ 四灰阶、<code>uint8</code> 钳位：事实底座第 6 节例题、第 7 节 misconceptions</li>
+<li>色键 g 峰约 0.55、阈值 <code>g < 0.45</code>：事实底座第 6 节例题</li>
+<li>剖面 <code>p = castle(360,:)</code> 背景 ≈0.3、亮 ≈0.9：事实底座第 6 节例题</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确任务与本章定位。</strong></p>
+<p>本题属于本章第 12.2 节「图像获取」的动手练习，目标是把「图像即矩阵」这一核心观念落到实际操作上：从相机或视频文件读入若干帧，得到 <code>uint8</code> 矩阵并用 <code>idisp</code> 显示。本章事实底座第 3 节第 1 条指出：<code>iread</code> 返回矩阵，<code>about(street)</code> 显示 <code>street [uint8] : 851x1280</code>，像素值是与亮度成正比的 $[0,255]$ 整数。因此抓帧的本质就是「拿到一个 $W\times H$（彩色为 $W\times H\times 3$）的矩阵」。</p>
+<p><strong>第 2 步：从摄像头抓帧。</strong></p>
+<p>本章提供 <code>VideoCamera</code> 类。事实底座第 6 节给出：<code>VideoCamera</code> 最坏等待时间为 $[0,1/R)$，其中 $R$ 为帧率。抓帧的典型流程是：创建对象 → 启动 → 循环 <code>grab</code> → 显示 → 停止。为什么需要「最坏等待 $[0,1/R)$」这一约束？因为相机以固定帧率 $R$ 产出图像，若请求速度快于 $1/R$，<code>grab</code> 必须阻塞等待下一帧到达，故等待时间落在 $[0,1/R)$ 区间内。</p>
+<pre><code class="lang-matlab">% 从摄像头抓取 5 帧并显示
+cam = VideoCamera();          % 创建相机对象
+for k = 1:5
+    im = cam.grab();          % 抓取一帧，返回 uint8 矩阵
+    about(im)                 % 显示尺寸与类型，如 [uint8] : 480x640x3
+    idisp(im);                % 交互式显示
+    pause(0.2);
+end
+clear cam                     % 释放相机</code></pre>
+<p>预期观察：<code>about</code> 输出形如 <code>[uint8] : 480x640x3</code>（具体尺寸取决于相机，原书未给出本题相机的具体数值），<code>idisp</code> 弹出窗口显示当前帧。</p>
+<p><strong>第 3 步：从视频文件抓帧。</strong></p>
+<p>本章提供 <code>Movie</code> 类。事实底座第 6 节给出两个具体例子：<code>Movie('traffic_sequence.mpg')</code> 为 720×576 @ 2.999970e+01 fps、350 frames，单帧 <code>im [uint8] : 576x720x3</code>；<code>Movie('LeftBag.mpg')</code> 为 384×288 @ 24.999750 fps、1440 frames。注意这里再次体现记号约定：图像尺寸按 width×height 报告（720×576），而矩阵按 rows×cols（576×720），二者顺序相反。</p>
+<pre><code class="lang-matlab">% 从视频文件抓取若干帧并显示
+movie = Movie('traffic_sequence.mpg');   % 打开视频
+for k = 1:5
+    im = movie.read();                   % 读一帧
+    about(im)                            % 预期 [uint8] : 576x720x3
+    idisp(im);
+end</code></pre>
+<p>预期观察：<code>about</code> 输出 <code>[uint8] : 576x720x3</code>，与事实底座给出的 <code>im [uint8] : 576x720x3</code> 一致；<code>idisp</code> 逐帧显示交通场景。</p>
+<p><strong>第 4 步：显示与检查。</strong></p>
+<p><code>idisp</code> 是本章推荐的交互式显示函数，可缩放、取像素值。若需转浮点做后续处理，用 <code>idouble</code> 把 <code>uint8</code> 的 $[0,255]$ 映射为 <code>double</code> 的 $[0,1]$（事实底座第 1 节数据类型约定）。为什么先显示再处理？因为本章反复强调：像素坐标 $(u,v)$ 与 MATLAB 索引 $(v,u)$ 顺序相反、左上角为 $(1,1)$，先目视检查可避免后续坐标错位。</p>
+<pre><code class="lang-matlab">im = movie.read();
+idisp(im);                    % 显示
+imd = idouble(im);            % 转 double，范围 [0,1]</code></pre>
+<p><strong>第 5 步：网络相机（可选）。</strong></p>
+<p>事实底座第 6 节还给出 <code>AxisWebCamera</code>：<code>cam.size()</code> = 480 640。用法与 <code>VideoCamera</code> 类似，<code>size()</code> 返回 <code>[height width]</code>，再次印证「图像尺寸 width×height、矩阵 rows×cols」的相反顺序。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>图像即矩阵</strong>：抓帧得到的是 <code>uint8</code> 矩阵，灰度 $W\times H$、彩色 $W\times H\times 3$，像素值 $[0,255]$ 与亮度成正比。</li>
+<li><strong>尺寸顺序陷阱</strong>：图像尺寸按 width×height 报告，矩阵按 rows×cols，二者相反；<code>about</code> 显示的是矩阵形状。</li>
+<li><strong>相机等待时间</strong>：<code>VideoCamera</code> 最坏等待 $[0,1/R)$，$R$ 为帧率，这是固定帧率采样的必然结果。</li>
+<li><strong>视频文件有具体参数</strong>：<code>traffic_sequence.mpg</code> 为 720×576 @ 30 fps、350 帧；<code>LeftBag.mpg</code> 为 384×288 @ 25 fps、1440 帧。</li>
+<li><strong>显示先行</strong>：用 <code>idisp</code> 目视检查，再转 <code>idouble</code> 做后续处理，可避免 $(u,v)$ 与 $(v,u)$ 的坐标错位。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li>图像即矩阵、<code>about</code> 输出格式、<code>uint8</code>/<code>double</code> 数据类型：事实底座第 1 节「记号约定」、第 3 节第 1 条、第 6 节</li>
+<li><code>VideoCamera</code> 最坏等待 $[0,1/R)$：事实底座第 6 节</li>
+<li><code>Movie('traffic_sequence.mpg')</code> 720×576 @ 30 fps、350 帧，<code>im [uint8] : 576x720x3</code>：事实底座第 6 节</li>
+<li><code>Movie('LeftBag.mpg')</code> 384×288 @ 25 fps、1440 帧：事实底座第 6 节</li>
+<li><code>AxisWebCamera</code> 的 <code>cam.size()</code> = 480 640：事实底座第 6 节</li>
+<li>图像获取流程（<code>iread</code>/<code>VideoCamera</code>/<code>Movie</code>/<code>AxisWebCamera</code>）：事实底座第 4 节第 1 步</li>
+<li>像素坐标 $(u,v)$ 与 MATLAB 索引 $(v,u)$ 相反、左上角 $(1,1)$：事实底座第 1 节、第 7 节</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是动手验证题，核心是把本章第 2 节“图像即矩阵”与第 3 节“monadic / diadic / spatial 三类算子”落到一个实时循环里。下面按「做什么 + 为什么」分步给出。</p>
+<h5>步骤 1：建立抓帧循环</h5>
+<p><strong>做什么</strong>：用 <code>VideoCamera</code> 对象循环抓帧并显示。</p>
+<p><strong>为什么</strong>：本章事实底座指出 <code>VideoCamera</code> 最坏等待时间为 $[0,1/R)$，即抓帧是阻塞式同步操作；循环体每轮取一帧，天然对应“图像进、图像出”的算子流水线。</p>
+<pre><code class="lang-matlab">cam = VideoCamera();          % 打开默认相机
+while true
+    I = cam.grab();           % 抓取一帧，uint8
+    % ... 在此处插入效果 ...
+    idisp(I);                 % 显示
+    pause(0.05);
+end</code></pre>
+<p><code>idisp</code> 是本章交互式检查图像的标准工具（见事实底座第 4 节步骤 1）。</p>
+<h5>步骤 2：负片图像（monadic 算子）</h5>
+<p><strong>做什么</strong>：逐像素取反。</p>
+<p><strong>为什么</strong>：负片是典型的 monadic 算子——输出与输入同尺寸、逐像素函数。对 <code>uint8</code> 图像，像素值域 $[0,255]$，负片为 $I' = 255 - I$。注意事实底座第 7 节警告：<code>uint8</code> 相减会把负值钳为 0，所以必须用 <code>255 - I</code> 而不是 <code>-I</code>。</p>
+<pre><code class="lang-matlab">neg = 255 - I;                % uint8 安全取反</code></pre>
+<h5>步骤 3：阈值化（monadic 算子）</h5>
+<p><strong>做什么</strong>：把灰度二值化。</p>
+<p><strong>为什么</strong>：阈值化是 monadic 算子，输出仍是同尺寸图像，但只有两个灰度级。事实底座第 6 节给出 <code>street >= 30 & street <= 80</code> 这种区间阈值写法，说明阈值可以是单边也可以是区间。</p>
+<pre><code class="lang-matlab">bw = I > 128;                 % 逻辑矩阵，idisp 显示为黑白</code></pre>
+<h5>步骤 4：色调分离（monadic 算子）</h5>
+<p><strong>做什么</strong>：把连续灰度量化到少数几个级别。</p>
+<p><strong>为什么</strong>：事实底座第 6 节给出 <code>idisp(street/64)</code> 得到 $[0,3]$ 四灰阶的例子，说明除以量化步长即可实现 posterization。对 <code>uint8</code>，若想保留 $k$ 个灰阶，步长为 $256/k$。</p>
+<pre><code class="lang-matlab">levels = 4;
+step   = 256 / levels;
+post   = floor(double(I) / step) * step / (levels - 1);  % 归一到 [0,255]
+post   = uint8(post);</code></pre>
+<h5>步骤 5：伪彩色（diadic 算子）</h5>
+<p><strong>做什么</strong>：把单通道灰度映射到三通道颜色。</p>
+<p><strong>为什么</strong>：伪彩色本质是 diadic 算子——两个输入（灰度图 + 颜色映射表）逐像素合成一个输出。事实底座第 1 节指出彩色图像是 $W\times H\times 3$，第三维是颜色平面索引（1=R, 2=G, 3=B）。可用 <code>colormap</code> 思路手工构造三通道。</p>
+<pre><code class="lang-matlab">J = ind2rgb(uint8(floor(double(I)/256*255)), jet(256));  % 伪彩色</code></pre>
+<h5>步骤 6：边缘滤波（spatial 算子）</h5>
+<p><strong>做什么</strong>：用 Sobel 或 DoG 核做卷积，突出灰度快速变化处。</p>
+<p><strong>为什么</strong>：边缘是 spatial 算子的典型代表——输出像素是邻域 $W$ 内所有像素的函数。事实底座第 5 节给出 Sobel 核</p>
+<p>$$\mathbf{Du} = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix}$$</p>
+<p>以及 <code>[du,dv] = isobel(I, kdgauss(2))</code> 的用法。梯度幅值 $m=\sqrt{I_u^2+I_v^2}$，方向 $\theta=\operatorname{atan2}(I_v,I_u)$。</p>
+<pre><code class="lang-matlab">[du, dv] = isobel(I, kdgauss(2));
+mag = sqrt(du.^2 + dv.^2);
+idisp(mag, 'signed');         % 梯度带符号，用 signed 显示</code></pre>
+<p>事实底座第 7 节提醒：梯度卷积结果带符号，<code>idisp</code> 默认最负为黑、最正为白、零为中灰；<code>'signed'</code> 红负蓝正（零为黑）。竖直边缘由水平梯度 <code>Du</code> 突出，水平边缘由 <code>Du'</code> 突出，方向易记反。</p>
+<h5>步骤 7：整合循环</h5>
+<pre><code class="lang-matlab">cam = VideoCamera();
+while true
+    I = cam.grab();
+    neg  = 255 - I;
+    bw   = I > 128;
+    post = uint8(floor(double(I)/64) * 64);
+    [du, dv] = isobel(I, kdgauss(2));
+    mag  = sqrt(du.^2 + dv.^2);
+    idisp([neg, bw, post, mag]);   % 并排显示四种效果
+    pause(0.05);
+end</code></pre>
+<p><strong>预期观察</strong>：负片与原图灰度互补；阈值化只剩黑白两色；色调分离出现明显色带（banding）；边缘滤波在物体轮廓处出现亮线，平坦区域接近零。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>三类算子的区分</strong>：负片、阈值化、色调分离都是 monadic（逐像素、同尺寸）；伪彩色是 diadic（两输入一输出）；边缘滤波是 spatial（输出依赖邻域）。这是本章算子的分类骨架。</li>
+<li><strong><code>uint8</code> 的钳位陷阱</strong>：<code>uint8</code> 相减把负值钳为 0、相加超 255 钳为 255，负片必须写 <code>255 - I</code> 而非 <code>-I</code>，否则结果全黑。</li>
+<li><strong>梯度带符号</strong>：<code>isobel</code> 输出有正有负，显示时要用 <code>idisp(..., 'signed')</code>，否则零值附近会被误显示为中灰。</li>
+<li><strong>方向不要记反</strong>：竖直边缘由水平梯度 <code>Du</code> 突出，水平边缘由 <code>Du'</code> 突出。</li>
+<li><strong>实时循环的代价</strong>：事实底座第 6 节给出数据率 $10^6$–$10^8$ bytes s$^{-1}$，每帧只能提取数十个特征；在循环里叠加多个 spatial 算子会显著降低帧率，实际系统需权衡。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li>抓帧循环与 <code>VideoCamera</code> 等待时间：事实底座第 4 节步骤 1、第 6 节 <code>VideoCamera</code> 条目</li>
+<li>monadic / diadic / spatial 分类：事实底座第 3 节第 2 条</li>
+<li><code>uint8</code> 钳位：事实底座第 7 节</li>
+<li>阈值化区间写法 <code>street >= 30 & street <= 80</code>：事实底座第 6 节</li>
+<li>色调分离 <code>idisp(street/64)</code> 四灰阶：事实底座第 6 节</li>
+<li>彩色三通道与颜色平面索引：事实底座第 1 节</li>
+<li>Sobel 核与 <code>isobel(I, kdgauss(2))</code>、梯度幅值/方向：事实底座第 5 节公式 3、第 6 节</li>
+<li>梯度带符号显示 <code>'signed'</code>：事实底座第 7 节</li>
+<li>数据率 $10^6$–$10^8$ bytes s$^{-1}$：事实底座第 6 节末条</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4. 运动检测</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 a) 问：递归背景估计</h5>
+<p><strong>做什么</strong>：用递归背景估计器逐帧更新背景模型，再与当前帧做差得到运动前景。</p>
+<p><strong>为什么</strong>：本章事实底座第 5 节给出递归背景估计公式</p>
+<p>$$\hat{\mathbf{I}}_k=\hat{\mathbf{I}}_{k-1}+c(\mathbf{I}_k-\hat{\mathbf{I}}_{k-1})$$</p>
+<p>其中 $\hat{\mathbf{I}}_k$ 是第 $k$ 帧估计的背景，$\mathbf{I}_k$ 是当前帧，$c$ 是更新率（原书 LeftBag 示例用 $\sigma=2$ 控制高斯平滑尺度，见事实底座第 6 节）。这是一个一阶低通/指数遗忘滤波器：$c$ 越大，背景越快跟上当前帧。</p>
+<p><strong>可运行代码（MATLAB，工具箱风格）</strong>：</p>
+<pre><code class="lang-matlab">cam = VideoCamera();          % 打开相机
+bg = [];                      % 背景模型
+c  = 0.05;                    % 更新率
+sigma = 2;                    % 平滑尺度（原书 LeftBag 用 sigma=2）
+while true
+    I = cam.grab();           % 取一帧
+    I = idouble(I);           % 转 double [0,1]
+    if isempty(bg)
+        bg = I;               % 首帧初始化背景
+    else
+        bg = bg + c*(I - bg); % 递归背景估计
+    end
+    D = abs(I - bg);          % 与背景的差
+    D = ismooth(D, sigma);    % 高斯平滑抑制噪声
+    motion = D > 0.15;        % 阈值化得到运动掩码
+    idisp(motion);            % 显示运动区域
+end</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><strong>移动物体</strong>：物体所在像素与背景差异大，<code>motion</code> 掩码中该区域被点亮，形成运动前景。</li>
+<li><strong>物体静止一段时间</strong>：由于递归更新，背景 $\hat{\mathbf{I}}_k$ 会逐渐“吸收”静止物体（$c$ 越大越快），运动掩码随之熄灭——这正是背景估计的固有特性，也是 LeftBag 示例中“包被留下后逐渐融入背景”的原因。</li>
+<li><strong>改变 σ</strong>：σ 是平滑尺度。σ 增大 → 高斯核更宽（默认 $h=3\sigma$，见事实底座第 6 节），噪声被更强抑制，但运动边缘被模糊、小运动目标可能被抹掉；σ 减小 → 保留细节但噪声敏感，掩码出现椒盐状伪运动。</li>
+</ul>
+<h5>第 b) 问：修改 LeftBag 示例高亮移动的人</h5>
+<p><strong>做什么</strong>：在 LeftBag 视频上做背景估计，得到运动掩码后，用掩码把原帧中的运动像素“挑出来”叠加显示。</p>
+<p><strong>为什么</strong>：事实底座第 6 节给出 LeftBag 参数：<code>Movie('LeftBag.mpg')</code> 为 384×288 @ 24.999750 fps，1440 帧，<code>sigma = 2</code>。用 diadic 运算把掩码与原图结合即可高亮。</p>
+<pre><code class="lang-matlab">movie = Movie('LeftBag.mpg');
+bg = [];
+sigma = 2;
+while true
+    I = movie.next();
+    if isempty(I), break; end
+    I = idouble(I);
+    if isempty(bg)
+        bg = I;
+    else
+        bg = bg + 0.05*(I - bg);
+    end
+    D = ismooth(abs(I - bg), sigma);
+    mask = D > 0.15;                 % 运动掩码
+    mask3 = repmat(mask, [1 1 3]);   % 扩展到三通道
+    % 高亮：运动像素保留原色，其余压暗
+    out = I.*mask3 + 0.2*I.*(1-mask3);
+    idisp(out);
+end</code></pre>
+<p><strong>预期观察</strong>：画面中走动的人被正常亮度显示，静止背景被压暗，从而“高亮”出移动的人。若人停下不动，递归背景会逐渐把他吸收，高亮消失。</p>
+<h5>第 c) 问：运动检测 + 色键合成</h5>
+<p><strong>做什么</strong>：用运动掩码代替色键掩码，把大厅中运动的人抠出，粘贴到沙漠背景上。</p>
+<p><strong>为什么</strong>：事实底座第 4 节给出色键合成公式</p>
+<p>$$\text{subject}.*\text{mask3} + \text{bg}.*(1-\text{mask3})$$</p>
+<p>色键原本用颜色阈值（如绿色通道 $g<0.45$，见事实底座第 6 节）生成 <code>mask3</code>；这里把 <code>mask3</code> 换成运动掩码即可。</p>
+<pre><code class="lang-matlab">lobby  = Movie('LeftBag.mpg');
+desert = iread('desert.png');    % 沙漠背景
+desert = idouble(desert);
+bg = [];
+sigma = 2;
+while true
+    I = lobby.next();
+    if isempty(I), break; end
+    I = idouble(I);
+    if isempty(bg)
+        bg = I;
+    else
+        bg = bg + 0.05*(I - bg);
+    end
+    D = ismooth(abs(I - bg), sigma);
+    mask = D > 0.15;
+    mask3 = repmat(mask, [1 1 3]);
+    % 尺寸对齐后合成
+    desert_r = iresize(desert, size(I,1), size(I,2));
+    out = I.*mask3 + desert_r.*(1-mask3);
+    idisp(out);
+end</code></pre>
+<p><strong>预期观察</strong>：大厅中走动的人出现在沙漠背景上，静止区域显示沙漠。注意掩码边缘可能有锯齿，可用形态学 <code>iclose</code>/<code>iopen</code>（事实底座第 4 节）清理。</p>
+<h4>关键点</h4>
+<ul>
+<li>递归背景估计 $\hat{\mathbf{I}}_k=\hat{\mathbf{I}}_{k-1}+c(\mathbf{I}_k-\hat{\mathbf{I}}_{k-1})$ 是运动检测的核心；$c$ 决定背景“遗忘”速度，静止物体会被逐渐吸收。</li>
+<li>σ 是高斯平滑尺度（默认 $h=3\sigma$），控制噪声抑制与细节保留的权衡；LeftBag 示例用 σ=2。</li>
+<li>运动掩码可替代色键掩码，套用 diadic 合成公式 <code>subject.*mask3 + bg.*(1-mask3)</code> 完成背景替换。</li>
+<li>掩码后处理（形态学开/闭）可去除噪声与填洞，改善合成边缘。</li>
+<li>所有像素运算前须 <code>idouble</code> 转 double，避免 uint8 相减钳位为 0（事实底座第 7 节）。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 12 章</li>
+<li>依据：</li>
+<li>递归背景估计公式与 LeftBag 参数（384×288 @ 24.999750 fps，1440 帧，σ=2）：事实底座第 5 节公式 5、第 6 节</li>
+<li>色键合成公式 <code>subject.*mask3 + bg.*(1-mask3)</code>、绿色阈值 $g<0.45$：事实底座第 4 节、第 6 节</li>
+<li>高斯平滑核与默认 $h=3\sigma$：事实底座第 5 节公式 2、第 6 节</li>
+<li>uint8 钳位与 <code>idouble</code>：事实底座第 7 节</li>
+<li>形态学开/闭清理：事实底座第 4 节、第 5 节公式 5</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5. 卷积</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 均匀核 vs 高斯核的振铃伪影</strong></p>
+<p>均匀核 $\mathbf{K}=\frac{1}{21^2}\mathbf{1}_{21\times21}$ 的频域响应是二维 sinc 函数，其旁瓣在截止频率外产生负值振荡。在空间域表现为阶跃边缘附近出现明暗交替的过冲/下冲，即 ringing。高斯核 $G(x,y;\sigma)$ 的傅里叶变换仍是高斯，无旁瓣，因此不产生振铃。</p>
+<p>MATLAB 验证：</p>
+<pre><code class="lang-matlab">I = iread('street.png', 'double');
+K_uni = ones(21,21)/21^2;
+K_gau = kgauss(5);          % σ=5, 默认 h=3σ → 31×31
+Iu = iconv(I, K_uni);
+Ig = iconv(I, K_gau);
+idisp(Iu); idisp(Ig);</code></pre>
+<p>预期：<code>Iu</code> 在强边缘（如建筑轮廓）附近可见明暗条纹；<code>Ig</code> 平滑无过冲。注意 <code>kgauss(5)</code> 产生 31×31，与 21×21 均匀核尺寸不同，为公平比较可改用 <code>kgauss(3.5)</code>（约 21×21）。</p>
+<p><strong>b) 核求和为 1 的理由</strong></p>
+<p>卷积是加权求和：$\mathbf{O}(u,v)=\sum_{i,j}\mathbf{K}(i,j)\mathbf{I}(u+i,v+j)$。若 $\sum\mathbf{K}\neq1$，则对常数图像 $\mathbf{I}=c$ 有 $\mathbf{O}=c\sum\mathbf{K}\neq c$，即整体亮度被缩放。求和为 1 保证直流增益为 1，平滑不改变图像平均亮度，只重新分配能量。这是"平滑"而非"缩放"的必要条件。</p>
+<p><strong>c) 简单梯度核 vs Sobel 核</strong></p>
+<p>简单核 $\mathbf{K}=(-0.5\ 0\ 0.5)$ 仅对水平方向一阶差分，无垂直方向平滑，对噪声极敏感。Sobel 核</p>
+<p>$$\mathbf{D}_u=\begin{bmatrix}-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix}$$</p>
+<p>在求 $u$ 方向梯度的同时，沿 $v$ 方向施加了 $[1\ 2\ 1]^T$ 的平滑权重，等效于"先高斯平滑再差分"，抗噪性更好。代价是边缘定位略模糊（平滑导致）。原书 PDF p.306 给出 Sobel 核形式。</p>
+<pre><code class="lang-matlab">Du_simple = iconv(I, [-0.5 0 0.5]);
+Du_sobel  = isobel(I);</code></pre>
+<p>预期：<code>Du_simple</code> 噪声明显，<code>Du_sobel</code> 边缘更干净。注意梯度结果带符号，<code>idisp</code> 默认最负为黑、最正为白、零为中灰（PDF p.305–306）。</p>
+<p><strong>d) 不同 $\sigma$ 与核尺寸</strong></p>
+<p>高斯核 $G(x,y;\sigma)=\frac{1}{2\pi\sigma^2}\exp(-(x^2+y^2)/(2\sigma^2))$，默认半宽 $h=3\sigma$（PDF p.301–302）。$\sigma$ 越大，平滑越强、细节丢失越多；核尺寸须 $\geq 2h+1$ 才能截断到可忽略的尾部。原书给出：$\sigma=1$ 时 $h=2$ 处 $e^{-2}\approx0.14$，$h=3$ 处 $e^{-4.5}\approx0.01$，$h=4$ 处 $e^{-8}\approx3.4\times10^{-4}$；默认 $h=3\sigma$，$\sigma=1$ 得 7×7。</p>
+<pre><code class="lang-matlab">for s = [1 2 4]
+    idisp(iconv(I, kgauss(s)));
+end</code></pre>
+<p>预期：$\sigma$ 增大，图像逐渐模糊，细小纹理消失。</p>
+<p><strong>e) 31×31 检测 60° 直线的核</strong></p>
+<p>直线检测核沿目标方向为正、两侧为负（或反之），使沿该方向的亮线响应最大。60° 方向单位向量 $(\cos60°,\sin60°)=(0.5,\sqrt3/2)$。构造方法：在 31×31 窗口内，对每个 $(i,j)$ 计算其到过中心、方向 60° 的直线的垂直距离 $d$，令核值 $\propto$ 某函数（如 $1$ 若 $|d|<w/2$，否则负）。原书未给出该核的具体数值，按符号构造：</p>
+<pre><code class="lang-matlab">h = 15; [i,j] = meshgrid(-h:h, -h:h);
+theta = 60*pi/180;
+d = -sin(theta)*i + cos(theta)*j;   % 到 60° 方向直线的垂直距离
+K = double(abs(d) < 1.5) - 0.1;     % 中心带正、其余负
+K = K / sum(K(:));                   % 可选归一化</code></pre>
+<p>预期：对 60° 亮线响应最强，其他方向响应弱。</p>
+<p><strong>f) 高斯 $x$ 方向导数（式 12.2）</strong></p>
+<p>$$G(u,v;\sigma)=\frac{1}{2\pi\sigma^2}\exp\!\left(-\frac{u^2+v^2}{2\sigma^2}\right)$$</p>
+<p>对 $u$ 求偏导：</p>
+<p>$$\frac{\partial G}{\partial u}=G\cdot\left(-\frac{u}{\sigma^2}\right)=-\frac{u}{2\pi\sigma^4}\exp\!\left(-\frac{u^2+v^2}{2\sigma^2}\right)$$</p>
+<p>即式 12.2。同理 $\partial G/\partial v=-\frac{v}{2\pi\sigma^4}\exp(-(u^2+v^2)/(2\sigma^2))$。</p>
+<p><strong>g) 高斯拉普拉斯（式 12.6）</strong></p>
+<p>$$\mathrm{LoG}=\nabla^2G=\frac{\partial^2G}{\partial u^2}+\frac{\partial^2G}{\partial v^2}$$</p>
+<p>由 f) 得 $\partial G/\partial u=-uG/\sigma^2$，再对 $u$ 求导：</p>
+<p>$$\frac{\partial^2G}{\partial u^2}=-\frac{1}{\sigma^2}G-\frac{u}{\sigma^2}\cdot\left(-\frac{u}{\sigma^2}G\right)=\frac{u^2-\sigma^2}{\sigma^4}G$$</p>
+<p>同理 $\partial^2G/\partial v^2=\frac{v^2-\sigma^2}{\sigma^4}G$。相加：</p>
+<p>$$\mathrm{LoG}(u,v;\sigma)=\frac{u^2+v^2-2\sigma^2}{\sigma^4}G(u,v;\sigma)$$</p>
+<p>即式 12.6（Mexican hat 形状）。</p>
+<p><strong>h) 高斯差分（DoG）</strong></p>
+<p>$$G_{\sigma_1}*G_{\sigma_2}=G_{\sqrt{\sigma_1^2+\sigma_2^2}}$$</p>
+<p>（高斯卷积封闭性，PDF 式 12.1 后）。DoG 定义为两不同尺度高斯之差：</p>
+<p>$$\mathrm{DoG}(u,v;\sigma_1,\sigma_2)=G_{\sigma_1}-G_{\sigma_2}$$</p>
+<p>原书 p.310 指出 DoG 近似 LoG：取 $\sigma_1=1.6\sigma_2$，序列差等价 <code>DiffG(√2σ, σ)</code>。解析上，当 $\sigma_1\to\sigma_2$ 时</p>
+<p>$$\frac{G_{\sigma_1}-G_{\sigma_2}}{\sigma_1-\sigma_2}\to\frac{\partial G}{\partial\sigma}$$</p>
+<p>而 $\partial G/\partial\sigma=\sigma\nabla^2G$（高斯满足热方程），故 DoG 是 LoG 的有限差分近似。</p>
+<h4>关键点</h4>
+<ul>
+<li>均匀核频域有 sinc 旁瓣 → 空间域振铃；高斯核频域仍为高斯 → 无振铃。</li>
+<li>核求和为 1 保证直流增益为 1，平滑不改变平均亮度。</li>
+<li>Sobel = 差分 + 垂直方向 $[1\ 2\ 1]$ 平滑，抗噪优于裸差分核。</li>
+<li>高斯 $x$ 向导数 $G_u=-uG/\sigma^2$；LoG $=(u^2+v^2-2\sigma^2)G/\sigma^4$；DoG 是 LoG 的有限差分近似。</li>
+<li>高斯卷积封闭性 $G_{\sigma_1}*G_{\sigma_2}=G_{\sqrt{\sigma_1^2+\sigma_2^2}}$ 是 DoG 与金字塔的理论基础。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li>a) 事实底座 §5 式 1–2（卷积、高斯核）、§6 平滑条目（<code>ones(21,21)/21^2</code>、<code>kgauss(5)</code>）</li>
+<li>b) 事实底座 §5 式 1（卷积定义）</li>
+<li>c) 事实底座 §6（Sobel <code>Du = [-1 0 1; -2 0 2; -1 0 1]</code>，PDF p.306）、§7（梯度带符号）</li>
+<li>d) 事实底座 §6（σ=1 时 $e^{-2},e^{-4.5},e^{-8}$，默认 $h=3\sigma$）</li>
+<li>e) 事实底座 §5 式 1（卷积核构造），原书未给出具体数值，按符号构造</li>
+<li>f) 事实底座 §5 式 3（式 12.2）</li>
+<li>g) 事实底座 §5 式 4（式 12.4–12.6）</li>
+<li>h) 事实底座 §5 式 2（高斯卷积封闭性）、§6（DoG 近似 LoG，$\sigma_1=1.6\sigma_2$，<code>DiffG(√2σ, σ)</code>，PDF p.310–311）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>设模板为 $\mathbf{T}$，待匹配图像窗口为 $\mathbf{I}$，两者尺寸相同（$N$ 个像素）。强度尺度误差指窗口被整体乘以一个正因子 $\alpha$（即 $\mathbf{I}\to\alpha\mathbf{I}$，$\alpha>0$），而模板不变。下面分别推导两种度量。</p>
+<p><strong>第 1 步：写出 SSD 定义并代入尺度误差。</strong></p>
+<p>SSD（Sum of Squared Differences）为</p>
+<p>$$\mathrm{SSD}(\mathbf{T},\mathbf{I})=\sum_{k}\bigl(T_k-I_k\bigr)^2 .$$</p>
+<p>代入 $\mathbf{I}\to\alpha\mathbf{I}$：</p>
+<p>$$\mathrm{SSD}(\mathbf{T},\alpha\mathbf{I})=\sum_k\bigl(T_k-\alpha I_k\bigr)^2 .$$</p>
+<p>展开：</p>
+<p>$$=\sum_k T_k^2-2\alpha\sum_k T_k I_k+\alpha^2\sum_k I_k^2 .$$</p>
+<p><strong>为什么</strong>：这是关于 $\alpha$ 的二次多项式，说明 SSD 对尺度误差<strong>不是不变的</strong>——只要 $\alpha\neq1$，SSD 一般不为零，且随 $\alpha$ 偏离 1 而增大（除非 $\mathbf{T}$ 与 $\mathbf{I}$ 恰好成比例）。</p>
+<p><strong>第 2 步：求 SSD 对 $\alpha$ 的最小值点。</strong></p>
+<p>对 $\alpha$ 求导并令其为零：</p>
+<p>$$\frac{\partial}{\partial\alpha}\mathrm{SSD}=-2\sum_k T_k I_k+2\alpha\sum_k I_k^2=0
+\;\Longrightarrow\;
+\alpha^\star=\frac{\sum_k T_k I_k}{\sum_k I_k^2}.$$</p>
+<p><strong>为什么</strong>：这说明 SSD 在最优尺度 $\alpha^\star$ 处才达到最小；若 $\alpha^\star\neq1$，则存在尺度误差时 SSD 无法归零，度量被"惩罚"。特别地，当 $\mathbf{T}=\mathbf{I}$ 时 $\alpha^\star=1$，SSD$=0$，与事实底座中 <code>ssd(T,T)=0</code> 一致。</p>
+<p><strong>第 3 步：写出 NCC 定义并代入尺度误差。</strong></p>
+<p>NCC（Normalized Cross-Correlation）为</p>
+<p>$$\mathrm{NCC}(\mathbf{T},\mathbf{I})=\frac{\sum_k T_k I_k}{\sqrt{\sum_k T_k^2}\sqrt{\sum_k I_k^2}} .$$</p>
+<p>代入 $\mathbf{I}\to\alpha\mathbf{I}$（$\alpha>0$）：</p>
+<p>$$\mathrm{NCC}(\mathbf{T},\alpha\mathbf{I})
+=\frac{\alpha\sum_k T_k I_k}{\sqrt{\sum_k T_k^2}\sqrt{\alpha^2\sum_k I_k^2}}
+=\frac{\alpha\sum_k T_k I_k}{\alpha\sqrt{\sum_k T_k^2}\sqrt{\sum_k I_k^2}}
+=\mathrm{NCC}(\mathbf{T},\mathbf{I}).$$</p>
+<p><strong>为什么</strong>：分子与分母中的 $\alpha$ 相互抵消，故 NCC 对纯尺度误差<strong>完全不变</strong>。这与事实底座中 <code>ncc(T, T*0.9)=1</code> 的数值例子一致（模板乘 0.9 后 NCC 仍为 1）。</p>
+<p><strong>第 4 步：结论对比。</strong></p>
+<ul>
+<li>SSD：对尺度误差敏感，$\mathrm{SSD}(\mathbf{T},\alpha\mathbf{I})$ 随 $\alpha$ 偏离 1 而增大，仅在 $\alpha=\alpha^\star$ 时最小；一般 $\alpha^\star\neq1$。</li>
+<li>NCC：对尺度误差不变，$\mathrm{NCC}(\mathbf{T},\alpha\mathbf{I})=\mathrm{NCC}(\mathbf{T},\mathbf{I})$，$\alpha>0$。</li>
+</ul>
+<p><strong>第 5 步：补充说明（与事实底座一致）。</strong></p>
+<p>事实底座指出只有 ZNCC 同时对增益与偏移不变。本题只涉及尺度（增益）误差，故 NCC 已能免疫；若再叠加偏移（$\mathbf{I}\to\alpha\mathbf{I}+\beta$），NCC 不再不变，需用 ZNCC。事实底座中 <code>zncc(T, T*0.9+0.1)=1.0000</code> 正说明这一点。</p>
+<p><strong>可运行验证（MATLAB，基于本章工具箱）：</strong></p>
+<pre><code class="lang-matlab">T = iroi(lena, [240 290; 250 300]);   % 51x51 模板
+I = T * 0.9;                          % 尺度误差 alpha = 0.9
+sad(T,I)      % 预期非零
+ssd(T,I)      % 预期非零（>0）
+ncc(T,I)      % 预期 = 1
+zncc(T,I)     % 预期 = 1</code></pre>
+<p>预期观察：<code>ssd</code> 给出正值（尺度误差被惩罚），<code>ncc</code> 与 <code>zncc</code> 均为 1（对纯尺度误差不变）。这与事实底座 <code>T*0.9</code> 一行给出的 <code>ssd=7.3307, ncc=1</code> 相符。</p>
+<h4>关键点</h4>
+<ul>
+<li>SSD 是 $\alpha$ 的二次函数，对尺度误差敏感；其最优尺度为 $\alpha^\star=\sum T_kI_k/\sum I_k^2$，一般不为 1。</li>
+<li>NCC 的分子分母同时含 $\alpha$，对正尺度因子完全抵消，故对纯增益误差不变。</li>
+<li>事实底座明确：只有 ZNCC 同时对增益与偏移不变；NCC 仅对增益不变，对偏移仍敏感。</li>
+<li>数值验证与事实底座一致：<code>T*0.9</code> 时 <code>ssd=7.3307</code>、<code>ncc=1</code>；<code>T*0.9+0.1</code> 时 <code>zncc=1.0000</code>。</li>
+<li>记忆口诀：SSD 怕尺度，NCC 不怕尺度只怕偏移，ZNCC 两者都不怕。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li>SSD/NCC/ZNCC 定义与尺度/偏移不变性：事实底座第 3 节第 5 条「模板匹配与相似度」。</li>
+<li>数值例子 <code>sad(T,T)=0, ssd(T,T)=0, ncc(T,T)=1</code>；<code>T*0.9</code>：<code>ssd=7.3307, ncc=1</code>；<code>T+0.1</code>：<code>ncc=0.9990</code>；<code>zncc(T, T*0.9+0.1)=1.0000</code>：事实底座第 6 节「模板匹配」条目。</li>
+<li>「只有 ZNCC 同时对增益与偏移不变」：事实底座第 3 节第 5 条。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7. 模板匹配</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>a) 选取模板</strong></p>
+<p>Lena 图像为 512×512。用 <code>iroi</code> 按 $(u,v)$ 记号裁剪一只眼睛，例如取左上角 $(u_1,v_1)=(240,290)$、右下角 $(u_2,v_2)=(250,300)$，得到 51×51 的奇数尺寸模板：</p>
+<pre><code class="lang-matlab">lena = iread('lena.png', 'double');
+T = iroi(lena, [240 290; 250 300]);   % 51x51
+about(T)</code></pre>
+<p><strong>为什么</strong>：模板匹配要求模板与搜索窗口同尺度逐像素比较，奇数尺寸保证模板有唯一中心像素，便于定位峰值坐标。</p>
+<p><strong>b) 相似度图像与最佳匹配</strong></p>
+<pre><code class="lang-matlab">S = isimilarity(T, lena, @zncc);
+[peak, uv] = peak2(S, 1, 'npeaks', 5);</code></pre>
+<ul>
+<li>最佳匹配：模板自身所在位置，ZNCC = 1.0000（自匹配）。</li>
+<li>与另一只眼睛的相似度：原书未给出具体数值，按符号推导——由于两眼纹理相似但非完全相同，ZNCC 应接近但小于 1，通常 > 0.8 即视为好匹配（原书判据：NCC > 0.8 算好匹配）。</li>
+<li>次佳匹配：出现在另一只眼睛处，其相似度得分原书未给出具体数值，按符号推导应略低于自匹配峰值。</li>
+</ul>
+<p><strong>为什么</strong>：ZNCC 对增益与偏移不变，因此模板与自身匹配必然为 1；另一只眼睛因结构相似而成为次佳峰。</p>
+<p><strong>c) 灰度缩放的影响</strong></p>
+<pre><code class="lang-matlab">for s = [0.5 0.9 1.0 1.5 2.0]
+    S = isimilarity(T, lena*s, @zncc);
+    fprintf('scale=%.1f  peak=%.4f\n', s, max(S(:)));
+end</code></pre>
+<ul>
+<li>ZNCC：峰值恒为 1.0000（对增益不变）。</li>
+<li>SAD/SSD：峰值随 $s$ 偏离 1 而增大（变差）。原书数值：<code>T*0.9</code> 时 <code>sad=132.8090, ssd=7.3307, ncc=1</code>。</li>
+<li>NCC：<code>T*0.9</code> 时 <code>ncc=1</code>（NCC 对增益不变，但不对偏移不变）。</li>
+</ul>
+<p><strong>为什么</strong>：ZNCC 与 NCC 先减去均值再归一化，增益 $s$ 被约去；SAD/SSD 直接比较灰度差，增益改变会线性放大误差。</p>
+<p><strong>d) 灰度偏移的影响</strong></p>
+<pre><code class="lang-matlab">for b = [0 0.1 0.5]
+    S = isimilarity(T, lena+b, @zncc);
+    fprintf('offset=%.1f  peak=%.4f\n', b, max(S(:)));
+end</code></pre>
+<ul>
+<li>ZNCC：峰值恒为 1.0000（对偏移不变）。</li>
+<li>NCC：<code>T+0.1</code> 时 <code>ncc=0.9990</code>（略降，因偏移改变均值但归一化未完全消除）。</li>
+<li>SAD/SSD：<code>T+0.1</code> 时 <code>sad=260.1000, ssd=26.0100</code>（显著变差）。</li>
+</ul>
+<p><strong>为什么</strong>：ZNCC 同时减均值，偏移被消除；NCC 只做能量归一化，偏移仍影响；SAD/SSD 直接受偏移影响。</p>
+<p><strong>e) 不同度量的对比</strong></p>
+<table>
+<tr><th>度量</th><th>对增益</th><th>对偏移</th><th><code>T*0.9</code></th><th><code>T+0.1</code></th></tr>
+<tr><td>SAD</td><td>敏感</td><td>敏感</td><td>132.8090</td><td>260.1000</td></tr>
+<tr><td>SSD</td><td>敏感</td><td>敏感</td><td>7.3307</td><td>26.0100</td></tr>
+<tr><td>NCC</td><td>不变</td><td>敏感</td><td>1</td><td>0.9990</td></tr>
+<tr><td>ZNCC</td><td>不变</td><td>不变</td><td>1.0000</td><td>1.0000</td></tr>
+<tr><td>rank</td><td>不变</td><td>不变</td><td>—</td><td>—</td></tr>
+<tr><td>census</td><td>不变</td><td>不变</td><td>—</td><td>—</td></tr>
+</table>
+<p>原书数值：<code>zsad=1.7300e-11, zssd=1.1507e-25, zncc=1.0000</code>；<code>zncc(T, T*0.9+0.1)=1.0000</code>。rank 与 census 基于序关系/位串，对单调灰度变换不变，原书未给出具体数值。</p>
+<p><strong>f) 模板缩放的影响</strong></p>
+<pre><code class="lang-matlab">scales = 0.5:0.05:2.0;
+peaks = zeros(size(scales));
+for k = 1:numel(scales)
+    Tk = iscale(T, scales(k));
+    S = isimilarity(Tk, lena, @zncc);
+    peaks(k) = max(S(:));
+end
+plot(scales, peaks); xlabel('scale'); ylabel('peak ZNCC');</code></pre>
+<p>预期：峰值在 scale = 1.0 处最高（=1），偏离 1 时下降。原书尺度容忍度约 10–20%（即 scale ∈ [0.8, 1.2] 内峰值仍较高）。原书未给出具体曲线数值，按符号推导。</p>
+<p><strong>为什么</strong>：模板尺寸改变后与图像中目标区域不再逐像素对齐，ZNCC 下降。</p>
+<p><strong>g) 模板旋转的影响</strong></p>
+<pre><code class="lang-matlab">angles = -0.2:0.05:0.2;
+peaks = zeros(size(angles));
+for k = 1:numel(angles)
+    Tk = irotate(T, angles(k));
+    S = isimilarity(Tk, lena, @zncc);
+    peaks(k) = max(S(:));
+end
+plot(angles, peaks); xlabel('angle (rad)'); ylabel('peak ZNCC');</code></pre>
+<p>预期：峰值在 angle = 0 处最高（=1），随旋转角增大而下降。原书未给出具体数值，按符号推导。</p>
+<p><strong>为什么</strong>：旋转使模板像素与图像像素错位，ZNCC 下降；小角度（< 0.1 rad）下降较缓。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>ZNCC 是唯一同时对增益与偏移不变的度量</strong>：<code>zncc(T, T*0.9+0.1)=1.0000</code>，而 SAD/SSD 显著变差，NCC 对偏移仍敏感（0.9990）。</li>
+<li><strong>模板必须奇数尺寸</strong>：保证唯一中心像素，便于 <code>peak2</code> 定位峰值坐标 $(u,v)$。</li>
+<li><strong>自匹配峰值恒为 1</strong>（ZNCC/NCC），另一只眼睛为次佳峰，原书判据 NCC > 0.8 算好匹配。</li>
+<li><strong>尺度与旋转容忍度有限</strong>：原书尺度容忍约 10–20%，旋转小角度内峰值缓降；超出后需多尺度/多角度搜索。</li>
+<li><strong>rank 与 census 对单调灰度变换不变</strong>：基于序关系与位串，适合光照变化场景。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 12 章</li>
+<li>依据：</li>
+<li>模板匹配与相似度度量：事实底座 §3 第 5 条、§4 第 6 步、§5 公式 1</li>
+<li>SAD/SSD/NCC/ZNCC 数值：§6 例题（<code>sad(T,T)=0, ssd(T,T)=0, ncc(T,T)=1</code>；<code>T*0.9</code>：sad=132.8090, ssd=7.3307, ncc=1；<code>T+0.1</code>：sad=260.1000, ssd=26.0100, ncc=0.9990；<code>zsad=1.7300e-11, zssd=1.1507e-25, zncc=1.0000</code>；<code>zncc(T, T*0.9+0.1)=1.0000</code>；NCC > 0.8 算好匹配）</li>
+<li>尺度容忍 10–20%：§6 例题（Wally 尺度容忍 10–20%）</li>
+<li><code>iroi</code> 记号与 ROI：§6 例题（<code>T = iroi(lena, [240 290; 250 300])</code> 51×51）</li>
+<li>rank/census：§6 例题（census 位串 <code>10101101₂</code>=173，rank=5）</li>
+<li><code>iscale</code>：§6 例题（<code>iscale(lena, 0.1)</code>）</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 8.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：理解下采样与混叠的根源</h5>
+<p>下采样即按整数因子 $M$ 抽取像素，例如取 $u'=u/M,\ v'=v/M$。原书 page 325 的例子用 <code>roof [uint8] : 1668x2009</code>，取 $m=7$ 做 subsample。<strong>为什么会产生混叠</strong>：抽取相当于把采样率降低 $M$ 倍，若原图含有高于新 Nyquist 频率的细节（锐利边缘、瓦片规则纹理），这些高频成分会折叠到低频，表现为莫尔条纹、锯齿或虚假纹理。Shannon–Nyquist 定理要求：抽取前必须先低通，把截止频率压到新 Nyquist 以下。</p>
+<h5>第 2 步：确定抗混叠所需的平滑尺度</h5>
+<p>设原图相邻像素间距为 1，抽取后间距为 $M$。新采样率对应的 Nyquist 频率为 $1/(2M)$ 周期/像素。要保证低通后不残留高于此频率的成分，高斯核的标准差 $\sigma$ 需与 $M$ 匹配。原书 facts 明确给出：<strong>$m=2$ 时用 $\sigma=1$ 的 Gaussian</strong>（page 325）。这给出经验标度关系</p>
+<p>$$\sigma \propto M .$$</p>
+<p>结合本章高斯核默认半宽 $h=3\sigma$（facts 第 5 节、第 6 节：$\sigma=1$ 得 $7\times7$，即 $h=3$），可得抽取 $M$ 倍时：</p>
+<p>$$\boxed{\sigma = \frac{M}{2},\qquad h = 3\sigma = \frac{3M}{2}} .$$</p>
+<p><strong>为什么是 $M/2$</strong>：高斯核的有效低通截止约在 $1/(2\pi\sigma)$ 量级，令其不超过新 Nyquist $1/(2M)$，即得 $\sigma \gtrsim M/(2\pi)\cdot 2\pi$ 的标度；原书以 $M=2\Rightarrow\sigma=1$ 锚定，故取 $\sigma=M/2$ 与之一致。核宽 $w=2h+1=3M+1$（奇数化）。</p>
+<h5>第 3 步：可运行验证代码（MATLAB，工具箱记号）</h5>
+<pre><code class="lang-matlab">roof = iread('roof.png', 'double');   % 1668x2009
+M = 7;
+% 错误做法：直接抽取 -> 混叠
+bad = roof(1:M:end, 1:M:end);
+idisp(bad); title('no smoothing: aliasing');
+
+% 正确做法：先高斯低通再抽取
+sigma = M/2;                          % 由 M=2 -> sigma=1 标度得到
+sm = ismooth(roof, sigma);            % 等价 iconv(roof, kgauss(sigma))
+good = sm(1:M:end, 1:M:end);
+idisp(good); title('smoothed then decimated');</code></pre>
+<p><strong>预期观察</strong>：<code>bad</code> 在屋顶瓦片的规则纹理处出现明显莫尔条纹，锐利边缘呈锯齿；<code>good</code> 中这些伪影被显著抑制，代价是边缘略变软。可进一步用 <code>idecimate</code>（facts 第 4 节第 9 步：<code>idecimate</code> 前先 <code>ismooth</code> 抗混叠）对照。</p>
+<h5>第 4 步：结论</h5>
+<p>对 $M$ 倍抽取，合适的高斯平滑核宽度为</p>
+<p>$$\sigma = \frac{M}{2},\quad h=\frac{3M}{2},\quad w = 3M+1\ (\text{取奇}).$$</p>
+<p>原书仅显式给出 $M=2\Rightarrow\sigma=1$ 这一数据点，其余按上述标度关系符号推导；原书未给出 $M=7$ 的具体 $\sigma$ 数值。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>下采样前必须低通</strong>：否则锐利边缘与规则纹理产生混叠（莫尔条纹、锯齿），这是 Shannon–Nyquist 的直接后果。</li>
+<li><strong>核宽随 $M$ 线性增长</strong>：由原书锚点 $M=2\Rightarrow\sigma=1$ 得 $\sigma=M/2$，配合默认 $h=3\sigma$ 得 $w=3M+1$。</li>
+<li><strong>可分离性降低成本</strong>：高斯核可分离为两次一维卷积，运算量从 $w^2N^2$ 降到 $2wN^2$（facts 第 4 节第 3 步）。</li>
+<li><strong><code>idecimate</code> 内建抗混叠</strong>：本章推荐流程是 <code>ismooth</code> → <code>idecimate</code>，而非直接索引抽取。</li>
+<li><strong>平滑与信息</strong>：低通只抑制高频、不增加信息；过度增大 $\sigma$ 会模糊真实边缘，需在抗混叠与保边之间折中。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 12 章</li>
+<li>依据：</li>
+<li>下采样示例与 $m=7$、<code>roof [uint8] : 1668x2009</code>、$m=2$ 用 $\sigma=1$ Gaussian：facts 第 6 节（PDF p.325）</li>
+<li><code>idecimate</code> 前先 <code>ismooth</code>、<code>ipyramid</code> 多分辨率：facts 第 4 节第 9 步</li>
+<li>高斯核默认 $h=3\sigma$、$\sigma=1$ 得 $7\times7$、可分离性：facts 第 5 节式 12.1 与第 6 节（PDF p.301–302）</li>
+<li>Shannon–Nyquist 与混叠：facts 第 3 节第 8 条、第 4 节第 9 步</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 9.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 9 题：由 <code>ipyramid</code> 输出生成图 12.33</h5>
+<p><strong>做什么</strong>：写一个函数，把 <code>ipyramid</code> 返回的多分辨率图像序列拼成一张"金字塔"图（图 12.33 的形式：各级缩略图按层叠排列）。</p>
+<p><strong>为什么</strong>：<code>ipyramid</code> 是本章形状变换一节给出的多分辨率工具，它把图像反复减半，得到 $512\to256\to\dots\to2\times2\to1\times1$ 的序列（facts 第 6 节：<code>ipyramid(lena)</code> 最终得到 <code>[20.8959]</code>，即 1×1）。图 12.33 就是把这一序列可视化。</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>调用 <code>ipyramid</code> 得到金字塔序列。按 facts，<code>ipyramid(lena)</code> 从 512×512 开始逐级减半，直到 1×1。</li>
+<li>由于各级尺寸不同，不能直接并排；需要把每一级放到一张公共画布的对应位置。最自然的做法是：以原图尺寸为画布，把第 $k$ 级放在左上角，或按"层叠"方式逐级偏移。</li>
+<li>用 <code>ipaste</code> 把每一级贴到画布上。注意 <code>ipaste</code> 使用 $(u,v)$ 记号（facts 第 7 节），不是行列记号。</li>
+<li>用 <code>idisp</code> 显示。</li>
+</ol>
+<p>可运行代码（MATLAB，工具箱为 Corke 的 MVTB/机器视觉工具箱）：</p>
+<pre><code class="lang-matlab">function pyramid_figure(I)
+    % 生成类似图 12.33 的金字塔可视化
+    p = ipyramid(I);          % 多分辨率序列，512->256->...->1
+    canvas = zeros(size(I));  % 以原图尺寸为画布
+    u = 1; v = 1;             % 左上角起点，注意 (u,v) 记号
+    for k = 1:length(p)
+        Ik = p{k};
+        canvas = ipaste(canvas, Ik, [u v]);  % 贴到 (u,v)
+        u = u + 8; v = v + 8;                % 逐级偏移，形成层叠
+    end
+    idisp(canvas);
+end</code></pre>
+<p><strong>预期观察</strong>：画布上出现一串由大到小、逐级偏移的缩略图，最大的是原图，最小的是 1×1（对应 facts 中的 <code>[20.8959]</code>）。若把偏移量调大，层叠更明显；调为 0 则只剩最大一级可见。</p>
+<blockquote>注：图 12.33 的确切排版（偏移量、是否画边框）原书未给出具体数值，按符号推导；上面用 8 像素偏移是合理默认。</blockquote>
+<h5>第 10 题：哈哈镜 warp 函数</h5>
+<p><strong>做什么</strong>：写一个 warp 函数，对像素坐标做非线性变形，模拟哈哈镜（凸/凹/波浪）。</p>
+<p><strong>为什么</strong>：本章 warping 框架是"对像素坐标做变换 + 逆映射 + 双线性插值"（facts 第 5 节公式 6，Eq. 12.8–12.11）。哈哈镜就是选一个非线性的 $f_u,f_v$。</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>选定变形函数。以绕图像中心 $(u_c,v_c)$ 的径向放大/缩小为例：</li>
+</ol>
+<p>$$u' = u_c + (u-u_c)\,(1 + a\,r^2),\qquad v' = v_c + (v-v_c)\,(1 + a\,r^2)$$</p>
+<p>其中 $r^2=(u-u_c)^2+(v-v_c)^2$，$a>0$ 为凸（放大中心），$a<0$ 为凹。</p>
+<ol>
+<li>由于 warping 需要<strong>逆映射</strong>（对输出每个像素找输入坐标），实际实现时对输出坐标 $(u',v')$ 反解 $(u,v)$，或用 <code>interp2</code> 直接按正向映射采样。</li>
+<li>用双线性插值避免锯齿。</li>
+</ol>
+<p>可运行代码：</p>
+<pre><code class="lang-matlab">function J = funhouse(I, a)
+    % a>0 凸，a<0 凹；I 为 double 图像
+    [H,W] = size(I);
+    uc = W/2; vc = H/2;
+    [U,V] = meshgrid(1:W, 1:H);
+    R2 = (U-uc).^2 + (V-vc).^2;
+    scale = 1 + a * R2 / (uc^2 + vc^2);   % 归一化，避免溢出
+    U2 = uc + (U-uc).*scale;
+    V2 = vc + (V-vc).*scale;
+    J = interp2(U, V, I, U2, V2, 'linear', 0);
+end</code></pre>
+<p><strong>预期观察</strong>：$a>0$ 时中心被拉伸、边缘被压缩（凸面镜效果）；$a<0$ 时相反。<code>interp2</code> 的 <code>0</code> 填充使画布外区域变黑。</p>
+<h5>第 11 题：极坐标变换</h5>
+<p><strong>做什么</strong>：把图像从笛卡尔 $(u,v)$ 重采样到极坐标 $(r,\theta)$，输出图像水平轴为 $r$、垂直轴为 $\theta$。</p>
+<p><strong>为什么</strong>：这是 warping 框架的又一实例，映射为</p>
+<p>$$r=\sqrt{(u-u_c)^2+(v-v_c)^2},\qquad \theta=\operatorname{atan2}(v-v_c,\,u-u_c)$$</p>
+<p>输出坐标 $(u',v')$ 中 $u'$ 对应 $r$、$v'$ 对应 $\theta$。</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>以图像中心 $(u_c,v_c)$ 为极点。</li>
+<li>$r$ 的范围是 $[0, r_{\max}]$，$r_{\max}=\sqrt{u_c^2+v_c^2}$（到最远角）。</li>
+<li>$\theta$ 的范围是 $[-\pi,\pi]$，映射到输出行。</li>
+<li>对输出每个 $(r,\theta)$ 反算输入 $(u,v)$，双线性插值。</li>
+</ol>
+<p>可运行代码：</p>
+<pre><code class="lang-matlab">function P = to_polar(I)
+    [H,W] = size(I);
+    uc = W/2; vc = H/2;
+    rmax = sqrt(uc^2 + vc^2);
+    Nr = round(rmax);          % 输出列数 = r 采样数
+    Nt = 360;                  % 输出行数 = theta 采样数
+    [R, T] = meshgrid(linspace(0, rmax, Nr), linspace(-pi, pi, Nt));
+    U = uc + R.*cos(T);
+    V = vc + R.*sin(T);
+    [U0,V0] = meshgrid(1:W, 1:H);
+    P = interp2(U0, V0, I, U, V, 'linear', 0);
+end</code></pre>
+<p><strong>预期观察</strong>：原图中过中心的直线在极坐标图中变成水平线（$\theta$ 恒定）；以中心为圆心的圆变成竖直线（$r$ 恒定）。这正是极坐标变换在直线/圆检测中的用途。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>warping 的统一框架</strong>：正映射 $u'=f_u(u,v),v'=f_v(u,v)$ + 逆映射 + 双线性插值（Eq. 12.8–12.11）。第 10、11 题都是选不同的 $f_u,f_v$。</li>
+<li><strong><code>ipyramid</code> 是多分辨率序列</strong>：512→256→…→1×1，图 12.33 是它的可视化，用 <code>ipaste</code> 层叠。</li>
+<li><strong>坐标记号</strong>：<code>ipaste</code>/<code>iroi</code> 用 $(u,v)$，MATLAB 索引是 $(v,u)$，顺序相反（facts 第 7 节）。</li>
+<li><strong>极坐标变换</strong>：$r$ 沿水平轴、$\theta$ 沿垂直轴，过中心的直线变水平线、同心圆变竖直线。</li>
+<li><strong>插值不可省</strong>：warp 后像素落在非整数坐标，必须双线性插值，否则出现锯齿/空洞。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 12 章</li>
+<li>依据：</li>
+<li><code>ipyramid</code> 序列与 1×1 终值：facts 第 6 节（<code>ipyramid(lena)</code>：512→256→…→2×2→<code>[20.8959]</code>）</li>
+<li>warping 正/逆映射与绕中心旋转：facts 第 5 节公式 6（Eq. 12.8–12.11）</li>
+<li><code>ipaste</code>/<code>iroi</code> 用 $(u,v)$ 记号：facts 第 7 节</li>
+<li>双线性插值与 <code>interp2</code>：facts 第 4 节推导链条第 9 步</li>
+<li>图 12.33 具体排版：原书未给出具体数值，按符号推导</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>

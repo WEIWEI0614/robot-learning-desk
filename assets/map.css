@@ -1,0 +1,76 @@
+/* map.html 需要一套自己的版式（统计条 / 簇卡 / 步骤链 / 跳转标签）。
+这些类**不在 assets/style.css 里** —— 原文件的样式随拆页丢失了，
+所以这里补全。注意变量名用 style.css 的实际定义：
+--panel/--panel2/--tx/--tx2/--tx3（不是 --bg2/--tx1）。 */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 20px;}
+.stats .st{flex:1 1 130px;background:var(--panel);border:1px solid var(--line);
+border-radius:12px;padding:12px 14px;}
+.stats .n{font-size:22px;font-weight:600;letter-spacing:.5px;}
+.stats .l{font-size:12px;color:var(--tx3);margin-top:2px;}
+
+/* 跳转标签 */
+.toc{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 24px;}
+.toc a{font-size:12px;padding:4px 11px;border:1px solid var(--line);border-radius:999px;
+color:var(--tx2);text-decoration:none;background:var(--panel);}
+.toc a:hover{color:var(--tx);border-color:var(--tx3);}
+
+/* 簇卡 */
+.cluster{border:1px solid var(--line);border-radius:14px;background:var(--panel);
+padding:20px 22px 22px;margin:0 0 26px;scroll-margin-top:80px;}
+.cluster .ch{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.cluster h3{font-size:18px;font-weight:600;margin:0;flex:1 1 auto;}
+.chnum{display:inline-block;min-width:28px;margin-right:9px;padding:1px 7px;
+border-radius:6px;background:rgba(91,156,224,.16);color:var(--blue);
+font-size:12px;font-weight:600;text-align:center;}
+.bd{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);
+color:var(--tx2);white-space:nowrap;}
+.bd.paper{background:rgba(91,156,224,.12);color:var(--blue);border-color:rgba(91,156,224,.36);}
+.bd.frontier{background:rgba(239,159,39,.12);color:var(--amber);border-color:rgba(239,159,39,.36);}
+.bd.zhbadge{background:rgba(93,202,165,.12);color:var(--teal);border-color:rgba(93,202,165,.36);}
+
+.rationale{font-size:14px;color:var(--tx2);margin:0 0 14px;line-height:1.8;}
+.rationale b{color:var(--tx);}
+
+/* 演进线索 */
+.thread{border-left:3px solid var(--purple);background:var(--panel2);
+border-radius:0 10px 10px 0;padding:11px 14px;margin:0 0 16px;}
+.thread-label{font-size:11px;color:var(--tx3);letter-spacing:1px;margin-bottom:3px;}
+.thread-body{font-size:13.5px;color:var(--tx2);line-height:1.75;}
+
+/* 步骤链 */
+.steps{display:flex;flex-direction:column;gap:0;margin:0 0 18px;}
+.step{display:flex;gap:14px;padding:11px 0;border-top:1px solid var(--line);}
+.step:first-child{border-top:none;}
+.step .idx{flex:0 0 26px;height:26px;border-radius:50%;background:var(--panel2);
+border:1px solid var(--line);color:var(--blue);font-size:12px;font-weight:600;
+display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.step .body{flex:1 1 auto;min-width:0;}
+.step h5{font-size:14.5px;font-weight:500;margin:0 0 4px;line-height:1.5;}
+.step .sm{font-size:12.5px;color:var(--tx3);display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.keytag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;
+color:var(--teal);}
+a.pdf,a.zhlink{font-size:11.5px;text-decoration:none;}
+a.pdf{color:var(--teal);}
+a.zhlink{color:var(--amber);}
+.step .auth{font-size:11.5px;color:var(--tx3);margin-top:3px;}
+.step .why{font-size:12.5px;color:var(--tx2);margin-top:3px;}
+
+/* 双栏：必答问题 + 应用角度 */
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;}
+.grid2 .box{background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+padding:13px 16px;}
+.grid2 .bl{font-size:12px;color:var(--tx3);letter-spacing:1px;margin-bottom:7px;}
+.grid2 ul{margin:0;padding-left:20px;}
+.grid2 .must li{font-size:13.5px;color:var(--tx2);margin-bottom:5px;line-height:1.7;}
+.grid2 .ia{font-size:13.5px;color:var(--tx2);margin:0;line-height:1.8;}
+
+.note.key{border-left:3px solid var(--teal);}
+.note b{color:var(--tx);}
+
+@media(max-width:760px){
+.grid2{grid-template-columns:1fr;}
+.cluster{padding:16px 15px 18px;}
+.cluster h3{font-size:16.5px;}
+.stats .st{flex:1 1 calc(50% - 5px);}
+}

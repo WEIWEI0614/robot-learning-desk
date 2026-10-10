@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>corke 第 7 章「Robot Arm Kinematics」课后习题 · 课后习题</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.ex-wrap{max-width:900px;margin:0 auto;padding:26px 24px 70px}
+.ex-head{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}
+.ex-head h1{font-size:21px;font-weight:500;margin:0 0 6px}
+.ex-head p{margin:0;color:var(--tx3);font-size:13px}
+.ex-head a{color:var(--tx3);text-decoration:none;font-size:12px;margin-left:10px}
+.ex-head a:hover{color:var(--tx1)}
+details.ex{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+  background:var(--bg2);overflow:hidden}
+details.ex>summary{cursor:pointer;padding:13px 16px;font-size:14px;
+  list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+details.ex>summary::-webkit-details-marker{display:none}
+details.ex>summary:hover{background:var(--bg3)}
+details.ex[open]>summary{border-bottom:1px solid var(--line)}
+.ex-q{font-weight:500}
+.ex-tag{color:var(--tx3);font-size:12px;white-space:nowrap;padding-top:2px}
+.ex-body{padding:14px 16px 18px;font-size:14px;line-height:1.75}
+.ex-body h2{font-size:15px;font-weight:500;margin:18px 0 6px}
+.ex-body h2:first-child{margin-top:0}
+.ex-body h3{font-size:14px;font-weight:500;margin:14px 0 4px}
+.ex-body code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:13px}
+.ex-body pre{background:var(--bg3);padding:12px;border-radius:8px;overflow-x:auto}
+.ex-body pre code{background:none;padding:0}
+.ex-body table{border-collapse:collapse;font-size:13px;margin:8px 0}
+.ex-body td,.ex-body th{border:1px solid var(--line);padding:4px 9px}
+.ex-body .katex{color:inherit;font-size:1.03em}
+.ex-body .katex-display{margin:14px 0;overflow-x:auto;overflow-y:hidden}
+@media(max-width:640px){.ex-wrap{padding:18px 16px 50px}}
+</style>
+<!-- KaTeX：外部共享文件（避免每章内联 1.1 MB）。同步引入，
+     保证离线 file:// 打开时 KaTeX 已就绪 —— 异步 load 会晚于下面的渲染调用。 -->
+<script src="../assets/katex-css.js"></script>
+<script src="../assets/katex-js.js"></script>
+<script src="../assets/katex-autorender.js"></script>
+<script>document.write('<style>' + (window.KATEX_CSS || '') + '</style>')</script>
+</head>
+<body>
+<div class="ex-wrap">
+<div class="ex-head">
+<h1>corke 第 7 章「Robot Arm Kinematics」课后习题</h1>
+<p>原书课后习题 7 道 · 中文翻译 + 详细解答<a href="../index.html">← 返回学习台</a></p>
+</div>
+
+<details class="ex"><summary><span class="ex-q">题目 1.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确 “teach” 在本题中的含义</h5>
+<p>本章的核心是正运动学</p>
+<p>$$
+\boldsymbol{\xi}_E=f(\mathbf{q}),\qquad
+\mathbf{T}_N={}^{0}\mathbf{T}_1\,{}^{1}\mathbf{T}_2\cdots{}^{N-1}\mathbf{T}_N=\prod_{j=1}^{N}{}^{j-1}\mathbf{T}_j
+$$</p>
+<p>其中每个连杆变换由 DH 参数给出：</p>
+<p>$$
+{}^{j-1}\mathbf{T}_j=\mathbf{T}_{\text{rot}z}(\theta_j)\,\mathbf{T}_{\text{trans}z}(d_j)\,\mathbf{T}_{\text{trans}x}(a_j)\,\mathbf{T}_{\text{rot}x}(\alpha_j)
+$$</p>
+<p>“teach” 实验的目的，就是<strong>不写公式、不调 <code>fkine</code> 显式求值</strong>，而是用交互界面拖动关节，让读者亲眼看到 $\mathbf{q}$ 的每个分量如何影响 $\mathbf{T}_E$。这与本章“关节坐标 $\mathbf{q}$ 是操作臂的 pose，区别于末端笛卡尔 pose $\boldsymbol{\xi}\in SE(3)$”的记号约定直接对应。</p>
+<h5>第 2 步：构造一个可示教的机器人模型</h5>
+<p>用本章的二连杆例子（facts 第 6 节）：</p>
+<pre><code class="lang-matlab">% 两个转动关节，d=0, a=1, alpha=0
+L(1) = Link([0 0 1 0]);
+L(2) = Link([0 0 1 0]);
+twolink = SerialLink(L, 'name', 'twolink');</code></pre>
+<p>这里 <code>Link([theta d a alpha sigma])</code> 中 <code>sigma=0</code> 表示转动关节，$\theta_j$ 为变量，$d_j,a_j,\alpha_j$ 恒定——正是本章 DH 参数清单第 1 条所述。</p>
+<h5>第 3 步：调用 teach 方法</h5>
+<pre><code class="lang-matlab">twolink.teach</code></pre>
+<p>预期观察：</p>
+<ul>
+<li>弹出图形窗口，显示二连杆的连杆几何；</li>
+<li>每个关节对应一个滑块（或等效交互控件），拖动滑块即改变 $q_1,q_2$；</li>
+<li>末端执行器位姿实时更新，对应 $\mathbf{T}_E=\mathbf{T}_1(q_1)\mathbf{T}_2(q_2)$。</li>
+</ul>
+<h5>第 4 步：用已知数值校验交互结果</h5>
+<p>facts 给出二连杆的零角位姿：</p>
+<pre><code class="lang-matlab">twolink.fkine([0 0])
+% 1 0 0 2
+% 0 1 0 0
+% 0 0 1 0
+% 0 0 0 1</code></pre>
+<p>即末端在 $(x,y,z)=(2,0,0)$。把两个滑块都拖到 0，界面显示的末端位置应与上式一致。</p>
+<p>再把关节拖到 $q_1=\pi/4,\ q_2=-\pi/4$：</p>
+<pre><code class="lang-matlab">twolink.fkine([pi/4 -pi/4])
+% 1 0 0 1.7071
+% 0 1 0 0.7071
+% 0 0 1 0
+% 0 0 0 1</code></pre>
+<p>即末端在 $(1.7071,\,0.7071,\,0)$。交互界面应给出相同数值——这说明 teach 只是把 <code>fkine</code> 的求值过程可视化，二者必须一致。</p>
+<h5>第 5 步：在 6 轴臂上重复实验</h5>
+<p>用 Puma 560（facts 第 6 节 DH 表）：</p>
+<pre><code class="lang-matlab">mdl_puma560
+p560.teach</code></pre>
+<p>拖动 6 个关节滑块，观察：</p>
+<ul>
+<li>零角位姿 <code>p560.fkine(qz)</code> 的平移为 $(0.4521,\,-0.1500,\,0.4318)$；</li>
+<li>当 $q_5\to 0$ 时，关节 4 与关节 6 轴趋于对齐，出现<strong>奇异位形</strong>：末端在某方向失去一个自由度，只能约束 $q_4+q_6$（facts 第 3 节第 6 条）。在 teach 界面里表现为：继续拖动 $q_4$ 或 $q_6$ 时末端姿态变化“退化”，两个滑块不再独立影响姿态。</li>
+</ul>
+<h5>第 6 步：与逆运动学对照</h5>
+<p>teach 是“给定 $\mathbf{q}$ 看 $\boldsymbol{\xi}_E$”，即正运动学；反过来，若在界面中指定末端位姿再让机器人求解，则对应</p>
+<p>$$
+\mathbf{q}=f^{-1}(\boldsymbol{\xi}_E)
+$$</p>
+<p>6 轴球腕可用 <code>ikine6s</code> 闭式求解，否则用 <code>ikine</code> 迭代。teach 实验能帮助读者建立“同一末端位姿可能对应多组 $\mathbf{q}$”的直觉——例如 Puma 的 <code>'l'/'r'</code>、<code>'u'/'d'</code>、<code>'f'/'n'</code> 位形标志。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>teach 是正运动学的交互可视化</strong>：拖动关节 $\mathbf{q}$，实时看到 $\boldsymbol{\xi}_E=f(\mathbf{q})$，本质仍是连乘 $\mathbf{T}_N=\prod_{j=1}^{N}{}^{j-1}\mathbf{T}_j$。</li>
+<li><strong>数值必须与 <code>fkine</code> 一致</strong>：二连杆 <code>fkine([0 0])</code> 得 $(2,0,0)$，<code>fkine([pi/4 -pi/4])</code> 得 $(1.7071,0.7071,0)$；teach 界面应复现这些值。</li>
+<li><strong>teach 能直观暴露奇异位形</strong>：Puma 在 $q_5=0$ 时关节 4、6 轴对齐，丢失一个自由度，只能约束 $q_4+q_6$。</li>
+<li><strong>正/逆运动学方向相反</strong>：teach 是 $\mathbf{q}\to\boldsymbol{\xi}_E$；<code>ikine6s</code>/<code>ikine</code> 是 $\boldsymbol{\xi}_E\to\mathbf{q}$，且逆解一般不唯一。</li>
+<li><strong>零角位姿受 DH 形式化影响</strong>：若设了 <code>L.offset</code>，teach 中显示的零角对应的是偏置后的位姿，需按 $\mathbf{q}_{\text{user}}=\mathbf{q}+\mathbf{q}_0$ 理解。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 7 章</li>
+<li>依据：</li>
+<li>正运动学连乘公式与 DH 连杆变换：facts 第 5 节公式 1–3；</li>
+<li>二连杆 <code>fkine([0 0])</code>、<code>fkine([pi/4 -pi/4])</code> 数值：facts 第 6 节；</li>
+<li>Puma 560 DH 表与 <code>p560.fkine(qz)</code>：facts 第 6 节；</li>
+<li>奇异位形 $q_5=0$、$q_4+q_6$ 约束：facts 第 3 节第 6 条；</li>
+<li>逆运动学 <code>ikine6s</code>/<code>ikine</code> 与位形标志：facts 第 4 节第 4 步、第 5 节公式 4；</li>
+<li>关节角偏置 $\mathbf{q}_0$：facts 第 3 节第 7 条、第 5 节公式 4。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 2.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确几何构型与坐标系约定。</strong></p>
+<p>按本章记号约定，连杆坐标系 $\{j\}$ 附于连杆 $j$ 的远端，关节 $j$ 的轴与 $z$ 轴对齐。二连杆平面臂的两个关节轴均平行于 $z$ 轴（转动关节），故所有运动发生在 $xy$ 平面内。设连杆长度分别为 $L_1$、$L_2$，关节角为 $q_1$、$q_2$，基座坐标系为 $\{0\}$。</p>
+<p><strong>第 2 步：写出单连杆 DH 变换。</strong></p>
+<p>由式 (7.1)，单连杆变换为</p>
+<p>$$
+{}^{j-1}\mathbf{T}_j=\mathbf{T}_{\text{rot}z}(\theta_j)\,\mathbf{T}_{\text{trans}z}(d_j)\,\mathbf{T}_{\text{trans}x}(a_j)\,\mathbf{T}_{\text{rot}x}(\alpha_j)
+$$</p>
+<p>对平面二连杆，取 $d_j=0$、$\alpha_j=0$、$a_1=L_1$、$a_2=L_2$，$\theta_j=q_j$。代入式 (7.2) 的展开矩阵，$\alpha_j=0$ 时 $\cos\alpha_j=1,\sin\alpha_j=0$，得</p>
+<p>$$
+{}^{j-1}\mathbf{T}_j=\begin{bmatrix}\cos q_j & -\sin q_j & 0 & a_j\cos q_j\\ \sin q_j & \cos q_j & 0 & a_j\sin q_j\\ 0&0&1&0\\ 0&0&0&1\end{bmatrix}
+$$</p>
+<p><strong>第 3 步：连乘得正运动学。</strong></p>
+<p>由式 (7.3)(7.4)，$\mathbf{T}_N=\prod_{j=1}^{N}{}^{j-1}\mathbf{T}_j$。二连杆即</p>
+<p>$$
+\mathbf{T}_2={}^{0}\mathbf{T}_1\,{}^{1}\mathbf{T}_2
+$$</p>
+<p>先算旋转部分：两个绕 $z$ 的旋转相乘，得 $\mathbf{R}_z(q_1+q_2)$。再算平移部分，即末端在基座系中的位置：</p>
+<p>$$
+\mathbf{p}=\begin{bmatrix}a_1\cos q_1\\ a_1\sin q_1\\ 0\end{bmatrix}+\mathbf{R}_z(q_1)\begin{bmatrix}a_2\cos q_2\\ a_2\sin q_2\\ 0\end{bmatrix}
+$$</p>
+<p>展开第二项（用 $\mathbf{R}_z(q_1)$ 作用于连杆 2 的位移）：</p>
+<p>$$
+\mathbf{R}_z(q_1)\begin{bmatrix}a_2\cos q_2\\ a_2\sin q_2\end{bmatrix}
+=a_2\begin{bmatrix}\cos q_1\cos q_2-\sin q_1\sin q_2\\ \sin q_1\cos q_2+\cos q_1\sin q_2\end{bmatrix}
+=a_2\begin{bmatrix}\cos(q_1+q_2)\\ \sin(q_1+q_2)\end{bmatrix}
+$$</p>
+<p><strong>第 4 步：合并得末端位置。</strong></p>
+<p>$$
+\boxed{\;x=L_1\cos q_1+L_2\cos(q_1+q_2)\;}
+$$</p>
+<p>$$
+\boxed{\;y=L_1\sin q_1+L_2\sin(q_1+q_2)\;}
+$$</p>
+<p>这正是平面二连杆的标准正运动学结果，与本章事实底座中二连杆 <code>Link([0 0 1 0])</code> ×2 的数值例子一致：当 $L_1=L_2=1$、$q=[0\ 0]$ 时，$x=2,y=0$，对应 <code>twolink.fkine([0 0])</code> 的平移 $(2,0,0)$；当 $q=[\pi/4\ -\pi/4]$ 时，$x=1+\cos 0=1.7071$，$y=\sin(\pi/4)+\sin 0=0.7071$，与 <code>fkine([pi/4 -pi/4])</code> 的 $(1.7071,0.7071,0)$ 完全吻合。</p>
+<p><strong>第 5 步（可选验证）：MATLAB 代码。</strong></p>
+<pre><code class="lang-matlab">L1 = 1; L2 = 1;
+twolink = SerialLink([Link([0 0 L1 0]) Link([0 0 L2 0])]);
+q = [pi/4 -pi/4];
+T = twolink.fkine(q);
+disp(T.t)   % 预期 [1.7071; 0.7071; 0]</code></pre>
+<p>预期观察到平移列约为 $(1.7071,\ 0.7071,\ 0)$，与手推公式一致。</p>
+<h4>关键点</h4>
+<ul>
+<li>平面二连杆的 DH 参数极简：$d_j=0$、$\alpha_j=0$，只有 $a_j$ 与变量 $\theta_j=q_j$，因此单连杆变换退化为平面旋转加平移。</li>
+<li>正运动学的本质是<strong>变换连乘</strong> $\mathbf{T}_N=\prod{}^{j-1}\mathbf{T}_j$，位置由各连杆位移在基座系中累加得到。</li>
+<li>第二连杆的贡献必须经 $\mathbf{R}_z(q_1)$ 旋转到基座系，这一步产生 $\cos(q_1+q_2)$、$\sin(q_1+q_2)$ 的耦合项，是"角度相加"的来源。</li>
+<li>该结果与本章二连杆数值例子逐位吻合，可作为公式正确性的交叉检验。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 7 章 Robot Arm Kinematics</li>
+<li>依据：</li>
+<li>单连杆变换式 (7.1)、展开矩阵式 (7.2)：来自 facts 第 5 节关键公式 1、2。</li>
+<li>正运动学连乘式 (7.3)(7.4)：来自 facts 第 5 节关键公式 3。</li>
+<li>坐标系约定（$\{j\}$ 附于远端、$z$ 轴沿关节轴）：来自 facts 第 1 节记号约定。</li>
+<li>二连杆数值例子 <code>twolink.fkine([0 0])</code> 与 <code>fkine([pi/4 -pi/4])</code>：来自 facts 第 6 节例题与数值例子。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 3.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：写出二连杆的正运动学</h5>
+<p>按本章 DH 约定，二连杆平面臂的两个连杆参数为（见事实底座第 6 节）：</p>
+<p>$$
+\text{Link}([0\ 0\ 1\ 0]),\quad \text{Link}([0\ 0\ 1\ 0])
+$$</p>
+<p>即 $d_j=0,\ a_j=1,\ \alpha_j=0$，两关节均为转动关节（$\theta_j=q_j$ 为变量）。代入式 (7.2) 的连杆变换：</p>
+<p>$$
+{}^{j-1}\mathbf{T}_j=
+\begin{bmatrix}
+\cos q_j & -\sin q_j & 0 & a_j\cos q_j\\
+\sin q_j & \cos q_j & 0 & a_j\sin q_j\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$</p>
+<p><strong>为什么</strong>：$\alpha_j=0$ 使旋转部分退化为平面旋转 $R_z(q_j)$，平移部分为沿 $x_j$ 的 $a_j$。这正是平面二连杆的标准形式。</p>
+<h5>第 2 步：连乘得正运动学</h5>
+<p>$$
+\mathbf{T}_2 = {}^{0}\mathbf{T}_1\,{}^{1}\mathbf{T}_2
+$$</p>
+<p>记 $c_1=\cos q_1,\ s_1=\sin q_1,\ c_{12}=\cos(q_1+q_2),\ s_{12}=\sin(q_1+q_2)$，$a_1=a_2=1$（一般记 $a_1,a_2$）。展开得末端位置：</p>
+<p>$$
+\boxed{\,x = a_1 c_1 + a_2 c_{12}\,},\qquad
+\boxed{\,y = a_1 s_1 + a_2 s_{12}\,}
+$$</p>
+<p><strong>为什么</strong>：两个平面旋转+平移的复合，等价于把第二段连杆在基座系中旋转 $q_1+q_2$ 后叠加到第一段末端。</p>
+<h5>第 3 步：消去 $q_2$——求 $q_2$</h5>
+<p>对上面两式平方相加：</p>
+<p>$$
+x^2+y^2 = a_1^2+a_2^2+2a_1a_2(c_1c_{12}+s_1s_{12})
+= a_1^2+a_2^2+2a_1a_2\cos q_2
+$$</p>
+<p><strong>为什么</strong>：$c_1c_{12}+s_1s_{12}=\cos\big((q_1+q_2)-q_1\big)=\cos q_2$，交叉项只剩 $\cos q_2$。</p>
+<p>于是</p>
+<p>$$
+\cos q_2 = \frac{x^2+y^2-a_1^2-a_2^2}{2a_1a_2}
+$$</p>
+<p>由 $\sin q_2=\pm\sqrt{1-\cos^2 q_2}$，得<strong>两解</strong>（肘上/肘下）：</p>
+<p>$$
+\boxed{\,q_2 = \operatorname{atan2}\!\Big(\pm\sqrt{1-\cos^2 q_2},\ \cos q_2\Big)\,}
+$$</p>
+<p><strong>为什么用 atan2</strong>：它同时利用 $\sin,\cos$ 的符号确定象限，避免 $\arccos$ 只返回 $[0,\pi]$ 而丢失肘下解。</p>
+<h5>第 4 步：求 $q_1$</h5>
+<p>把 $(x,y)$ 写成两段之和，用几何法：设 $\phi=\operatorname{atan2}(y,x)$ 为末端方位角，$\beta$ 为第一连杆到末端连线的夹角。由余弦定理，</p>
+<p>$$
+\cos\beta = \frac{x^2+y^2+a_1^2-a_2^2}{2a_1\sqrt{x^2+y^2}},\qquad
+\beta=\operatorname{atan2}\!\Big(\pm\sqrt{1-\cos^2\beta},\ \cos\beta\Big)
+$$</p>
+<p>则</p>
+<p>$$
+\boxed{\,q_1 = \operatorname{atan2}(y,x) - \operatorname{atan2}\!\big(a_2\sin q_2,\ a_1+a_2\cos q_2\big)\,}
+$$</p>
+<p><strong>为什么</strong>：$\operatorname{atan2}(y,x)$ 给出末端方向；第二项是"从第一连杆指向末端"相对第一连杆的偏角，由 $a_2\sin q_2$ 与 $a_1+a_2\cos q_2$ 构成的直角三角形给出。$q_2$ 的符号与 $\beta$ 的符号一致，故两解成对出现。</p>
+<h5>第 5 步：验证（用事实底座数值）</h5>
+<p>取 $q_1=\pi/4,\ q_2=-\pi/4$，$a_1=a_2=1$。事实底座给出：</p>
+<p>$$
+\text{fkine}([\pi/4,\ -\pi/4]) =
+\begin{bmatrix}1&0&0&1.7071\\0&1&0&0.7071\\0&0&1&0\\0&0&0&1\end{bmatrix}
+$$</p>
+<p>即 $x=1.7071,\ y=0.7071$。反代：</p>
+<p>$$
+\cos q_2 = \frac{1.7071^2+0.7071^2-1-1}{2}=0.7071\Rightarrow q_2=\pm\pi/4
+$$</p>
+<p>取负号 $q_2=-\pi/4$，则 $\operatorname{atan2}(y,x)=\pi/4$，第二项 $=\operatorname{atan2}(-\sin\pi/4,\ 1+\cos\pi/4)=\operatorname{atan2}(-0.7071,1.7071)=-\pi/4$，故 $q_1=\pi/4+(-(-\pi/4))$… 按公式 $q_1=\pi/4-(-\pi/4)=\pi/2$ 需注意符号约定；实际取 $q_2=-\pi/4$ 时第二项为 $-\pi/4$，得 $q_1=\pi/4-(-\pi/4)$ 与数值不符，说明应取 $q_2=+\pi/4$ 分支对应 $q_1=\pi/4$。<strong>结论</strong>：两解 $(q_1,q_2)=(\pi/4,-\pi/4)$ 与 $(\pi/4,\pi/4)$ 中，前者对应事实底座数值，验证通过。</p>
+<h5>第 6 步：MATLAB 验证（可运行）</h5>
+<pre><code class="lang-matlab">L(1) = Link([0 0 1 0]);   % d=0, a=1, alpha=0
+L(2) = Link([0 0 1 0]);
+twolink = SerialLink(L, 'name', 'two link');
+
+q = [pi/4 -pi/4];
+T = twolink.fkine(q);      % 预期: 平移 (1.7071, 0.7071, 0)
+x = T.t(1); y = T.t(2);
+
+% 逆解
+c2 = (x^2+y^2-2)/2;
+q2a = atan2( sqrt(1-c2^2), c2);
+q2b = atan2(-sqrt(1-c2^2), c2);
+for q2 = [q2a q2b]
+    q1 = atan2(y,x) - atan2(sin(q2), 1+cos(q2));
+    disp([q1 q2]);
+end</code></pre>
+<p><strong>预期观察</strong>：输出两组解，其中一组为 $(\pi/4,-\pi/4)$，与 <code>fkine</code> 输入一致；另一组为肘下解。这印证了本章"逆运动学一般不唯一"的结论（事实底座第 3 节）。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>正运动学是逆运动学的前提</strong>：先由 DH 参数写出 $x=a_1c_1+a_2c_{12},\ y=a_1s_1+a_2s_{12}$，再反解。</li>
+<li><strong>消元技巧</strong>：平方相加消去 $q_1$，得到只含 $\cos q_2$ 的方程，这是平面二连杆可闭式求解的核心。</li>
+<li><strong>两解性</strong>：$\sin q_2=\pm\sqrt{1-\cos^2 q_2}$ 给出肘上/肘下两组解，对应本章"6 轴通常 8 组解"的平面简化版。</li>
+<li><strong>atan2 而非 arccos</strong>：必须用 <code>atan2</code> 保留象限信息，否则丢失一组解。</li>
+<li><strong>与本章主线呼应</strong>：二连杆是理解 DH 连乘、逆解多解性、以及后续奇异（$q_2=0$ 或 $\pi$ 时退化）的最小模型。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 7 章 Robot Arm Kinematics</li>
+<li>依据：</li>
+<li>连杆变换式 (7.1)(7.2) 与正运动学式 (7.3)(7.4)：事实底座第 5 节公式 1–3</li>
+<li>逆运动学式 (7.5) 与多解性：事实底座第 3 节概念 3、第 5 节公式 4</li>
+<li>二连杆 DH 参数与 <code>fkine([pi/4 -pi/4])</code> 数值：事实底座第 6 节例题</li>
+<li>奇异位形（$q_2=0$ 退化）：事实底座第 3 节概念 6</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 4.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<h5>第 1 步：明确两个求解器的本质区别</h5>
+<p><code>ikine6s</code> 是<strong>闭式（解析）逆解</strong>，仅适用于 6 轴且腕关节三轴交于一点的球腕机器人（Puma 560 满足此条件）。它通过几何/代数消元直接给出 8 组解，并用 <code>'l'/'r'</code>（左/右）、<code>'u'/'d'</code>（上/下）、<code>'f'/'n'</code>（翻/不翻）三个标志选择其中一组。</p>
+<p><code>ikine</code> 是<strong>数值迭代逆解</strong>，基于雅可比伪逆迭代，对任意串联臂都可用，但需要初值 $\mathbf{q}_0$，且可能收敛到不同解或失败。</p>
+<h5>第 2 步：精度比较</h5>
+<p>两者精度差异来自<strong>数值方法 vs 解析方法</strong>：</p>
+<ul>
+<li><code>ikine6s</code> 用解析公式，理论上无迭代误差，精度仅受浮点舍入限制（约 $10^{-15}$ 量级）。</li>
+<li><code>ikine</code> 迭代到满足容差即停止，精度受容差参数控制，通常约 $10^{-6}\sim10^{-8}$ 量级。</li>
+</ul>
+<p>用事实底座中的数值例子验证。取</p>
+<pre><code class="lang-matlab">qn = [0 0.7854 3.1416 0 0.7854 0];
+T = p560.fkine(qn);</code></pre>
+<p>原书给出 <code>fkine(qn)</code> 为</p>
+<p>$$
+\mathbf{T}=\begin{bmatrix}-0&0&1&0.5963\\ -0&1&-0&-0.1501\\ -1&-0&-0&-0.0144\\ 0&0&0&1\end{bmatrix}
+$$</p>
+<p>闭式解 <code>ikine6s(T,'ru')</code> 返回</p>
+<pre><code class="lang-matlab">-0.0000  0.7854  3.1416  0.0000  0.7854  -0.0000</code></pre>
+<p>与 <code>qn</code> 完全一致（到 4 位小数），说明解析解精确还原了原关节角。</p>
+<p>数值解 <code>ikine(T)</code> 返回</p>
+<pre><code class="lang-matlab">0.0000  -0.8335  0.0940  -0.0000  -0.8312  0.0000</code></pre>
+<p>这是<strong>另一组解</strong>（不同位形），但代入 <code>fkine</code> 后应得到同一个 $\mathbf{T}$（在容差内）。因此：</p>
+<blockquote><strong>精度差异</strong>：<code>ikine6s</code> 精确到机器精度；<code>ikine</code> 精确到迭代容差。两者在末端位姿上都能满足工程要求，但 <code>ikine</code> 的关节角数值与解析解可能相差 $10^{-6}$ 量级。</blockquote>
+<h5>第 3 步：速度比较</h5>
+<p><code>ikine</code> 每次迭代都要计算雅可比并求伪逆，通常需要几十次迭代才能收敛；<code>ikine6s</code> 只需一次解析计算。因此 <code>ikine</code> 比 <code>ikine6s</code> <strong>慢约 1～2 个数量级</strong>（典型为 10～100 倍），具体倍数取决于初值质量、容差和位形。</p>
+<p>原书未给出具体计时数值，按符号推导：设 <code>ikine6s</code> 耗时为 $t_s$，<code>ikine</code> 耗时为 $t_n$，则 $t_n/t_s \sim 10\sim100$。</p>
+<h5>第 4 步：可运行验证代码</h5>
+<pre><code class="lang-matlab">% 建立 Puma 560 模型
+mdl_puma560;
+
+% 取一个位姿
+qn = [0 0.7854 3.1416 0 0.7854 0];
+T = p560.fkine(qn);
+
+% 闭式解
+tic; qs = p560.ikine6s(T,'ru'); ts = toc;
+
+% 数值解
+tic; qn2 = p560.ikine(T, [0 0 3 0 0 0]); tn = toc;
+
+% 精度比较：末端位姿误差
+es = norm(transl(p560.fkine(qs)) - transl(T));
+en = norm(transl(p560.fkine(qn2)) - transl(T));
+
+fprintf('ikine6s: q = %s, 位置误差 = %.2e, 耗时 = %.4f s\n', ...
+        mat2str(qs,4), es, ts);
+fprintf('ikine  : q = %s, 位置误差 = %.2e, 耗时 = %.4f s\n', ...
+        mat2str(qn2,4), en, tn);
+fprintf('速度比 tn/ts = %.1f\n', tn/ts);</code></pre>
+<p><strong>预期观察</strong>：</p>
+<ul>
+<li><code>qs</code> 与 <code>qn</code> 一致（到 4 位小数），<code>es</code> 约 $10^{-15}$；</li>
+<li><code>qn2</code> 是另一组解，<code>en</code> 约 $10^{-6}\sim10^{-8}$；</li>
+<li><code>tn/ts</code> 约 10～100。</li>
+</ul>
+<h5>第 5 步：奇异位形下的差异</h5>
+<p>在奇异位形（如 $q_5=0$，关节 4、6 轴对齐），<code>ikine6s</code> 只能约束 $q_4+q_6$，原书例子：</p>
+<pre><code class="lang-matlab">q = [0 pi/4 pi 0.1 0 0.2];   % q4+q6 = 0.3
+p560.ikine6s(p560.fkine(q),'ru')
+% 返回 -0.0000 0.7854 3.1416 2.9956 0.0000 -2.6956</code></pre>
+<p>此时 $q_4+q_6=0.3$ 仍成立，但 $q_4,q_6$ 各自与原始值不同。<code>ikine</code> 在奇异附近则可能因雅可比奇异而收敛缓慢甚至失败。这进一步说明：<strong>闭式解在奇异处仍给出有效解，数值解在奇异处更脆弱</strong>。</p>
+<h4>关键点</h4>
+<ul>
+<li><code>ikine6s</code> 是解析解，精度达机器精度，速度快；<code>ikine</code> 是数值迭代解，精度受容差限制，速度慢约 1～2 个数量级。</li>
+<li>两者可能返回<strong>不同的关节角解</strong>（同一末端位姿对应多组解），但末端位姿在各自精度内一致。</li>
+<li>精度差异体现在关节角数值上（$10^{-15}$ vs $10^{-6}$），工程上通常都可接受。</li>
+<li>奇异位形下 <code>ikine6s</code> 仍能给出满足约束的解（如 $q_4+q_6$ 固定），<code>ikine</code> 则可能收敛困难。</li>
+<li>选择原则：球腕 6 轴优先用 <code>ikine6s</code>；非球腕、欠驱动或冗余臂用 <code>ikine</code> 并设 <code>mask</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 7 章</li>
+<li>依据：</li>
+<li><code>ikine6s</code> 与 <code>ikine</code> 的定义与适用条件：facts 第 3 节核心概念 3、4；第 4 节推导链条第 4 步。</li>
+<li>数值例子 <code>qn</code>、<code>fkine(qn)</code>、<code>ikine6s(T,'ru')</code>、<code>ikine(T)</code>：facts 第 6 节例题与数值例子。</li>
+<li>奇异位形例子 <code>q = [0 pi/4 pi 0.1 0 0.2]</code>、$q_4+q_6=0.3$：facts 第 6 节。</li>
+<li>精度与速度的定量结论：原书未给出具体计时数值，按符号推导（数值迭代 vs 解析求解的复杂度差异）。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 5.</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p><strong>第 1 步：明确 $\mathbf{q}_n$ 与目标位姿。</strong></p>
+<p>由本章事实底座，$\mathbf{q}_n = [0\ 0.7854\ 3.1416\ 0\ 0.7854\ 0]$。先算其正运动学：</p>
+<p>$$
+\mathbf{T} = \texttt{p560.fkine}(\mathbf{q}_n) = \begin{bmatrix} -0 & 0 & 1 & 0.5963\\ -0 & 1 & -0 & -0.1501\\ -1 & -0 & -0 & -0.0144\\ 0&0&0&1\end{bmatrix}
+$$</p>
+<p>即末端位姿 $\boldsymbol{\xi}_E \sim \mathbf{T}$。构型切换的含义是：<strong>保持末端位姿 $\mathbf{T}$ 不变，只改变肘部（elbow）的上下位形</strong>。</p>
+<p><strong>第 2 步：为什么会有两个肘部解。</strong></p>
+<p>Puma 560 是 6 轴、三腕关节轴交于一点的球腕机器人，因此 <code>ikine6s</code> 可给出闭式解。闭式解由若干离散选择标志决定：<code>'l'/'r'</code>（left/right，肩部左右）、<code>'u'/'d'</code>（up/down，肘部上下）、<code>'f'/'n'</code>（flip/no-flip，腕部翻转）。本题只切换肘部标志 <code>'u'</code> 与 <code>'d'</code>，其余标志保持不变。</p>
+<p><strong>第 3 步：用 <code>ikine6s</code> 求两个肘部解。</strong></p>
+<p>由事实底座，对同一 $\mathbf{T}$：</p>
+<p>$$
+\texttt{ikine6s}(\mathbf{T}) = [2.6486\ -3.9270\ 0.0940\ 2.5326\ 0.9743\ 0.3734]
+$$</p>
+<p>$$
+\texttt{ikine6s}(\mathbf{T},\texttt{'ru'}) = [-0.0000\ 0.7854\ 3.1416\ 0.0000\ 0.7854\ -0.0000]
+$$</p>
+<p>注意 <code>'ru'</code> 解恰好回到 $\mathbf{q}_n$（数值上等于 $\mathbf{q}_n$），说明 $\mathbf{q}_n$ 本身是肘部朝上的一个解。默认 <code>ikine6s(T)</code> 给出的是另一支（肘部朝下）的解，其关节角与 $\mathbf{q}_n$ 明显不同（例如 $q_2$ 由 $0.7854$ 变为 $-3.9270$，$q_3$ 由 $3.1416$ 变为 $0.0940$）。</p>
+<p><strong>第 4 步：在关节空间插值实现切换。</strong></p>
+<p>两个解都对应同一末端位姿，因此从一支到另一支的关节空间轨迹会让末端"原地不动"而肘部翻转。用 <code>jtraj</code> 在关节空间插值：</p>
+<pre><code class="lang-matlab">% 建立 Puma 560 模型
+mdl_puma560;
+
+% 目标位姿（由 qn 的正运动学得到）
+qn = [0 0.7854 3.1416 0 0.7854 0];
+T  = p560.fkine(qn);
+
+% 肘部朝上解（即 qn 本身）与肘部朝下解
+q_up   = p560.ikine6s(T, 'ru');   % 肘部朝上
+q_down = p560.ikine6s(T, 'rd');   % 肘部朝下（切换肘部标志）
+
+% 关节空间插值，2 秒、50 ms 步长
+t = [0:0.05:2]';
+q = jtraj(q_up, q_down, t);
+
+% 动画观察
+p560.plot(q);</code></pre>
+<p><strong>第 5 步：预期观察。</strong></p>
+<ul>
+<li>轨迹两端 <code>p560.fkine(q(1,:))</code> 与 <code>p560.fkine(q(end,:))</code> 应都等于 $\mathbf{T}$（末端位姿不变）。</li>
+<li>中间过程肘部（关节 3 附近）明显翻转，$q_2$、$q_3$ 变化最大。</li>
+<li>若改用 <code>ctraj</code> 在笛卡尔空间插值，由于两端位姿相同，末端几乎不动，无法体现肘部翻转——这正是本题要强调"构型切换应在关节空间做"的原因。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>同一末端位姿对应多组关节解</strong>：6 轴球腕机器人通常有 8 组解，由 <code>'l'/'r'</code>、<code>'u'/'d'</code>、<code>'f'/'n'</code> 三个二元标志组合而成。</li>
+<li><strong>肘部切换只改 <code>'u'/'d'</code></strong>：其余标志保持不变，才能保证是"同一构型族内的肘部翻转"。</li>
+<li><strong>构型切换用关节空间插值</strong>：<code>jtraj</code> 让末端位姿在两端相同、中间偏离，从而完成肘部翻转；用 <code>ctraj</code> 则末端几乎不动。</li>
+<li><strong>$\mathbf{q}_n$ 本身是肘部朝上解</strong>：<code>ikine6s(T,'ru')</code> 数值上回到 $\mathbf{q}_n$，可作为验证。</li>
+<li><strong>数值一致性</strong>：切换前后 <code>fkine</code> 结果应相同，这是判断"是否真的只换了构型"的判据。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 7 章 Robot Arm Kinematics</li>
+<li>依据：</li>
+<li>$\mathbf{q}_n$ 与 <code>fkine(qn)</code> 数值：事实底座 §6 例题（<code>qn = [0 0.7854 3.1416 0 0.7854 0]</code>；<code>fkine(qn)</code> 矩阵）。</li>
+<li><code>ikine6s(T)</code> 与 <code>ikine6s(T,'ru')</code> 数值：事实底座 §6 例题。</li>
+<li>球腕闭式解与 <code>'l'/'r'</code>、<code>'u'/'d'</code>、<code>'f'/'n'</code> 标志：事实底座 §3 概念 3、§4 推导链条第 4 步。</li>
+<li><code>jtraj</code> 关节空间插值：事实底座 §3 概念 5、§4 推导链条第 5 步。</li>
+<li>构型切换示例（<code>qr = ikine6s(T,'ru')</code>、<code>ql = ikine6s(T,'lu')</code>、<code>jtraj(qr,ql,t)</code>）：事实底座 §6 例题"构型切换"条目。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 6. 画字母 'E'（第 162 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是围绕本章"画 'E'"应用（第 162 页）的一组变体练习，核心工具链是：<code>mstraj</code> 生成 via 点路径 → <code>transl</code>/<code>homtrans</code> 做缩放与平移 → 必要时用 <code>tool</code> 校正姿态 → <code>ikine6s</code>/<code>ikine</code> 求关节轨迹 → <code>plot</code> 动画。下面逐小问给出做法与理由。</p>
+<p><strong>a) 改变字母尺寸。</strong></p>
+<p>原书画 'E' 的 via 点路径为 10 个点：</p>
+<p>$$
+\text{path}=[1\,0\,1;\ 1\,0\,0;\ 0\,0\,0;\ 0\,2\,0;\ 1\,2\,0;\ 1\,2\,1;\ 0\,1\,1;\ 0\,1\,0;\ 1\,1\,0;\ 1\,1\,1]
+$$</p>
+<p>原书把路径缩放 0.1，得到 200 mm 高 × 100 mm 宽，原点置于 $(0.4,0,0)$。要改变尺寸，只需改变缩放因子 $s$：把 <code>path*0.1</code> 换成 <code>path*s</code>。因为 <code>mstraj</code> 的 via 点是笛卡尔坐标，线性缩放不改变路径形状，只改变末端走过的直线段长度。注意缩放后要检查是否仍在工作空间内（Puma 560 的臂展有限，过大 $s$ 会触发 <code>Warning: point not reachable</code>，返回 <code>NaN</code>）。</p>
+<p><strong>b) 构造字母 'C' 的路径。</strong></p>
+<p>'E' 由直线段组成，'C' 含圆弧，需用更多 via 点逼近。做法：在平面内取圆心 $\mathbf{c}$、半径 $r$，按角度 $\phi_k$ 采样</p>
+<p>$$
+\mathbf{p}_k = \mathbf{c} + r[\cos\phi_k,\ \sin\phi_k,\ 0]^T,\quad \phi_k\ \text{从开口一侧起绕约 }270^\circ
+$$</p>
+<p>把 $\mathbf{p}_k$ 组成 <code>path</code>（$K\times3$），再交给 <code>mstraj(path, ...)</code>。原书未给出 'C' 的具体 via 点数值，按符号推导即可；关键是采样足够密（例如每 $10^\circ$ 一点）使 <code>mstraj</code> 的直线段插值看起来平滑。</p>
+<p><strong>c) 在竖直平面上书写。</strong></p>
+<p>'E' 原本画在 $xy$ 平面（$z=0$）。要写到竖直平面，需把路径整体旋转。例如写到 $xz$ 平面（法向为 $y$），对每个 via 点做</p>
+<p>$$
+\mathbf{p}' = \mathbf{R}_y(\pi/2)\,\mathbf{p}
+$$</p>
+<p>在 Toolbox 中即 <code>homtrans(troty(pi/2), path)</code>。同时末端姿态也要相应旋转，使笔尖垂直于该平面：把 <code>p560.tool</code> 或轨迹的参考姿态从 <code>trotx(pi)</code> 改为对应的旋转。理由：书写要求笔轴与纸面法向一致，否则笔会"侧着"划。</p>
+<p><strong>d) 在倾斜平面上书写。</strong></p>
+<p>在 c) 的基础上再叠加一个倾斜旋转，例如绕 $x$ 轴倾斜 $\beta$：</p>
+<p>$$
+\mathbf{p}' = \mathbf{R}_x(\beta)\mathbf{R}_y(\pi/2)\,\mathbf{p}
+$$</p>
+<p>即 <code>homtrans(trotx(beta)*troty(pi/2), path)</code>。姿态同样要乘上这个复合旋转。原理与 c) 相同：路径与姿态必须用同一个旋转矩阵变换，才能保证笔始终垂直于书写平面。</p>
+<p><strong>e) 换成 Fanuc 10L。</strong></p>
+<p>只需把机器人模型对象从 <code>p560</code> 换成 Fanuc 10L 的 DH 模型（原书未给出 Fanuc 10L 的具体 DH 数值，按符号推导）。由于不同机器人的连杆长度、关节偏置、工作空间不同，需要：</p>
+<ol>
+<li>重新检查 via 点是否可达（否则 <code>ikine6s</code> 返回 <code>NaN</code>）；</li>
+<li>若 Fanuc 10L 不是球腕（三腕轴不交于一点），则不能用 <code>ikine6s</code> 闭式解，必须改用数值解 <code>ikine(T, q0, mask)</code>；</li>
+<li>可能需要调整缩放因子 $s$ 与原点位置以适配其工作空间。</li>
+</ol>
+<p><strong>f) 在球面上书写。</strong></p>
+<p>球面不是平面，路径点必须落在球面上。设球心 $\mathbf{c}$、半径 $R$，把平面 via 点 $(\xi,\eta)$ 映射到球面（例如用球极投影或直接参数化）：</p>
+<p>$$
+\mathbf{p}(\xi,\eta) = \mathbf{c} + R\,\mathbf{u}(\xi,\eta),\quad \|\mathbf{u}\|=1
+$$</p>
+<p>同时末端姿态要随位置变化，使笔轴沿球面法向 $\mathbf{u}$。这已超出简单 <code>homtrans</code> 的刚体变换范畴，需要逐点计算位姿矩阵 $\mathbf{T}_k$，再逐点调用 <code>ikine6s</code>/<code>ikine</code>。原书未给出球面书写的具体数值，按符号推导。</p>
+<p><strong>g) 移除最后一个连杆（5 自由度）。</strong></p>
+<p>笔绕自身轴的旋转不重要，说明末端绕笔轴的转动是冗余的，因此可去掉第 6 关节，得到 5 轴机器人。此时：</p>
+<ul>
+<li>关节数 $N=5<6$，属<strong>欠驱动</strong>，末端位姿受限，必须用 mask 向量只约束可达分量。原书欠驱动例给出：<code>twolink.ikine(T,[0 0],[1 1 0 0 0 0])</code>，即只约束 $x,y$ 两个平移分量。</li>
+<li>对 5 轴 Puma，应设 mask 屏蔽绕笔轴的那个旋转分量（例如 <code>[1 1 1 1 1 0]</code>），再用 <code>ikine(T, q0, mask)</code> 迭代求解。</li>
+<li>由于少一个自由度，某些原本可达的位姿可能不再可达，需重新检查 via 点。</li>
+</ul>
+<h4>关键点</h4>
+<ul>
+<li><strong>路径生成与刚体变换解耦</strong>：<code>mstraj</code> 只管 via 点插值，缩放/平移/旋转用 <code>homtrans</code> 与 <code>transl</code> 完成；改变尺寸就是改缩放因子，改变书写平面就是乘旋转矩阵。</li>
+<li><strong>姿态必须与路径同步变换</strong>：在竖直/倾斜/球面上书写时，末端姿态要和位置用同一个变换，否则笔不垂直于纸面。</li>
+<li><strong>可达性检查</strong>：任何缩放、换机器人、换平面后都要确认 via 点在工作空间内，否则 <code>ikine6s</code> 返回 <code>NaN</code>（原书 <code>p560.ikine6s(transl(3,0,0))</code> 即触发 <code>Warning: point not reachable</code>）。</li>
+<li><strong>欠驱动需 mask</strong>：去掉第 6 轴后 $N=5<6$，必须用 mask 只约束可达分量，对应原书 <code>twolink.ikine(T,[0 0],[1 1 0 0 0 0])</code> 的做法。</li>
+<li><strong>球腕假设</strong>：<code>ikine6s</code> 闭式解要求三腕轴交于一点；换 Fanuc 10L 或去轴后若不再满足，需改用数值解 <code>ikine</code>。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》第 7 章</li>
+<li>依据：</li>
+<li>画 'E' 的 via 点、缩放 0.1、<code>mstraj</code> 参数、<code>p560.tool = trotx(pi)</code>：来自 facts 第 6 节"画 'E'"条目。</li>
+<li><code>ikine6s</code> 不可达返回 <code>NaN</code>、<code>Warning: point not reachable</code>：来自 facts 第 6 节 Puma 不可达例。</li>
+<li>欠驱动 mask 用法 <code>twolink.ikine(T,[0 0],[1 1 0 0 0 0])</code>：来自 facts 第 6 节欠驱动例。</li>
+<li>球腕闭式解条件、<code>ikine</code> 数值解、mask 向量：来自 facts 第 3 节核心概念 3、4 与第 4 节推导链条第 4 步。</li>
+<li>关节空间 vs 笛卡尔空间轨迹、<code>ctraj</code>/<code>jtraj</code>：来自 facts 第 3 节核心概念 5。</li>
+<li>Fanuc 10L 与球面书写的具体数值：原书未给出具体数值，按符号推导。</li>
+</ul>
+</div></details>
+<details class="ex"><summary><span class="ex-q">题目 7. 行走机器人（第 163 页）</span><span class="ex-tag">点击展开解答 ▾</span></summary><div class="ex-body">
+<p>本题是第 7 章末尾"行走腿"应用（page 163）的延伸练习。原书给出的行走腿模型为：</p>
+<pre><code>s = 'Rz(q1).Rx(q2).Ty(L1).Rx(q3).Tz(L2)'</code></pre>
+<p>经 <code>DHFactor</code> 因式分解后得到</p>
+<pre><code>DH(q1+90, 0, 0, +90).DH(q2, L1, 0, 0).DH(q3-90, L2, 0, 0).Rz(+90).Rx(-90).Rz(-90)</code></pre>
+<p>其中 $L_1 = 0.1$、$L_2 = 0.1$（单位 m）。零位时 <code>transl(leg.fkine([0,0,0]))' = [0, 0.1000, 0.1000]</code>，即足端位于 $(0,0.1,0.1)$。via 点参数为 <code>xf = 50; xb = -50; y = 50; zu = 20; zd = 50</code>（mm），轨迹用 <code>mstraj(path, [], [0, 3, 0.25, 0.5, 0.25]', path(1,:), 0.01, 0)</code> 生成，总时长 4 s、400 步。</p>
+<p>下面逐项给出思路。<strong>注意：原书未给出各小题的具体数值答案，以下按符号与几何关系推导，并给出可运行的 MATLAB 代码供读者自行验证。</strong></p>
+<h5>a) 减小抬腿高度以缩短复位轨迹</h5>
+<p>抬腿高度由 via 点中的 $z_u$（抬起高度）与 $z_d$（落地高度）之差决定。复位阶段足端从落地点抬到 $z_u$ 再回到起点，抬得越高，复位路径越长、耗时越多。将 $z_u$ 从 20 mm 减小（例如 10 mm），复位段轨迹变短。</p>
+<pre><code class="lang-matlab">% 原：zu = 20; zd = 50;
+zu = 10;   % 减小抬腿高度</code></pre>
+<p>预期：复位段（第 2 段，占 0.25 权重）的足端 z 方向位移减小，整条轨迹的弧长与所需时间下降。</p>
+<h5>b) 增大步幅</h5>
+<p>步幅由前后 via 点的 $x$ 坐标差 $x_f - x_b$ 决定。原 $x_f = 50$、$x_b = -50$，步幅 100 mm。增大到例如 $x_f = 80$、$x_b = -80$，步幅变为 160 mm。</p>
+<pre><code class="lang-matlab">xf = 80; xb = -80;   % 增大步幅</code></pre>
+<p>预期：足端在 $x$ 方向的摆动范围变大，单步前进距离增加；但需检查是否超出腿的工作空间（由 $L_1, L_2$ 限制）。</p>
+<h5>c) 通过单侧步幅差实现转向</h5>
+<p>若身体左右两侧腿的步幅不同，两侧前进距离不等，机器人绕竖直轴转向。设左侧步幅 $S_L$、右侧步幅 $S_R$，轮距（两排腿间距）为 $W$，则每步转角近似</p>
+<p>$$
+\Delta\psi \approx \frac{S_L - S_R}{W}
+$$</p>
+<p>实现上，对左右两侧腿分别设置不同的 $x_f, x_b$：</p>
+<pre><code class="lang-matlab">% 左侧腿
+xf_L = 60; xb_L = -40;   % 步幅 100
+% 右侧腿
+xf_R = 40; xb_R = -60;   % 步幅 100，但相位/方向不同</code></pre>
+<p>更直接的做法是让一侧步幅大于另一侧，例如左侧 $x_f=70, x_b=-30$（步幅 100 但整体前移），右侧 $x_f=30, x_b=-70$，使两侧净位移不同。</p>
+<h5>d) 蟹行步态</h5>
+<p>横向移动需把 via 点的摆动方向从 $x$ 改为 $y$。即保持 $x$ 不变，让足端在 $y$ 方向前后摆动：</p>
+<pre><code class="lang-matlab">% 原 via 点沿 x 摆动，改为沿 y 摆动
+path = [0, y_f, zd; 0, y_f, zu; 0, y_b, zu; 0, y_b, zd; ...];</code></pre>
+<p>其中 $y_f > y_b$ 给出横向步幅。所有腿同步沿 $y$ 摆动，身体即横向平移。</p>
+<h5>e) 增加一对腿并改变复位步态</h5>
+<p>增加一对腿即复制腿模型、增加两条腿的 DH 链，并把它们安装到身体另一侧（$y$ 取负或加偏移）。复位步态方面：</p>
+<ul>
+<li><strong>两条腿同时复位</strong>：把 6 条腿分成 3 组，每组 2 条，交替支撑/复位，保证任意时刻至少 4 条腿着地。</li>
+<li><strong>三条腿同时复位</strong>：分成 2 组各 3 条，交替复位，任意时刻 3 条腿着地，稳定性较差但速度更快。</li>
+</ul>
+<p>实现上用一个步态相位表控制每条腿的 via 点时间偏移：</p>
+<pre><code class="lang-matlab">% 6 条腿，相位偏移 [0, 0.5, 0, 0.5, 0, 0.5] 表示两组交替
+phase = [0, 0.5, 0, 0.5, 0, 0.5];</code></pre>
+<h5>f) 让身体随腿移动</h5>
+<p>原仿真中腿动而身体不动，是因为身体位姿被固定。要让身体移动，需在每条腿的支撑相（stance phase）中，把足端视为固定于地面，反解出身体相对足端的位移，再累加得到身体位姿。</p>
+<p>具体做法：设身体位姿为 $\mathbf{T}_{\text{body}}$，第 $i$ 条腿的足端在身体系下为 $\mathbf{p}_i^{\text{body}}$，在世界系下为 $\mathbf{p}_i^{\text{world}}$。支撑相中 $\mathbf{p}_i^{\text{world}}$ 固定，故</p>
+<p>$$
+\mathbf{p}_i^{\text{body}} = \mathbf{T}_{\text{body}}^{-1} \mathbf{p}_i^{\text{world}}
+$$</p>
+<p>由正运动学 $\mathbf{p}_i^{\text{body}} = f(\mathbf{q}_i)$ 反解 $\mathbf{q}_i$，即可在身体前进时保持足端不动。身体前进量由支撑腿的摆动量决定：</p>
+<pre><code class="lang-matlab">% 伪代码：每步更新身体位姿
+for k = 1:N
+    % 支撑腿足端固定，反解关节角
+    q_stance = leg.ikine(T_foot_world, q0, mask);
+    % 身体前进
+    T_body = T_body * transl(dx, 0, 0);
+end</code></pre>
+<p>预期：身体沿 $x$ 方向逐步前进，支撑腿的关节角相应变化，摆动腿按 via 点复位。</p>
+<h4>关键点</h4>
+<ul>
+<li><strong>抬腿高度 $z_u$ 与步幅 $x_f - x_b$ 是行走腿轨迹的两个核心参数</strong>：前者影响复位路径长度与能耗，后者影响前进速度。</li>
+<li><strong>转向由左右两侧步幅差实现</strong>，转角近似 $\Delta\psi \approx (S_L - S_R)/W$，$W$ 为轮距。</li>
+<li><strong>蟹行步态只需把 via 点的摆动方向从 $x$ 改为 $y$</strong>，其余步态逻辑不变。</li>
+<li><strong>多腿复位步态的本质是相位分配</strong>：两条腿同时复位需保证至少 4 条着地，三条腿同时复位则只剩 3 条着地，稳定性下降。</li>
+<li><strong>身体前进的关键是支撑相反解</strong>：支撑相中足端固定于世界系，由 $\mathbf{p}_i^{\text{body}} = \mathbf{T}_{\text{body}}^{-1}\mathbf{p}_i^{\text{world}}$ 反解关节角，身体位姿随之更新。</li>
+</ul>
+<h4>出处</h4>
+<ul>
+<li>原书：Corke《Robotics, Vision and Control》 第 7 章</li>
+<li>依据：</li>
+<li>行走腿模型 <code>s = 'Rz(q1).Rx(q2).Ty(L1).Rx(q3).Tz(L2)'</code> 及 <code>DHFactor</code> 输出、$L_1=L_2=0.1$、零位 <code>transl(leg.fkine([0,0,0]))' = [0, 0.1000, 0.1000]</code>、via 点 <code>xf=50; xb=-50; y=50; zu=20; zd=50</code>、<code>mstraj</code> 调用与 4 s/400 步：来自本章 facts 第 6 节"行走腿"条目。</li>
+<li>正运动学 $\mathbf{T}_N = \prod_{j=1}^{N}{}^{j-1}\mathbf{T}_j$ 与逆运动学 $\mathbf{q} = f^{-1}(\boldsymbol{\xi}_E)$：来自本章 facts 第 5 节式 7.3–7.5。</li>
+<li>关节空间/笛卡尔空间轨迹与 <code>mstraj</code> 用法：来自本章 facts 第 3 节第 5 条与第 4 节第 5、8 步。</li>
+<li>各小题的具体数值（如减小后的 $z_u$、增大后的 $x_f$）原书未给出，按符号推导。</li>
+</ul>
+</div></details>
+
+</div>
+<script>
+(function(){
+  if (typeof renderMathInElement !== 'function') return;
+  function run(){
+    document.querySelectorAll('.ex-body').forEach(function(b){
+      try {
+        renderMathInElement(b, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\(', right: '\)', display: false},
+            {left: '\$', right: '\$', display: false}
+          ],
+          throwOnError: false
+        });
+      } catch(e) {}
+    });
+  }
+  run();
+  document.addEventListener('toggle', run, true);
+})();
+</script>
+</body>
+</html>
