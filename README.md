@@ -1,5 +1,8 @@
 # 具身智能中文资源库
 
+[![Deploy to GitHub Pages](https://github.com/WEIWEI0614/robot-learning-desk/actions/workflows/pages.yml/badge.svg)](https://github.com/WEIWEI0614/robot-learning-desk/actions/workflows/pages.yml)
+[![CI](https://github.com/WEIWEI0614/robot-learning-desk/actions/workflows/ci.yml/badge.svg)](https://github.com/WEIWEI0614/robot-learning-desk/actions/workflows/ci.yml)
+
 **在线直接看 → https://weiwei0614.github.io/robot-learning-desk/**
 
 不用 clone、不用配置，点开即用。全部内容离线可用，无 CDN 依赖。
