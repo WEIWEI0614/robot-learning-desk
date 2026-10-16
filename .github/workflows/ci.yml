@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  content-check:
+    name: 内容自检
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 检查必需文件
+        run: |
+          set -e
+          for f in index.html README.md LICENSE assets/style.css; do
+            if [ ! -f "$f" ]; then echo "::error::缺少必需文件：$f"; exit 1; fi
+          done
+          echo "必需文件齐全"
+
+      - name: 检查 index.html 的本地链接是否都存在
+        run: |
+          python3 - <<'PY'
+          import re, sys, pathlib
+
+          html = pathlib.Path("index.html").read_text(encoding="utf-8")
+          links = re.findall(r'(?:href|src)="([^"]+)"', html)
+          local = [l for l in links if not l.startswith(("http://", "https://", "#", "mailto:", "data:"))]
+
+          missing = [l for l in local if not pathlib.Path(l).exists()]
+          if missing:
+              print("index.html 中以下本地路径不存在：")
+              for m in missing:
+                  print(f"  - {m}")
+              sys.exit(1)
+
+          print(f"index.html 共 {len(links)} 个链接，其中本地链接 {len(local)} 个，全部存在")
+          PY
+
+      - name: 检查各面板的本地链接
+        run: |
+          python3 - <<'PY'
+          import re, sys, pathlib
+
+          root = pathlib.Path(".")
+          missing_total = []
+          checked = 0
+
+          for page in sorted(pathlib.Path("pages").glob("*.html")):
+              html = page.read_text(encoding="utf-8", errors="replace")
+              for l in re.findall(r'(?:href|src)="([^"]+)"', html):
+                  if l.startswith(("http://", "https://", "#", "mailto:", "data:")):
+                      continue
+                  checked += 1
+                  target = (page.parent / l.split("#")[0].split("?")[0])
+                  if l and not target.exists():
+                      missing_total.append(f"{page} → {l}")
+
+          print(f"已检查 {checked} 个面板本地链接")
+          if missing_total:
+              print(f"\n发现 {len(missing_total)} 个失效链接：")
+              for m in missing_total:
+                  print(f"  - {m}")
+              print("\n（提示：面板间的相对链接若为有意断链，请修正或加入白名单）")
+              sys.exit(1)
+          print("全部有效")
+          PY
+
+      - name: 统计内容规模
+        run: |
+          echo "### 内容规模" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 数量 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 面板 | $(ls pages/*.html 2>/dev/null | wc -l) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 互动课件 | $(ls 课件/*.html 2>/dev/null | wc -l) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 习题文件 | $(ls 习题/*.html 2>/dev/null | wc -l) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 文件总数 | $(find . -type f -not -path './.git/*' | wc -l) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 站点体积 | $(du -sh --exclude=.git . | cut -f1) |" >> $GITHUB_STEP_SUMMARY

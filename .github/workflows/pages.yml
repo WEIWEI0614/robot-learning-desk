@@ -1,0 +1,56 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: 部署前自检
+        run: |
+          set -e
+          for f in index.html assets/style.css; do
+            if [ ! -f "$f" ]; then echo "::error::缺少必需文件 $f"; exit 1; fi
+          done
+          echo "面板数: $(ls pages/*.html 2>/dev/null | wc -l)"
+          echo "课件数: $(ls 课件/*.html 2>/dev/null | wc -l)"
+          echo "习题数: $(ls 习题/*.html 2>/dev/null | wc -l)"
+          echo "文件总数: $(find . -type f -not -path './.git/*' | wc -l)"
+          echo "站点体积: $(du -sh --exclude=.git . | cut -f1)"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 输出线上地址
+        run: echo "已部署到 ${{ steps.deployment.outputs.page_url }}"
